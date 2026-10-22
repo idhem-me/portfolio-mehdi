@@ -26,8 +26,7 @@
   },
   "contact": {
     "email": "邮箱",
-    "phone": "电话",
-    "location": "地点",
+    "message": "消息",
     "openMail": "打开邮件应用",
     "viewProfile": "查看个人资料",
     "copied": "已复制！",

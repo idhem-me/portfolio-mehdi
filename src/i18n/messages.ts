@@ -7,6 +7,7 @@ import fr from "../../messages/fr.json";
 import it from "../../messages/it.json";
 import zh from "../../messages/zh.json";
 
+/** Messages UI (nav, contact, theme…) — imports statiques des JSON. */
 export const messagesByLocale = {
   fr,
   en,

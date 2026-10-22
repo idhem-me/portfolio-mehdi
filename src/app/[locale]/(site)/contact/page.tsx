@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MessageCircle } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   ContactFiverrButton,
@@ -98,8 +98,11 @@ export default async function ContactPage({ params }: Props) {
 
             <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
               <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-                <Phone className="size-4 text-muted-foreground" aria-hidden />
-                {t("phone")}
+                <MessageCircle
+                  className="size-4 text-muted-foreground"
+                  aria-hidden
+                />
+                {t("message")}
               </p>
               <ContactPhoneLink />
             </div>
@@ -110,16 +113,6 @@ export default async function ContactPage({ params }: Props) {
                 LinkedIn
               </p>
               <ContactLinkedInButton />
-            </div>
-
-            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-                <MapPin className="size-4 text-muted-foreground" aria-hidden />
-                {t("location")}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {profile.locations.join(" / ")}
-              </p>
             </div>
 
             <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">

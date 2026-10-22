@@ -26,8 +26,7 @@
   },
   "contact": {
     "email": "E-Mail",
-    "phone": "Telefon",
-    "location": "Standort",
+    "message": "Nachricht",
     "openMail": "Mail-App öffnen",
     "viewProfile": "Profil ansehen",
     "copied": "Kopiert!",
