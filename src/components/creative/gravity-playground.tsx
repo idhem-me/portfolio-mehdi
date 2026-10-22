@@ -689,7 +689,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       <div ref={rootRef} className="relative">
         {/* HUD in content column only — below sidebar (z-10), above physics (z-6). */}
         <div
-          className="pointer-events-none fixed top-12 z-[9] flex flex-col items-center gap-1.5 py-16 md:top-0 end-0"
+          className="pointer-events-none fixed top-12 z-[9] flex flex-col items-center gap-1.5 py-8 md:top-0 md:py-16 end-0"
           style={
             isMobile
               ? { left: 0 }

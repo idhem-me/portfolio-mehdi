@@ -18,8 +18,13 @@ export function ThemeToggle() {
     setMounted(true);
   }, []);
 
+  // Placeholder stable SSR → client (évite mismatch next-themes).
   const isDark = mounted && resolvedTheme === "dark";
-  const label = isDark ? t("enableLight") : t("enableDark");
+  const label = !mounted
+    ? t("enableDark")
+    : isDark
+      ? t("enableLight")
+      : t("enableDark");
 
   return (
     <SidebarMenuItem>
@@ -29,9 +34,12 @@ export function ThemeToggle() {
         aria-label={label}
         disabled={!mounted}
         onClick={() => setTheme(isDark ? "light" : "dark")}
+        suppressHydrationWarning
       >
-        {isDark ? <Sun /> : <Moon />}
-        <span>{isDark ? t("light") : t("dark")}</span>
+        {!mounted || !isDark ? <Moon /> : <Sun />}
+        <span suppressHydrationWarning>
+          {!mounted || !isDark ? t("dark") : t("light")}
+        </span>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );

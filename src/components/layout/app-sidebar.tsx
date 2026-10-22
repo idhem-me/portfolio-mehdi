@@ -14,10 +14,11 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { MobileBrandBar } from "@/components/layout/mobile-brand-bar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { AnalyticsEvents } from "@/lib/analytics/events";
 import { profileMeta } from "@/data/profile-meta";
@@ -29,7 +30,12 @@ const AVATAR_SRC = "/img/photos/avatar.png";
 export function AppSidebar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
   const contactActive = pathname.startsWith("/contact");
+
+  function closeMobilePanel() {
+    if (isMobile) setOpenMobile(false);
+  }
 
   const navItems = [
     {
@@ -54,13 +60,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader className="flex flex-row items-center gap-2 px-2 py-3">
-        <SidebarTrigger className="shrink-0" />
-        <div className="flex min-w-0 flex-1 items-center overflow-hidden px-1 group-data-[collapsible=icon]:hidden">
-          <span className="truncate text-sm font-medium tracking-tight">
-            {profileMeta.name}
-          </span>
-        </div>
+      <SidebarHeader className="gap-0 border-b border-sidebar-border p-0">
+        <MobileBrandBar />
       </SidebarHeader>
 
       <SidebarContent>
@@ -78,6 +79,7 @@ export function AppSidebar() {
                       href={item.href}
                       event={AnalyticsEvents.nav_click}
                       eventProps={{ href: item.href, label: item.label }}
+                      onClick={closeMobilePanel}
                     >
                       <item.icon />
                       <span>{item.label}</span>
@@ -90,41 +92,46 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="gap-1 px-2 pb-3">
+      <SidebarFooter className="gap-1 p-2">
         <SidebarMenu>
           <LanguageSwitcher />
           <ThemeToggle />
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              size="lg"
-              isActive={contactActive}
-              tooltip={t("contact")}
-              className="h-12 data-[active=true]:bg-sidebar-accent"
-            >
-              <TrackedLink
-                href="/contact"
-                event={AnalyticsEvents.nav_click}
-                eventProps={{ href: "/contact", label: t("contact") }}
-              >
-                <Avatar className="size-7">
-                  {HAS_AVATAR ? (
-                    <AvatarImage
-                      src={AVATAR_SRC}
-                      alt={t("photoAlt", { name: profileMeta.name })}
-                    />
-                  ) : null}
-                  <AvatarFallback className="text-[10px] font-medium">
-                    {profileMeta.initials}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="truncate text-sm font-medium group-data-[collapsible=icon]:hidden">
-                  {t("contact")}
-                </span>
-              </TrackedLink>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
+        <div className="border-t border-sidebar-border pt-1">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                size="lg"
+                isActive={contactActive}
+                tooltip={t("contact")}
+                className="h-12 data-[active=true]:bg-sidebar-accent"
+              >
+                <TrackedLink
+                  href="/contact"
+                  event={AnalyticsEvents.nav_click}
+                  eventProps={{ href: "/contact", label: t("contact") }}
+                  onClick={closeMobilePanel}
+                >
+                  <Avatar className="size-7">
+                    {HAS_AVATAR ? (
+                      <AvatarImage
+                        src={AVATAR_SRC}
+                        alt={t("photoAlt", { name: profileMeta.name })}
+                      />
+                    ) : null}
+                    <AvatarFallback className="text-[10px] font-medium">
+                      {profileMeta.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="truncate text-[length:var(--sidebar-menu-text)] font-medium group-data-[collapsible=icon]:hidden">
+                    {t("contact")}
+                  </span>
+                </TrackedLink>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
