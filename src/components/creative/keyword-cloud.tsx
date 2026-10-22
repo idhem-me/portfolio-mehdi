@@ -331,7 +331,7 @@ export function KeywordCloud({ keywords, className }: KeywordCloudProps) {
     <TooltipProvider delayDuration={120}>
       <ul
         ref={rootRef}
-        className={cn("relative h-32 w-full font-sans sm:h-36", className)}
+        className={cn("relative h-full min-h-32 w-full font-sans", className)}
         aria-label={labels.join(", ")}
       >
         {keywords.map((keyword, i) => {

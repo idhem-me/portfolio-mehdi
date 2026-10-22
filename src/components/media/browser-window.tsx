@@ -42,7 +42,7 @@ export function BrowserWindow({
         ? { "data-physics-item": true, "data-physics-exact": true }
         : {})}
       className={cn(
-        "relative overflow-hidden rounded-[8px] bg-background shadow-[0_0_0_1px_color-mix(in_oklch,var(--foreground),transparent_88%),0_8px_24px_-6px_rgb(0_0_0_/_.35)] transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-[0_0_0_1px_color-mix(in_oklch,var(--foreground),transparent_88%),0_12px_32px_-8px_rgb(0_0_0_/_.4)]",
+        "relative flex min-h-0 flex-col overflow-hidden rounded-[8px] bg-background shadow-[0_0_0_1px_color-mix(in_oklch,var(--foreground),transparent_88%),0_8px_24px_-6px_rgb(0_0_0_/_.35)] transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-[0_0_0_1px_color-mix(in_oklch,var(--foreground),transparent_88%),0_12px_32px_-8px_rgb(0_0_0_/_.4)]",
         className
       )}
     >
@@ -52,7 +52,7 @@ export function BrowserWindow({
         alt=""
         width={CHROME.width}
         height={CHROME.height}
-        className={cn(imgClass, "dark:hidden")}
+        className={cn(imgClass, "shrink-0 dark:hidden")}
         draggable={false}
         aria-hidden
       />
@@ -62,13 +62,13 @@ export function BrowserWindow({
         alt=""
         width={CHROME.width}
         height={CHROME.height}
-        className={cn(imgClass, "hidden dark:block")}
+        className={cn(imgClass, "hidden shrink-0 dark:block")}
         draggable={false}
         aria-hidden
       />
       <div
         className={cn(
-          "relative isolate",
+          "relative isolate min-h-0 flex-1",
           paper ? "bg-paper-grid" : "bg-background",
           compact ? "p-3 sm:p-4" : "p-6 sm:p-8",
         )}

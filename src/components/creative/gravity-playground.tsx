@@ -25,6 +25,9 @@ const SIDEBAR_COLLAPSE_MS = 220;
 
 /** Match Button default horizontal padding (px-2.5 ≈ 10px). */
 const CHIP_PAD_PX = 10;
+/** Compact chips (e.g. intro words): smaller type + tighter pad. */
+const CHIP_COMPACT_PAD_PX = 6;
+const CHIP_COMPACT_FONT_PX = 12;
 const WALL_THICKNESS = 80;
 
 type PhysicsPair = {
@@ -235,6 +238,8 @@ function spawnChipElement(
   const { source, anchor, lineText } = target;
   const isButton = source.hasAttribute("data-physics-button");
   const isExact = source.hasAttribute("data-physics-exact");
+  const isCompact = source.hasAttribute("data-physics-compact");
+  const chipPadPx = isCompact ? CHIP_COMPACT_PAD_PX : CHIP_PAD_PX;
   const computed = window.getComputedStyle(source);
 
   let el: HTMLElement;
@@ -288,13 +293,18 @@ function spawnChipElement(
     el.className =
       "fixed z-[6] m-0 inline-flex items-center rounded-lg border border-border bg-card shadow-sm";
     applyTypography(el, computed);
-    el.style.padding = `${CHIP_PAD_PX}px`;
+    if (isCompact) {
+      el.style.fontSize = `${CHIP_COMPACT_FONT_PX}px`;
+      el.style.lineHeight = "1.25";
+    }
+    el.style.padding = `${chipPadPx}px`;
     el.style.whiteSpace = "nowrap";
   } else {
     el = source.cloneNode(true) as HTMLElement;
     neutralizeClone(el);
     el.removeAttribute("data-physics-item");
     el.removeAttribute("data-physics-split-lines");
+    el.removeAttribute("data-physics-compact");
     el.className = [
       source.className,
       "fixed z-[6] m-0 inline-flex items-center border border-border bg-card shadow-sm",
@@ -302,7 +312,11 @@ function spawnChipElement(
       .filter(Boolean)
       .join(" ");
     applyTypography(el, computed);
-    el.style.padding = `${CHIP_PAD_PX}px`;
+    if (isCompact) {
+      el.style.fontSize = `${CHIP_COMPACT_FONT_PX}px`;
+      el.style.lineHeight = "1.25";
+    }
+    el.style.padding = `${chipPadPx}px`;
     el.style.whiteSpace = "nowrap";
     el.style.display = "inline-flex";
     el.style.alignItems = "center";

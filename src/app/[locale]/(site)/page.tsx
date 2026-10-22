@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
-import { HomeCtas } from "@/components/analytics/home-ctas";
+import { HomeCtas, HomeStatus } from "@/components/analytics/home-ctas";
 import { GravityPlayground } from "@/components/creative/gravity-playground";
 import { KeywordCloud } from "@/components/creative/keyword-cloud";
 import { DraggableHomeWindow } from "@/components/layout/draggable-home-window";
@@ -24,6 +24,7 @@ function IntroWords({ text }: { text: string }) {
           <span
             key={i}
             data-physics-item
+            data-physics-compact
             className="inline-block rounded-md text-base leading-relaxed text-muted-foreground sm:text-lg"
           >
             {part}
@@ -36,10 +37,10 @@ function IntroWords({ text }: { text: string }) {
 
 function HomeFallback() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 pt-36 pb-44 md:min-h-[calc(100svh-1rem)] md:py-20 md:pb-48">
+    <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
       <div className="flex flex-col gap-8">
         <div className="space-y-4">
-          <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-64 max-w-full animate-pulse rounded bg-muted" />
           <div className="space-y-2">
             <div className="h-9 w-full max-w-xl animate-pulse rounded bg-muted" />
             <div className="h-9 w-2/3 max-w-lg animate-pulse rounded bg-muted" />
@@ -65,25 +66,11 @@ async function HomeContent({ params }: Props) {
   const home = getHome(locale);
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 pt-36 pb-44 md:min-h-[calc(100svh-1rem)] md:py-20 md:pb-48">
+    <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
       <GravityPlayground>
         <section className="flex flex-col gap-8">
           <div className="space-y-4">
-            <p
-              data-physics-item
-              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg text-sm text-muted-foreground"
-            >
-              {home.status}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/img/logos/worldline-logo-icon.svg"
-                alt=""
-                width={24}
-                height={12}
-                className="h-3 w-auto opacity-80 dark:invert"
-                aria-hidden
-              />
-            </p>
+            <HomeStatus />
 
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               <span
@@ -104,14 +91,16 @@ async function HomeContent({ params }: Props) {
             <IntroWords text={home.intro} />
           </div>
 
-          <HomeCtas />
-        </section>
+          <div className="flex flex-col gap-8 md:gap-16">
+            <HomeCtas />
 
-        <DraggableHomeWindow>
-          <BrowserWindow physics compact paper className="w-full">
-            <KeywordCloud keywords={home.keywords} />
-          </BrowserWindow>
-        </DraggableHomeWindow>
+            <DraggableHomeWindow>
+              <BrowserWindow physics compact paper className="h-full w-full">
+                <KeywordCloud keywords={home.keywords} />
+              </BrowserWindow>
+            </DraggableHomeWindow>
+          </div>
+        </section>
       </GravityPlayground>
     </main>
   );
