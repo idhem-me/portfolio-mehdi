@@ -54,13 +54,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
-      <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-3">
+      <SidebarHeader className="flex flex-row items-center gap-2 px-2 py-3">
+        <SidebarTrigger className="shrink-0" />
         <div className="flex min-w-0 flex-1 items-center overflow-hidden px-1 group-data-[collapsible=icon]:hidden">
           <span className="truncate text-sm font-medium tracking-tight">
             {profileMeta.name}
           </span>
         </div>
-        <SidebarTrigger className="shrink-0" />
       </SidebarHeader>
 
       <SidebarContent>

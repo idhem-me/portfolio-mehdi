@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Accordion,
   AccordionContent,
@@ -47,6 +48,9 @@ import {
 import { KeywordCloud } from "@/components/creative/keyword-cloud";
 import { BrowserWindow } from "@/components/media/browser-window";
 import { SafeSvg } from "@/components/media/safe-svg";
+import { cn } from "@/lib/utils";
+
+type Density = "desktop" | "mobile";
 
 const KEYWORD_DEMO = [
   { label: "Contenu digital", definition: "Création de contenus pour le web et les réseaux." },
@@ -96,6 +100,15 @@ function Section({
 }
 
 export default function PlaygroundPage() {
+  const [density, setDensity] = useState<Density>("desktop");
+
+  useEffect(() => {
+    document.documentElement.dataset.density = density;
+    return () => {
+      delete document.documentElement.dataset.density;
+    };
+  }, [density]);
+
   return (
     <main className="mx-auto w-full max-w-3xl space-y-12 px-6 py-12">
       <header className="space-y-2">
@@ -108,6 +121,53 @@ export default function PlaygroundPage() {
           . Sert de banc d&apos;essai pour le design system.
         </p>
       </header>
+
+      <div className="sticky top-0 z-40 -mx-6 border-b border-border bg-background/95 px-6 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium">Densité</p>
+            <p className="text-xs text-muted-foreground">
+              Force les tokens Desktop / Mobile sans redimensionner la fenêtre (
+              <code className="rounded bg-muted px-1 py-0.5">data-density</code>
+              ).
+            </p>
+          </div>
+          <div
+            className="inline-flex rounded-lg bg-muted p-[3px]"
+            role="group"
+            aria-label="Densité d’affichage"
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-pressed={density === "desktop"}
+              className={cn(
+                "rounded-md",
+                density === "desktop" &&
+                  "bg-background text-foreground shadow-sm hover:bg-background"
+              )}
+              onClick={() => setDensity("desktop")}
+            >
+              Desktop
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-pressed={density === "mobile"}
+              className={cn(
+                "rounded-md",
+                density === "mobile" &&
+                  "bg-background text-foreground shadow-sm hover:bg-background"
+              )}
+              onClick={() => setDensity("mobile")}
+            >
+              Mobile
+            </Button>
+          </div>
+        </div>
+      </div>
 
       <Separator />
 
@@ -310,7 +370,10 @@ export default function PlaygroundPage() {
 
       <Separator />
 
-      <Section title="Sheet" description="Panneau latéral (mobile sidebar pattern)">
+      <Section
+        title="Sheet"
+        description="Panneau latéral (mobile sidebar pattern). En densité Mobile → pleine largeur."
+      >
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline">Ouvrir le Sheet</Button>
@@ -323,7 +386,8 @@ export default function PlaygroundPage() {
               </SheetDescription>
             </SheetHeader>
             <p className="px-4 text-sm text-muted-foreground">
-              Contenu du sheet. Sur mobile, la navigation utilise ce pattern.
+              Contenu du sheet. Sur mobile / densité Mobile, le panel prend toute
+              la largeur.
             </p>
           </SheetContent>
         </Sheet>
@@ -426,7 +490,8 @@ export default function PlaygroundPage() {
           <CardHeader>
             <CardTitle>SidebarProvider + AppSidebar</CardTitle>
             <CardDescription>
-              Monté dans le layout du site (rétractable / Sheet mobile). Pas de
+              Monté dans le layout du site. En densité Mobile le Sheet nav prend
+              toute la page (<code>--sidebar-width-mobile: 100svw</code>). Pas de
               démo isolée ici — le playground reste un environnement séparé.
             </CardDescription>
           </CardHeader>

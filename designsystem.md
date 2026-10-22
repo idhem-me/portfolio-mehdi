@@ -25,10 +25,31 @@ Utiliser les utilitaires Tailwind (`bg-accent`, `text-accent-foreground`, etc.) 
 - `color-scheme: light` / `dark` sur `:root` / `.dark` pour scrollbars et contrôles natifs
 - En dark, `--sidebar-primary` suit l’accent marque (pas le violet Shadcn par défaut)
 
+## Densité / Touch
+
+Tokens de sizing interactif dans `src/app/globals.css`. Breakpoint mobile : **&lt;768px** (aligné sur `useIsMobile` / `max-width: 767px`).
+
+| Token | Desktop | Mobile |
+|-------|---------|--------|
+| `--control-height-*` (+ icons) | 24–36px | **44px** (`2.75rem`) |
+| `--control-text` / `--control-text-xs` | 14px / 12px | **16px** |
+| `--menu-item-min-height` / `--menu-item-text` | auto / 14px | **44px** / **16px** |
+| `--sidebar-menu-height` / `--sidebar-menu-text` | 32px / 14px | **44px** / **16px** |
+| `--sidebar-width-mobile` | `18rem` | **plein viewport** (`100svw`) |
+| `--sheet-width-mobile` / `--sheet-max-width` | 75% / 24rem | 100% / none |
+
+Overrides (dans `@layer base` — requis pour que Tailwind v4 ne strippe pas les media / attribute rules) :
+
+- `@media (max-width: 767px)` sur `:root:not([data-density="desktop"])` → valeurs mobile
+- `[data-density="mobile"]` → force mobile (playground, sans resize)
+- `[data-density="desktop"]` → force desktop même sous 768px
+
+Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, un toggle synchronise `document.documentElement.dataset.density`.
+
 ## Button — variante `accent`
 
 - Token : `bg-accent` / `text-accent-foreground`
 - Radius max : `rounded-full`
-- Paddings agrandis (overrides par taille via compound variants)
+- Paddings agrandis (overrides par taille via compound variants) ; hauteurs via `--control-height-accent*` (≥ 44px en mobile)
 - États : default, hover (fond un peu plus sombre), active, focus-visible (`ring-accent`), disabled (opacity base)
 - Hover : brillance texturée (`accent-shine-sweep`, −5°, droite → gauche) + léger lift/glow ; désactivé si `prefers-reduced-motion`

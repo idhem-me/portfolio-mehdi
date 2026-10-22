@@ -28,7 +28,7 @@ export function CopyEmailButton({ className }: { className?: string }) {
       type="button"
       variant="secondary"
       size="sm"
-      className={cn("h-8 w-full justify-start gap-2 font-normal", className)}
+      className={cn("w-full justify-start gap-2 font-normal", className)}
       onClick={handleCopy}
       aria-label={
         copied

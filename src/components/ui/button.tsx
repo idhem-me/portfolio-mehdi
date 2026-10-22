@@ -4,7 +4,7 @@ import { cn } from "cn"
 import { Slot } from "radix-ui"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-[length:var(--control-text)] font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -23,58 +23,60 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-6 gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-xs in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-7 gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-9 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        icon: "size-8",
+          "h-(--control-height) gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        xs: "h-(--control-height-xs) gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-[length:var(--control-text-xs)] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
+        sm: "h-(--control-height-sm) gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[length:var(--control-text-sm)] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "h-(--control-height-lg) gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        icon: "size-(--control-height-icon)",
         "icon-xs":
-          "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
+          "size-(--control-height-icon-xs) rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
         "icon-sm":
-          "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-9",
+          "size-(--control-height-icon-sm) rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
+        "icon-lg": "size-(--control-height-icon-lg)",
       },
     },
     compoundVariants: [
       {
         variant: "accent",
         class:
-          "h-10 gap-2 rounded-full px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+          "h-(--control-height-accent) gap-2 rounded-full px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
       },
       {
         variant: "accent",
         size: "icon",
-        class: "size-10 rounded-full px-0",
+        class: "size-(--control-height-accent-icon) rounded-full px-0",
       },
       {
         variant: "accent",
         size: "icon-xs",
-        class: "size-7 rounded-full px-0",
+        class: "size-(--control-height-accent-icon-xs) rounded-full px-0",
       },
       {
         variant: "accent",
         size: "icon-sm",
-        class: "size-8 rounded-full px-0",
+        class: "size-(--control-height-accent-icon-sm) rounded-full px-0",
       },
       {
         variant: "accent",
         size: "icon-lg",
-        class: "size-11 rounded-full px-0",
+        class: "size-(--control-height-accent-icon-lg) rounded-full px-0",
       },
       {
         variant: "accent",
         size: "xs",
-        class: "h-8 gap-1.5 rounded-full px-3.5 text-xs",
+        class:
+          "h-(--control-height-accent-xs) gap-1.5 rounded-full px-3.5 text-[length:var(--control-text-xs)]",
       },
       {
         variant: "accent",
         size: "sm",
-        class: "h-9 gap-1.5 rounded-full px-4 text-[0.8rem]",
+        class:
+          "h-(--control-height-accent-sm) gap-1.5 rounded-full px-4 text-[length:var(--control-text-sm)]",
       },
       {
         variant: "accent",
         size: "lg",
-        class: "h-11 gap-2 rounded-full px-6",
+        class: "h-(--control-height-accent-lg) gap-2 rounded-full px-6",
       },
     ],
     defaultVariants: {
