@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import {
+  ExperienceCard,
+  ExperienceListItem,
+} from "@/components/cv/experience-card";
+import {
   getAbout,
   getExperiences,
   getProfile,
@@ -36,7 +40,7 @@ export default async function AProposPage({ params }: Props) {
   setRequestLocale(locale);
   const about = getAbout(locale);
   const profile = getProfile(locale);
-  const { previous } = getExperiences(locale);
+  const { featured, previous } = getExperiences(locale);
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-12 px-6 py-12">
@@ -52,6 +56,25 @@ export default async function AProposPage({ params }: Props) {
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">
+            {about.designTitle}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {about.designIntro}
+          </p>
+        </div>
+        <div className="space-y-4">
+          {featured.map((exp) => (
+            <ExperienceCard
+              key={`${exp.company}-${exp.period}`}
+              experience={exp}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight">
             {about.businessTitle}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -60,20 +83,10 @@ export default async function AProposPage({ params }: Props) {
         </div>
         <ul className="space-y-0 divide-y divide-border/60">
           {previous.map((exp) => (
-            <li
+            <ExperienceListItem
               key={`${exp.company}-${exp.period}`}
-              className="flex flex-col gap-1 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
-            >
-              <div>
-                <p className="text-sm font-medium">{exp.title}</p>
-                <p className="text-sm text-muted-foreground">
-                  {exp.company} · {exp.location}
-                </p>
-              </div>
-              <p className="shrink-0 text-xs text-muted-foreground">
-                {exp.period}
-              </p>
-            </li>
+              experience={exp}
+            />
           ))}
         </ul>
       </section>

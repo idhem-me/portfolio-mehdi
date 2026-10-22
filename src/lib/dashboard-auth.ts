@@ -9,7 +9,7 @@ export async function hashToken(value: string): Promise<string> {
 }
 
 export async function expectedDashboardToken(): Promise<string | null> {
-  const password = process.env.DASHBOARD_PASSWORD;
+  const password = process.env.DASHBOARD_PASSWORD?.trim();
   if (!password) return null;
   return hashToken(password);
 }

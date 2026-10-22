@@ -1,6 +1,8 @@
 ---
 {
   "title": "About me",
+  "designTitle": "Product Design Path",
+  "designIntro": "Product design at Worldline on digital products. As a freelancer: focused briefs (landing pages, websites, graphic design, CVs, UI kits), not full product projects.",
   "businessTitle": "Business & International Path",
   "businessIntro": "Before product design: commerce, business development and experiences abroad.",
   "extrasTitle": "Education, languages & interests",

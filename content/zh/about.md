@@ -1,6 +1,8 @@
 ---
 {
   "title": "关于我",
+  "designTitle": "产品设计经历",
+  "designIntro": "在 Worldline 从事数字产品设计。自由职业方面：聚焦任务（落地页、网站、平面设计、简历、UI Kit），不做完整产品项目。",
   "businessTitle": "商业与国际经历",
   "businessIntro": "投身产品设计之前：商务、业务拓展与海外经历。",
   "extrasTitle": "教育、语言与兴趣",

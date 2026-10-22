@@ -6,14 +6,18 @@
       "company": "Worldline | Financial Services",
       "period": "Oct. 2024 – Actualidad",
       "location": "Lyon",
-      "summary": "Contribución UX y UI en varios productos digitales (Digital Services).",
+      "summary": "Product design en productos digitales de Financial Services: explorar, enmarcar, prototipar, testear, medir e industrializar.",
       "featured": true,
+      "logo": {
+        "light": "/img/logos/worldline-b.svg",
+        "dark": "/img/logos/worldline-w.svg"
+      },
       "highlights": [
-        "Rediseño de Trusted Interactions (1M mensajes/día): auditoría, talleres de ideación, colaboración PM/PO/Delivery, prototipado avanzado, design thinking",
-        "Creación de dashboards, maquetas de alta fidelidad y apps móviles",
+        "Rediseño de Trusted Interactions (1M mensajes/día): auditoría, discovery, talleres de ideación, wireframes y colaboración PM/PO/Delivery",
+        "Prototipado avanzado, maquetas de alta fidelidad, dashboards y apps móviles",
+        "Tests de usuarios e iteraciones de recorridos",
         "Construcción de un UI Kit y gestión de un Design System",
-        "Supervisión de la integración del diseño en producción",
-        "Desarrollo de demos interactivas de Open Banking (Figma)"
+        "Supervisión de la integración del diseño en producción y demos Open Banking (Figma)"
       ]
     },
     {
@@ -21,13 +25,18 @@
       "company": "SARL NFMM | Freelance",
       "period": "May. 2019 – Actualidad",
       "location": "Romans-sur-Isère",
-      "summary": "Creación y gestión de una agencia web y luego microemprendedor.",
+      "summary": "Encargos concretos de diseño y creación digital, sin proyectos de producto completos.",
       "featured": true,
+      "logo": {
+        "light": "/img/photos/avatar.png",
+        "dark": "/img/photos/avatar.png",
+        "rounded": true
+      },
       "highlights": [
-        "Auditorías UX y UI",
-        "Diseño de sitios web",
-        "Identidades visuales",
-        "Gestión de proyectos"
+        "Landing pages y sitios web",
+        "Creación gráfica y CV",
+        "UI kits",
+        "Identidades visuales y soportes digitales"
       ]
     }
   ],
@@ -36,25 +45,41 @@
       "title": "Business Developer",
       "company": "Sasytex",
       "period": "Sep. 2018 – Sep. 2021",
-      "location": "Saint-Étienne"
+      "location": "Saint-Étienne",
+      "logo": {
+        "light": "/img/logos/sasytex-b.svg",
+        "dark": "/img/logos/sasytex-w.svg"
+      }
     },
     {
       "title": "Responsable de cobros Retail",
       "company": "Accenture",
       "period": "Ene. 2018 – Ago. 2018",
-      "location": "Dublin, Irlanda"
+      "location": "Dublin, Irlanda",
+      "logo": {
+        "light": "/img/logos/accenture-b.svg",
+        "dark": "/img/logos/accenture-w.svg"
+      }
     },
     {
       "title": "Comercial",
       "company": "Malfini",
       "period": "May. 2016 – Ago. 2016",
-      "location": "República Checa"
+      "location": "República Checa",
+      "logo": {
+        "light": "/img/logos/malfini-b.svg",
+        "dark": "/img/logos/malfini-w.svg"
+      }
     },
     {
       "title": "Vendedor",
       "company": "Lili Croustille",
       "period": "2012 – 2015",
-      "location": "Francia"
+      "location": "Francia",
+      "logo": {
+        "light": "/img/logos/lili-b.svg",
+        "dark": "/img/logos/lili-w.svg"
+      }
     }
   ]
 }

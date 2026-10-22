@@ -6,14 +6,18 @@
       "company": "Worldline | Financial Services",
       "period": "أكتوبر 2024 – حتى اليوم",
       "location": "Lyon",
-      "summary": "مساهمة UX وUI في عدة منتجات رقمية (Digital Services).",
+      "summary": "تصميم منتجات على منتجات رقمية في Financial Services: استكشاف، تأطير، نماذج أولية، اختبار، قياس وتصنيع على نطاق.",
       "featured": true,
+      "logo": {
+        "light": "/img/logos/worldline-b.svg",
+        "dark": "/img/logos/worldline-w.svg"
+      },
       "highlights": [
-        "إعادة تصميم Trusted Interactions (مليون رسالة/يوم): تدقيق، ورش إبداع، تعاون PM/PO/Delivery، نماذج أولية متقدّمة، design thinking",
-        "إنشاء لوحات معلومات ونماذج عالية الدقة وتطبيقات جوال",
+        "إعادة تصميم Trusted Interactions (مليون رسالة/يوم): تدقيق، discovery، ورش إبداع، مخططات مسار وتعاون PM/PO/Delivery",
+        "نماذج أولية متقدّمة، نماذج عالية الدقة، لوحات معلومات وتطبيقات جوال",
+        "اختبارات مستخدمين وتكرار المسارات",
         "بناء UI Kit وإدارة Design System",
-        "الإشراف على دمج التصميم في الإنتاج",
-        "تطوير عروض تفاعلية لـ Open Banking (Figma)"
+        "الإشراف على دمج التصميم في الإنتاج وعروض Open Banking (Figma)"
       ]
     },
     {
@@ -21,13 +25,18 @@
       "company": "SARL NFMM | Freelance",
       "period": "مايو 2019 – حتى اليوم",
       "location": "Romans-sur-Isère",
-      "summary": "إنشاء وإدارة وكالة ويب ثم العمل كرائد أعمال صغير.",
+      "summary": "مهام مركّزة في التصميم والإبداع الرقمي، دون مشاريع منتج كاملة.",
       "featured": true,
+      "logo": {
+        "light": "/img/photos/avatar.png",
+        "dark": "/img/photos/avatar.png",
+        "rounded": true
+      },
       "highlights": [
-        "تدقيقات UX وUI",
-        "تصميم مواقع الويب",
-        "الهويات البصرية",
-        "إدارة المشاريع"
+        "صفحات هبوط ومواقع ويب",
+        "تصميم جرافيكي وسير ذاتية",
+        "UI kits",
+        "هويات بصرية وأصول رقمية"
       ]
     }
   ],
@@ -36,25 +45,41 @@
       "title": "Business Developer",
       "company": "Sasytex",
       "period": "سبتمبر 2018 – سبتمبر 2021",
-      "location": "Saint-Étienne"
+      "location": "Saint-Étienne",
+      "logo": {
+        "light": "/img/logos/sasytex-b.svg",
+        "dark": "/img/logos/sasytex-w.svg"
+      }
     },
     {
       "title": "مسؤول تحصيل التجزئة",
       "company": "Accenture",
       "period": "يناير 2018 – أغسطس 2018",
-      "location": "Dublin، أيرلندا"
+      "location": "Dublin، أيرلندا",
+      "logo": {
+        "light": "/img/logos/accenture-b.svg",
+        "dark": "/img/logos/accenture-w.svg"
+      }
     },
     {
       "title": "مندوب مبيعات",
       "company": "Malfini",
       "period": "مايو 2016 – أغسطس 2016",
-      "location": "جمهورية التشيك"
+      "location": "جمهورية التشيك",
+      "logo": {
+        "light": "/img/logos/malfini-b.svg",
+        "dark": "/img/logos/malfini-w.svg"
+      }
     },
     {
       "title": "بائع",
       "company": "Lili Croustille",
       "period": "2012 – 2015",
-      "location": "فرنسا"
+      "location": "فرنسا",
+      "logo": {
+        "light": "/img/logos/lili-b.svg",
+        "dark": "/img/logos/lili-w.svg"
+      }
     }
   ]
 }

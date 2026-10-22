@@ -1,6 +1,8 @@
 ---
 {
   "title": "Über mich",
+  "designTitle": "Produktdesign-Werdegang",
+  "designIntro": "Product Design bei Worldline an digitalen Produkten. Als Freelancer: gezielte Aufträge (Landingpages, Websites, Grafikdesign, Lebensläufe, UI Kits), keine vollständigen Produktprojekte.",
   "businessTitle": "Business- & Internationaler Werdegang",
   "businessIntro": "Vor dem Produktdesign: Handel, Business Development und Auslanderfahrungen.",
   "extrasTitle": "Ausbildung, Sprachen & Interessen",

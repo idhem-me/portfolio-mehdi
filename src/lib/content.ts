@@ -5,6 +5,12 @@ import { routing, type Locale } from "@/i18n/routing";
 
 const contentRoot = path.join(process.cwd(), "content");
 
+export type ExperienceLogo = {
+  light: string;
+  dark: string;
+  rounded?: boolean;
+};
+
 export type Experience = {
   title: string;
   company: string;
@@ -13,6 +19,7 @@ export type Experience = {
   summary?: string;
   highlights?: string[];
   featured?: boolean;
+  logo?: ExperienceLogo;
 };
 
 export type SkillItem = string | { name: string; logo: string };
@@ -55,7 +62,10 @@ export type ContactPageContent = {
 
 export type ProductDesignerContent = {
   title: string;
+  roleTitle: string;
   intro: string;
+  pillars: { icon: string; title: string; description: string }[];
+  experiencesLead: string;
   experiencesTitle: string;
   caseStudiesTitle: string;
   caseStudiesIntro: string;
@@ -66,6 +76,8 @@ export type ProductDesignerContent = {
 
 export type AboutContent = {
   title: string;
+  designTitle: string;
+  designIntro: string;
   businessTitle: string;
   businessIntro: string;
   extrasTitle: string;
@@ -94,7 +106,16 @@ function readMarkdown(locale: string, filename: string) {
   const raw = fs.existsSync(filePath)
     ? fs.readFileSync(filePath, "utf8")
     : fs.readFileSync(fallbackPath, "utf8");
-  return matter(raw);
+  // Frontmatter is JSON (see content/README.md) — force JSON to avoid YAML mis-parse
+  return matter(raw, {
+    engines: {
+      json: {
+        parse: (input: string) => JSON.parse(input) as object,
+        stringify: (data: object) => JSON.stringify(data),
+      },
+    },
+    language: "json",
+  });
 }
 
 export function getProfile(locale: string): ProfileContent {

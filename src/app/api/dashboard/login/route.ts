@@ -8,7 +8,10 @@ export async function POST(request: Request) {
   const expected = await expectedDashboardToken();
   if (!expected) {
     return NextResponse.json(
-      { error: "DASHBOARD_PASSWORD non configuré." },
+      {
+        error:
+          "Accès dashboard non configuré : ajoutez DASHBOARD_PASSWORD dans les variables d’environnement Vercel (Production), puis redéployez.",
+      },
       { status: 503 },
     );
   }
@@ -18,10 +21,10 @@ export async function POST(request: Request) {
 
   if (contentType.includes("application/json")) {
     const body = (await request.json()) as { password?: string };
-    password = body.password ?? "";
+    password = (body.password ?? "").trim();
   } else {
     const form = await request.formData();
-    password = String(form.get("password") ?? "");
+    password = String(form.get("password") ?? "").trim();
   }
 
   const { hashToken } = await import("@/lib/dashboard-auth");

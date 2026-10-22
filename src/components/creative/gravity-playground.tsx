@@ -4,7 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Matter from "matter-js";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+
+/** Sidebar width transition is duration-200 — wait before measuring chips. */
+const SIDEBAR_COLLAPSE_MS = 220;
 
 /** Match Button default horizontal padding (px-2.5 ≈ 10px). */
 const CHIP_PAD_PX = 10;
@@ -29,6 +33,15 @@ type Walls = {
   ground: Matter.Body;
   left: Matter.Body;
   right: Matter.Body;
+};
+
+type PlaySnapshot = {
+  className: string;
+  text: string;
+  width: number;
+  height: number;
+  cx: number;
+  cy: number;
 };
 
 type Session = {
@@ -188,8 +201,8 @@ function applyTypography(el: HTMLElement, computed: CSSStyleDeclaration) {
 }
 
 /**
- * Build a chip, append it, let the browser measure hug+padding, then lock size.
- * CTA buttons skip extra padding (they already have button padding).
+ * Build a chip, append it, measure, lock size.
+ * Buttons: freeze the exact on-screen box (no padding reset — keeps accent shape).
  */
 function spawnChipElement(
   target: SpawnTarget,
@@ -200,26 +213,47 @@ function spawnChipElement(
   const computed = window.getComputedStyle(source);
 
   let el: HTMLElement;
+  let width: number;
+  let height: number;
+  let cx: number;
+  let cy: number;
 
   const pureText =
     lineText !== undefined ||
     (!isButton && source.children.length === 0);
 
   if (isButton) {
+    // Exact visual snapshot — never alter padding/radius (fixes Touche-moi morphing)
+    const rect = source.getBoundingClientRect();
+    width = Math.max(rect.width, 8);
+    height = Math.max(rect.height, 8);
+    cx = rect.left + width / 2;
+    cy = rect.top + height / 2;
+
     el = source.cloneNode(true) as HTMLElement;
     neutralizeClone(el);
     el.removeAttribute("data-physics-item");
     el.removeAttribute("data-physics-button");
-    el.className = [
-      source.className,
-      "fixed z-[6] m-0 border border-border bg-card shadow-sm",
-    ]
-      .filter(Boolean)
-      .join(" ");
-    el.style.display = "inline-flex";
-    el.style.padding = "0";
-  } else if (pureText) {
-    // Rebuild text chips (title, intro words, subtitle lines) for reliable typography + hug
+    el.className = [source.className, "fixed z-[6] m-0"].filter(Boolean).join(" ");
+    el.style.left = "0";
+    el.style.top = "0";
+    el.style.margin = "0";
+    el.style.boxSizing = "border-box";
+    el.style.width = `${width}px`;
+    el.style.height = `${height}px`;
+    el.style.transition = "none";
+    el.style.animation = "none";
+    el.style.transform = "none";
+    el.style.transformOrigin = "center center";
+    el.style.willChange = "transform";
+    el.style.pointerEvents = "none";
+    el.style.visibility = "visible";
+    el.setAttribute("aria-hidden", "true");
+    layerEl.appendChild(el);
+    return { el, width, height, cx, cy };
+  }
+
+  if (pureText) {
     el = document.createElement("span");
     el.textContent = lineText ?? source.textContent ?? "";
     el.className =
@@ -228,7 +262,6 @@ function spawnChipElement(
     el.style.padding = `${CHIP_PAD_PX}px`;
     el.style.whiteSpace = "nowrap";
   } else {
-    // Status / platform links: keep logo + label, add chip chrome
     el = source.cloneNode(true) as HTMLElement;
     neutralizeClone(el);
     el.removeAttribute("data-physics-item");
@@ -260,19 +293,80 @@ function spawnChipElement(
   el.style.visibility = "visible";
   el.setAttribute("aria-hidden", "true");
 
-  // Measure after layout: hug content + padding + border
   layerEl.appendChild(el);
   const box = el.getBoundingClientRect();
-  const width = Math.max(box.width, 8);
-  const height = Math.max(box.height, 8);
+  width = Math.max(box.width, 8);
+  height = Math.max(box.height, 8);
   el.style.width = `${width}px`;
   el.style.height = `${height}px`;
   el.style.flexShrink = "0";
 
-  const cx = anchor.left + anchor.width / 2;
-  const cy = anchor.top + anchor.height / 2;
+  cx = anchor.left + anchor.width / 2;
+  cy = anchor.top + anchor.height / 2;
 
   return { el, width, height, cx, cy };
+}
+
+/** Rebuild Touche-moi from a pre-click snapshot (exact look + box). */
+function spawnPlaySnapshot(
+  snapshot: PlaySnapshot,
+  layerEl: HTMLElement,
+): { el: HTMLElement; width: number; height: number; cx: number; cy: number } {
+  const el = document.createElement("button");
+  el.type = "button";
+  el.textContent = snapshot.text;
+  el.className = [snapshot.className, "fixed z-[6] m-0"].filter(Boolean).join(" ");
+  el.style.left = "0";
+  el.style.top = "0";
+  el.style.margin = "0";
+  el.style.boxSizing = "border-box";
+  el.style.width = `${snapshot.width}px`;
+  el.style.height = `${snapshot.height}px`;
+  el.style.transition = "none";
+  el.style.animation = "none";
+  el.style.transform = "none";
+  el.style.transformOrigin = "center center";
+  el.style.willChange = "transform";
+  el.style.pointerEvents = "none";
+  el.style.visibility = "visible";
+  el.setAttribute("aria-hidden", "true");
+  el.tabIndex = -1;
+  layerEl.appendChild(el);
+  return {
+    el,
+    width: snapshot.width,
+    height: snapshot.height,
+    cx: snapshot.cx,
+    cy: snapshot.cy,
+  };
+}
+
+/** Shared body recipe — identical for every chip (no chamfer = no tunneling). */
+function addFallingBody(
+  Bodies: typeof Matter.Bodies,
+  Body: typeof Matter.Body,
+  World: typeof Matter.World,
+  engine: Matter.Engine,
+  pairs: PhysicsPair[],
+  chip: { el: HTMLElement; width: number; height: number; cx: number; cy: number },
+) {
+  const { el, width, height, cx, cy } = chip;
+  const body = Bodies.rectangle(cx, cy, width, height, {
+    restitution: 0.22,
+    friction: 0.35,
+    frictionStatic: 0.5,
+    frictionAir: 0.012,
+    density: 0.004,
+    slop: 0.01,
+  });
+  // Mild random kick — same distribution for every body
+  Body.setVelocity(body, {
+    x: (Math.random() - 0.5) * 5,
+    y: (Math.random() - 0.5) * 2,
+  });
+  Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.06);
+  World.add(engine.world, body);
+  pairs.push({ body, el, width, height });
 }
 
 function createWalls(vw: number, vh: number): Walls {
@@ -328,14 +422,27 @@ function clampBodiesToViewport(pairs: PhysicsPair[], vw: number, vh: number) {
 export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const t = useTranslations("home");
   const reducedMotion = usePrefersReducedMotion();
+  const { open, setOpen, isMobile, openMobile, setOpenMobile, state } =
+    useSidebar();
   const rootRef = useRef<HTMLDivElement>(null);
+  const playButtonRef = useRef<HTMLButtonElement>(null);
+  const playSnapshotRef = useRef<PlaySnapshot | null>(null);
   const sessionRef = useRef<Session | null>(null);
+  const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [active, setActive] = useState(false);
   const [impacts, setImpacts] = useState(0);
 
   const teardown = useCallback(() => {
+    if (startTimerRef.current !== null) {
+      clearTimeout(startTimerRef.current);
+      startTimerRef.current = null;
+    }
+    playSnapshotRef.current = null;
     const session = sessionRef.current;
-    if (!session) return;
+    if (!session) {
+      setActive(false);
+      return;
+    }
 
     cancelAnimationFrame(session.raf);
     Matter.Events.off(session.engine, "collisionStart", session.onCollision);
@@ -353,8 +460,9 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     setActive(false);
   }, []);
 
-  const start = useCallback(() => {
+  const runPhysics = useCallback(() => {
     const root = rootRef.current;
+    const playSnapshot = playSnapshotRef.current;
     if (!root || sessionRef.current) return;
 
     const sources = Array.from(
@@ -363,15 +471,18 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       const rect = el.getBoundingClientRect();
       return rect.width > 0 && rect.height > 0;
     });
-    if (sources.length === 0) return;
+    if (sources.length === 0 && !playSnapshot) return;
 
     const targets = collectSpawnTargets(sources);
     const { Engine, Bodies, World, Runner, Mouse, MouseConstraint, Body, Events } =
       Matter;
 
     const engine = Engine.create({
-      gravity: { x: 0, y: 1, scale: 0.001 },
+      gravity: { x: 0, y: 1.35, scale: 0.001 },
     });
+    engine.positionIterations = 12;
+    engine.velocityIterations = 10;
+    engine.constraintIterations = 4;
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -385,32 +496,33 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
 
     const mouseEl = document.createElement("div");
     mouseEl.setAttribute("aria-hidden", "true");
+    // Below HUD (z-[100]) so Reset stays clickable
     mouseEl.className = "fixed inset-0 z-[5]";
     document.body.appendChild(mouseEl);
 
     const pairs: PhysicsPair[] = [];
     const hiddenSources = new Set<HTMLElement>();
 
+    if (playSnapshot) {
+      addFallingBody(
+        Bodies,
+        Body,
+        World,
+        engine,
+        pairs,
+        spawnPlaySnapshot(playSnapshot, layerEl),
+      );
+    }
+
     for (const target of targets) {
-      const { el, width, height, cx, cy } = spawnChipElement(target, layerEl);
-
-      const body = Bodies.rectangle(cx, cy, width, height, {
-        restitution: 0.35,
-        friction: 0.2,
-        frictionAir: 0.02,
-        density: 0.002,
-        chamfer: {
-          radius: Math.min(8, Math.floor(width / 4), Math.floor(height / 4)),
-        },
-      });
-      Body.setVelocity(body, {
-        x: (Math.random() - 0.5) * 6,
-        y: Math.random() * -2,
-      });
-      Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.08);
-
-      World.add(engine.world, body);
-      pairs.push({ body, el, width, height });
+      addFallingBody(
+        Bodies,
+        Body,
+        World,
+        engine,
+        pairs,
+        spawnChipElement(target, layerEl),
+      );
       hiddenSources.add(target.source);
     }
 
@@ -423,8 +535,8 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     const mouseConstraint = MouseConstraint.create(engine, {
       mouse,
       constraint: {
-        stiffness: 0.18,
-        damping: 0.1,
+        stiffness: 0.2,
+        damping: 0.05,
         render: { visible: false },
       },
     });
@@ -470,8 +582,48 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       raf: requestAnimationFrame(sync),
       onCollision,
     };
-    setActive(true);
   }, []);
+
+  const start = useCallback(() => {
+    if (sessionRef.current || startTimerRef.current !== null || active) return;
+
+    const playBtn = playButtonRef.current;
+    if (!playBtn) return;
+
+    // Snapshot before UI swaps to Reset (keeps exact accent look + spawn position)
+    const rect = playBtn.getBoundingClientRect();
+    playSnapshotRef.current = {
+      className: playBtn.className,
+      text: playBtn.textContent?.trim() ?? "",
+      width: Math.max(rect.width, 8),
+      height: Math.max(rect.height, 8),
+      cx: rect.left + rect.width / 2,
+      cy: rect.top + rect.height / 2,
+    };
+
+    // Show Reset + counter immediately
+    setActive(true);
+
+    const needsCollapse = isMobile ? openMobile : open;
+    if (isMobile) {
+      if (openMobile) setOpenMobile(false);
+    } else if (open) {
+      setOpen(false);
+    }
+
+    const launch = () => {
+      startTimerRef.current = null;
+      runPhysics();
+    };
+
+    if (needsCollapse) {
+      startTimerRef.current = setTimeout(launch, SIDEBAR_COLLAPSE_MS);
+      return;
+    }
+
+    // Let Reset paint, then spawn physics
+    startTimerRef.current = setTimeout(launch, 0);
+  }, [active, isMobile, open, openMobile, runPhysics, setOpen, setOpenMobile]);
 
   useEffect(() => {
     return () => {
@@ -501,25 +653,50 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
 
   return (
     <div ref={rootRef} className="relative">
-      <div className="pointer-events-none fixed inset-x-0 top-14 z-50 flex flex-col items-center gap-1.5 md:top-4">
-        <Button
-          type="button"
-          variant={active ? "secondary" : "accent"}
-          size="sm"
-          className="pointer-events-auto"
-          onClick={() => (active ? teardown() : start())}
-          aria-pressed={active}
-        >
-          {active ? t("gravityReset") : t("gravityPlay")}
-        </Button>
+      {/* HUD in content column only — below sidebar (z-10), above physics (z-6). */}
+      <div
+        className="pointer-events-none fixed top-12 z-[9] flex flex-col items-center gap-1.5 py-16 md:top-0 end-0"
+        style={
+          isMobile
+            ? { left: 0 }
+            : {
+                left:
+                  state === "collapsed"
+                    ? "var(--sidebar-width-icon)"
+                    : "var(--sidebar-width)",
+              }
+        }
+      >
         {active ? (
-          <p
-            className="text-xs tabular-nums text-muted-foreground"
-            aria-live="polite"
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="pointer-events-auto"
+              onClick={teardown}
+            >
+              {t("gravityReset")}
+            </Button>
+            <p
+              className="text-xs tabular-nums text-muted-foreground"
+              aria-live="polite"
+            >
+              {t("gravityImpacts", { count: impacts })}
+            </p>
+          </>
+        ) : (
+          <Button
+            ref={playButtonRef}
+            type="button"
+            variant="accent"
+            size="sm"
+            className="pointer-events-auto"
+            onClick={start}
           >
-            {t("gravityImpacts", { count: impacts })}
-          </p>
-        ) : null}
+            {t("gravityPlay")}
+          </Button>
+        )}
       </div>
       {children}
     </div>

@@ -9,6 +9,7 @@ import {
   ContactPhoneLink,
 } from "@/components/analytics/contact-ctas";
 import { CopyEmailButton } from "@/components/layout/copy-email-button";
+import { BrowserWindow } from "@/components/media/browser-window";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { getContactPage, getProfile } from "@/lib/content";
@@ -84,58 +85,60 @@ export default async function ContactPage({ params }: Props) {
       <Separator className="my-10" />
 
       <section className="space-y-6">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <Mail className="size-4 text-muted-foreground" aria-hidden />
-              {t("email")}
-            </p>
-            <CopyEmailButton />
-            <ContactMailtoButton />
-          </div>
+        <BrowserWindow>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
+              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <Mail className="size-4 text-muted-foreground" aria-hidden />
+                {t("email")}
+              </p>
+              <CopyEmailButton />
+              <ContactMailtoButton />
+            </div>
 
-          <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <Phone className="size-4 text-muted-foreground" aria-hidden />
-              {t("phone")}
-            </p>
-            <ContactPhoneLink />
-          </div>
+            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
+              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <Phone className="size-4 text-muted-foreground" aria-hidden />
+                {t("phone")}
+              </p>
+              <ContactPhoneLink />
+            </div>
 
-          <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <PlatformLogo src="/img/logos/linkedin.svg" />
-              LinkedIn
-            </p>
-            <ContactLinkedInButton />
-          </div>
+            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
+              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <PlatformLogo src="/img/logos/linkedin.svg" />
+                LinkedIn
+              </p>
+              <ContactLinkedInButton />
+            </div>
 
-          <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <MapPin className="size-4 text-muted-foreground" aria-hidden />
-              {t("location")}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {profile.locations.join(" / ")}
-            </p>
-          </div>
+            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
+              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <MapPin className="size-4 text-muted-foreground" aria-hidden />
+                {t("location")}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {profile.locations.join(" / ")}
+              </p>
+            </div>
 
-          <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <PlatformLogo src="/img/logos/fiverr.svg" />
-              Fiverr
-            </p>
-            <ContactFiverrButton />
-          </div>
+            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
+              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <PlatformLogo src="/img/logos/fiverr.svg" />
+                Fiverr
+              </p>
+              <ContactFiverrButton />
+            </div>
 
-          <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <PlatformLogo src="/img/logos/malt.svg" />
-              Malt
-            </p>
-            <ContactMaltButton />
+            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
+              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <PlatformLogo src="/img/logos/malt.svg" />
+                Malt
+              </p>
+              <ContactMaltButton />
+            </div>
           </div>
-        </div>
+        </BrowserWindow>
       </section>
     </main>
   );

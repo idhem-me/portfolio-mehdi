@@ -149,11 +149,14 @@
   }
 }
 
-[data-slot="button"][data-variant="accent"]::before {
+/* Brillance partagée : bouton accent + éléments [data-shine] (ex. BrowserWindow) */
+[data-slot="button"][data-variant="accent"]::before,
+[data-shine]::before {
   content: "";
   position: absolute;
   inset-block: -80%;
   left: 0;
+  z-index: 1;
   width: 70%;
   pointer-events: none;
   opacity: 0;
@@ -182,13 +185,17 @@
 }
 
 [data-slot="button"][data-variant="accent"]:hover::before,
-[data-slot="button"][data-variant="accent"]:focus-visible::before {
+[data-slot="button"][data-variant="accent"]:focus-visible::before,
+[data-shine]:hover::before,
+[data-shine]:focus-visible::before {
   animation: accent-shine-sweep 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   [data-slot="button"][data-variant="accent"]:hover::before,
-  [data-slot="button"][data-variant="accent"]:focus-visible::before {
+  [data-slot="button"][data-variant="accent"]:focus-visible::before,
+  [data-shine]:hover::before,
+  [data-shine]:focus-visible::before {
     animation: none;
     opacity: 0;
   }

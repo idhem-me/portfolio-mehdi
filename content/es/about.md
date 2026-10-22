@@ -1,6 +1,8 @@
 ---
 {
   "title": "Sobre mí",
+  "designTitle": "Trayectoria Product Design",
+  "designIntro": "Product design en Worldline en productos digitales. Como freelance: encargos concretos (landing pages, sitios web, grafismo, CV, UI kits), sin proyectos de producto completos.",
   "businessTitle": "Trayectoria Business & Internacional",
   "businessIntro": "Antes del diseño de producto: comercio, business development y experiencias en el extranjero.",
   "extrasTitle": "Formación, idiomas e intereses",

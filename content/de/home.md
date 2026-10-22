@@ -1,8 +1,8 @@
 ---
 {
-  "status": "Angestellt bei Worldline",
-  "title": "Ich gestalte digitale Produkte",
-  "titleMuted": "die klar, zugänglich und nützlich sind.",
-  "intro": "Senior Product Designer bei Worldline. Ich verwandle komplexe Probleme in einfache Erlebnisse. Audit, Produkt/Tech-Kollaboration, Go-Live. RGAA, Design Systems und fortgeschrittene Prototypen im Alltag."
+  "status": "Freelance · Worldline",
+  "title": "Willkommen in meiner Werkstatt",
+  "titleMuted": "Produktdesign, UX und Prototypen.",
+  "intro": "Product Designer bei Worldline, auch freelance. Ich baue Interfaces, die Nutzerprobleme lösen. Hier scope ich, teste ich, prototyiere ich per Vibecoding und helfe, ein Produkt auf ein Design System zu migrieren."
 }
 ---
