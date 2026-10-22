@@ -6,7 +6,7 @@ import {
   ContactPhoneLink,
 } from "@/components/analytics/contact-ctas";
 import { CopyEmailButton } from "@/components/layout/copy-email-button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { profile } from "@/data/resume";
 
@@ -32,7 +32,10 @@ export default function ContactPage() {
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
       <header className="flex flex-col gap-6 sm:flex-row sm:items-center">
         <Avatar className="size-20 text-lg">
-          {/* Photo : déposer `public/avatar.jpg` puis activer HAS_AVATAR dans app-sidebar */}
+          <AvatarImage
+            src="/img/photos/avatar.png"
+            alt={`Photo de ${profile.name}`}
+          />
           <AvatarFallback className="bg-muted text-xl font-medium text-muted-foreground">
             {profile.initials}
           </AvatarFallback>

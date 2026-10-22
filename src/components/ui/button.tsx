@@ -17,6 +17,8 @@ const buttonVariants = cva(
           "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+        accent:
+          "relative overflow-hidden bg-accent text-accent-foreground shadow-none hover:bg-[color-mix(in_oklch,var(--accent),black_12%)] focus-visible:border-accent focus-visible:ring-accent/40 active:bg-[color-mix(in_oklch,var(--accent),black_18%)] before:pointer-events-none before:absolute before:inset-0 before:-translate-x-[120%] before:bg-gradient-to-r before:from-transparent before:via-white/35 before:to-transparent before:opacity-0 before:transition-[transform,opacity] before:duration-500 before:ease-out hover:before:translate-x-[120%] hover:before:opacity-100 aria-expanded:bg-accent aria-expanded:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -33,6 +35,48 @@ const buttonVariants = cva(
         "icon-lg": "size-9",
       },
     },
+    compoundVariants: [
+      {
+        variant: "accent",
+        class:
+          "h-10 gap-2 rounded-full px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+      },
+      {
+        variant: "accent",
+        size: "icon",
+        class: "size-10 rounded-full px-0",
+      },
+      {
+        variant: "accent",
+        size: "icon-xs",
+        class: "size-7 rounded-full px-0",
+      },
+      {
+        variant: "accent",
+        size: "icon-sm",
+        class: "size-8 rounded-full px-0",
+      },
+      {
+        variant: "accent",
+        size: "icon-lg",
+        class: "size-11 rounded-full px-0",
+      },
+      {
+        variant: "accent",
+        size: "xs",
+        class: "h-8 gap-1.5 rounded-full px-3.5 text-xs",
+      },
+      {
+        variant: "accent",
+        size: "sm",
+        class: "h-9 gap-1.5 rounded-full px-4 text-[0.8rem]",
+      },
+      {
+        variant: "accent",
+        size: "lg",
+        class: "h-11 gap-2 rounded-full px-6",
+      },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",

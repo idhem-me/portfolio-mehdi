@@ -7,8 +7,8 @@ import { AnalyticsEvents } from "@/lib/analytics/events";
 
 export function HomeCtas() {
   return (
-    <div className="flex flex-wrap gap-2">
-      <Button asChild>
+    <div className="flex flex-col items-start gap-2">
+      <Button asChild variant="accent">
         <TrackedLink
           href="/product-designer"
           event={AnalyticsEvents.home_cta}
@@ -18,7 +18,7 @@ export function HomeCtas() {
           <ArrowRight data-icon="inline-end" />
         </TrackedLink>
       </Button>
-      <Button asChild variant="outline">
+      <Button asChild variant="secondary">
         <TrackedLink
           href="/contact"
           event={AnalyticsEvents.home_cta}

@@ -1,7 +1,7 @@
 export const profile = {
   name: "Mehdi Monteyremard",
-  role: "Product Designer (UX/UI)",
-  locations: ["Romans-sur-Isère", "Villeurbanne"] as const,
+  role: "Senior Product Designer",
+  locations: ["Romans-sur-Isère", "Lyon"] as const,
   email: "mmonteyremard@gmail.com",
   phone: "+33 6 69 35 02 81",
   phoneHref: "tel:+33669350281",
@@ -9,7 +9,7 @@ export const profile = {
   linkedinLabel: "linkedin.com/in/mehdi-monteyremard/",
   status: "En poste chez Worldline",
   initials: "MM",
-  bio: "Passionné par l’expérience utilisateur, la conception centrée sur l’humain et l’innovation digitale. Aujourd'hui Product Designer chez Worldline, je conçois des solutions numériques intuitives, accessibles (RGAA) et scalables en collaborant étroitement avec les équipes produit et tech.",
+  bio: "Passionné par l’expérience utilisateur et la conception centrée sur l’humain. Senior Product Designer chez Worldline, je conçois des solutions numériques intuitives, accessibles (RGAA) et scalables, en collab étroite avec produit et tech.",
 } as const;
 
 export type Experience = {
@@ -24,17 +24,17 @@ export type Experience = {
 
 export const featuredExperiences: Experience[] = [
   {
-    title: "Product Designer",
+    title: "Senior Product Designer",
     company: "Worldline | Financial Services",
     period: "Oct. 2024 – Aujourd'hui",
-    location: "Villeurbanne",
+    location: "Lyon",
     summary:
-      "Contribution à l'UX/UI de plusieurs produits digitaux (Digital Services).",
+      "Contribution UX et UI sur plusieurs produits digitaux (Digital Services).",
     highlights: [
       "Refonte Trusted Interactions (1M messages/jour) : audit, ateliers d’idéation, collab PM/PO/Delivery, prototypage avancé, design thinking",
       "Création de dashboards, maquettes high-fidelity et apps mobiles",
       "Construction d’un UI Kit et gestion d’un Design System",
-      "Supervision de l’intégration UX/UI en prod",
+      "Supervision de l’intégration design en prod",
       "Développement de démos interactives Open Banking (Figma)",
     ],
     featured: true,
@@ -44,10 +44,9 @@ export const featuredExperiences: Experience[] = [
     company: "SARL NFMM | Freelance",
     period: "Mai 2019 – Aujourd'hui",
     location: "Romans-sur-Isère",
-    summary:
-      "Création et gestion d'une agence web puis micro-entrepreneur.",
+    summary: "Création et gestion d'une agence web puis micro-entrepreneur.",
     highlights: [
-      "Audit UX/UI",
+      "Audits UX et UI",
       "Conception de sites web",
       "Chartes graphiques",
       "Gestion de projets",
@@ -83,7 +82,18 @@ export const previousExperiences: Experience[] = [
   },
 ];
 
+export type SkillItem = string | { name: string; logo: string };
+
 export const skills = {
+  tools: {
+    label: "Outils",
+    items: [
+      { name: "Figma", logo: "/img/logos/figma.svg" },
+      { name: "Confluence", logo: "/img/logos/confluence.svg" },
+      { name: "Jira", logo: "/img/logos/jira.svg" },
+      { name: "Cursor", logo: "/img/logos/cursor.svg" },
+    ] as const satisfies readonly SkillItem[],
+  },
   ux: {
     label: "UX Design",
     items: [
@@ -133,17 +143,6 @@ export const skills = {
       "Orientation client",
       "Force de proposition",
       "Communication",
-    ],
-  },
-  tools: {
-    label: "Outils",
-    items: [
-      "Figma",
-      "Suite Adobe",
-      "Jira",
-      "Microsoft 365",
-      "Google Workspace",
-      "Libre Chat AI / Cursor",
     ],
   },
 } as const;

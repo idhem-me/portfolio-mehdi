@@ -17,11 +17,12 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { AnalyticsEvents } from "@/lib/analytics/events";
 import { profile } from "@/data/resume";
 
-/** Remplace par true + fichier `public/avatar.jpg` quand la photo est prête. */
-const HAS_AVATAR = false;
+const HAS_AVATAR = true;
+const AVATAR_SRC = "/img/photos/avatar.png";
 
 const navItems = [
   {
@@ -51,15 +52,10 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" variant="sidebar">
       <SidebarHeader className="flex flex-row items-center justify-between gap-2 px-2 py-3">
-        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden px-1 group-data-[collapsible=icon]:hidden">
+        <div className="flex min-w-0 flex-1 items-center overflow-hidden px-1 group-data-[collapsible=icon]:hidden">
           <span className="truncate text-sm font-medium tracking-tight">
             {profile.name.split(" ")[0]}
           </span>
-          <span
-            className="size-1.5 shrink-0 rounded-full bg-emerald-500"
-            title={profile.status}
-            aria-label={profile.status}
-          />
         </div>
         <SidebarTrigger className="shrink-0" />
       </SidebarHeader>
@@ -93,6 +89,7 @@ export function AppSidebar() {
 
       <SidebarFooter className="gap-1 px-2 pb-3">
         <SidebarMenu>
+          <ThemeToggle />
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
@@ -109,7 +106,7 @@ export function AppSidebar() {
                 <Avatar className="size-7">
                   {HAS_AVATAR ? (
                     <AvatarImage
-                      src="/avatar.jpg"
+                      src={AVATAR_SRC}
                       alt={`Photo de ${profile.name}`}
                     />
                   ) : null}

@@ -23,8 +23,8 @@ export default function ProductDesignerPage() {
           Product designer
         </h1>
         <p className="max-w-prose text-base leading-relaxed text-muted-foreground">
-          Expériences UX/UI chez Worldline et en freelance, avec un focus
-          produits digitaux, design systems et accessibilité.
+          Expériences chez Worldline et en freelance. Focus produits digitaux,
+          design systems et accessibilité.
         </p>
       </header>
 
@@ -102,7 +102,7 @@ export default function ProductDesignerPage() {
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Compétences</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            UX, UI, gestion de projet, soft skills et outils.
+            Outils, UX, UI, gestion de projet et soft skills.
           </p>
         </div>
         <SkillsTabs />
