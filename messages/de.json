@@ -35,8 +35,8 @@
     "copyEmail": "{email} kopieren"
   },
   "consent": {
-    "title": "Reichweitenmessung",
-    "description": "Ich nutze PostHog, Microsoft Clarity und Vercel Analytics, um die Nutzung der Website zu verstehen (Seitenaufrufe, Interaktionen). Kein Tracking ohne Ihre Zustimmung.",
+    "title": "Cookies",
+    "description": "Um die Nutzererfahrung der Website zu verbessern, nutze ich PostHog, Microsoft Clarity und Vercel Analytics (anonymisierte Daten). Kein Tracking ohne Ihre Zustimmung. Danke!",
     "deny": "Ablehnen",
     "accept": "Akzeptieren"
   },

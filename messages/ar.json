@@ -35,8 +35,8 @@
     "copyEmail": "نسخ {email}"
   },
   "consent": {
-    "title": "قياس الجمهور",
-    "description": "أستخدم PostHog وMicrosoft Clarity وVercel Analytics لفهم استخدام الموقع (مشاهدات الصفحات، التفاعلات). لا يتم التتبع دون موافقتك.",
+    "title": "ملفات تعريف الارتباط",
+    "description": "لتحسين تجربة الموقع، أستخدم PostHog وMicrosoft Clarity وVercel Analytics (بيانات مجهولة الهوية). لا يتم التتبع دون موافقتك. شكرًا!",
     "deny": "رفض",
     "accept": "قبول"
   },

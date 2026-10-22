@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Cookie } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +45,11 @@ export function ConsentBanner() {
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
-          <p id="consent-title" className="text-sm font-medium tracking-tight">
+          <p
+            id="consent-title"
+            className="flex items-center gap-1.5 text-sm font-medium tracking-tight"
+          >
+            <Cookie className="size-4" aria-hidden />
             {t("title")}
           </p>
           <p
@@ -55,10 +60,10 @@ export function ConsentBanner() {
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={deny}>
+          <Button type="button" variant="ghost" size="sm" onClick={deny}>
             {t("deny")}
           </Button>
-          <Button type="button" size="sm" onClick={accept}>
+          <Button type="button" variant="accent" size="sm" onClick={accept}>
             {t("accept")}
           </Button>
         </div>

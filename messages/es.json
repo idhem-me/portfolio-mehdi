@@ -35,8 +35,8 @@
     "copyEmail": "Copiar {email}"
   },
   "consent": {
-    "title": "Medición de audiencia",
-    "description": "Utilizo PostHog, Microsoft Clarity y Vercel Analytics para entender el uso del sitio (páginas vistas, interacciones). Sin seguimiento sin tu consentimiento.",
+    "title": "Cookies",
+    "description": "Para mejorar la experiencia del sitio, utilizo PostHog, Microsoft Clarity y Vercel Analytics (datos anonimizados). Sin seguimiento sin tu consentimiento. ¡Gracias!",
     "deny": "Rechazar",
     "accept": "Aceptar"
   },

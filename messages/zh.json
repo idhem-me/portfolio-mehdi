@@ -35,8 +35,8 @@
     "copyEmail": "复制 {email}"
   },
   "consent": {
-    "title": "受众分析",
-    "description": "我使用 PostHog、Microsoft Clarity 和 Vercel Analytics 了解网站使用情况（页面浏览、交互）。未经您同意不会进行跟踪。",
+    "title": "Cookies",
+    "description": "为了改善网站体验，我使用 PostHog、Microsoft Clarity 和 Vercel Analytics（匿名化数据）。未经您同意不会进行跟踪。谢谢！",
     "deny": "拒绝",
     "accept": "接受"
   },
