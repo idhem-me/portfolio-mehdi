@@ -23,6 +23,7 @@ import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { AnalyticsEvents } from "@/lib/analytics/events";
 import { profileMeta } from "@/data/profile-meta";
 import { usePathname } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
 
 const HAS_AVATAR = true;
 const AVATAR_SRC = "/img/photos/avatar.png";
@@ -92,7 +93,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="gap-1 p-2">
+      <SidebarFooter className={cn("gap-1 p-2", isMobile && "pb-6")}>
         <SidebarMenu>
           <LanguageSwitcher />
           <ThemeToggle />
