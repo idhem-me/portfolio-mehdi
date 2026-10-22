@@ -48,11 +48,17 @@ export type ProfileContent = {
   bio: string;
 };
 
+export type HomeKeyword = {
+  label: string;
+  definition: string;
+};
+
 export type HomeContent = {
   status: string;
   title: string;
   titleMuted: string;
   intro: string;
+  keywords: HomeKeyword[];
 };
 
 export type ContactPageContent = {

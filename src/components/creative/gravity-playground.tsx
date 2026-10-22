@@ -1,11 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import Matter from "matter-js";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+
+const GravityActiveContext = createContext(false);
+
+export function useGravityActive() {
+  return useContext(GravityActiveContext);
+}
 
 /** Sidebar width transition is duration-200 — wait before measuring chips. */
 const SIDEBAR_COLLAPSE_MS = 220;
@@ -69,6 +82,13 @@ function neutralizeClone(root: HTMLElement) {
   root.style.pointerEvents = "none";
   root.style.userSelect = "none";
   root.style.cursor = "inherit";
+}
+
+/** Avoid duplicating nested physics chips inside an exact parent clone (e.g. BrowserWindow). */
+function stripNestedPhysicsItems(clone: HTMLElement) {
+  clone.querySelectorAll("[data-physics-item]").forEach((node) => {
+    node.remove();
+  });
 }
 
 /** Bounding box that hugs rendered content (not a stretched block box). */
@@ -163,6 +183,7 @@ function collectSpawnTargets(sources: HTMLElement[]): SpawnTarget[] {
 
   for (const source of sources) {
     const isButton = source.hasAttribute("data-physics-button");
+    const isExact = source.hasAttribute("data-physics-exact");
 
     if (source.hasAttribute("data-physics-split-lines")) {
       const lines = getTextLines(source);
@@ -182,7 +203,10 @@ function collectSpawnTargets(sources: HTMLElement[]): SpawnTarget[] {
 
     targets.push({
       source,
-      anchor: isButton ? source.getBoundingClientRect() : getHugRect(source),
+      anchor:
+        isButton || isExact
+          ? source.getBoundingClientRect()
+          : getHugRect(source),
     });
   }
 
@@ -210,6 +234,7 @@ function spawnChipElement(
 ): { el: HTMLElement; width: number; height: number; cx: number; cy: number } {
   const { source, anchor, lineText } = target;
   const isButton = source.hasAttribute("data-physics-button");
+  const isExact = source.hasAttribute("data-physics-exact");
   const computed = window.getComputedStyle(source);
 
   let el: HTMLElement;
@@ -220,9 +245,9 @@ function spawnChipElement(
 
   const pureText =
     lineText !== undefined ||
-    (!isButton && source.children.length === 0);
+    (!isButton && !isExact && source.children.length === 0);
 
-  if (isButton) {
+  if (isButton || isExact) {
     // Exact visual snapshot — never alter padding/radius (fixes Touche-moi morphing)
     const rect = source.getBoundingClientRect();
     width = Math.max(rect.width, 8);
@@ -232,8 +257,12 @@ function spawnChipElement(
 
     el = source.cloneNode(true) as HTMLElement;
     neutralizeClone(el);
+    if (isExact) {
+      stripNestedPhysicsItems(el);
+    }
     el.removeAttribute("data-physics-item");
     el.removeAttribute("data-physics-button");
+    el.removeAttribute("data-physics-exact");
     el.className = [source.className, "fixed z-[6] m-0"].filter(Boolean).join(" ");
     el.style.left = "0";
     el.style.top = "0";
@@ -648,57 +677,63 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   }, [active]);
 
   if (reducedMotion) {
-    return <div ref={rootRef}>{children}</div>;
+    return (
+      <GravityActiveContext.Provider value={false}>
+        <div ref={rootRef}>{children}</div>
+      </GravityActiveContext.Provider>
+    );
   }
 
   return (
-    <div ref={rootRef} className="relative">
-      {/* HUD in content column only — below sidebar (z-10), above physics (z-6). */}
-      <div
-        className="pointer-events-none fixed top-12 z-[9] flex flex-col items-center gap-1.5 py-16 md:top-0 end-0"
-        style={
-          isMobile
-            ? { left: 0 }
-            : {
-                left:
-                  state === "collapsed"
-                    ? "var(--sidebar-width-icon)"
-                    : "var(--sidebar-width)",
-              }
-        }
-      >
-        {active ? (
-          <>
+    <GravityActiveContext.Provider value={active}>
+      <div ref={rootRef} className="relative">
+        {/* HUD in content column only — below sidebar (z-10), above physics (z-6). */}
+        <div
+          className="pointer-events-none fixed top-12 z-[9] flex flex-col items-center gap-1.5 py-16 md:top-0 end-0"
+          style={
+            isMobile
+              ? { left: 0 }
+              : {
+                  left:
+                    state === "collapsed"
+                      ? "var(--sidebar-width-icon)"
+                      : "var(--sidebar-width)",
+                }
+          }
+        >
+          {active ? (
+            <>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="pointer-events-auto"
+                onClick={teardown}
+              >
+                {t("gravityReset")}
+              </Button>
+              <p
+                className="text-xs tabular-nums text-muted-foreground"
+                aria-live="polite"
+              >
+                {t("gravityImpacts", { count: impacts })}
+              </p>
+            </>
+          ) : (
             <Button
+              ref={playButtonRef}
               type="button"
-              variant="secondary"
+              variant="accent"
               size="sm"
               className="pointer-events-auto"
-              onClick={teardown}
+              onClick={start}
             >
-              {t("gravityReset")}
+              {t("gravityPlay")}
             </Button>
-            <p
-              className="text-xs tabular-nums text-muted-foreground"
-              aria-live="polite"
-            >
-              {t("gravityImpacts", { count: impacts })}
-            </p>
-          </>
-        ) : (
-          <Button
-            ref={playButtonRef}
-            type="button"
-            variant="accent"
-            size="sm"
-            className="pointer-events-auto"
-            onClick={start}
-          >
-            {t("gravityPlay")}
-          </Button>
-        )}
+          )}
+        </div>
+        {children}
       </div>
-      {children}
-    </div>
+    </GravityActiveContext.Provider>
   );
 }

@@ -17,6 +17,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -34,7 +44,30 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { KeywordCloud } from "@/components/creative/keyword-cloud";
+import { BrowserWindow } from "@/components/media/browser-window";
 import { SafeSvg } from "@/components/media/safe-svg";
+
+const KEYWORD_DEMO = [
+  { label: "Contenu digital", definition: "Création de contenus pour le web et les réseaux." },
+  { label: "UX", definition: "Conception centrée sur l’expérience utilisateur." },
+  { label: "UI", definition: "Design des interfaces visuelles." },
+  { label: "Product design", definition: "Conception de produits numériques de bout en bout." },
+  { label: "Prototypage", definition: "Tests rapides d’idées en maquettes interactives." },
+  { label: "Design system", definition: "Composants et règles UI pour rester cohérent." },
+  { label: "Motion", definition: "Animation et micro-interactions." },
+  { label: "Figma", definition: "Outil de design collaboratif." },
+  { label: "Recherche utilisateur", definition: "Études pour comprendre besoins et usages." },
+  { label: "Vibecoding", definition: "Prototypage exploratoire assisté par l’IA." },
+  { label: "Branding", definition: "Identité visuelle et cohérence de marque." },
+  { label: "Accessibilité", definition: "Interfaces utilisables par toutes et tous (RGAA)." },
+  { label: "Wireframes", definition: "Schémas structurels d’écrans." },
+  { label: "Ateliers", definition: "Sessions collaboratives de conception." },
+  { label: "Parcours", definition: "Chemin de l’utilisateur dans un produit." },
+  { label: "Design thinking", definition: "Méthode créative centrée sur l’utilisateur." },
+  { label: "Interfaces", definition: "Points de contact entre humain et produit." },
+  { label: "Handoff", definition: "Passage du design au développement." },
+];
 
 const SAFE_SVG_DEMO = `<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 15h-2v-2h2Zm0-4h-2V7h2Z"/></svg>`;
 
@@ -233,6 +266,50 @@ export default function PlaygroundPage() {
 
       <Separator />
 
+      <Section
+        title="DropdownMenu"
+        description="Menu contextuel — items, séparateur, radio group"
+      >
+        <div className="flex flex-wrap gap-3">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">Items</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-44">
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Profil</DropdownMenuItem>
+              <DropdownMenuItem>Paramètres</DropdownMenuItem>
+              <DropdownMenuItem variant="destructive">
+                Supprimer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">Radio</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="top" className="min-w-40 w-auto">
+              <DropdownMenuLabel>Langue</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup defaultValue="fr">
+                <DropdownMenuRadioItem value="fr">
+                  Français
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="en">
+                  English
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="es">
+                  Español
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </Section>
+
+      <Separator />
+
       <Section title="Sheet" description="Panneau latéral (mobile sidebar pattern)">
         <Sheet>
           <SheetTrigger asChild>
@@ -299,6 +376,43 @@ export default function PlaygroundPage() {
               title="SVG sanitise"
             />
           </div>
+        </div>
+      </Section>
+
+      <Separator />
+
+      <Section
+        title="BrowserWindow"
+        description="Fenêtre chrome navigateur (light/dark). Prop physics pour GravityPlayground."
+      >
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">Contenu libre</p>
+            <BrowserWindow>
+              <p className="text-sm text-muted-foreground">
+                Contenu variable dans le cadre navigateur.
+              </p>
+            </BrowserWindow>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">
+              + KeywordCloud (Google Sans)
+            </p>
+            <BrowserWindow compact className="max-w-md">
+              <KeywordCloud keywords={KEYWORD_DEMO.slice(0, 6)} />
+            </BrowserWindow>
+          </div>
+        </div>
+      </Section>
+
+      <Separator />
+
+      <Section
+        title="KeywordCloud"
+        description="Google Sans, gris, surlignage jaune, tooltip définition au clic / focus."
+      >
+        <div className="relative h-32 w-full max-w-lg rounded-md border border-border">
+          <KeywordCloud keywords={KEYWORD_DEMO} />
         </div>
       </Section>
 

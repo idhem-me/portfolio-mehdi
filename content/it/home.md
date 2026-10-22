@@ -2,7 +2,27 @@
 {
   "status": "Freelance · Worldline",
   "title": "Benvenuto nel mio atelier",
-  "titleMuted": "product design, UX e prototipi.",
-  "intro": "Product designer in Worldline, anche freelance. Costruisco interfacce che risolvono i problemi degli utenti. Qui inquadro, testo, prototipo in vibecoding e aiuto a migrare un prodotto su un design system."
+  "titleMuted": "contenuti digitali, product design e UX.",
+  "intro": "Freelance nella creazione di contenuti digitali e product designer in Worldline. Progetto interfacce utili, prototipo in fretta e aiuto i team a costruire un design system solido.",
+  "keywords": [
+    { "label": "Contenuti digitali", "definition": "Creazione di contenuti per web e social." },
+    { "label": "UX", "definition": "Progettazione centrata sull’esperienza utente." },
+    { "label": "UI", "definition": "Design visuale delle interfacce." },
+    { "label": "Product design", "definition": "Progettazione di prodotti digitali end-to-end." },
+    { "label": "Prototipazione", "definition": "Test rapidi di idee con mockup interattivi." },
+    { "label": "Design system", "definition": "Componenti e regole UI per la coerenza." },
+    { "label": "Motion", "definition": "Animazione e micro-interazioni." },
+    { "label": "Figma", "definition": "Strumento di design collaborativo." },
+    { "label": "Ricerca utenti", "definition": "Studi per capire bisogni e comportamenti." },
+    { "label": "Vibecoding", "definition": "Prototipazione esplorativa assistita dall’IA." },
+    { "label": "Branding", "definition": "Identità visiva e coerenza di marca." },
+    { "label": "Accessibilità", "definition": "Interfacce usabili da tutti (a11y)." },
+    { "label": "Wireframes", "definition": "Schemi strutturali delle schermate." },
+    { "label": "Workshop", "definition": "Sessioni collaborative di progettazione." },
+    { "label": "Percorsi", "definition": "Cammino dell’utente in un prodotto." },
+    { "label": "Design thinking", "definition": "Metodo creativo centrato sull’utente." },
+    { "label": "Interfacce", "definition": "Punti di contatto tra persona e prodotto." },
+    { "label": "Handoff", "definition": "Passaggio dal design allo sviluppo." }
+  ]
 }
 ---

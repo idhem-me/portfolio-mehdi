@@ -82,6 +82,15 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+  /* Keyword cloud — nuances noir / gris (clair) */
+  --kw-0: oklch(0.16 0 0);
+  --kw-1: oklch(0.28 0 0);
+  --kw-2: oklch(0.38 0 0);
+  --kw-3: oklch(0.48 0 0);
+  --kw-4: oklch(0.56 0 0);
+  --kw-5: oklch(0.64 0 0);
+  --kw-mark: oklch(0.92 0.16 95 / 0.75);
+  --kw-mark-fg: oklch(0.18 0 0);
 }
 
 .dark {
@@ -117,6 +126,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.552 0.016 285.938);
+  /* Keyword cloud — nuances blanc / gris (sombre) */
+  --kw-0: oklch(0.96 0 0);
+  --kw-1: oklch(0.88 0 0);
+  --kw-2: oklch(0.80 0 0);
+  --kw-3: oklch(0.72 0 0);
+  --kw-4: oklch(0.64 0 0);
+  --kw-5: oklch(0.56 0 0);
+  /* Jaune plus sombre pour garder le texte blanc lisible */
+  --kw-mark: oklch(0.52 0.14 90 / 0.9);
+  --kw-mark-fg: oklch(0.98 0 0);
 }
 
 @layer base {
@@ -199,6 +218,23 @@
     animation: none;
     opacity: 0;
   }
+}
+
+/* Papier quadrillé type cahier d’école — traits bien visibles */
+:root {
+  --paper-grid: oklch(0.62 0.08 240 / 0.45);
+}
+
+.dark {
+  --paper-grid: oklch(0.75 0.06 240 / 0.28);
+}
+
+.bg-paper-grid {
+  background-color: var(--background) !important;
+  background-image:
+    linear-gradient(to right, var(--paper-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--paper-grid) 1px, transparent 1px) !important;
+  background-size: 16px 16px !important;
 }
 
 html.locale-zh body {

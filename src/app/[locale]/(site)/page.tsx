@@ -2,6 +2,9 @@ import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { HomeCtas } from "@/components/analytics/home-ctas";
 import { GravityPlayground } from "@/components/creative/gravity-playground";
+import { KeywordCloud } from "@/components/creative/keyword-cloud";
+import { DraggableHomeWindow } from "@/components/layout/draggable-home-window";
+import { BrowserWindow } from "@/components/media/browser-window";
 import { getHome } from "@/lib/content";
 
 type Props = {
@@ -33,7 +36,7 @@ function IntroWords({ text }: { text: string }) {
 
 function HomeFallback() {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 pt-36 pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
+    <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 pt-36 pb-44 md:min-h-[calc(100svh-1rem)] md:py-20 md:pb-48">
       <div className="flex flex-col gap-8">
         <div className="space-y-4">
           <div className="h-4 w-48 animate-pulse rounded bg-muted" />
@@ -62,7 +65,7 @@ async function HomeContent({ params }: Props) {
   const home = getHome(locale);
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 pt-36 pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
+    <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 pt-36 pb-44 md:min-h-[calc(100svh-1rem)] md:py-20 md:pb-48">
       <GravityPlayground>
         <section className="flex flex-col gap-8">
           <div className="space-y-4">
@@ -103,6 +106,12 @@ async function HomeContent({ params }: Props) {
 
           <HomeCtas />
         </section>
+
+        <DraggableHomeWindow>
+          <BrowserWindow physics compact paper className="w-full">
+            <KeywordCloud keywords={home.keywords} />
+          </BrowserWindow>
+        </DraggableHomeWindow>
       </GravityPlayground>
     </main>
   );

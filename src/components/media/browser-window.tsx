@@ -11,6 +11,12 @@ const CHROME = {
 type BrowserWindowProps = {
   children: ReactNode;
   className?: string;
+  /** Marque la fenêtre pour GravityPlayground (clone exact, sans morphing chip). */
+  physics?: boolean;
+  /** Padding contenu réduit (ex. nuage de mots-clés). */
+  compact?: boolean;
+  /** Fond quadrillé type cahier d’école (accueil). */
+  paper?: boolean;
 };
 
 /**
@@ -19,13 +25,22 @@ type BrowserWindowProps = {
  * Le fond du contenu suit `bg-background` (même fond que la page).
  * Hover : brillance texturée (`data-shine`) + lift / ombre, comme le bouton accent.
  */
-export function BrowserWindow({ children, className }: BrowserWindowProps) {
+export function BrowserWindow({
+  children,
+  className,
+  physics = false,
+  compact = false,
+  paper = false,
+}: BrowserWindowProps) {
   const imgClass =
     "pointer-events-none block w-full select-none";
 
   return (
     <div
       data-shine
+      {...(physics
+        ? { "data-physics-item": true, "data-physics-exact": true }
+        : {})}
       className={cn(
         "relative overflow-hidden rounded-[8px] bg-background shadow-[0_0_0_1px_color-mix(in_oklch,var(--foreground),transparent_88%),0_8px_24px_-6px_rgb(0_0_0_/_.35)] transition-[box-shadow,transform] hover:-translate-y-px hover:shadow-[0_0_0_1px_color-mix(in_oklch,var(--foreground),transparent_88%),0_12px_32px_-8px_rgb(0_0_0_/_.4)]",
         className
@@ -51,7 +66,27 @@ export function BrowserWindow({ children, className }: BrowserWindowProps) {
         draggable={false}
         aria-hidden
       />
-      <div className="relative bg-background p-6 sm:p-8">{children}</div>
+      <div
+        className={cn(
+          "relative isolate",
+          paper ? "bg-paper-grid" : "bg-background",
+          compact ? "p-3 sm:p-4" : "p-6 sm:p-8",
+        )}
+        style={
+          paper
+            ? {
+                backgroundColor: "var(--background)",
+                backgroundImage: [
+                  "linear-gradient(to right, var(--paper-grid) 1px, transparent 1px)",
+                  "linear-gradient(to bottom, var(--paper-grid) 1px, transparent 1px)",
+                ].join(", "),
+                backgroundSize: "16px 16px",
+              }
+            : undefined
+        }
+      >
+        {children}
+      </div>
     </div>
   );
 }
