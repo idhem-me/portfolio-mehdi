@@ -59,7 +59,7 @@ export function ConsentBanner() {
             {t("description")}
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Button type="button" variant="ghost" size="sm" onClick={deny}>
             {t("deny")}
           </Button>
