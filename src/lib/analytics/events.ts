@@ -6,8 +6,10 @@
  * 2. Appeler track("event_name", { ... }) depuis le composant / handler.
  * L’autocapture PostHog couvre clics / formulaires génériques ;
  * les events typés servent aux actions produit significatives.
+ *
+ * `posthog-js` est importé dynamiquement pour éviter de charger le SDK
+ * dans les bundles / workers qui n’en ont pas besoin (ex. Prefetch).
  */
-import posthog from "posthog-js";
 import { getConsent } from "./consent";
 
 export const AnalyticsEvents = {
@@ -29,9 +31,11 @@ export function track(
   if (typeof window === "undefined") return;
   if (getConsent() !== "granted") return;
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
-  try {
-    posthog.capture(event, properties);
-  } catch {
-    // ignore analytics failures
-  }
+  void import("posthog-js")
+    .then(({ default: posthog }) => {
+      posthog.capture(event, properties);
+    })
+    .catch(() => {
+      // ignore analytics failures
+    });
 }

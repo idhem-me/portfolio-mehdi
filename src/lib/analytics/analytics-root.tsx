@@ -8,13 +8,15 @@ import { VercelAnalytics } from "./vercel";
 
 export function AnalyticsRoot({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense fallback={children}>
-      <PostHogProvider>
-        <ClarityScript />
-        <VercelAnalytics />
-        {children}
-        <ConsentBanner />
-      </PostHogProvider>
-    </Suspense>
+    <>
+      <Suspense fallback={null}>
+        <PostHogProvider>
+          <ClarityScript />
+          <VercelAnalytics />
+        </PostHogProvider>
+      </Suspense>
+      {children}
+      <ConsentBanner />
+    </>
   );
 }
