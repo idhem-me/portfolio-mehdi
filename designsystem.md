@@ -38,7 +38,7 @@ Tokens de sizing interactif dans `src/app/globals.css`. Breakpoint mobile : **&l
 | `--sidebar-width-mobile` | `18rem` | **plein viewport** (`100svw`) |
 | `--sheet-width-mobile` / `--sheet-max-width` | 75% / 24rem | 100% / none |
 
-Overrides (dans `@layer base` — requis pour que Tailwind v4 ne strippe pas les media / attribute rules) :
+Overrides (**hors `@layer`** — sinon les defaults `:root` unlayered gagnent toujours la cascade) :
 
 - `@media (max-width: 767px)` sur `:root:not([data-density="desktop"])` → valeurs mobile
 - `[data-density="mobile"]` → force mobile (playground, sans resize)
