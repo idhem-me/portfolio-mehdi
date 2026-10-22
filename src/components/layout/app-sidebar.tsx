@@ -118,13 +118,8 @@ export function AppSidebar() {
                     {profileMeta.initials}
                   </AvatarFallback>
                 </Avatar>
-                <span className="flex min-w-0 flex-col items-start gap-0.5 leading-tight group-data-[collapsible=icon]:hidden">
-                  <span className="truncate text-sm font-medium">
-                    {t("contact")}
-                  </span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {profileMeta.email}
-                  </span>
+                <span className="truncate text-sm font-medium group-data-[collapsible=icon]:hidden">
+                  {t("contact")}
                 </span>
               </TrackedLink>
             </SidebarMenuButton>
