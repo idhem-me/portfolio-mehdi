@@ -19,7 +19,9 @@
   "home": {
     "ctaPath": "Vedi il mio percorso design",
     "ctaContact": "Contattami",
-    "freelanceOn": "Freelance su"
+    "freelanceOn": "Freelance su",
+    "gravityPlay": "Toccami",
+    "gravityReset": "Reset"
   },
   "contact": {
     "email": "Email",

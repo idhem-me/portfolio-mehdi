@@ -19,7 +19,9 @@
   "home": {
     "ctaPath": "اطّلع على مساري في التصميم",
     "ctaContact": "تواصل معي",
-    "freelanceOn": "عمل حر عبر"
+    "freelanceOn": "عمل حر عبر",
+    "gravityPlay": "المسني",
+    "gravityReset": "إعادة"
   },
   "contact": {
     "email": "البريد الإلكتروني",

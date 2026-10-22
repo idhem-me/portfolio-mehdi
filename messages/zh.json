@@ -19,7 +19,9 @@
   "home": {
     "ctaPath": "查看我的设计历程",
     "ctaContact": "联系我",
-    "freelanceOn": "自由职业平台"
+    "freelanceOn": "自由职业平台",
+    "gravityPlay": "点我",
+    "gravityReset": "重置"
   },
   "contact": {
     "email": "邮箱",

@@ -21,12 +21,13 @@ function PlatformLink({
 }) {
   return (
     <TrackedAnchor
+      data-physics-item
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       event={AnalyticsEvents.home_cta}
       eventProps={{ href, label: label.toLowerCase() }}
-      className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+      className="inline-flex items-center gap-1.5 rounded-lg text-sm text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -48,29 +49,35 @@ export function HomeCtas() {
   return (
     <div className="flex flex-col items-start gap-5">
       <div className="flex flex-col items-start gap-2">
-        <Button asChild variant="accent">
-          <TrackedLink
-            href="/product-designer"
-            event={AnalyticsEvents.home_cta}
-            eventProps={{ href: "/product-designer", label: "parcours" }}
-          >
-            {t("ctaPath")}
-            <ArrowRight data-icon="inline-end" />
-          </TrackedLink>
-        </Button>
-        <Button asChild variant="secondary">
-          <TrackedLink
-            href="/contact"
-            event={AnalyticsEvents.home_cta}
-            eventProps={{ href: "/contact", label: "contact" }}
-          >
-            {t("ctaContact")}
-          </TrackedLink>
-        </Button>
+        <span data-physics-item className="inline-flex rounded-lg">
+          <Button asChild variant="default">
+            <TrackedLink
+              href="/product-designer"
+              event={AnalyticsEvents.home_cta}
+              eventProps={{ href: "/product-designer", label: "parcours" }}
+            >
+              {t("ctaPath")}
+              <ArrowRight data-icon="inline-end" />
+            </TrackedLink>
+          </Button>
+        </span>
+        <span data-physics-item className="inline-flex rounded-lg">
+          <Button asChild variant="secondary">
+            <TrackedLink
+              href="/contact"
+              event={AnalyticsEvents.home_cta}
+              eventProps={{ href: "/contact", label: "contact" }}
+            >
+              {t("ctaContact")}
+            </TrackedLink>
+          </Button>
+        </span>
       </div>
 
       <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
-        <span>{t("freelanceOn")}</span>
+        <span data-physics-item className="inline-block rounded-lg">
+          {t("freelanceOn")}
+        </span>
         <PlatformLink
           href={profileMeta.malt}
           label="Malt"
