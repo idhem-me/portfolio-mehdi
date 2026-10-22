@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { ArrowRight, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MapPin } from "lucide-react";
+import { HomeCtas } from "@/components/analytics/home-ctas";
 import { profile } from "@/data/resume";
 
 export default function AccueilPage() {
@@ -36,17 +35,7 @@ export default function AccueilPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button asChild>
-            <Link href="/product-designer">
-              Voir mon parcours design
-              <ArrowRight data-icon="inline-end" />
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/contact">Me contacter</Link>
-          </Button>
-        </div>
+        <HomeCtas />
       </section>
     </main>
   );

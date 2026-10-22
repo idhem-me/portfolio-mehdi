@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Briefcase, Home, UserRound } from "lucide-react";
+import { TrackedLink } from "@/components/analytics/tracked-link";
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +17,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AnalyticsEvents } from "@/lib/analytics/events";
 import { profile } from "@/data/resume";
 
 /** Remplace par true + fichier `public/avatar.jpg` quand la photo est prête. */
@@ -74,10 +75,14 @@ export function AppSidebar() {
                     isActive={item.match(pathname)}
                     tooltip={item.label}
                   >
-                    <Link href={item.href}>
+                    <TrackedLink
+                      href={item.href}
+                      event={AnalyticsEvents.nav_click}
+                      eventProps={{ href: item.href, label: item.label }}
+                    >
                       <item.icon />
                       <span>{item.label}</span>
-                    </Link>
+                    </TrackedLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -96,7 +101,11 @@ export function AppSidebar() {
               tooltip="Me contacter"
               className="h-12 data-[active=true]:bg-sidebar-accent"
             >
-              <Link href="/contact">
+              <TrackedLink
+                href="/contact"
+                event={AnalyticsEvents.nav_click}
+                eventProps={{ href: "/contact", label: "Me contacter" }}
+              >
                 <Avatar className="size-7">
                   {HAS_AVATAR ? (
                     <AvatarImage
@@ -116,7 +125,7 @@ export function AppSidebar() {
                     {profile.email}
                   </span>
                 </span>
-              </Link>
+              </TrackedLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

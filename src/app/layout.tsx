@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Google_Sans, Geist_Mono } from "next/font/google";
+import { AnalyticsRoot } from "@/lib/analytics/analytics-root";
 import { profile } from "@/data/resume";
 import "./globals.css";
 
@@ -34,7 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body
         className={`${googleSans.className} min-h-full bg-background text-foreground`}
       >
-        {children}
+        <AnalyticsRoot>{children}</AnalyticsRoot>
       </body>
     </html>
   );

@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, Phone } from "lucide-react";
+import {
+  ContactLinkedInButton,
+  ContactMailtoButton,
+  ContactPhoneLink,
+} from "@/components/analytics/contact-ctas";
 import { CopyEmailButton } from "@/components/layout/copy-email-button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { profile } from "@/data/resume";
 
@@ -54,9 +58,7 @@ export default function ContactPage() {
               Email
             </p>
             <CopyEmailButton />
-            <Button asChild variant="outline" size="sm" className="mt-2 w-full">
-              <a href={`mailto:${profile.email}`}>Ouvrir l&apos;app mail</a>
-            </Button>
+            <ContactMailtoButton />
           </div>
 
           <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
@@ -64,12 +66,7 @@ export default function ContactPage() {
               <Phone className="size-4 text-muted-foreground" aria-hidden />
               Téléphone
             </p>
-            <a
-              href={profile.phoneHref}
-              className="text-sm text-foreground underline-offset-4 hover:underline"
-            >
-              {profile.phone}
-            </a>
+            <ContactPhoneLink />
           </div>
 
           <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
@@ -77,15 +74,7 @@ export default function ContactPage() {
               <LinkedInIcon className="size-4 text-muted-foreground" />
               LinkedIn
             </p>
-            <Button asChild variant="outline" size="sm">
-              <a
-                href={profile.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Voir le profil
-              </a>
-            </Button>
+            <ContactLinkedInButton />
           </div>
 
           <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
