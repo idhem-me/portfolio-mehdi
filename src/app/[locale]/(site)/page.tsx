@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { HomeCtas } from "@/components/analytics/home-ctas";
 import { GravityPlayground } from "@/components/creative/gravity-playground";
@@ -30,7 +31,32 @@ function IntroWords({ text }: { text: string }) {
   );
 }
 
-export default async function AccueilPage({ params }: Props) {
+function HomeFallback() {
+  return (
+    <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 py-16 md:min-h-[calc(100svh-1rem)] md:py-20">
+      <div className="flex flex-col gap-8">
+        <div className="space-y-4">
+          <div className="h-4 w-48 animate-pulse rounded bg-muted" />
+          <div className="space-y-2">
+            <div className="h-9 w-full max-w-xl animate-pulse rounded bg-muted" />
+            <div className="h-9 w-2/3 max-w-lg animate-pulse rounded bg-muted" />
+          </div>
+          <div className="space-y-2">
+            <div className="h-4 w-full max-w-prose animate-pulse rounded bg-muted" />
+            <div className="h-4 w-5/6 max-w-prose animate-pulse rounded bg-muted" />
+            <div className="h-4 w-2/3 max-w-prose animate-pulse rounded bg-muted" />
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="h-8 w-52 animate-pulse rounded-lg bg-muted" />
+          <div className="h-8 w-36 animate-pulse rounded-lg bg-muted" />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+async function HomeContent({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const home = getHome(locale);
@@ -79,5 +105,13 @@ export default async function AccueilPage({ params }: Props) {
         </section>
       </GravityPlayground>
     </main>
+  );
+}
+
+export default function AccueilPage({ params }: Props) {
+  return (
+    <Suspense fallback={<HomeFallback />}>
+      <HomeContent params={params} />
+    </Suspense>
   );
 }

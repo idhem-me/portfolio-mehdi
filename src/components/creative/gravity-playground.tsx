@@ -8,7 +8,6 @@ import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 /** Match Button default horizontal padding (px-2.5 ≈ 10px). */
 const CHIP_PAD_PX = 10;
-const CHIP_BORDER_PX = 1;
 const WALL_THICKNESS = 80;
 
 type PhysicsPair = {
@@ -20,8 +19,9 @@ type PhysicsPair = {
 
 type SpawnTarget = {
   source: HTMLElement;
-  rect: DOMRect;
-  /** When set, spawn a text chip instead of cloning the source node */
+  /** Content box used for spawn position (hug / line rect) */
+  anchor: DOMRect;
+  /** When set, spawn a text chip with this string instead of cloning */
   lineText?: string;
 };
 
@@ -78,7 +78,12 @@ function getHugRect(el: HTMLElement): DOMRect {
     right = Math.max(right, r.right);
     bottom = Math.max(bottom, r.bottom);
   }
-  return new DOMRect(left, top, Math.max(right - left, 8), Math.max(bottom - top, 8));
+  return new DOMRect(
+    left,
+    top,
+    Math.max(right - left, 8),
+    Math.max(bottom - top, 8),
+  );
 }
 
 /** Group character boxes into visual lines (for wrap-aware physics chips). */
@@ -149,16 +154,14 @@ function collectSpawnTargets(sources: HTMLElement[]): SpawnTarget[] {
     if (source.hasAttribute("data-physics-split-lines")) {
       const lines = getTextLines(source);
       if (lines.length === 0) {
-        targets.push({ source, rect: getHugRect(source) });
-      } else if (lines.length === 1) {
-        targets.push({
-          source,
-          rect: lines[0]!.rect,
-          lineText: lines[0]!.text,
-        });
+        targets.push({ source, anchor: getHugRect(source) });
       } else {
         for (const line of lines) {
-          targets.push({ source, rect: line.rect, lineText: line.text });
+          targets.push({
+            source,
+            anchor: line.rect,
+            lineText: line.text,
+          });
         }
       }
       continue;
@@ -166,7 +169,7 @@ function collectSpawnTargets(sources: HTMLElement[]): SpawnTarget[] {
 
     targets.push({
       source,
-      rect: isButton ? source.getBoundingClientRect() : getHugRect(source),
+      anchor: isButton ? source.getBoundingClientRect() : getHugRect(source),
     });
   }
 
@@ -182,6 +185,94 @@ function applyTypography(el: HTMLElement, computed: CSSStyleDeclaration) {
   el.style.lineHeight = computed.lineHeight;
   el.style.color = computed.color;
   el.style.textAlign = computed.textAlign;
+}
+
+/**
+ * Build a chip, append it, let the browser measure hug+padding, then lock size.
+ * CTA buttons skip extra padding (they already have button padding).
+ */
+function spawnChipElement(
+  target: SpawnTarget,
+  layerEl: HTMLElement,
+): { el: HTMLElement; width: number; height: number; cx: number; cy: number } {
+  const { source, anchor, lineText } = target;
+  const isButton = source.hasAttribute("data-physics-button");
+  const computed = window.getComputedStyle(source);
+
+  let el: HTMLElement;
+
+  const pureText =
+    lineText !== undefined ||
+    (!isButton && source.children.length === 0);
+
+  if (isButton) {
+    el = source.cloneNode(true) as HTMLElement;
+    neutralizeClone(el);
+    el.removeAttribute("data-physics-item");
+    el.removeAttribute("data-physics-button");
+    el.className = [
+      source.className,
+      "fixed z-[6] m-0 border border-border bg-card shadow-sm",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    el.style.display = "inline-flex";
+    el.style.padding = "0";
+  } else if (pureText) {
+    // Rebuild text chips (title, intro words, subtitle lines) for reliable typography + hug
+    el = document.createElement("span");
+    el.textContent = lineText ?? source.textContent ?? "";
+    el.className =
+      "fixed z-[6] m-0 inline-flex items-center rounded-lg border border-border bg-card shadow-sm";
+    applyTypography(el, computed);
+    el.style.padding = `${CHIP_PAD_PX}px`;
+    el.style.whiteSpace = "nowrap";
+  } else {
+    // Status / platform links: keep logo + label, add chip chrome
+    el = source.cloneNode(true) as HTMLElement;
+    neutralizeClone(el);
+    el.removeAttribute("data-physics-item");
+    el.removeAttribute("data-physics-split-lines");
+    el.className = [
+      source.className,
+      "fixed z-[6] m-0 inline-flex items-center border border-border bg-card shadow-sm",
+    ]
+      .filter(Boolean)
+      .join(" ");
+    applyTypography(el, computed);
+    el.style.padding = `${CHIP_PAD_PX}px`;
+    el.style.whiteSpace = "nowrap";
+    el.style.display = "inline-flex";
+    el.style.alignItems = "center";
+    el.style.gap = computed.gap || "0.375rem";
+  }
+
+  el.style.left = "0";
+  el.style.top = "0";
+  el.style.margin = "0";
+  el.style.boxSizing = "border-box";
+  el.style.width = "max-content";
+  el.style.height = "auto";
+  el.style.maxWidth = "none";
+  el.style.transformOrigin = "center center";
+  el.style.willChange = "transform";
+  el.style.pointerEvents = "none";
+  el.style.visibility = "visible";
+  el.setAttribute("aria-hidden", "true");
+
+  // Measure after layout: hug content + padding + border
+  layerEl.appendChild(el);
+  const box = el.getBoundingClientRect();
+  const width = Math.max(box.width, 8);
+  const height = Math.max(box.height, 8);
+  el.style.width = `${width}px`;
+  el.style.height = `${height}px`;
+  el.style.flexShrink = "0";
+
+  const cx = anchor.left + anchor.width / 2;
+  const cy = anchor.top + anchor.height / 2;
+
+  return { el, width, height, cx, cy };
 }
 
 function createWalls(vw: number, vh: number): Walls {
@@ -301,74 +392,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     const hiddenSources = new Set<HTMLElement>();
 
     for (const target of targets) {
-      const { source, rect, lineText } = target;
-      const isButton = source.hasAttribute("data-physics-button");
-      const pad = isButton ? 0 : CHIP_PAD_PX;
-      const border = isButton ? 0 : CHIP_BORDER_PX;
-      const contentW = Math.max(rect.width, 8);
-      const contentH = Math.max(rect.height, 8);
-      // border-box: padding + border must be added on top of content or text clips
-      const width = contentW + pad * 2 + border * 2;
-      const height = contentH + pad * 2 + border * 2;
-      const cx = rect.left + contentW / 2;
-      const cy = rect.top + contentH / 2;
-
-      const computed = window.getComputedStyle(source);
-      let clone: HTMLElement;
-
-      if (lineText !== undefined) {
-        clone = document.createElement("span");
-        clone.textContent = lineText;
-        clone.className = [
-          source.className,
-          "fixed z-[6] m-0 box-border inline-flex items-center border border-border bg-card shadow-sm whitespace-nowrap",
-        ]
-          .filter(Boolean)
-          .join(" ");
-      } else {
-        clone = source.cloneNode(true) as HTMLElement;
-        neutralizeClone(clone);
-        clone.removeAttribute("data-physics-item");
-        clone.removeAttribute("data-physics-split-lines");
-        clone.removeAttribute("data-physics-button");
-        clone.className = [
-          source.className,
-          "fixed z-[6] m-0 box-border border border-border bg-card shadow-sm",
-        ]
-          .filter(Boolean)
-          .join(" ");
-      }
-
-      clone.style.left = "0";
-      clone.style.top = "0";
-      clone.style.width = `${width}px`;
-      clone.style.height = `${height}px`;
-      clone.style.margin = "0";
-      clone.style.padding = pad ? `${pad}px` : "0";
-      clone.style.boxSizing = "border-box";
-      if (border) {
-        clone.style.borderWidth = `${border}px`;
-      }
-      clone.style.transformOrigin = "center center";
-      clone.style.willChange = "transform";
-      clone.style.pointerEvents = "none";
-      clone.style.visibility = "visible";
-      applyTypography(clone, computed);
-      clone.setAttribute("aria-hidden", "true");
-
-      if (
-        lineText === undefined &&
-        (computed.display.includes("inline") || computed.display === "contents")
-      ) {
-        clone.style.display = "inline-flex";
-        clone.style.alignItems = "center";
-      }
-
-      if (!isButton) {
-        clone.style.whiteSpace = "nowrap";
-      }
-
-      layerEl.appendChild(clone);
+      const { el, width, height, cx, cy } = spawnChipElement(target, layerEl);
 
       const body = Bodies.rectangle(cx, cy, width, height, {
         restitution: 0.35,
@@ -386,8 +410,8 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.08);
 
       World.add(engine.world, body);
-      pairs.push({ body, el: clone, width, height });
-      hiddenSources.add(source);
+      pairs.push({ body, el, width, height });
+      hiddenSources.add(target.source);
     }
 
     hiddenSources.forEach((el) => {
