@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "首页",
+    "productDesigner": "产品设计师",
+    "about": "关于我",
+    "contact": "联系我",
+    "photoAlt": "{name}的照片"
+  },
+  "theme": {
+    "enableLight": "启用浅色模式",
+    "enableDark": "启用深色模式",
+    "light": "浅色模式",
+    "dark": "深色模式"
+  },
+  "language": {
+    "label": "语言",
+    "switchTo": "切换至{language}"
+  },
+  "home": {
+    "ctaPath": "查看我的设计历程",
+    "ctaContact": "联系我",
+    "freelanceOn": "自由职业平台"
+  },
+  "contact": {
+    "email": "邮箱",
+    "phone": "电话",
+    "location": "地点",
+    "openMail": "打开邮件应用",
+    "viewProfile": "查看个人资料",
+    "copied": "已复制！",
+    "emailCopied": "邮箱已复制",
+    "copyEmail": "复制 {email}"
+  },
+  "consent": {
+    "title": "受众分析",
+    "description": "我使用 PostHog、Microsoft Clarity 和 Vercel Analytics 了解网站使用情况（页面浏览、交互）。未经您同意不会进行跟踪。",
+    "deny": "拒绝",
+    "accept": "接受"
+  },
+  "metadata": {
+    "home": "首页",
+    "productDesigner": "产品设计师",
+    "about": "关于我",
+    "contact": "联系我"
+  },
+  "skills": {
+    "tools": "工具",
+    "ux": "UX",
+    "ui": "UI",
+    "project": "项目管理",
+    "soft": "软技能"
+  }
+}

@@ -1,12 +1,22 @@
+import { setRequestLocale } from "next-intl/server";
 import { HomeCtas } from "@/components/analytics/home-ctas";
+import { getHome } from "@/lib/content";
 
-export default function AccueilPage() {
+type Props = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function AccueilPage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const home = getHome(locale);
+
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col justify-center px-6 py-16 md:min-h-[calc(100svh-1rem)] md:py-20">
       <section className="flex flex-col gap-8">
         <div className="space-y-4">
           <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-            En poste chez Worldline
+            {home.status}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/img/logos/worldline-logo-icon.svg"
@@ -19,16 +29,14 @@ export default function AccueilPage() {
           </p>
 
           <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-            Je conçois des produits numériques
+            {home.title}
             <span className="block text-muted-foreground">
-              clairs, accessibles et utiles.
+              {home.titleMuted}
             </span>
           </h1>
 
           <p className="max-w-prose text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Senior Product Designer chez Worldline. Je transforme des problèmes
-            complexes en expériences simples. Audit, collab produit/tech, mise
-            en prod. RGAA, design systems et prototypes avancés au quotidien.
+            {home.intro}
           </p>
         </div>
 

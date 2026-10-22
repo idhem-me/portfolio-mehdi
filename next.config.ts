@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 /** Aligné avec `SVG_CONTENT_SECURITY_POLICY` dans `src/lib/sanitize-svg.ts`. */
 const SVG_CSP =
@@ -50,4 +51,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+export default withNextIntl(nextConfig);

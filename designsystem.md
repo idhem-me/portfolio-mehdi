@@ -31,4 +31,4 @@ Utiliser les utilitaires Tailwind (`bg-accent`, `text-accent-foreground`, etc.) 
 - Radius max : `rounded-full`
 - Paddings agrandis (overrides par taille via compound variants)
 - États : default, hover (fond un peu plus sombre), active, focus-visible (`ring-accent`), disabled (opacity base)
-- Hover : animation de surbrillance (bandeau dégradé blanc en `::before`)
+- Hover : brillance texturée (`accent-shine-sweep`, −5°, droite → gauche) + léger lift/glow ; désactivé si `prefers-reduced-motion`

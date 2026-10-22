@@ -130,3 +130,66 @@
     @apply font-sans;
   }
 }
+
+/* Bouton accent — brillance texturée droite → gauche (−5°) */
+@keyframes accent-shine-sweep {
+  0% {
+    transform: translateX(160%) rotate(-5deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-160%) rotate(-5deg);
+    opacity: 0;
+  }
+}
+
+[data-slot="button"][data-variant="accent"]::before {
+  content: "";
+  position: absolute;
+  inset-block: -80%;
+  left: 0;
+  width: 70%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(160%) rotate(-5deg);
+  will-change: transform, opacity;
+  background-image:
+    repeating-linear-gradient(
+      -5deg,
+      transparent 0,
+      transparent 1.5px,
+      rgb(255 255 255 / 0.35) 1.5px,
+      rgb(255 255 255 / 0.35) 3px
+    ),
+    linear-gradient(
+      105deg,
+      transparent 0%,
+      rgb(255 255 255 / 0) 20%,
+      rgb(255 255 255 / 0.45) 38%,
+      rgb(255 255 255 / 0.9) 48%,
+      rgb(255 255 255 / 1) 50%,
+      rgb(255 255 255 / 0.9) 52%,
+      rgb(255 255 255 / 0.45) 62%,
+      rgb(255 255 255 / 0) 80%,
+      transparent 100%
+    );
+}
+
+[data-slot="button"][data-variant="accent"]:hover::before,
+[data-slot="button"][data-variant="accent"]:focus-visible::before {
+  animation: accent-shine-sweep 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="button"][data-variant="accent"]:hover::before,
+  [data-slot="button"][data-variant="accent"]:focus-visible::before {
+    animation: none;
+    opacity: 0;
+  }
+}

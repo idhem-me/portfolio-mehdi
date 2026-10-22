@@ -9,7 +9,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { profile } from "@/data/resume";
+import { profileMeta } from "@/data/profile-meta";
 
 function MobileHeader() {
   const { isMobile } = useSidebar();
@@ -23,8 +23,10 @@ function MobileHeader() {
 
   return (
     <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b border-border/50 bg-background/80 px-4 backdrop-blur-sm">
-      <SidebarTrigger className="-ml-1" />
-      <span className="text-sm font-medium tracking-tight">{profile.name}</span>
+      <SidebarTrigger className="-ms-1" />
+      <span className="text-sm font-medium tracking-tight">
+        {profileMeta.name}
+      </span>
     </header>
   );
 }

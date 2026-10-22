@@ -1,10 +1,30 @@
+import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import {
   DASHBOARD_COOKIE,
   isValidDashboardToken,
 } from "@/lib/dashboard-auth";
+import { routing } from "@/i18n/routing";
 
-export async function middleware(request: NextRequest) {
+const handleI18nRouting = createMiddleware(routing);
+
+function isDashboardAuthPath(pathname: string) {
+  return (
+    pathname === "/dashboard" ||
+    pathname.startsWith("/dashboard/") ||
+    pathname.startsWith("/api/analytics")
+  );
+}
+
+function isLocaleExempt(pathname: string) {
+  return (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/playground") ||
+    pathname.startsWith("/api")
+  );
+}
+
+async function handleDashboardAuth(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isLoginPage = pathname === "/dashboard/login";
@@ -37,10 +57,22 @@ export async function middleware(request: NextRequest) {
   return NextResponse.next();
 }
 
+export default async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (isDashboardAuthPath(pathname)) {
+    return handleDashboardAuth(request);
+  }
+
+  if (isLocaleExempt(pathname)) {
+    return NextResponse.next();
+  }
+
+  return handleI18nRouting(request);
+}
+
 export const config = {
   matcher: [
-    "/dashboard",
-    "/dashboard/:path*",
-    "/api/analytics/:path*",
+    "/((?!_next|_vercel|.*\\..*).*)",
   ],
 };

@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "productDesigner": "Product designer",
+    "about": "À propos de moi",
+    "contact": "Me contacter",
+    "photoAlt": "Photo de {name}"
+  },
+  "theme": {
+    "enableLight": "Activer le mode clair",
+    "enableDark": "Activer le mode sombre",
+    "light": "Mode clair",
+    "dark": "Mode sombre"
+  },
+  "language": {
+    "label": "Langue",
+    "switchTo": "Passer en {language}"
+  },
+  "home": {
+    "ctaPath": "Voir mon parcours design",
+    "ctaContact": "Me contacter",
+    "freelanceOn": "Freelance sur"
+  },
+  "contact": {
+    "email": "Email",
+    "phone": "Téléphone",
+    "location": "Localisation",
+    "openMail": "Ouvrir l'app mail",
+    "viewProfile": "Voir le profil",
+    "copied": "Copié !",
+    "emailCopied": "Email copié",
+    "copyEmail": "Copier {email}"
+  },
+  "consent": {
+    "title": "Mesure d'audience",
+    "description": "J'utilise PostHog, Microsoft Clarity et Vercel Analytics pour comprendre l'usage du site (pages vues, interactions). Aucun tracking sans votre accord.",
+    "deny": "Refuser",
+    "accept": "Accepter"
+  },
+  "metadata": {
+    "home": "Accueil",
+    "productDesigner": "Product designer",
+    "about": "À propos de moi",
+    "contact": "Me contacter"
+  },
+  "skills": {
+    "tools": "Outils",
+    "ux": "UX",
+    "ui": "UI",
+    "project": "Gestion",
+    "soft": "Soft Skills"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "Home",
+    "productDesigner": "Product designer",
+    "about": "About me",
+    "contact": "Contact me",
+    "photoAlt": "Photo of {name}"
+  },
+  "theme": {
+    "enableLight": "Enable light mode",
+    "enableDark": "Enable dark mode",
+    "light": "Light mode",
+    "dark": "Dark mode"
+  },
+  "language": {
+    "label": "Language",
+    "switchTo": "Switch to {language}"
+  },
+  "home": {
+    "ctaPath": "See my design path",
+    "ctaContact": "Contact me",
+    "freelanceOn": "Freelance on"
+  },
+  "contact": {
+    "email": "Email",
+    "phone": "Phone",
+    "location": "Location",
+    "openMail": "Open mail app",
+    "viewProfile": "View profile",
+    "copied": "Copied!",
+    "emailCopied": "Email copied",
+    "copyEmail": "Copy {email}"
+  },
+  "consent": {
+    "title": "Audience measurement",
+    "description": "I use PostHog, Microsoft Clarity and Vercel Analytics to understand how the site is used (page views, interactions). No tracking without your consent.",
+    "deny": "Decline",
+    "accept": "Accept"
+  },
+  "metadata": {
+    "home": "Home",
+    "productDesigner": "Product designer",
+    "about": "About me",
+    "contact": "Contact me"
+  },
+  "skills": {
+    "tools": "Tools",
+    "ux": "UX",
+    "ui": "UI",
+    "project": "Project",
+    "soft": "Soft Skills"
+  }
+}

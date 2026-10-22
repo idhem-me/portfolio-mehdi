@@ -18,7 +18,7 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         accent:
-          "relative overflow-hidden bg-accent text-accent-foreground shadow-none hover:bg-[color-mix(in_oklch,var(--accent),black_12%)] focus-visible:border-accent focus-visible:ring-accent/40 active:bg-[color-mix(in_oklch,var(--accent),black_18%)] before:pointer-events-none before:absolute before:inset-0 before:-translate-x-[120%] before:bg-gradient-to-r before:from-transparent before:via-white/35 before:to-transparent before:opacity-0 before:transition-[transform,opacity] before:duration-500 before:ease-out hover:before:translate-x-[120%] hover:before:opacity-100 aria-expanded:bg-accent aria-expanded:text-accent-foreground",
+          "relative overflow-hidden bg-accent text-accent-foreground shadow-none transition-[background-color,box-shadow,transform] hover:bg-[color-mix(in_oklch,var(--accent),black_10%)] hover:shadow-[0_0_0_1px_color-mix(in_oklch,var(--accent),white_25%),0_8px_24px_-6px_color-mix(in_oklch,var(--accent),transparent_35%)] hover:-translate-y-px focus-visible:border-accent focus-visible:ring-accent/40 active:translate-y-0 active:bg-[color-mix(in_oklch,var(--accent),black_18%)] aria-expanded:bg-accent aria-expanded:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

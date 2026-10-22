@@ -1,0 +1,53 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "productDesigner": "مصمم منتجات",
+    "about": "نبذة عني",
+    "contact": "تواصل معي",
+    "photoAlt": "صورة {name}"
+  },
+  "theme": {
+    "enableLight": "تفعيل الوضع الفاتح",
+    "enableDark": "تفعيل الوضع الداكن",
+    "light": "الوضع الفاتح",
+    "dark": "الوضع الداكن"
+  },
+  "language": {
+    "label": "اللغة",
+    "switchTo": "التبديل إلى {language}"
+  },
+  "home": {
+    "ctaPath": "اطّلع على مساري في التصميم",
+    "ctaContact": "تواصل معي",
+    "freelanceOn": "عمل حر عبر"
+  },
+  "contact": {
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "location": "الموقع",
+    "openMail": "فتح تطبيق البريد",
+    "viewProfile": "عرض الملف الشخصي",
+    "copied": "تم النسخ!",
+    "emailCopied": "تم نسخ البريد الإلكتروني",
+    "copyEmail": "نسخ {email}"
+  },
+  "consent": {
+    "title": "قياس الجمهور",
+    "description": "أستخدم PostHog وMicrosoft Clarity وVercel Analytics لفهم استخدام الموقع (مشاهدات الصفحات، التفاعلات). لا يتم التتبع دون موافقتك.",
+    "deny": "رفض",
+    "accept": "قبول"
+  },
+  "metadata": {
+    "home": "الرئيسية",
+    "productDesigner": "مصمم منتجات",
+    "about": "نبذة عني",
+    "contact": "تواصل معي"
+  },
+  "skills": {
+    "tools": "الأدوات",
+    "ux": "UX",
+    "ui": "UI",
+    "project": "الإدارة",
+    "soft": "المهارات الشخصية"
+  }
+}

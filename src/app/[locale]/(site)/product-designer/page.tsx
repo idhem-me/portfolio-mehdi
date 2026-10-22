@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -9,29 +10,62 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SkillsTabs } from "@/components/cv/skills-tabs";
-import { caseStudiesSoon, featuredExperiences } from "@/data/resume";
+import {
+  getExperiences,
+  getProductDesigner,
+  getSkills,
+} from "@/lib/content";
+import { routing } from "@/i18n/routing";
 
-export const metadata: Metadata = {
-  title: "Product designer",
+type Props = {
+  params: Promise<{ locale: string }>;
 };
 
-export default function ProductDesignerPage() {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  const page = getProductDesigner(locale);
+
+  return {
+    title: t("productDesigner"),
+    description: page.intro,
+    alternates: {
+      languages: Object.fromEntries(
+        routing.locales.map((l) => [
+          l,
+          l === routing.defaultLocale
+            ? "/product-designer"
+            : `/${l}/product-designer`,
+        ])
+      ),
+    },
+  };
+}
+
+export default async function ProductDesignerPage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const page = getProductDesigner(locale);
+  const { featured } = getExperiences(locale);
+  const skills = getSkills(locale);
+
   return (
     <main className="mx-auto w-full max-w-3xl space-y-12 px-6 py-12">
       <header className="space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          Product designer
+          {page.title}
         </h1>
         <p className="max-w-prose text-base leading-relaxed text-muted-foreground">
-          Expériences chez Worldline et en freelance. Focus produits digitaux,
-          design systems et accessibilité.
+          {page.intro}
         </p>
       </header>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight">Expériences</h2>
+        <h2 className="text-lg font-semibold tracking-tight">
+          {page.experiencesTitle}
+        </h2>
         <div className="space-y-4">
-          {featuredExperiences.map((exp) => (
+          {featured.map((exp) => (
             <Card key={`${exp.company}-${exp.period}`}>
               <CardHeader>
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -76,13 +110,15 @@ export default function ProductDesignerPage() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Réalisations</h2>
+          <h2 className="text-lg font-semibold tracking-tight">
+            {page.caseStudiesTitle}
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Études de cas détaillées à venir.
+            {page.caseStudiesIntro}
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          {caseStudiesSoon.map((study) => (
+          {page.caseStudies.map((study) => (
             <div
               key={study.title}
               className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5"
@@ -100,12 +136,14 @@ export default function ProductDesignerPage() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Compétences</h2>
+          <h2 className="text-lg font-semibold tracking-tight">
+            {page.skillsTitle}
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Outils, UX, UI, gestion de projet et soft skills.
+            {page.skillsIntro}
           </p>
         </div>
-        <SkillsTabs />
+        <SkillsTabs skills={skills} />
       </section>
     </main>
   );

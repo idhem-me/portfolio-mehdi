@@ -1,24 +1,11 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { skills, type SkillItem } from "@/data/resume";
+import type { SkillItem, SkillsData } from "@/lib/content";
 
-const skillTabs = [
-  { key: "tools", ...skills.tools },
-  { key: "ux", ...skills.ux },
-  { key: "ui", ...skills.ui },
-  { key: "project", ...skills.project },
-  { key: "soft", ...skills.soft },
-] as const;
-
-const tabLabels: Record<(typeof skillTabs)[number]["key"], string> = {
-  tools: "Outils",
-  ux: "UX",
-  ui: "UI",
-  project: "Gestion",
-  soft: "Soft Skills",
-};
+const tabKeys = ["tools", "ux", "ui", "project", "soft"] as const;
 
 function skillLabel(item: SkillItem): string {
   return typeof item === "string" ? item : item.name;
@@ -50,13 +37,21 @@ function SkillBadge({ item }: { item: SkillItem }) {
   );
 }
 
-export function SkillsTabs() {
+export function SkillsTabs({ skills }: { skills: SkillsData }) {
+  const t = useTranslations("skills");
+
+  const skillTabs = tabKeys.map((key) => ({
+    key,
+    label: t(key),
+    items: skills[key].items,
+  }));
+
   return (
     <Tabs defaultValue="tools" className="w-full gap-4">
       <TabsList className="h-auto w-full flex-wrap justify-start">
         {skillTabs.map((tab) => (
           <TabsTrigger key={tab.key} value={tab.key} className="flex-none">
-            {tabLabels[tab.key]}
+            {tab.label}
           </TabsTrigger>
         ))}
       </TabsList>

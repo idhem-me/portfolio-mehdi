@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import type { ComponentProps } from "react";
+import { Link } from "@/i18n/navigation";
 import { track, type AnalyticsEventName } from "@/lib/analytics/events";
 
 type TrackedLinkProps = ComponentProps<typeof Link> & {

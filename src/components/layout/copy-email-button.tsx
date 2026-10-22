@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import { Check, Mail } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { AnalyticsEvents, track } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils";
-import { profile } from "@/data/resume";
+import { profileMeta } from "@/data/profile-meta";
 
 export function CopyEmailButton({ className }: { className?: string }) {
+  const t = useTranslations("contact");
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(profile.email);
+      await navigator.clipboard.writeText(profileMeta.email);
       track(AnalyticsEvents.copy_email, { source: "copy_email_button" });
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
@@ -28,14 +30,20 @@ export function CopyEmailButton({ className }: { className?: string }) {
       size="sm"
       className={cn("h-8 w-full justify-start gap-2 font-normal", className)}
       onClick={handleCopy}
-      aria-label={copied ? "Email copié" : `Copier ${profile.email}`}
+      aria-label={
+        copied
+          ? t("emailCopied")
+          : t("copyEmail", { email: profileMeta.email })
+      }
     >
       {copied ? (
         <Check className="size-4 text-emerald-600" aria-hidden />
       ) : (
         <Mail className="size-4" aria-hidden />
       )}
-      <span className="truncate">{copied ? "Copié !" : profile.email}</span>
+      <span className="truncate">
+        {copied ? t("copied") : profileMeta.email}
+      </span>
     </Button>
   );
 }

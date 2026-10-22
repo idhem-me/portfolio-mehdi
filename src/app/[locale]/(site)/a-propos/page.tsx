@@ -1,23 +1,48 @@
 import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import {
-  education,
-  interests,
-  languages,
-  previousExperiences,
-  profile,
-} from "@/data/resume";
+  getAbout,
+  getExperiences,
+  getProfile,
+} from "@/lib/content";
+import { routing } from "@/i18n/routing";
 
-export const metadata: Metadata = {
-  title: "À propos de moi",
+type Props = {
+  params: Promise<{ locale: string }>;
 };
 
-export default function AProposPage() {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "metadata" });
+  const profile = getProfile(locale);
+
+  return {
+    title: t("about"),
+    description: profile.bio,
+    alternates: {
+      languages: Object.fromEntries(
+        routing.locales.map((l) => [
+          l,
+          l === routing.defaultLocale ? "/a-propos" : `/${l}/a-propos`,
+        ])
+      ),
+    },
+  };
+}
+
+export default async function AProposPage({ params }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const about = getAbout(locale);
+  const profile = getProfile(locale);
+  const { previous } = getExperiences(locale);
+
   return (
     <main className="mx-auto w-full max-w-3xl space-y-12 px-6 py-12">
       <header className="space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-          À propos de moi
+          {about.title}
         </h1>
         <p className="max-w-prose text-base leading-relaxed text-muted-foreground">
           {profile.bio}
@@ -27,15 +52,14 @@ export default function AProposPage() {
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">
-            Parcours Business & International
+            {about.businessTitle}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Avant le design produit : commerce, business development et
-            expériences à l’étranger.
+            {about.businessIntro}
           </p>
         </div>
         <ul className="space-y-0 divide-y divide-border/60">
-          {previousExperiences.map((exp) => (
+          {previous.map((exp) => (
             <li
               key={`${exp.company}-${exp.period}`}
               className="flex flex-col gap-1 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
@@ -56,13 +80,13 @@ export default function AProposPage() {
 
       <section className="space-y-4">
         <h2 className="text-lg font-semibold tracking-tight">
-          Formations, langues & intérêts
+          {about.extrasTitle}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5 sm:col-span-2">
-            <h3 className="mb-3 text-sm font-medium">Formations</h3>
+            <h3 className="mb-3 text-sm font-medium">{about.educationTitle}</h3>
             <ul className="space-y-3">
-              {education.map((item) => (
+              {about.education.map((item) => (
                 <li
                   key={item.title}
                   className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between"
@@ -80,9 +104,9 @@ export default function AProposPage() {
           </div>
 
           <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-            <h3 className="mb-3 text-sm font-medium">Langues</h3>
+            <h3 className="mb-3 text-sm font-medium">{about.languagesTitle}</h3>
             <ul className="space-y-2">
-              {languages.map((lang) => (
+              {about.languages.map((lang) => (
                 <li
                   key={lang.name}
                   className="flex items-center justify-between text-sm"
@@ -97,9 +121,9 @@ export default function AProposPage() {
           </div>
 
           <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-            <h3 className="mb-3 text-sm font-medium">Centres d&apos;intérêt</h3>
+            <h3 className="mb-3 text-sm font-medium">{about.interestsTitle}</h3>
             <div className="flex flex-wrap gap-2">
-              {interests.map((interest) => (
+              {about.interests.map((interest) => (
                 <Badge key={interest} variant="secondary">
                   {interest}
                 </Badge>
