@@ -1,7 +1,6 @@
 "use client";
 
 import type { SVGProps } from "react";
-import { MessageCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { TrackedAnchor } from "@/components/analytics/tracked-link";
 import { Button } from "@/components/ui/button";
@@ -32,14 +31,6 @@ function WhatsAppIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function MessengerIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
-      <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.498 1.744 6.615 4.472 8.652V24l4.086-2.242c1.09.301 2.246.464 3.442.464 6.627 0 12-4.974 12-11.111C24 4.975 18.627 0 12 0zm1.193 14.963l-3.056-3.259-5.963 3.259L10.733 8l3.131 3.259L19.752 8l-6.559 6.963z" />
-    </svg>
-  );
-}
-
 function IMessageIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
@@ -57,24 +48,10 @@ const messageApps = [
     external: true,
   },
   {
-    id: "messenger",
-    href: profileMeta.smsHref,
-    label: "Messenger",
-    Icon: MessengerIcon,
-    external: false,
-  },
-  {
     id: "imessage",
     href: profileMeta.smsHref,
     label: "iMessage",
     Icon: IMessageIcon,
-    external: false,
-  },
-  {
-    id: "message",
-    href: profileMeta.smsHref,
-    label: "Message",
-    Icon: MessageCircle,
     external: false,
   },
 ] as const;

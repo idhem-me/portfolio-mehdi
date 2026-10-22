@@ -332,7 +332,7 @@ function SidebarTrigger({
           <span className="sr-only">{label}</span>
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="right" align="center">
+      <TooltipContent side="right" align="center" hidden={isMobile}>
         {label}
       </TooltipContent>
     </Tooltip>
