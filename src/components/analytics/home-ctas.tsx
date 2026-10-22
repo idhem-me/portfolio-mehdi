@@ -49,7 +49,11 @@ export function HomeCtas() {
   return (
     <div className="flex flex-col items-start gap-5">
       <div className="flex flex-col items-start gap-2">
-        <span data-physics-item className="inline-flex rounded-lg">
+        <span
+          data-physics-item
+          data-physics-button
+          className="inline-flex rounded-lg"
+        >
           <Button asChild variant="default">
             <TrackedLink
               href="/product-designer"
@@ -61,7 +65,11 @@ export function HomeCtas() {
             </TrackedLink>
           </Button>
         </span>
-        <span data-physics-item className="inline-flex rounded-lg">
+        <span
+          data-physics-item
+          data-physics-button
+          className="inline-flex rounded-lg"
+        >
           <Button asChild variant="secondary">
             <TrackedLink
               href="/contact"

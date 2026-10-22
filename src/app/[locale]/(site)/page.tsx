@@ -7,6 +7,29 @@ type Props = {
   params: Promise<{ locale: string }>;
 };
 
+function IntroWords({ text }: { text: string }) {
+  const parts = text.split(/(\s+)/);
+
+  return (
+    <p className="max-w-prose text-base leading-relaxed text-muted-foreground sm:text-lg">
+      {parts.map((part, i) => {
+        if (/^\s+$/.test(part)) {
+          return <span key={i}>{part}</span>;
+        }
+        return (
+          <span
+            key={i}
+            data-physics-item
+            className="inline-block rounded-md text-base leading-relaxed text-muted-foreground sm:text-lg"
+          >
+            {part}
+          </span>
+        );
+      })}
+    </p>
+  );
+}
+
 export default async function AccueilPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -19,7 +42,7 @@ export default async function AccueilPage({ params }: Props) {
           <div className="space-y-4">
             <p
               data-physics-item
-              className="inline-flex items-center gap-1.5 rounded-lg text-sm text-muted-foreground"
+              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg text-sm text-muted-foreground"
             >
               {home.status}
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -33,24 +56,23 @@ export default async function AccueilPage({ params }: Props) {
               />
             </p>
 
-            <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-              <span data-physics-item className="inline-block rounded-lg">
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              <span
+                data-physics-item
+                className="inline-block whitespace-nowrap rounded-lg text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+              >
                 {home.title}
               </span>
               <span
                 data-physics-item
-                className="mt-1 block rounded-lg text-muted-foreground"
+                data-physics-split-lines
+                className="mt-1 inline-block max-w-full rounded-lg text-3xl font-semibold tracking-tight text-muted-foreground sm:text-4xl"
               >
                 {home.titleMuted}
               </span>
             </h1>
 
-            <p
-              data-physics-item
-              className="max-w-prose rounded-lg text-base leading-relaxed text-muted-foreground sm:text-lg"
-            >
-              {home.intro}
-            </p>
+            <IntroWords text={home.intro} />
           </div>
 
           <HomeCtas />

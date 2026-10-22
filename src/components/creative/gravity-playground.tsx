@@ -6,11 +6,29 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
+/** Match Button default horizontal padding (px-2.5 ≈ 10px). */
+const CHIP_PAD_PX = 10;
+const CHIP_BORDER_PX = 1;
+const WALL_THICKNESS = 80;
+
 type PhysicsPair = {
   body: Matter.Body;
   el: HTMLElement;
   width: number;
   height: number;
+};
+
+type SpawnTarget = {
+  source: HTMLElement;
+  rect: DOMRect;
+  /** When set, spawn a text chip instead of cloning the source node */
+  lineText?: string;
+};
+
+type Walls = {
+  ground: Matter.Body;
+  left: Matter.Body;
+  right: Matter.Body;
 };
 
 type Session = {
@@ -21,6 +39,7 @@ type Session = {
   layerEl: HTMLElement;
   pairs: PhysicsPair[];
   sources: HTMLElement[];
+  walls: Walls;
   raf: number;
   onCollision: (event: Matter.IEventCollision<Matter.Engine>) => void;
 };
@@ -37,6 +56,182 @@ function neutralizeClone(root: HTMLElement) {
   root.style.pointerEvents = "none";
   root.style.userSelect = "none";
   root.style.cursor = "inherit";
+}
+
+/** Bounding box that hugs rendered content (not a stretched block box). */
+function getHugRect(el: HTMLElement): DOMRect {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const rects = Array.from(range.getClientRects()).filter(
+    (r) => r.width > 0 || r.height > 0,
+  );
+  if (rects.length === 0) {
+    return el.getBoundingClientRect();
+  }
+  let left = Infinity;
+  let top = Infinity;
+  let right = -Infinity;
+  let bottom = -Infinity;
+  for (const r of rects) {
+    left = Math.min(left, r.left);
+    top = Math.min(top, r.top);
+    right = Math.max(right, r.right);
+    bottom = Math.max(bottom, r.bottom);
+  }
+  return new DOMRect(left, top, Math.max(right - left, 8), Math.max(bottom - top, 8));
+}
+
+/** Group character boxes into visual lines (for wrap-aware physics chips). */
+function getTextLines(el: HTMLElement): { text: string; rect: DOMRect }[] {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  const textNode = walker.nextNode();
+  if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+    return [{ text: (el.textContent ?? "").trim(), rect: getHugRect(el) }];
+  }
+
+  const full = textNode.textContent ?? "";
+  if (!full) {
+    return [{ text: "", rect: getHugRect(el) }];
+  }
+
+  const range = document.createRange();
+  type Acc = {
+    text: string;
+    top: number;
+    left: number;
+    right: number;
+    bottom: number;
+  };
+  const lines: Acc[] = [];
+
+  for (let i = 0; i < full.length; i++) {
+    range.setStart(textNode, i);
+    range.setEnd(textNode, i + 1);
+    const r = range.getBoundingClientRect();
+    if (r.width === 0 && r.height === 0) continue;
+
+    const last = lines[lines.length - 1];
+    if (!last || Math.abs(r.top - last.top) > 2) {
+      lines.push({
+        text: full[i]!,
+        top: r.top,
+        left: r.left,
+        right: r.right,
+        bottom: r.bottom,
+      });
+    } else {
+      last.text += full[i]!;
+      last.left = Math.min(last.left, r.left);
+      last.right = Math.max(last.right, r.right);
+      last.bottom = Math.max(last.bottom, r.bottom);
+    }
+  }
+
+  return lines
+    .map((l) => ({
+      text: l.text.replace(/\s+$/g, ""),
+      rect: new DOMRect(
+        l.left,
+        l.top,
+        Math.max(l.right - l.left, 8),
+        Math.max(l.bottom - l.top, 8),
+      ),
+    }))
+    .filter((l) => l.text.length > 0);
+}
+
+function collectSpawnTargets(sources: HTMLElement[]): SpawnTarget[] {
+  const targets: SpawnTarget[] = [];
+
+  for (const source of sources) {
+    const isButton = source.hasAttribute("data-physics-button");
+
+    if (source.hasAttribute("data-physics-split-lines")) {
+      const lines = getTextLines(source);
+      if (lines.length === 0) {
+        targets.push({ source, rect: getHugRect(source) });
+      } else if (lines.length === 1) {
+        targets.push({
+          source,
+          rect: lines[0]!.rect,
+          lineText: lines[0]!.text,
+        });
+      } else {
+        for (const line of lines) {
+          targets.push({ source, rect: line.rect, lineText: line.text });
+        }
+      }
+      continue;
+    }
+
+    targets.push({
+      source,
+      rect: isButton ? source.getBoundingClientRect() : getHugRect(source),
+    });
+  }
+
+  return targets;
+}
+
+function applyTypography(el: HTMLElement, computed: CSSStyleDeclaration) {
+  el.style.fontFamily = computed.fontFamily;
+  el.style.fontSize = computed.fontSize;
+  el.style.fontWeight = computed.fontWeight;
+  el.style.fontStyle = computed.fontStyle;
+  el.style.letterSpacing = computed.letterSpacing;
+  el.style.lineHeight = computed.lineHeight;
+  el.style.color = computed.color;
+  el.style.textAlign = computed.textAlign;
+}
+
+function createWalls(vw: number, vh: number): Walls {
+  const wallOpts = { isStatic: true, render: { visible: false } };
+  const t = WALL_THICKNESS;
+  return {
+    ground: Matter.Bodies.rectangle(
+      vw / 2,
+      vh + t / 2,
+      vw + t * 2,
+      t,
+      wallOpts,
+    ),
+    left: Matter.Bodies.rectangle(-t / 2, vh / 2, t, vh * 2, wallOpts),
+    right: Matter.Bodies.rectangle(vw + t / 2, vh / 2, t, vh * 2, wallOpts),
+  };
+}
+
+function replaceWalls(session: Session, vw: number, vh: number) {
+  Matter.World.remove(session.engine.world, [
+    session.walls.ground,
+    session.walls.left,
+    session.walls.right,
+  ]);
+  session.walls = createWalls(vw, vh);
+  Matter.World.add(session.engine.world, [
+    session.walls.ground,
+    session.walls.left,
+    session.walls.right,
+  ]);
+}
+
+function clampBodiesToViewport(pairs: PhysicsPair[], vw: number, vh: number) {
+  for (const { body, width, height } of pairs) {
+    const halfW = width / 2;
+    const halfH = height / 2;
+    const minX = halfW;
+    const maxX = Math.max(halfW, vw - halfW);
+    const minY = halfH;
+    const maxY = Math.max(halfH, vh - halfH);
+    const x = Math.min(Math.max(body.position.x, minX), maxX);
+    const y = Math.min(Math.max(body.position.y, minY), maxY);
+    if (x !== body.position.x || y !== body.position.y) {
+      Matter.Body.setPosition(body, { x, y });
+      Matter.Body.setVelocity(body, {
+        x: body.velocity.x * 0.5,
+        y: Math.min(body.velocity.y, 0),
+      });
+    }
+  }
 }
 
 export function GravityPlayground({ children }: { children: React.ReactNode }) {
@@ -79,6 +274,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     });
     if (sources.length === 0) return;
 
+    const targets = collectSpawnTargets(sources);
     const { Engine, Bodies, World, Runner, Mouse, MouseConstraint, Body, Events } =
       Matter;
 
@@ -86,20 +282,13 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       gravity: { x: 0, y: 1, scale: 0.001 },
     });
 
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const wallOpts = { isStatic: true, render: { visible: false } };
-    const thickness = 80;
-
-    World.add(engine.world, [
-      Bodies.rectangle(w / 2, h + thickness / 2, w + thickness * 2, thickness, wallOpts),
-      Bodies.rectangle(-thickness / 2, h / 2, thickness, h * 2, wallOpts),
-      Bodies.rectangle(w + thickness / 2, h / 2, thickness, h * 2, wallOpts),
-    ]);
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const walls = createWalls(vw, vh);
+    World.add(engine.world, [walls.ground, walls.left, walls.right]);
 
     const layerEl = document.createElement("div");
     layerEl.setAttribute("aria-hidden", "true");
-    // Under sidebar (z-10) so nav stays usable; above page content for drag hit-testing
     layerEl.className = "pointer-events-none fixed inset-0 z-[6]";
     document.body.appendChild(layerEl);
 
@@ -109,39 +298,74 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     document.body.appendChild(mouseEl);
 
     const pairs: PhysicsPair[] = [];
+    const hiddenSources = new Set<HTMLElement>();
 
-    sources.forEach((source) => {
-      const rect = source.getBoundingClientRect();
-      const width = Math.max(rect.width, 8);
-      const height = Math.max(rect.height, 8);
-      const cx = rect.left + width / 2;
-      const cy = rect.top + height / 2;
+    for (const target of targets) {
+      const { source, rect, lineText } = target;
+      const isButton = source.hasAttribute("data-physics-button");
+      const pad = isButton ? 0 : CHIP_PAD_PX;
+      const border = isButton ? 0 : CHIP_BORDER_PX;
+      const contentW = Math.max(rect.width, 8);
+      const contentH = Math.max(rect.height, 8);
+      // border-box: padding + border must be added on top of content or text clips
+      const width = contentW + pad * 2 + border * 2;
+      const height = contentH + pad * 2 + border * 2;
+      const cx = rect.left + contentW / 2;
+      const cy = rect.top + contentH / 2;
 
-      const clone = source.cloneNode(true) as HTMLElement;
-      neutralizeClone(clone);
-      clone.removeAttribute("data-physics-item");
-      clone.className = [
-        source.className,
-        "fixed z-[6] m-0 box-border border border-border bg-card shadow-sm",
-      ]
-        .filter(Boolean)
-        .join(" ");
+      const computed = window.getComputedStyle(source);
+      let clone: HTMLElement;
+
+      if (lineText !== undefined) {
+        clone = document.createElement("span");
+        clone.textContent = lineText;
+        clone.className = [
+          source.className,
+          "fixed z-[6] m-0 box-border inline-flex items-center border border-border bg-card shadow-sm whitespace-nowrap",
+        ]
+          .filter(Boolean)
+          .join(" ");
+      } else {
+        clone = source.cloneNode(true) as HTMLElement;
+        neutralizeClone(clone);
+        clone.removeAttribute("data-physics-item");
+        clone.removeAttribute("data-physics-split-lines");
+        clone.removeAttribute("data-physics-button");
+        clone.className = [
+          source.className,
+          "fixed z-[6] m-0 box-border border border-border bg-card shadow-sm",
+        ]
+          .filter(Boolean)
+          .join(" ");
+      }
+
       clone.style.left = "0";
       clone.style.top = "0";
       clone.style.width = `${width}px`;
       clone.style.height = `${height}px`;
       clone.style.margin = "0";
+      clone.style.padding = pad ? `${pad}px` : "0";
       clone.style.boxSizing = "border-box";
+      if (border) {
+        clone.style.borderWidth = `${border}px`;
+      }
       clone.style.transformOrigin = "center center";
       clone.style.willChange = "transform";
       clone.style.pointerEvents = "none";
       clone.style.visibility = "visible";
+      applyTypography(clone, computed);
       clone.setAttribute("aria-hidden", "true");
 
-      const computed = window.getComputedStyle(source);
-      if (computed.display.includes("inline") || computed.display === "contents") {
+      if (
+        lineText === undefined &&
+        (computed.display.includes("inline") || computed.display === "contents")
+      ) {
         clone.style.display = "inline-flex";
         clone.style.alignItems = "center";
+      }
+
+      if (!isButton) {
+        clone.style.whiteSpace = "nowrap";
       }
 
       layerEl.appendChild(clone);
@@ -163,7 +387,11 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
 
       World.add(engine.world, body);
       pairs.push({ body, el: clone, width, height });
-      source.style.visibility = "hidden";
+      hiddenSources.add(source);
+    }
+
+    hiddenSources.forEach((el) => {
+      el.style.visibility = "hidden";
     });
 
     const mouse = Mouse.create(mouseEl);
@@ -213,7 +441,8 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       mouseEl,
       layerEl,
       pairs,
-      sources,
+      sources: Array.from(hiddenSources),
+      walls,
       raf: requestAnimationFrame(sync),
       onCollision,
     };
@@ -228,10 +457,19 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!active) return;
-    const onResize = () => teardown();
+
+    const onResize = () => {
+      const session = sessionRef.current;
+      if (!session) return;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      replaceWalls(session, vw, vh);
+      clampBodiesToViewport(session.pairs, vw, vh);
+    };
+
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
-  }, [active, teardown]);
+  }, [active]);
 
   if (reducedMotion) {
     return <div ref={rootRef}>{children}</div>;
