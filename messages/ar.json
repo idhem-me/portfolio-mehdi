@@ -21,7 +21,8 @@
     "ctaContact": "تواصل معي",
     "freelanceOn": "عمل حر عبر",
     "gravityPlay": "المسني",
-    "gravityReset": "إعادة"
+    "gravityReset": "إعادة",
+    "gravityImpacts": "{count, plural, =0 {0 اصطدام} one {اصطدام #} other {# اصطدامات}}"
   },
   "contact": {
     "email": "البريد الإلكتروني",

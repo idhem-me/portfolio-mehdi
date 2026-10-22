@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ConsentBanner } from "@/components/analytics/consent-banner";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import {
   SidebarInset,
@@ -40,6 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <MobileHeader />
           <div className="flex-1">{children}</div>
         </SidebarInset>
+        <ConsentBanner />
       </SidebarProvider>
     </TooltipProvider>
   );

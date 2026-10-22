@@ -1,0 +1,21 @@
+---
+description: Sync and translate site content when French source files change
+globs: content/fr/**,messages/fr.json
+alwaysApply: false
+---
+
+# i18n content sync
+
+When `content/fr/**` or `messages/fr.json` is created or modified:
+
+1. Mirror the same file structure and keys into: `en`, `zh`, `ar`, `es`, `it`, `de`
+2. Translate all user-facing strings from French into each target locale
+3. Keep identical: JSON keys, nesting, list shapes, URLs, emails, phones, logo paths, initials
+4. Content markdown uses **JSON frontmatter** (not YAML) between `---` fences — always write/update frontmatter as pretty-printed JSON to avoid colon/`&` parsing issues
+5. Keep proper nouns unchanged: Mehdi Monteyremard, Worldline, Figma, Confluence, Jira, Cursor, LinkedIn, Fiverr, Malt, company names, place names when they are proper nouns, product names (Trusted Interactions, Open Banking, Design System), RGAA
+6. `zh` = Simplified Mandarin; `ar` = Modern Standard Arabic
+7. Do **not** translate or modify dashboard, playground, or API routes
+8. UI chrome strings live in `messages/{locale}.json`; long-form / structured copy lives in `content/{locale}/*.md`
+9. After changing message keys, also update `src/i18n/messages.ts` only if a new locale file is added (imports are static)
+
+After editing French sources in a session, always regenerate the six locale variants in the same turn unless the user explicitly asks to skip translation.

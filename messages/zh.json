@@ -21,7 +21,8 @@
     "ctaContact": "联系我",
     "freelanceOn": "自由职业平台",
     "gravityPlay": "点我",
-    "gravityReset": "重置"
+    "gravityReset": "重置",
+    "gravityImpacts": "{count} 次碰撞"
   },
   "contact": {
     "email": "邮箱",

@@ -21,7 +21,8 @@
     "ctaContact": "Contactarme",
     "freelanceOn": "Freelance en",
     "gravityPlay": "Tócame",
-    "gravityReset": "Reset"
+    "gravityReset": "Reset",
+    "gravityImpacts": "{count, plural, =0 {0 impactos} one {# impacto} other {# impactos}}"
   },
   "contact": {
     "email": "Email",

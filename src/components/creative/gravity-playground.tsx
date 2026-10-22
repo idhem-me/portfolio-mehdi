@@ -22,6 +22,7 @@ type Session = {
   pairs: PhysicsPair[];
   sources: HTMLElement[];
   raf: number;
+  onCollision: (event: Matter.IEventCollision<Matter.Engine>) => void;
 };
 
 function neutralizeClone(root: HTMLElement) {
@@ -44,12 +45,14 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const sessionRef = useRef<Session | null>(null);
   const [active, setActive] = useState(false);
+  const [impacts, setImpacts] = useState(0);
 
   const teardown = useCallback(() => {
     const session = sessionRef.current;
     if (!session) return;
 
     cancelAnimationFrame(session.raf);
+    Matter.Events.off(session.engine, "collisionStart", session.onCollision);
     Matter.Runner.stop(session.runner);
     Matter.World.remove(session.engine.world, session.mouseConstraint);
     Matter.World.clear(session.engine.world, false);
@@ -60,6 +63,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       el.style.visibility = "";
     });
     sessionRef.current = null;
+    setImpacts(0);
     setActive(false);
   }, []);
 
@@ -75,7 +79,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     });
     if (sources.length === 0) return;
 
-    const { Engine, Bodies, World, Runner, Mouse, MouseConstraint, Body } =
+    const { Engine, Bodies, World, Runner, Mouse, MouseConstraint, Body, Events } =
       Matter;
 
     const engine = Engine.create({
@@ -174,6 +178,19 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     });
     World.add(engine.world, mouseConstraint);
 
+    const onCollision = (event: Matter.IEventCollision<Matter.Engine>) => {
+      let hits = 0;
+      for (const pair of event.pairs) {
+        if (!pair.bodyA.isStatic && !pair.bodyB.isStatic) {
+          hits += 1;
+        }
+      }
+      if (hits > 0) {
+        setImpacts((n) => n + hits);
+      }
+    };
+    Events.on(engine, "collisionStart", onCollision);
+
     const runner = Runner.create();
     Runner.run(runner, engine);
 
@@ -188,6 +205,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       }
     };
 
+    setImpacts(0);
     sessionRef.current = {
       engine,
       runner,
@@ -197,6 +215,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       pairs,
       sources,
       raf: requestAnimationFrame(sync),
+      onCollision,
     };
     setActive(true);
   }, []);
@@ -220,10 +239,10 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
 
   return (
     <div ref={rootRef} className="relative">
-      <div className="pointer-events-none fixed inset-x-0 top-14 z-50 flex justify-center md:top-4">
+      <div className="pointer-events-none fixed inset-x-0 top-14 z-50 flex flex-col items-center gap-1.5 md:top-4">
         <Button
           type="button"
-          variant="accent"
+          variant={active ? "secondary" : "accent"}
           size="sm"
           className="pointer-events-auto"
           onClick={() => (active ? teardown() : start())}
@@ -231,6 +250,14 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
         >
           {active ? t("gravityReset") : t("gravityPlay")}
         </Button>
+        {active ? (
+          <p
+            className="text-xs tabular-nums text-muted-foreground"
+            aria-live="polite"
+          >
+            {t("gravityImpacts", { count: impacts })}
+          </p>
+        ) : null}
       </div>
       {children}
     </div>

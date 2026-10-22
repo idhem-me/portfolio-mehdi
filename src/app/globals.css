@@ -193,3 +193,11 @@
     opacity: 0;
   }
 }
+
+html.locale-zh body {
+  font-family: var(--font-cjk), var(--font-sans), sans-serif;
+}
+
+html.locale-ar body {
+  font-family: var(--font-arabic), var(--font-sans), sans-serif;
+}

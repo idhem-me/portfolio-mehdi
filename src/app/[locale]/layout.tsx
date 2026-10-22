@@ -1,7 +1,12 @@
-import { hasLocale } from "next-intl";
+import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { DocumentLocale } from "@/components/layout/document-locale";
+import { getMessagesForLocale } from "@/i18n/messages";
 import { routing } from "@/i18n/routing";
+
+/** next-intl lit encore des APIs request ; opt-out validation Cache Components. */
+export const instant = false;
 
 type Props = {
   children: React.ReactNode;
@@ -19,6 +24,12 @@ export default async function LocaleLayout({ children, params }: Props) {
   }
 
   setRequestLocale(locale);
+  const messages = getMessagesForLocale(locale);
 
-  return children;
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <DocumentLocale locale={locale} />
+      {children}
+    </NextIntlClientProvider>
+  );
 }

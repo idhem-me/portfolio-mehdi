@@ -15,6 +15,7 @@ Après une modification FR, demande à l’agent Cursor de synchroniser (la règ
 
 ## Règles
 
-- Ne pas changer les clés YAML/JSON
+- Frontmatter des `.md` en **JSON** (entre `---`), pas en YAML
+- Ne pas changer les clés JSON
 - Conserver URLs, emails, téléphones, chemins de logos
 - Conserver les noms propres (Mehdi, Worldline, Figma…)
