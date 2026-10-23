@@ -1,10 +1,8 @@
 import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { HomeCtas, HomeStatus } from "@/components/analytics/home-ctas";
+import { GazeAvatar } from "@/components/creative/gaze-avatar";
 import { GravityPlayground } from "@/components/creative/gravity-playground";
-import { KeywordCloud } from "@/components/creative/keyword-cloud";
-import { DraggableHomeWindow } from "@/components/layout/draggable-home-window";
-import { BrowserWindow } from "@/components/media/browser-window";
 import { getHome } from "@/lib/content";
 
 type Props = {
@@ -94,11 +92,7 @@ async function HomeContent({ params }: Props) {
           <div className="flex flex-col gap-8 md:gap-16">
             <HomeCtas />
 
-            <DraggableHomeWindow>
-              <BrowserWindow physics compact paper className="h-full w-full">
-                <KeywordCloud keywords={home.keywords} />
-              </BrowserWindow>
-            </DraggableHomeWindow>
+            <GazeAvatar />
           </div>
         </section>
       </GravityPlayground>
