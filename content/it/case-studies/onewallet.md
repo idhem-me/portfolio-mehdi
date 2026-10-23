@@ -56,7 +56,6 @@
       "id": "wireframes",
       "title": "Disegnare i percorsi",
       "body": [
-        "Niente pixel ancora. Strutture.",
         "Wireframe dei flussi chiave: attivazione, pagamento, impostazioni. Product, tech e design allineati sullo stesso percorso.",
         "Se il percorso regge qui, reggerà dopo."
       ],

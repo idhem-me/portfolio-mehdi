@@ -56,7 +56,6 @@
       "id": "wireframes",
       "title": "Dessiner les parcours",
       "body": [
-        "Pas de pixels encore. Des structures.",
         "Wireframes des flows clés : activation, paiement, réglages. On aligne produit, tech et design sur le même chemin.",
         "Si le parcours tient ici, il tiendra plus loin."
       ],

@@ -56,7 +56,6 @@
       "id": "wireframes",
       "title": "Dibujar los recorridos",
       "body": [
-        "Aún no hay píxeles. Estructuras.",
         "Wireframes de los flujos clave: activación, pago, ajustes. Producto, tech y design alineados en el mismo camino.",
         "Si el recorrido se sostiene aquí, se sostendrá después."
       ],

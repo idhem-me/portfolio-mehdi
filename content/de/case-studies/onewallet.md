@@ -56,7 +56,6 @@
       "id": "wireframes",
       "title": "Journeys skizzieren",
       "body": [
-        "Noch keine Pixel. Strukturen.",
         "Wireframes der Kernflows: Aktivierung, Zahlung, Einstellungen. Produkt, Tech und Design auf demselben Weg.",
         "Hält der Journey hier, hält er später."
       ],

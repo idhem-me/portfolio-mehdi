@@ -56,7 +56,6 @@
       "id": "wireframes",
       "title": "Sketch the journeys",
       "body": [
-        "No pixels yet. Structures.",
         "Wireframes of key flows: activation, payment, settings. Product, tech and design align on the same path.",
         "If the journey holds here, it will hold later."
       ],
