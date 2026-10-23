@@ -3,6 +3,7 @@
 import { Briefcase, Home, Layers, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { TrackedLink } from "@/components/analytics/tracked-link";
+import { setAvatarWink } from "@/components/creative/gaze-avatar";
 import {
   Sidebar,
   SidebarContent,
@@ -119,6 +120,8 @@ export function AppSidebar() {
                   event={AnalyticsEvents.nav_click}
                   eventProps={{ href: "/contact", label: t("contact") }}
                   onClick={closeMobilePanel}
+                  onMouseEnter={() => setAvatarWink("AG-clin")}
+                  onMouseLeave={() => setAvatarWink(null)}
                 >
                   <Avatar className="size-7">
                     {HAS_AVATAR ? (

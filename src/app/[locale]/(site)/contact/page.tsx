@@ -8,11 +8,11 @@ import {
   ContactMaltButton,
   ContactPhoneLink,
 } from "@/components/analytics/contact-ctas";
+import { GazeAvatar } from "@/components/creative/gaze-avatar";
 import { CopyEmailButton } from "@/components/layout/copy-email-button";
 import { BrowserWindow } from "@/components/media/browser-window";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { getContactPage, getProfile } from "@/lib/content";
+import { getContactPage } from "@/lib/content";
 import { routing } from "@/i18n/routing";
 
 type Props = {
@@ -56,22 +56,12 @@ export default async function ContactPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("contact");
-  const tNav = await getTranslations("nav");
   const contact = getContactPage(locale);
-  const profile = getProfile(locale);
 
   return (
     <main className="mx-auto w-full max-w-3xl px-6 py-12">
       <header className="flex flex-col gap-6 sm:flex-row sm:items-center">
-        <Avatar className="size-20 text-lg">
-          <AvatarImage
-            src="/img/photos/avatar.png"
-            alt={tNav("photoAlt", { name: profile.name })}
-          />
-          <AvatarFallback className="bg-muted text-xl font-medium text-muted-foreground">
-            {profile.initials}
-          </AvatarFallback>
-        </Avatar>
+        <GazeAvatar />
         <div className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {contact.title}

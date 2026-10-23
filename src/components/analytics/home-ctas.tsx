@@ -6,6 +6,7 @@ import {
   TrackedAnchor,
   TrackedLink,
 } from "@/components/analytics/tracked-link";
+import { setAvatarWink } from "@/components/creative/gaze-avatar";
 import { Button } from "@/components/ui/button";
 import { AnalyticsEvents } from "@/lib/analytics/events";
 import { profileMeta } from "@/data/profile-meta";
@@ -118,6 +119,8 @@ export function HomeCtas() {
             href="/contact"
             event={AnalyticsEvents.home_cta}
             eventProps={{ href: "/contact", label: "contact" }}
+            onMouseEnter={() => setAvatarWink("AG-clin")}
+            onMouseLeave={() => setAvatarWink(null)}
           >
             {t("ctaContact")}
           </TrackedLink>

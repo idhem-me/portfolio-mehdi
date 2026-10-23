@@ -3,9 +3,15 @@
 import type { SVGProps } from "react";
 import { useTranslations } from "next-intl";
 import { TrackedAnchor } from "@/components/analytics/tracked-link";
+import { setAvatarWink } from "@/components/creative/gaze-avatar";
 import { Button } from "@/components/ui/button";
 import { AnalyticsEvents, track } from "@/lib/analytics/events";
 import { profileMeta } from "@/data/profile-meta";
+
+const winkOn = {
+  onMouseEnter: () => setAvatarWink("AD-clin"),
+  onMouseLeave: () => setAvatarWink(null),
+} as const;
 
 export function ContactMailtoButton() {
   const t = useTranslations("contact");
@@ -16,6 +22,7 @@ export function ContactMailtoButton() {
         href={`mailto:${profileMeta.email}`}
         event={AnalyticsEvents.contact_cta}
         eventProps={{ action: "mailto" }}
+        {...winkOn}
       >
         {t("openMail")}
       </TrackedAnchor>
@@ -81,6 +88,7 @@ export function ContactPhoneLink() {
                   app: id,
                 });
               }}
+              {...winkOn}
             >
               <Icon className="size-3.5 shrink-0 opacity-80" />
               <span className="truncate">{label}</span>
@@ -103,6 +111,7 @@ export function ContactLinkedInButton() {
         rel="noopener noreferrer"
         event={AnalyticsEvents.contact_cta}
         eventProps={{ action: "linkedin" }}
+        {...winkOn}
       >
         {t("viewProfile")}
       </TrackedAnchor>
@@ -121,6 +130,7 @@ export function ContactFiverrButton() {
         rel="noopener noreferrer"
         event={AnalyticsEvents.contact_cta}
         eventProps={{ action: "fiverr" }}
+        {...winkOn}
       >
         {t("viewProfile")}
       </TrackedAnchor>
@@ -139,6 +149,7 @@ export function ContactMaltButton() {
         rel="noopener noreferrer"
         event={AnalyticsEvents.contact_cta}
         eventProps={{ action: "malt" }}
+        {...winkOn}
       >
         {t("viewProfile")}
       </TrackedAnchor>

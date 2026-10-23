@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check, Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { setAvatarWink } from "@/components/creative/gaze-avatar";
 import { Button } from "@/components/ui/button";
 import { AnalyticsEvents, track } from "@/lib/analytics/events";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,8 @@ export function CopyEmailButton({ className }: { className?: string }) {
       size="sm"
       className={cn("w-full justify-start gap-2 font-normal", className)}
       onClick={handleCopy}
+      onMouseEnter={() => setAvatarWink("AD-clin")}
+      onMouseLeave={() => setAvatarWink(null)}
       aria-label={
         copied
           ? t("emailCopied")

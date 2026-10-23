@@ -5,88 +5,112 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { cn } from "@/lib/utils";
 
-type Gaze = "haut" | "bas" | "centre" | "gauche" | "droite";
-type Head = "gauche" | "droite";
+/** Head turn: AG = gauche, AD = droite. */
+type Head = "AG" | "AD";
 
-const GAZES: Gaze[] = ["haut", "bas", "centre", "gauche", "droite"];
-const HEADS: Head[] = ["gauche", "droite"];
+type AgGaze =
+  | "centre"
+  | "haut"
+  | "haut-gauche"
+  | "gauche"
+  | "bas"
+  | "bas-gauche";
 
-const AVATAR_SRCS = GAZES.flatMap((gaze) =>
-  HEADS.map((head) => `/img/avatar/avatar-${gaze}-${head}.svg`),
-);
+type AdGaze =
+  | "centre"
+  | "haut"
+  | "haut-droite"
+  | "droite"
+  | "bas"
+  | "bas-droite";
 
-/** Normalized distance under which gaze stays centre. */
-const DEAD_ZONE = 0.18;
-/** Hysteresis margin so gaze does not flicker at sector borders. */
-const GAZE_HYSTERESIS = 0.1;
-/** Horizontal threshold for head turn (normalized). */
-const HEAD_EPS = 0.12;
-/** Gyro angles (deg) mapped to ±1. */
-const GYRO_MAX_DEG = 28;
-/** Crossfade duration between pose variants (ms). */
-const CROSSFADE_MS = 220;
+type Gaze = AgGaze | AdGaze;
 
-function avatarSrc(gaze: Gaze, head: Head) {
-  return `/img/avatar/avatar-${gaze}-${head}.svg`;
-}
+type Wink = "AG-clin" | "AD-clin";
+
+const AG_GAZES: AgGaze[] = [
+  "centre",
+  "haut",
+  "haut-gauche",
+  "gauche",
+  "bas",
+  "bas-gauche",
+];
+const AD_GAZES: AdGaze[] = [
+  "centre",
+  "haut",
+  "haut-droite",
+  "droite",
+  "bas",
+  "bas-droite",
+];
+
+const AVATAR_SRCS = [
+  ...AG_GAZES.map((g) => `/img/avatar/AG-${g}.svg`),
+  ...AD_GAZES.map((g) => `/img/avatar/AD-${g}.svg`),
+  "/img/avatar/AG-clin.svg",
+  "/img/avatar/AD-clin.svg",
+];
 
 /**
- * Map dx/dy (screen: +x right, +y down) to a gaze sector.
- * Uses hysteresis against the current gaze to reduce flicker.
+ * Angles via Math.atan2(dy, dx) en degrés :
+ * 0° = droite, 90° = bas, ±180° = gauche, -90° = haut.
+ * Zone bas élargie : +15° → +165°.
  */
-function resolveGaze(dx: number, dy: number, current: Gaze): Gaze {
-  const dist = Math.hypot(dx, dy);
-  const enterDead = DEAD_ZONE;
-  const leaveDead = DEAD_ZONE + GAZE_HYSTERESIS;
+const DEAD_ZONE = 0.12;
+const GYRO_MAX_DEG = 28;
+const CROSSFADE_MS = 220;
 
-  if (current === "centre") {
-    if (dist < leaveDead) return "centre";
-  } else if (dist < enterDead) {
-    return "centre";
-  }
+const WINK_EVENT = "portfolio:avatar-wink";
 
-  const angle = Math.atan2(-dy, dx);
-  const sectors: { gaze: Gaze; center: number }[] = [
-    { gaze: "droite", center: 0 },
-    { gaze: "haut", center: Math.PI / 2 },
-    { gaze: "gauche", center: Math.PI },
-    { gaze: "bas", center: -Math.PI / 2 },
-  ];
-
-  const angularDist = (a: number, b: number) => {
-    let d = a - b;
-    while (d > Math.PI) d -= 2 * Math.PI;
-    while (d < -Math.PI) d += 2 * Math.PI;
-    return Math.abs(d);
-  };
-
-  if (current !== "centre") {
-    const currentSector = sectors.find((s) => s.gaze === current);
-    if (
-      currentSector &&
-      angularDist(angle, currentSector.center) <
-        Math.PI / 4 + GAZE_HYSTERESIS
-    ) {
-      return current;
-    }
-  }
-
-  let best: Gaze = "droite";
-  let bestDist = Infinity;
-  for (const s of sectors) {
-    const d = angularDist(angle, s.center);
-    if (d < bestDist) {
-      bestDist = d;
-      best = s.gaze;
-    }
-  }
-  return best;
+/** Trigger / clear a wink pose from hover targets. */
+export function setAvatarWink(wink: Wink | null) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(WINK_EVENT, { detail: wink }));
 }
 
-function resolveHead(dx: number, current: Head): Head {
-  if (dx < -HEAD_EPS) return "gauche";
-  if (dx > HEAD_EPS) return "droite";
-  return current;
+function avatarSrc(head: Head, gaze: Gaze) {
+  return `/img/avatar/${head}-${gaze}.svg`;
+}
+
+function winkSrc(wink: Wink) {
+  return `/img/avatar/${wink}.svg`;
+}
+
+/** Pose from pointer vector (screen: +x right, +y down). */
+function resolvePose(dx: number, dy: number): { head: Head; gaze: Gaze } {
+  const dist = Math.hypot(dx, dy);
+
+  // 1. Zone centrale
+  if (dist < DEAD_ZONE) {
+    return dx < 0
+      ? { head: "AG", gaze: "centre" }
+      : { head: "AD", gaze: "centre" };
+  }
+
+  // 0° = droite, 90° = bas, ±180° = gauche, -90° = haut
+  const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+  // 2. Zones du bas (+15° → +165°)
+  if (angle >= 55 && angle < 90) return { head: "AD", gaze: "bas" };
+  if (angle >= 90 && angle < 125) return { head: "AG", gaze: "bas" };
+  if (angle >= 15 && angle < 55) return { head: "AD", gaze: "bas-droite" };
+  if (angle >= 125 && angle < 165) return { head: "AG", gaze: "bas-gauche" };
+
+  // 3. Zones latérales
+  if (angle >= -20 && angle < 15) return { head: "AD", gaze: "droite" };
+  if (angle >= 165 || angle < -160) return { head: "AG", gaze: "gauche" };
+
+  // 4. Zones du haut
+  if (angle >= -65 && angle < -20) return { head: "AD", gaze: "haut-droite" };
+  if (angle >= -90 && angle < -65) return { head: "AD", gaze: "haut" };
+  if (angle >= -115 && angle < -90) return { head: "AG", gaze: "haut" };
+  if (angle >= -160 && angle < -115) return { head: "AG", gaze: "haut-gauche" };
+
+  // Fallback (frontières exactes ±180 / 0)
+  return dx < 0
+    ? { head: "AG", gaze: "gauche" }
+    : { head: "AD", gaze: "droite" };
 }
 
 type DeviceOrientationPermission = {
@@ -100,18 +124,19 @@ export function GazeAvatar() {
   const isMobile = useIsMobile();
   const wrapRef = useRef<HTMLSpanElement>(null);
   const gazeRef = useRef<Gaze>("centre");
-  const headRef = useRef<Head>("gauche");
-  const displayedSrcRef = useRef(avatarSrc("centre", "gauche"));
+  const headRef = useRef<Head>("AG");
+  const winkRef = useRef<Wink | null>(null);
+  const displayedSrcRef = useRef(avatarSrc("AG", "centre"));
   const fadingRef = useRef(false);
   const pendingSrcRef = useRef<string | null>(null);
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [front, setFront] = useState<Layer>({
-    src: avatarSrc("centre", "gauche"),
+    src: avatarSrc("AG", "centre"),
     opacity: 1,
   });
   const [back, setBack] = useState<Layer>({
-    src: avatarSrc("centre", "gauche"),
+    src: avatarSrc("AG", "centre"),
     opacity: 0,
   });
 
@@ -130,7 +155,6 @@ export function GazeAvatar() {
       return;
     }
 
-    // Queue if a crossfade is already running
     if (fadingRef.current) {
       pendingSrcRef.current = nextSrc;
       return;
@@ -139,12 +163,10 @@ export function GazeAvatar() {
     fadingRef.current = true;
     const fromSrc = displayedSrcRef.current;
 
-    // Back holds the outgoing pose; front fades in the new one
     setBack({ src: fromSrc, opacity: 1 });
     setFront({ src: nextSrc, opacity: 0 });
     displayedSrcRef.current = nextSrc;
 
-    // Next frame → opacity 1 (CSS transition handles the blend)
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setFront({ src: nextSrc, opacity: 1 });
@@ -163,22 +185,21 @@ export function GazeAvatar() {
     }, CROSSFADE_MS + 40);
   };
 
+  const poseSrc = () => {
+    if (winkRef.current) return winkSrc(winkRef.current);
+    return avatarSrc(headRef.current, gazeRef.current);
+  };
+
   applyRef.current = (dx: number, dy: number) => {
-    const mag = Math.hypot(dx, dy);
-    const scale = mag > 1 ? 1 / mag : 1;
-    const nx = dx * scale;
-    const ny = dy * scale;
+    if (winkRef.current) return;
 
-    const nextGaze = resolveGaze(nx, ny, gazeRef.current);
-    const nextHead = resolveHead(nx, headRef.current);
-    const changed =
-      nextGaze !== gazeRef.current || nextHead !== headRef.current;
-
-    gazeRef.current = nextGaze;
+    const { head: nextHead, gaze: nextGaze } = resolvePose(dx, dy);
     headRef.current = nextHead;
+    gazeRef.current = nextGaze;
 
-    if (changed) {
-      commitSrc(avatarSrc(nextGaze, nextHead));
+    const nextSrc = avatarSrc(nextHead, nextGaze);
+    if (nextSrc !== displayedSrcRef.current) {
+      commitSrc(nextSrc);
     }
   };
 
@@ -188,6 +209,7 @@ export function GazeAvatar() {
     const rect = el.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
+    // Normalized; angle uses atan2(dy, dx) — scale only affects dead zone
     const nx = (clientX - cx) / (window.innerWidth * 0.45);
     const ny = (clientY - cy) / (window.innerHeight * 0.45);
     applyRef.current(nx, ny);
@@ -198,6 +220,16 @@ export function GazeAvatar() {
       const img = new Image();
       img.src = src;
     }
+  }, []);
+
+  useEffect(() => {
+    const onWink = (e: Event) => {
+      const wink = (e as CustomEvent<Wink | null>).detail ?? null;
+      winkRef.current = wink;
+      commitSrc(poseSrc());
+    };
+    window.addEventListener(WINK_EVENT, onWink);
+    return () => window.removeEventListener(WINK_EVENT, onWink);
   }, []);
 
   useEffect(() => {

@@ -10,6 +10,7 @@ import {
 } from "react";
 import Matter from "matter-js";
 import { useTranslations } from "next-intl";
+import { setAvatarWink } from "@/components/creative/gaze-avatar";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
@@ -740,7 +741,12 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
               variant="accent"
               size="sm"
               className="pointer-events-auto"
-              onClick={start}
+              onClick={() => {
+                setAvatarWink(null);
+                start();
+              }}
+              onMouseEnter={() => setAvatarWink("AD-clin")}
+              onMouseLeave={() => setAvatarWink(null)}
             >
               {t("gravityPlay")}
             </Button>

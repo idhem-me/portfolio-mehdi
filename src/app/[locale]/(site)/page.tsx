@@ -68,6 +68,8 @@ async function HomeContent({ params }: Props) {
       <GravityPlayground>
         <section className="flex flex-col gap-8">
           <div className="space-y-4">
+            <GazeAvatar />
+
             <HomeStatus />
 
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
@@ -89,11 +91,7 @@ async function HomeContent({ params }: Props) {
             <IntroWords text={home.intro} />
           </div>
 
-          <div className="flex flex-col gap-8 md:gap-16">
-            <HomeCtas />
-
-            <GazeAvatar />
-          </div>
+          <HomeCtas />
         </section>
       </GravityPlayground>
     </main>
