@@ -37,23 +37,7 @@
   ],
   "experiencesLead": "在 Worldline，这是我在数字产品上的日常工作。自由职业方面，我承接更聚焦的任务：落地页、网站、平面设计、简历、UI Kit，不做完整产品项目。",
   "experiencesTitle": "工作经历",
-  "caseStudiesTitle": "作品",
-  "caseStudiesIntro": "详细案例研究即将推出。",
   "skillsTitle": "技能",
-  "skillsIntro": "工具、UX、UI、项目管理与软技能。",
-  "caseStudies": [
-    {
-      "title": "Trusted Interactions",
-      "status": "即将推出"
-    },
-    {
-      "title": "Open Banking",
-      "status": "即将推出"
-    },
-    {
-      "title": "Design System",
-      "status": "即将推出"
-    }
-  ]
+  "skillsIntro": "工具、UX、UI、项目管理与软技能。"
 }
 ---

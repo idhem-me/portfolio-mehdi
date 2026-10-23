@@ -73,11 +73,52 @@ export type ProductDesignerContent = {
   pillars: { icon: string; title: string; description: string }[];
   experiencesLead: string;
   experiencesTitle: string;
-  caseStudiesTitle: string;
-  caseStudiesIntro: string;
   skillsTitle: string;
   skillsIntro: string;
-  caseStudies: { title: string; status: string }[];
+};
+
+export type CaseStudyCard = {
+  title: string;
+  status: string;
+  slug?: string;
+  cover?: { light: string; dark: string; alt: string };
+};
+
+export type RealisationsContent = {
+  title: string;
+  intro: string;
+  caseStudies: CaseStudyCard[];
+};
+
+export type CaseStudyImage = {
+  src?: string;
+  alt: string;
+  theme?: "light" | "dark" | "any";
+  caption?: string;
+  /** Affiche l’image dans un BrowserWindow (screens produit). */
+  browser?: boolean;
+  /** Emplacement réservé en attendant une image. */
+  placeholder?: boolean;
+};
+
+export type CaseStudySection = {
+  id: string;
+  title: string;
+  body: string[];
+  images?: CaseStudyImage[];
+  /** Duo amont → aval, ou board + slider (industrialize). */
+  layout?: "default" | "before-after" | "industrialize";
+  cta?: { label: string; href: string };
+};
+
+export type CaseStudyContent = {
+  slug: string;
+  title: string;
+  tagline: string;
+  backLabel: string;
+  meta: { role: string; context: string; status: string };
+  themeToggle?: { light: string; dark: string };
+  sections: CaseStudySection[];
 };
 
 export type AboutContent = {
@@ -144,6 +185,11 @@ export function getProductDesigner(locale: string): ProductDesignerContent {
   return data as ProductDesignerContent;
 }
 
+export function getRealisations(locale: string): RealisationsContent {
+  const { data } = readMarkdown(locale, "realisations.md");
+  return data as RealisationsContent;
+}
+
 export function getAbout(locale: string): AboutContent {
   const { data } = readMarkdown(locale, "about.md");
   return data as AboutContent;
@@ -163,4 +209,12 @@ export function getExperiences(locale: string): {
 export function getSkills(locale: string): SkillsData {
   const { data } = readMarkdown(locale, "skills.md");
   return data as SkillsData;
+}
+
+export function getCaseStudy(
+  locale: string,
+  slug: string
+): CaseStudyContent {
+  const { data } = readMarkdown(locale, `case-studies/${slug}.md`);
+  return data as CaseStudyContent;
 }

@@ -37,23 +37,7 @@
   ],
   "experiencesLead": "في Worldline، هذا عملي اليومي على المنتجات الرقمية. كمستقل، أتدخل في مهام أكثر تحديداً: صفحات هبوط، مواقع ويب، تصميم جرافيكي، سير ذاتية، UI kits، دون مشاريع منتج كاملة.",
   "experiencesTitle": "الخبرات",
-  "caseStudiesTitle": "الإنجازات",
-  "caseStudiesIntro": "دراسات حالة مفصّلة قريباً.",
   "skillsTitle": "المهارات",
-  "skillsIntro": "أدوات، UX، UI، إدارة المشاريع والمهارات الشخصية.",
-  "caseStudies": [
-    {
-      "title": "Trusted Interactions",
-      "status": "قريباً"
-    },
-    {
-      "title": "Open Banking",
-      "status": "قريباً"
-    },
-    {
-      "title": "Design System",
-      "status": "قريباً"
-    }
-  ]
+  "skillsIntro": "أدوات، UX، UI، إدارة المشاريع والمهارات الشخصية."
 }
 ---

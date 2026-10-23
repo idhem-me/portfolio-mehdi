@@ -4,7 +4,8 @@
     "productDesigner": "Product designer",
     "about": "Su di me",
     "contact": "Contattami",
-    "photoAlt": "Foto di {name}"
+    "photoAlt": "Foto di {name}",
+    "realisations": "Realizzazioni"
   },
   "theme": {
     "enableLight": "Attiva la modalità chiara",
@@ -44,7 +45,8 @@
     "home": "Home",
     "productDesigner": "Product designer",
     "about": "Su di me",
-    "contact": "Contattami"
+    "contact": "Contattami",
+    "realisations": "Realizzazioni"
   },
   "skills": {
     "tools": "Strumenti",

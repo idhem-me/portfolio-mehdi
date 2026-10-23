@@ -1,6 +1,6 @@
 "use client";
 
-import { Briefcase, Home, UserRound } from "lucide-react";
+import { Briefcase, Home, Layers, UserRound } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import {
@@ -50,6 +50,12 @@ export function AppSidebar() {
       label: t("productDesigner"),
       icon: Briefcase,
       match: (path: string) => path.startsWith("/product-designer"),
+    },
+    {
+      href: "/realisations",
+      label: t("realisations"),
+      icon: Layers,
+      match: (path: string) => path.startsWith("/realisations"),
     },
     {
       href: "/a-propos",

@@ -4,7 +4,8 @@
     "productDesigner": "مصمم منتجات",
     "about": "نبذة عني",
     "contact": "تواصل معي",
-    "photoAlt": "صورة {name}"
+    "photoAlt": "صورة {name}",
+    "realisations": "الإنجازات"
   },
   "theme": {
     "enableLight": "تفعيل الوضع الفاتح",
@@ -44,7 +45,8 @@
     "home": "الرئيسية",
     "productDesigner": "مصمم منتجات",
     "about": "نبذة عني",
-    "contact": "تواصل معي"
+    "contact": "تواصل معي",
+    "realisations": "الإنجازات"
   },
   "skills": {
     "tools": "الأدوات",

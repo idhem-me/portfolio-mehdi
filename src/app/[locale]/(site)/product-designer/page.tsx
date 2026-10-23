@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ExperienceCard } from "@/components/cv/experience-card";
 import { RolePillars } from "@/components/cv/role-pillars";
@@ -62,32 +61,6 @@ export default async function ProductDesignerPage({ params }: Props) {
           </p>
         </div>
         <RolePillars pillars={page.pillars} />
-      </section>
-
-      <Separator />
-
-      <section className="space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">
-            {page.caseStudiesTitle}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {page.caseStudiesIntro}
-          </p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {page.caseStudies.map((study) => (
-            <div
-              key={study.title}
-              className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5"
-            >
-              <p className="text-sm font-medium">{study.title}</p>
-              <Badge variant="secondary" className="mt-2 font-normal">
-                {study.status}
-              </Badge>
-            </div>
-          ))}
-        </div>
       </section>
 
       <Separator />

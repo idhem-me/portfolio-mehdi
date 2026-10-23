@@ -1,0 +1,1453 @@
+{
+  "version": 1,
+  "tile": {
+    "w": 256,
+    "h": 128
+  },
+  "assets": [
+    {
+      "id": "style_sheet",
+      "lot": "A",
+      "footprint": "reference",
+      "accent": "—",
+      "subject": "style reference sheet in neat grid: grass diamond, orange cottage, terracotta town hall with clock, pine tree, round tree, grey rock, wooden sawmill",
+      "file": "png/style_sheet.png",
+      "w": 1254,
+      "h": 1254,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "done",
+      "note": "Reference sheet includes a checkerboard rendered into the image; used as visual guide, not as a runtime sprite."
+    },
+    {
+      "id": "tile_grass_01",
+      "lot": "A",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "plain subtle faceted greens",
+      "file": "png/tile_grass_01.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_grass_02",
+      "lot": "A",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass with tiny white and yellow low-poly flowers",
+      "file": "png/tile_grass_02.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_locked",
+      "lot": "A",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass covered by soft low-poly cloud mist, desaturated darker",
+      "file": "png/tile_locked.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_cliff_left",
+      "lot": "A",
+      "footprint": "cliff",
+      "accent": "—",
+      "subject": "grass tile with earthy cliff under left face",
+      "file": "png/tile_cliff_left.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "skipped",
+      "note": "Falaise générée procéduralement dans le jeu."
+    },
+    {
+      "id": "tile_cliff_right",
+      "lot": "A",
+      "footprint": "cliff",
+      "accent": "—",
+      "subject": "grass tile with earthy cliff under right face",
+      "file": "png/tile_cliff_right.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "skipped",
+      "note": "Falaise générée procéduralement dans le jeu."
+    },
+    {
+      "id": "tile_cliff_corner",
+      "lot": "A",
+      "footprint": "cliff",
+      "accent": "—",
+      "subject": "grass tile with cliff under both front faces",
+      "file": "png/tile_cliff_corner.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "skipped",
+      "note": "Falaise générée procéduralement dans le jeu."
+    },
+    {
+      "id": "bld_townhall_t1",
+      "lot": "A",
+      "footprint": "2x2",
+      "accent": "—",
+      "subject": "modest wooden town hall, terracotta roof, bell, wooden door, little flag",
+      "file": "png/bld_townhall_t1.png",
+      "w": 512,
+      "h": 512,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "done",
+      "note": "Height reduced to fit canvas. Halo clair nettoyé (bordure alpha 2 px). Height reduced to fit canvas.",
+      "source_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "bld_house_t1_orange",
+      "lot": "A",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "tiny one-floor cottage, orange pitched roof, chimney, one window",
+      "file": "png/bld_house_t1_orange.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_house_t1_blue",
+      "lot": "A",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "tiny one-floor cottage, blue pitched roof, chimney, one window",
+      "file": "png/bld_house_t1_blue.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_house_t1_pink",
+      "lot": "A",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "tiny one-floor cottage, pink pitched roof, chimney, one window",
+      "file": "png/bld_house_t1_pink.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_sawmill_t1",
+      "lot": "A",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "small wooden shed with log pile and sawhorse",
+      "file": "png/bld_sawmill_t1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "site_scaffold_1x1",
+      "lot": "A",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "wooden scaffolding frame around empty volume, ladder, crate",
+      "file": "png/site_scaffold_1x1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "site_scaffold_2x2",
+      "lot": "A",
+      "footprint": "2x2",
+      "accent": "—",
+      "subject": "larger wooden scaffolding frame around empty volume, ladder, crate",
+      "file": "png/site_scaffold_2x2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_tree_round",
+      "lot": "A",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "round leafy faceted green tree, brown trunk",
+      "file": "png/deco_tree_round.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_tree_pine",
+      "lot": "A",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "tall pine made of stacked faceted cones",
+      "file": "png/deco_tree_pine.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_rock_01",
+      "lot": "A",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "single faceted grey rock",
+      "file": "png/deco_rock_01.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_grass_03",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass with small low-poly grass tufts",
+      "file": "png/tile_grass_03.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_grass_04",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass with clovers and tiny pebble",
+      "file": "png/tile_grass_04.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_plaza",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "light beige paved low-poly cobblestones",
+      "file": "png/tile_plaza.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_water",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "calm pale blue water with faceted ripples",
+      "file": "png/tile_water.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_path_straight_a",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass tile with light dirt path NE-SW",
+      "file": "png/tile_path_straight_a.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_path_straight_b",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass tile with light dirt path NW-SE",
+      "file": "png/tile_path_straight_b.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_path_curve",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass tile with curved dirt path",
+      "file": "png/tile_path_curve.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_path_t",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass tile with T-junction dirt path",
+      "file": "png/tile_path_t.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_path_cross",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass tile with crossroads dirt path",
+      "file": "png/tile_path_cross.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "tile_path_end",
+      "lot": "B",
+      "footprint": "tile",
+      "accent": "—",
+      "subject": "grass tile with dead-end dirt path",
+      "file": "png/tile_path_end.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_quarry_t1",
+      "lot": "C",
+      "footprint": "1x1",
+      "accent": "#A9A9A0",
+      "subject": "small grey rock outcrop with pickaxe and wheelbarrow",
+      "file": "png/bld_quarry_t1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_school_t1",
+      "lot": "C",
+      "footprint": "2x1",
+      "accent": "#6E9BC4",
+      "subject": "small one-room schoolhouse, blue roof, bell, chalkboard sign",
+      "file": "png/bld_school_t1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_market_t1",
+      "lot": "C",
+      "footprint": "2x2",
+      "accent": "#E3C25B",
+      "subject": "two wooden stalls with yellow cloth awnings, fruit crates",
+      "file": "png/bld_market_t1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_warehouse_t1",
+      "lot": "C",
+      "footprint": "1x1",
+      "accent": "#A0764F",
+      "subject": "small wooden storage barn with crates",
+      "file": "png/bld_warehouse_t1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_library_t1",
+      "lot": "C",
+      "footprint": "2x2",
+      "accent": "#7C6BA8",
+      "subject": "small stone library, purple roof, round window",
+      "file": "png/bld_library_t1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_fountain_t1",
+      "lot": "C",
+      "footprint": "1x1",
+      "accent": "#7EC4CF",
+      "subject": "round stone fountain, turquoise water",
+      "file": "png/bld_fountain_t1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_monument_t1",
+      "lot": "C",
+      "footprint": "3x3",
+      "accent": "#A9A9A0",
+      "subject": "unfinished monument foundations, scaffolding, stone blocks",
+      "file": "png/bld_monument_t1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_townhall_t2",
+      "lot": "D",
+      "footprint": "2x2",
+      "accent": "#D9785B",
+      "subject": "two-floor stone and timber town hall, clock, flower boxes",
+      "file": "png/bld_townhall_t2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_house_t2_orange",
+      "lot": "D",
+      "footprint": "1x1",
+      "accent": "#E8A65D",
+      "subject": "two-floor orange house, chimney, flower box, porch",
+      "file": "png/bld_house_t2_orange.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_house_t2_blue",
+      "lot": "D",
+      "footprint": "1x1",
+      "accent": "#7FA7C9",
+      "subject": "two-floor blue house, chimney, flower box, porch",
+      "file": "png/bld_house_t2_blue.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_house_t2_pink",
+      "lot": "D",
+      "footprint": "1x1",
+      "accent": "#C97F9B",
+      "subject": "two-floor pink house, chimney, flower box, porch",
+      "file": "png/bld_house_t2_pink.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_sawmill_t2",
+      "lot": "D",
+      "footprint": "1x1",
+      "accent": "#A0764F",
+      "subject": "wooden sawmill with big circular saw and stacked planks",
+      "file": "png/bld_sawmill_t2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_quarry_t2",
+      "lot": "D",
+      "footprint": "1x1",
+      "accent": "#A9A9A0",
+      "subject": "stepped quarry pit, cut stone blocks, wooden pulley",
+      "file": "png/bld_quarry_t2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_school_t2",
+      "lot": "D",
+      "footprint": "2x1",
+      "accent": "#6E9BC4",
+      "subject": "two-floor school, bell tower, small playground fence",
+      "file": "png/bld_school_t2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_market_t2",
+      "lot": "D",
+      "footprint": "2x2",
+      "accent": "#E3C25B",
+      "subject": "covered market, yellow striped awnings, stalls, barrels",
+      "file": "png/bld_market_t2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_warehouse_t2",
+      "lot": "D",
+      "footprint": "1x1",
+      "accent": "#A0764F",
+      "subject": "larger barn with hay loft door and barrels",
+      "file": "png/bld_warehouse_t2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_library_t2",
+      "lot": "D",
+      "footprint": "2x2",
+      "accent": "#7C6BA8",
+      "subject": "library with entrance columns and tall windows",
+      "file": "png/bld_library_t2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_fountain_t2",
+      "lot": "D",
+      "footprint": "1x1",
+      "accent": "#7EC4CF",
+      "subject": "ornate tiered fountain with flower ring",
+      "file": "png/bld_fountain_t2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_monument_t2",
+      "lot": "D",
+      "footprint": "3x3",
+      "accent": "#A9A9A0",
+      "subject": "finished tall stone obelisk on stepped plaza with small gardens",
+      "file": "png/bld_monument_t2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_townhall_t3",
+      "lot": "E",
+      "footprint": "2x2",
+      "accent": "#D9785B",
+      "subject": "grand town hall, stone walls, tall central clock tower, columns, banners",
+      "file": "png/bld_townhall_t3.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_house_t3_orange",
+      "lot": "E",
+      "footprint": "1x1",
+      "accent": "#E8A65D",
+      "subject": "three-floor orange townhouse, dormers, balcony, chimney",
+      "file": "png/bld_house_t3_orange.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_house_t3_blue",
+      "lot": "E",
+      "footprint": "1x1",
+      "accent": "#7FA7C9",
+      "subject": "three-floor blue townhouse, dormers, balcony, chimney",
+      "file": "png/bld_house_t3_blue.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_house_t3_pink",
+      "lot": "E",
+      "footprint": "1x1",
+      "accent": "#C97F9B",
+      "subject": "three-floor pink townhouse, dormers, balcony, chimney",
+      "file": "png/bld_house_t3_pink.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_sawmill_t3",
+      "lot": "E",
+      "footprint": "1x1",
+      "accent": "#A0764F",
+      "subject": "larger sawmill with water wheel, crane arm, plank stacks",
+      "file": "png/bld_sawmill_t3.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_quarry_t3",
+      "lot": "E",
+      "footprint": "1x1",
+      "accent": "#A9A9A0",
+      "subject": "terraced quarry, stone crane, mine cart on rails",
+      "file": "png/bld_quarry_t3.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_school_t3",
+      "lot": "E",
+      "footprint": "2x1",
+      "accent": "#6E9BC4",
+      "subject": "large school, clock and bell tower, courtyard tree",
+      "file": "png/bld_school_t3.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_market_t3",
+      "lot": "E",
+      "footprint": "2x2",
+      "accent": "#E3C25B",
+      "subject": "market hall, yellow roof, arched openings, colorful stalls",
+      "file": "png/bld_market_t3.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_warehouse_t3",
+      "lot": "E",
+      "footprint": "1x1",
+      "accent": "#A9A9A0",
+      "subject": "stone warehouse, big doors, pulley, stacked goods",
+      "file": "png/bld_warehouse_t3.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "bld_library_t3",
+      "lot": "E",
+      "footprint": "2x2",
+      "accent": "#7C6BA8",
+      "subject": "grand library, purple domed roof, columns, stained glass, stairs",
+      "file": "png/bld_library_t3.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "site_foundation_1x1",
+      "lot": "F",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "flat dirt foundation with wooden stakes, string lines, planks",
+      "file": "png/site_foundation_1x1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "site_foundation_2x2",
+      "lot": "F",
+      "footprint": "2x2",
+      "accent": "—",
+      "subject": "larger flat dirt foundation with stakes and string lines",
+      "file": "png/site_foundation_2x2.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "site_scaffold_2x1",
+      "lot": "F",
+      "footprint": "2x1",
+      "accent": "—",
+      "subject": "long wooden scaffolding",
+      "file": "png/site_scaffold_2x1.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "site_scaffold_3x3",
+      "lot": "F",
+      "footprint": "3x3",
+      "accent": "—",
+      "subject": "large wooden scaffolding with small crane",
+      "file": "png/site_scaffold_3x3.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_tree_apple",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "round tree with tiny red apples",
+      "file": "png/deco_tree_apple.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_tree_willow",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "soft drooping willow tree",
+      "file": "png/deco_tree_willow.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_rock_02",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "cluster of two faceted grey rocks",
+      "file": "png/deco_rock_02.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_rock_03",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "cluster of three faceted grey rocks",
+      "file": "png/deco_rock_03.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_bush_01",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "plain low-poly bush",
+      "file": "png/deco_bush_01.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_bush_02",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "low-poly bush with pink flowers",
+      "file": "png/deco_bush_02.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_bush_03",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "low-poly bush with yellow flowers",
+      "file": "png/deco_bush_03.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_lamp",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "small low-poly lamp post",
+      "file": "png/deco_lamp.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_bench",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "small wooden bench",
+      "file": "png/deco_bench.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_fence",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "short wooden fence",
+      "file": "png/deco_fence.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_well",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "small stone well",
+      "file": "png/deco_well.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_sign",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "small wooden sign",
+      "file": "png/deco_sign.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_cart",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "small wooden handcart",
+      "file": "png/deco_cart.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_logs",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "small neat stack of logs",
+      "file": "png/deco_logs.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "deco_barrels",
+      "lot": "G",
+      "footprint": "1x1",
+      "accent": "—",
+      "subject": "small group of wooden barrels",
+      "file": "png/deco_barrels.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        1
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "fx_smoke_puff",
+      "lot": "G",
+      "footprint": "fx",
+      "accent": "—",
+      "subject": "small soft white-grey faceted smoke cloud, no base",
+      "file": "png/fx_smoke_puff.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "fx_sparkle",
+      "lot": "G",
+      "footprint": "fx",
+      "accent": "—",
+      "subject": "small low-poly golden star sparkle, no base",
+      "file": "png/fx_sparkle.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "fx_bubble",
+      "lot": "G",
+      "footprint": "fx",
+      "accent": "—",
+      "subject": "round white badge bubble with small tail, empty center, no base",
+      "file": "png/fx_bubble.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_res_gold",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "pile of gold coins",
+      "file": "png/ui_res_gold.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_res_wood",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "two crossed logs",
+      "file": "png/ui_res_wood.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_res_stone",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "cut stone block",
+      "file": "png/ui_res_stone.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_res_knowledge",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "open blue book",
+      "file": "png/ui_res_knowledge.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_res_population",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "villager bust",
+      "file": "png/ui_res_population.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_icon_build",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "hammer",
+      "file": "png/ui_icon_build.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_icon_upgrade",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "up arrow on badge",
+      "file": "png/ui_icon_upgrade.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_icon_collect",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "hand holding coin",
+      "file": "png/ui_icon_collect.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_icon_time",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "hourglass",
+      "file": "png/ui_icon_time.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_icon_lock",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "padlock",
+      "file": "png/ui_icon_lock.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "ui_icon_close",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "cross",
+      "file": "png/ui_icon_close.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    },
+    {
+      "id": "logo_village",
+      "lot": "H",
+      "footprint": "icon",
+      "accent": "—",
+      "subject": "cute low-poly emblem: town hall on a small floating island",
+      "file": "png/logo_village.png",
+      "w": null,
+      "h": null,
+      "anchor": [
+        0.5,
+        0.5
+      ],
+      "status": "todo",
+      "note": ""
+    }
+  ]
+}

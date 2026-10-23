@@ -4,7 +4,8 @@
     "productDesigner": "Product designer",
     "about": "About me",
     "contact": "Contact me",
-    "photoAlt": "Photo of {name}"
+    "photoAlt": "Photo of {name}",
+    "realisations": "Work"
   },
   "theme": {
     "enableLight": "Enable light mode",
@@ -44,7 +45,8 @@
     "home": "Home",
     "productDesigner": "Product designer",
     "about": "About me",
-    "contact": "Contact me"
+    "contact": "Contact me",
+    "realisations": "Work"
   },
   "skills": {
     "tools": "Tools",

@@ -1,6 +1,6 @@
 ---
 {
-  "status": "Freelance · Worldline",
+  "status": "自由职业平台 Malt Fiverr · Worldline 产品设计师",
   "title": "欢迎来到我的工作室",
   "titleMuted": "数字内容、产品设计与用户体验。",
   "intro": "我是数字内容创作自由职业者，也是 Worldline 的产品设计师。我打造实用的界面、快速原型，并帮助团队建立稳健的设计系统。",

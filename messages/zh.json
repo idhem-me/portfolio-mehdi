@@ -4,7 +4,8 @@
     "productDesigner": "产品设计师",
     "about": "关于我",
     "contact": "联系我",
-    "photoAlt": "{name}的照片"
+    "photoAlt": "{name}的照片",
+    "realisations": "作品"
   },
   "theme": {
     "enableLight": "启用浅色模式",
@@ -44,7 +45,8 @@
     "home": "首页",
     "productDesigner": "产品设计师",
     "about": "关于我",
-    "contact": "联系我"
+    "contact": "联系我",
+    "realisations": "作品"
   },
   "skills": {
     "tools": "工具",

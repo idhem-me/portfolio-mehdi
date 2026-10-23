@@ -37,23 +37,7 @@
   ],
   "experiencesLead": "Bei Worldline ist das mein Alltag an digitalen Produkten. Als Freelancer übernehme ich gezieltere Aufträge: Landingpages, Websites, Grafikdesign, Lebensläufe, UI Kits, keine vollständigen Produktprojekte.",
   "experiencesTitle": "Erfahrungen",
-  "caseStudiesTitle": "Arbeiten",
-  "caseStudiesIntro": "Detaillierte Fallstudien folgen in Kürze.",
   "skillsTitle": "Kompetenzen",
-  "skillsIntro": "Tools, UX, UI, Projektmanagement und Soft Skills.",
-  "caseStudies": [
-    {
-      "title": "Trusted Interactions",
-      "status": "Demnächst"
-    },
-    {
-      "title": "Open Banking",
-      "status": "Demnächst"
-    },
-    {
-      "title": "Design System",
-      "status": "Demnächst"
-    }
-  ]
+  "skillsIntro": "Tools, UX, UI, Projektmanagement und Soft Skills."
 }
 ---

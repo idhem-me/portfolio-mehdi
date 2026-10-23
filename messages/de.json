@@ -4,7 +4,8 @@
     "productDesigner": "Product designer",
     "about": "Über mich",
     "contact": "Kontakt",
-    "photoAlt": "Foto von {name}"
+    "photoAlt": "Foto von {name}",
+    "realisations": "Arbeiten"
   },
   "theme": {
     "enableLight": "Hellen Modus aktivieren",
@@ -44,7 +45,8 @@
     "home": "Startseite",
     "productDesigner": "Product designer",
     "about": "Über mich",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "realisations": "Arbeiten"
   },
   "skills": {
     "tools": "Tools",
