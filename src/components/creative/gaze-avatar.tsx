@@ -59,7 +59,8 @@ const AVATAR_SRCS = [
  */
 const DEAD_ZONE = 0.12;
 const GYRO_MAX_DEG = 28;
-const CROSSFADE_MS = 220;
+/** Fade-in only on top of a solid base — avoids the mid-crossfade dip/scintillation. */
+const CROSSFADE_MS = 280;
 
 const WINK_EVENT = "portfolio:avatar-wink";
 
@@ -75,6 +76,12 @@ function avatarSrc(head: Head, gaze: Gaze) {
 
 function winkSrc(wink: Wink) {
   return `/img/avatar/${wink}.svg`;
+}
+
+function headFromSrc(src: string): Head | null {
+  if (src.includes("/AG-")) return "AG";
+  if (src.includes("/AD-")) return "AD";
+  return null;
 }
 
 /** Pose from pointer vector (screen: +x right, +y down). */
@@ -131,11 +138,12 @@ export function GazeAvatar() {
   const pendingSrcRef = useRef<string | null>(null);
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [front, setFront] = useState<Layer>({
+  // Base stays fully opaque; overlay fades in on top (no empty dip).
+  const [base, setBase] = useState<Layer>({
     src: avatarSrc("AG", "centre"),
     opacity: 1,
   });
-  const [back, setBack] = useState<Layer>({
+  const [overlay, setOverlay] = useState<Layer>({
     src: avatarSrc("AG", "centre"),
     opacity: 0,
   });
@@ -146,12 +154,20 @@ export function GazeAvatar() {
   const commitSrc = (nextSrc: string) => {
     if (nextSrc === displayedSrcRef.current && !fadingRef.current) return;
 
-    if (reducedMotion) {
-      displayedSrcRef.current = nextSrc;
-      pendingSrcRef.current = null;
+    const prevHead = headFromSrc(displayedSrcRef.current);
+    const nextHead = headFromSrc(nextSrc);
+    // AG ↔ AD (and reduced-motion): swap instantly — no crossfade
+    const instant =
+      reducedMotion ||
+      (prevHead != null && nextHead != null && prevHead !== nextHead);
+
+    if (instant) {
+      if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
       fadingRef.current = false;
-      setFront({ src: nextSrc, opacity: 1 });
-      setBack((b) => ({ ...b, opacity: 0 }));
+      pendingSrcRef.current = null;
+      displayedSrcRef.current = nextSrc;
+      setBase({ src: nextSrc, opacity: 1 });
+      setOverlay({ src: nextSrc, opacity: 0 });
       return;
     }
 
@@ -161,28 +177,28 @@ export function GazeAvatar() {
     }
 
     fadingRef.current = true;
-    const fromSrc = displayedSrcRef.current;
-
-    setBack({ src: fromSrc, opacity: 1 });
-    setFront({ src: nextSrc, opacity: 0 });
     displayedSrcRef.current = nextSrc;
+
+    // Same head: fade new pose in on top of the previous one
+    setOverlay({ src: nextSrc, opacity: 0 });
 
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        setFront({ src: nextSrc, opacity: 1 });
-        setBack({ src: fromSrc, opacity: 0 });
+        setOverlay({ src: nextSrc, opacity: 1 });
       });
     });
 
     if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
     fadeTimerRef.current = setTimeout(() => {
+      setBase({ src: nextSrc, opacity: 1 });
+      setOverlay({ src: nextSrc, opacity: 0 });
       fadingRef.current = false;
       const pending = pendingSrcRef.current;
       pendingSrcRef.current = null;
       if (pending && pending !== displayedSrcRef.current) {
         commitSrc(pending);
       }
-    }, CROSSFADE_MS + 40);
+    }, CROSSFADE_MS + 50);
   };
 
   const poseSrc = () => {
@@ -311,7 +327,7 @@ export function GazeAvatar() {
   }, [reducedMotion, isMobile]);
 
   const layerClass =
-    "absolute inset-0 size-full object-contain transition-opacity ease-out motion-reduce:transition-none";
+    "absolute inset-0 size-full object-contain motion-reduce:transition-none";
 
   return (
     <span
@@ -319,31 +335,33 @@ export function GazeAvatar() {
       data-physics-item
       data-physics-exact
       aria-hidden
-      className="relative inline-block size-36 shrink-0 select-none"
+      className={cn(
+        "relative inline-block size-36 shrink-0 select-none",
+        // Soft lift via --foreground: gris léger en light, proche du blanc en dark
+        "drop-shadow-[0_2px_6px_color-mix(in_oklch,var(--foreground),transparent_88%)]",
+        "dark:drop-shadow-[0_2px_8px_color-mix(in_oklch,var(--foreground),transparent_72%)]",
+      )}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={back.src}
+        src={base.src}
         alt=""
         width={144}
         height={144}
         draggable={false}
         className={cn(layerClass)}
-        style={{
-          opacity: back.opacity,
-          transitionDuration: reducedMotion ? "0ms" : `${CROSSFADE_MS}ms`,
-        }}
+        style={{ opacity: 1 }}
       />
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={front.src}
+        src={overlay.src}
         alt=""
         width={144}
         height={144}
         draggable={false}
-        className={cn(layerClass)}
+        className={cn(layerClass, "transition-opacity ease-in-out")}
         style={{
-          opacity: front.opacity,
+          opacity: overlay.opacity,
           transitionDuration: reducedMotion ? "0ms" : `${CROSSFADE_MS}ms`,
         }}
       />
