@@ -1,15 +1,38 @@
-/** Identifiants de bâtiments V1. */
+/** Identifiants de bâtiments. */
 export type BuildingTypeId =
   | "townhall"
   | "house"
+  | "shop"
   | "sawmill"
   | "quarry"
+  | "factory"
   | "school"
   | "market"
   | "warehouse"
   | "library"
   | "fountain"
+  | "coal_plant"
+  | "solar_plant"
+  | "nuclear_plant"
   | "monument";
+
+export type BuildingCategory =
+  | "municipal"
+  | "residential"
+  | "commerce"
+  | "industry"
+  | "education"
+  | "culture"
+  | "leisure"
+  | "energy"
+  | "service";
+
+export type NeedId = "commerce" | "education" | "culture" | "leisure";
+
+export type ServesSpec = {
+  need: NeedId;
+  capacity: number;
+};
 
 export type ResourceId = "gold" | "wood" | "stone" | "knowledge";
 
@@ -24,6 +47,7 @@ export type UnlockCondition =
 export type BuildingDef = {
   id: BuildingTypeId;
   nameFr: string;
+  category: BuildingCategory;
   width: number;
   height: number;
   unlock: UnlockCondition;
@@ -31,11 +55,19 @@ export type BuildingDef = {
   baseTimeSec: number;
   produces: ResourceId | null;
   baseProdPerSec: number;
-  workers: number;
-  populationBonus: number;
+  /** MW : + produit, − consomme. */
+  power: number;
+  /** Emplois offerts. */
+  jobs: number;
+  /** Capacité de logement. */
+  housing: number;
+  serves: ServesSpec | null;
+  pollution: number;
   unique?: boolean;
   storageBonus?: boolean;
   adjacentProdBonus?: boolean;
+  /** Monument : multiplie la capacité culture ×2. */
+  cultureMultiplier?: number;
 };
 
 export type Construction = {
@@ -68,7 +100,7 @@ export type Cell = {
 };
 
 export type GameState = {
-  version: 1;
+  version: 2;
   resources: Resources;
   knowledgeEarned: number;
   buildings: PlacedBuilding[];
@@ -81,6 +113,10 @@ export type GameState = {
   placingType: BuildingTypeId | null;
   selectedBuildingId: string | null;
   timeScale: number;
+  /** Population réelle (évolue dans tick). */
+  population: number;
+  /** Horodatage jeu de la dernière maj population. */
+  populationUpdatedAt: number;
 };
 
 export type ActionResult =

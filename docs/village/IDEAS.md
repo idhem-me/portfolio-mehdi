@@ -1,5 +1,20 @@
 # Village — idées pour plus tard
 
+## Gameplay « Ville vivante » (V2)
+
+Flux dérivés recalculés par `computeCity(state, now)` dans `src/game/core/city.ts` (non stockés) :
+
+- **Électricité** : offre (centrales × staffing) vs consommation (MW).
+- **Emplois** : offerts par les bâtiments vs actifs (`floor(pop × 0.6)`).
+- **Logement** : capacité maisons/mairie vs population réelle.
+- **Besoins** N1–N3 (commerce → éducation → culture/loisirs), couverture globale.
+- **Efficiency** = powerRatio × staffingRatio (centrales : staffing seul) ; multiplie la production.
+- **Population** : converge vers `housing × attractivité` via `exp(−dt / 60s)` dans `tick()`.
+- **Impôts** : `pop × TAX_PER_HAB × mult(N)` collectés via la mairie.
+- État sérialisable : `population`, `populationUpdatedAt`, `version: 2` + `migrate()`.
+
+On peut construire sans personnel : le bâtiment tourne au ralenti.
+
 ## Modèle de carte (V1 actuel)
 - Grille de **parcelles 8×8** ; chaque parcelle = 2×2 blocs + routes partagées (période 3).
 - Grille de cases : `MAP_SIZE = 24` (8×3). Cases `road` / `highway` / `block`.

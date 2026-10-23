@@ -9,7 +9,8 @@ import {
   tick,
 } from "../actions";
 import { parcelId, startParcelIds } from "../balance";
-import { accumulatedStock, parcelCost, workersAvailable } from "../economy";
+import { buildingEfficiency, computeCity } from "../city";
+import { accumulatedStock, parcelCost } from "../economy";
 import {
   canPlaceFootprint,
   isRoadVisible,
@@ -39,13 +40,11 @@ describe("tick / construction", () => {
   it("finalise un chantier après un saut de temps", () => {
     const t0 = 1_000_000;
     let state = rich(createInitialState(t0));
-    const o = townhallOrigin();
-    // Maison sur un autre bloc libre de la même parcelle mairie (2×2 pleine)
-    // → placer sur une des 3 autres parcelles centrales
+    // ids[0]=mairie, ids[1]=4 maisons preview → autre parcelle
     const ids = startParcelIds();
-    const other = ids.find((id) => id !== ids[0])!;
-    const [px, py] = other.split(",").map(Number) as [number, number];
-    const origin = parcelBlockOrigin(px, py);
+    const free = ids.find((id) => id !== ids[0] && id !== ids[1])!;
+    const [fpx, fpy] = free.split(",").map(Number) as [number, number];
+    const origin = parcelBlockOrigin(fpx, fpy);
     const res = placeBuilding(state, "house", origin.x, origin.y, t0);
     expect(res.ok).toBe(true);
     state = tick(res.state, t0 + 10_000);
@@ -90,7 +89,8 @@ describe("placement parcelles / routes", () => {
   it("accepte un placement 1×1 sur un bloc libre", () => {
     const state = rich(createInitialState(0));
     const ids = startParcelIds();
-    const other = ids[1]!;
+    // ids[1] = parcelle 4 maisons preview ; prendre ids[2]
+    const other = ids[2]!;
     const [px, py] = other.split(",").map(Number) as [number, number];
     const o = parcelBlockOrigin(px, py);
     const res = placeBuilding(state, "house", o.x, o.y, 0);
@@ -143,15 +143,21 @@ describe("achat de parcelle", () => {
   });
 });
 
-describe("travailleurs / chantiers", () => {
-  it("refuse si travailleurs insuffisants", () => {
+describe("emplois / chantiers", () => {
+  it("autorise la construction malgré le sous-effectif", () => {
     let state = rich(createInitialState(0));
-    const ids = startParcelIds().slice(1); // 3 parcelles libres
+    // slice(2) : parcelles encore libres (ids[1] = 4 maisons)
+    const ids = startParcelIds().slice(2);
     const spots: { x: number; y: number }[] = [];
     for (const id of ids) {
       const [px, py] = id.split(",").map(Number) as [number, number];
       const o = parcelBlockOrigin(px, py);
-      spots.push(o, { x: o.x + 1, y: o.y });
+      spots.push(
+        { x: o.x, y: o.y },
+        { x: o.x + 1, y: o.y },
+        { x: o.x, y: o.y + 1 },
+        { x: o.x + 1, y: o.y + 1 }
+      );
     }
     for (let i = 0; i < 2; i++) {
       const s = spots[i]!;
@@ -159,16 +165,21 @@ describe("travailleurs / chantiers", () => {
       expect(r.ok).toBe(true);
       state = tick(r.state, i * 1000 + 20_000);
     }
-    expect(workersAvailable(state)).toBe(1);
     const s = spots[2]!;
     const r3 = placeBuilding(state, "sawmill", s.x, s.y, 50_000);
-    expect(r3.ok).toBe(false);
-    expect(r3.message).toMatch(/Travailleurs/i);
+    expect(r3.ok).toBe(true);
+    state = tick(r3.state, 100_000);
+    // Forcer pop 0 (tick a pu faire croître via les maisons preview)
+    state = { ...state, population: 0 };
+    const mill = state.buildings.find((b) => b.type === "sawmill")!;
+    const city = computeCity(state);
+    expect(city.staffingRatio).toBe(0);
+    expect(buildingEfficiency(mill, city)).toBe(0);
   });
 
   it("refuse trop de chantiers simultanés", () => {
     let state = rich(createInitialState(0));
-    const ids = startParcelIds().slice(1);
+    const ids = startParcelIds().slice(2);
     const a = parcelBlockOrigin(
       Number(ids[0]!.split(",")[0]),
       Number(ids[0]!.split(",")[1])
@@ -188,10 +199,21 @@ describe("travailleurs / chantiers", () => {
 
 describe("récolte", () => {
   it("stock plafonné ; lastCollectedAt reset", () => {
-    const state = createInitialState(0);
+    // Centrale + pop pour efficiency > 0 (sinon prod nulle)
+    let state = rich(createInitialState(0));
+    const ids = startParcelIds().slice(2);
+    const o = parcelBlockOrigin(
+      Number(ids[0]!.split(",")[0]),
+      Number(ids[0]!.split(",")[1])
+    );
+    const placed = placeBuilding(state, "coal_plant", o.x, o.y, 0);
+    expect(placed.ok).toBe(true);
+    state = tick(placed.state, 100_000);
+    state = { ...state, population: 50, populationUpdatedAt: 100_000 };
     const th = state.buildings[0]!;
     const far = 1_000_000_000;
     const stock = accumulatedStock(state, th, far);
+    expect(stock).toBeGreaterThan(0);
     const res = collectBuilding(state, th.id, far);
     expect(res.ok).toBe(true);
     expect(res.state.buildings[0]!.lastCollectedAt).toBe(far);

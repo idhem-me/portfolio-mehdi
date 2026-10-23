@@ -48,25 +48,30 @@ P = {k: f"Parametres!$B${i}" for i, (k, _, _) in enumerate(params, 2)}
 
 # ------------------------------------------------------------------ Bâtiments
 b = wb.create_sheet("Batiments")
-header(b, 1, ["id", "Nom", "Taille", "Déblocage", "Or", "Bois", "Pierre",
-              "Temps base (s)", "Ressource", "Prod/s base", "Travailleurs", "+Pop"])
+header(b, 1, ["id", "Nom", "Catégorie", "Taille", "Déblocage", "Or", "Bois", "Pierre",
+              "Temps base (s)", "Ressource", "Prod/s base", "MW", "Emplois", "Logement", "Pollution"])
 buildings = [
-    ("townhall", "Mairie", "2x2", "Départ", 150, 80, 0, 30, "gold", 0.2, 0, 5),
-    ("house", "Maison", "1x1", "Départ", 20, 10, 0, 10, "gold", 0.1, 0, 4),
-    ("sawmill", "Scierie", "1x1", "Départ", 30, 0, 0, 15, "wood", 0.25, 2, 0),
-    ("quarry", "Carrière", "1x1", "Mairie 2", 60, 40, 0, 30, "stone", 0.15, 3, 0),
-    ("school", "École", "2x1", "Mairie 2", 120, 80, 0, 60, "knowledge", 0.05, 3, 0),
-    ("market", "Marché", "2x2", "50 savoir", 300, 200, 100, 120, "gold", 0.5, 4, 0),
-    ("warehouse", "Entrepôt", "1x1", "Mairie 3", 200, 150, 80, 90, "-", 0, 1, 0),
-    ("library", "Bibliothèque", "2x2", "200 savoir", 600, 300, 300, 300, "knowledge", 0.2, 4, 0),
-    ("fountain", "Fontaine", "1x1", "Mairie 3", 150, 0, 50, 60, "-", 0, 0, 0),
-    ("monument", "Monument", "3x3", "Mairie 8 + 1000 savoir", 50000, 20000, 20000, 3600, "-", 0, 0, 0),
+    ("townhall", "Mairie", "municipal", "2x2", "Départ", 150, 80, 0, 30, "gold", 0.2, -2, 3, 5, 0),
+    ("house", "Maison", "residential", "1x1", "Départ", 20, 10, 0, 10, "gold", 0.1, -1, 0, 4, 0),
+    ("shop", "Boutique", "commerce", "1x1", "Départ", 80, 40, 0, 40, "gold", 0.25, -2, 3, 0, 0),
+    ("sawmill", "Scierie", "industry", "1x1", "Départ", 30, 0, 0, 15, "wood", 0.25, -2, 2, 0, 0),
+    ("quarry", "Carrière", "industry", "1x1", "Mairie 2", 60, 40, 0, 30, "stone", 0.15, -3, 3, 0, 0),
+    ("factory", "Usine", "industry", "2x1", "Mairie 3", 250, 100, 150, 90, "gold", 0.4, -5, 8, 0, 1),
+    ("school", "École", "education", "2x1", "Mairie 2", 120, 80, 0, 60, "knowledge", 0.05, -2, 3, 0, 0),
+    ("market", "Marché", "commerce", "2x2", "50 savoir", 300, 200, 100, 120, "gold", 0.5, -4, 6, 0, 0),
+    ("warehouse", "Entrepôt", "service", "1x1", "Mairie 3", 200, 150, 80, 90, "-", 0, -1, 1, 0, 0),
+    ("library", "Bibliothèque", "culture", "2x2", "200 savoir", 600, 300, 300, 300, "knowledge", 0.2, -3, 4, 0, 0),
+    ("fountain", "Fontaine", "leisure", "1x1", "Mairie 3", 150, 0, 50, 60, "-", 0, 0, 0, 0, -1),
+    ("coal_plant", "Centrale charbon", "energy", "1x1", "Départ", 100, 50, 80, 60, "-", 0, 20, 4, 0, 1),
+    ("solar_plant", "Centrale solaire", "energy", "2x1", "Mairie 4", 400, 100, 200, 120, "-", 0, 12, 1, 0, 0),
+    ("nuclear_plant", "Centrale nucléaire", "energy", "2x2", "Mairie 6 + 500 savoir", 8000, 2000, 3000, 600, "-", 0, 150, 12, 0, 0),
+    ("monument", "Monument", "culture", "2x2", "Mairie 8 + 1000 savoir", 50000, 20000, 20000, 3600, "-", 0, -5, 6, 0, 0),
 ]
 for r, row in enumerate(buildings, 2):
     for c, v in enumerate(row, 1):
         cell = b.cell(row=r, column=c, value=v); cell.border = BORDER
-        if c >= 5 and c != 9: cell.fill = INPUT
-widths(b, [12, 14, 7, 22, 9, 9, 9, 13, 11, 11, 12, 7])
+        if c >= 6 and c != 10: cell.fill = INPUT
+widths(b, [14, 16, 12, 7, 22, 9, 9, 9, 13, 11, 11, 7, 9, 9, 10])
 b.freeze_panes = "C2"
 LAST = len(buildings) + 1
 
@@ -82,8 +87,10 @@ def look(col):
     return f"INDEX(Batiments!${col}$2:${col}${LAST},MATCH($B$1,Batiments!$A$2:$A${LAST},0))"
 
 # ligne de base (helpers)
-labels = [("D2", "Or base", "E"), ("F2", "Bois base", "F"), ("H2", "Pierre base", "G"),
-          ("J2", "Temps base", "H"), ("L2", "Prod base", "J")]
+# Colonnes Batiments : A id, B nom, C cat, D taille, E débloc, F or, G bois, H pierre,
+# I temps, J ressource, K prod, L MW, M emplois, N logement, O pollution
+labels = [("D2", "Or base", "F"), ("F2", "Bois base", "G"), ("H2", "Pierre base", "H"),
+          ("J2", "Temps base", "I"), ("L2", "Prod base", "K")]
 for cell, lab, col in labels:
     u[cell] = lab
     nxt = u[cell].offset(column=1); nxt.value = f"={look(col)}"; nxt.font = Font(bold=True)

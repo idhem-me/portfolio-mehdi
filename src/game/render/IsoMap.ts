@@ -16,13 +16,9 @@ import {
 import { parcelCost } from "@/game/core/economy";
 import type { GameState } from "@/game/core/types";
 import {
-  BEACH,
   BUYABLE_OUTLINE,
   CLIFF,
   CLIFF_DARK,
-  GRASS,
-  GRASS_DARK,
-  GRASS_EDGE,
   HIGHWAY,
   ROAD,
   ROAD_EDGE,
@@ -32,34 +28,40 @@ import {
 } from "./palette";
 import { TILE_H, TILE_W, gridToScreen } from "./iso";
 import { drawDecorPlaceholder } from "./placeholders";
+import {
+  loadGrassAndWater,
+  placeTileSprite,
+  type GroundTileAsset,
+} from "./tileAssets";
 
 type TexBag = {
   generateTexture: (displayObject: Graphics) => Texture;
 };
 
 /**
- * Sol jouable : herbe / forêt verrouillée / routes auto-tile / autoroute.
+ * Sol jouable : herbe PNG / forêt teintée / routes auto-tile / autoroute.
  */
 export class IsoMap {
   readonly ground = new Container();
   readonly props = new Container();
-  private grassTex: Texture[] = [];
-  private forestTex: Texture[] = [];
+  private grassAsset: GroundTileAsset | null = null;
   private roadTex = new Map<number, Texture>();
   private highwayTex: Texture | null = null;
   private cliffTex: Texture | null = null;
-  private beachTex: Texture | null = null;
   private priceStyle: TextStyle | null = null;
   private outlineGfx = new Graphics();
   private priceLabels = new Container();
   private forestTrees = new Container();
+  private tilesLayer = new Container();
   private built = false;
   private lastKey = "";
 
   constructor() {
     this.props.sortableChildren = true;
     this.forestTrees.sortableChildren = true;
+    this.tilesLayer.sortableChildren = true;
     this.props.addChild(this.forestTrees);
+    this.ground.addChild(this.tilesLayer);
     this.ground.addChild(this.outlineGfx);
     this.ground.addChild(this.priceLabels);
   }
@@ -67,18 +69,8 @@ export class IsoMap {
   async bake(renderer: TexBag): Promise<void> {
     if (this.built) return;
 
-    for (let i = 0; i < 3; i++) {
-      this.grassTex.push(
-        this.bakeDiamond(renderer, hexToNum(GRASS[i]!), hexToNum(GRASS_EDGE))
-      );
-      this.forestTex.push(
-        this.bakeDiamond(
-          renderer,
-          hexToNum(GRASS_DARK[i]!),
-          hexToNum(GRASS_EDGE)
-        )
-      );
-    }
+    const { grass } = await loadGrassAndWater();
+    this.grassAsset = grass;
 
     // Road masks 0..15
     for (let mask = 0; mask < 16; mask++) {
@@ -115,22 +107,6 @@ export class IsoMap {
     this.cliffTex = renderer.generateTexture(cliff);
     cliff.destroy();
 
-    const beach = new Graphics();
-    beach
-      .poly([
-        TILE_W / 2,
-        0,
-        TILE_W,
-        TILE_H / 2,
-        TILE_W / 2,
-        TILE_H,
-        0,
-        TILE_H / 2,
-      ])
-      .fill({ color: hexToNum(BEACH) });
-    this.beachTex = renderer.generateTexture(beach);
-    beach.destroy();
-
     this.priceStyle = new TextStyle({
       fontFamily: "system-ui, sans-serif",
       fontSize: 14,
@@ -157,35 +133,30 @@ export class IsoMap {
   }
 
   private rebuild(state: GameState, hoverParcel: string | null): void {
-    // Keep outline + price as children 0,1 — clear others carefully
-    const keep = new Set([this.outlineGfx, this.priceLabels]);
-    for (const ch of [...this.ground.children]) {
-      if (!keep.has(ch)) this.ground.removeChild(ch);
-    }
+    this.tilesLayer.removeChildren();
     this.forestTrees.removeChildren();
     this.outlineGfx.clear();
     this.priceLabels.removeChildren();
 
     const rand = mulberry32(MAP_SEED ^ 0xf07e);
+    const grass = this.grassAsset;
 
     for (let y = 0; y < MAP_SIZE; y++) {
       for (let x = 0; x < MAP_SIZE; x++) {
         const cell = state.cells[y * MAP_SIZE + x]!;
         const top = gridToScreen(x, y);
-        const variant = (x * 7 + y * 13) % 3;
 
         if (cell.kind === "block" && cell.parcelId) {
           const unlocked = state.unlockedParcels.includes(cell.parcelId);
-          const tex = unlocked
-            ? this.grassTex[variant]!
-            : this.forestTex[variant]!;
-          const spr = new Sprite(tex);
-          spr.x = top.x - TILE_W / 2;
-          spr.y = top.y;
-          this.ground.addChildAt(spr, 0);
+          if (grass) {
+            const spr = placeTileSprite(grass, x, y, {
+              tint: unlocked ? 0xffffff : 0x6a8a55,
+              alpha: unlocked ? 1 : 0.92,
+            });
+            this.tilesLayer.addChild(spr);
+          }
 
           if (!unlocked) {
-            // 1–3 sapins par bloc
             const n = 1 + Math.floor(rand() * 3);
             for (let i = 0; i < n; i++) {
               const g = new Graphics();
@@ -215,7 +186,8 @@ export class IsoMap {
           const spr = new Sprite(tex);
           spr.x = top.x - TILE_W / 2;
           spr.y = top.y;
-          this.ground.addChildAt(spr, 0);
+          spr.zIndex = x + y;
+          this.tilesLayer.addChild(spr);
 
           if (
             this.cliffTex &&
@@ -224,7 +196,8 @@ export class IsoMap {
             const c = new Sprite(this.cliffTex);
             c.x = top.x - TILE_W / 2;
             c.y = top.y;
-            this.ground.addChildAt(c, 0);
+            c.zIndex = x + y + 0.05;
+            this.tilesLayer.addChild(c);
           }
         }
       }
@@ -268,29 +241,6 @@ export class IsoMap {
         color: hexToNum(BUYABLE_OUTLINE),
         alpha: highlight ? 1 : 0.7,
       });
-  }
-
-  private bakeDiamond(
-    renderer: TexBag,
-    color: number,
-    edge: number
-  ): Texture {
-    const g = new Graphics();
-    g.poly([
-      TILE_W / 2,
-      0,
-      TILE_W,
-      TILE_H / 2,
-      TILE_W / 2,
-      TILE_H,
-      0,
-      TILE_H / 2,
-    ])
-      .fill({ color })
-      .stroke({ width: 1.5, color: edge, alpha: 0.5 });
-    const tex = renderer.generateTexture(g);
-    g.destroy();
-    return tex;
   }
 
   private bakeRoad(

@@ -73,7 +73,6 @@ function GameInner() {
     let app: Awaited<ReturnType<typeof createPixiApp>> | null = null;
     let unsub: (() => void) | null = null;
     let tickTimer: ReturnType<typeof setInterval> | null = null;
-    let cloudTicker: ((t: { deltaMS: number }) => void) | null = null;
     let ro: ResizeObserver | null = null;
     const pointers = new Map<number, PointerRec>();
     let pinchStartDist = 0;
@@ -82,9 +81,6 @@ function GameInner() {
     let bview: BuildingView | null = null;
     let isoMap: IsoMap | null = null;
     let scenery: Scenery | null = null;
-
-    const reducedMotion = () =>
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const updateGhost = (s: GameState = gameStore.getState()) => {
       if (!bview) return;
@@ -142,6 +138,11 @@ function GameInner() {
         bindCamera(camera);
 
         scenery = new Scenery();
+        await scenery.loadAssets();
+        if (cancelled) {
+          a.destroy(true, { children: true, texture: true });
+          return;
+        }
         scenery.build();
         world.addChild(scenery.root);
 
@@ -156,6 +157,11 @@ function GameInner() {
 
         bview = new BuildingView();
         isoMap.props.addChild(bview.layer);
+        await bview.loadAssets();
+        if (cancelled) {
+          a.destroy(true, { children: true, texture: true });
+          return;
+        }
 
         sync();
         camera.fitStartZone();
@@ -164,11 +170,6 @@ function GameInner() {
         tickTimer = setInterval(() => {
           gameStore.getState().doTick(Date.now());
         }, 250);
-
-        cloudTicker = () => {
-          scenery?.tickClouds(16, reducedMotion());
-        };
-        a.ticker.add(cloudTicker);
 
         document.addEventListener("visibilitychange", onVisibility);
 
@@ -211,17 +212,10 @@ function GameInner() {
             return;
           }
 
-          const hit = s.buildings.find((b) => {
-            const def = getBuildingDef(b.type);
-            return (
-              tile.x >= b.x &&
-              tile.x < b.x + def.width &&
-              tile.y >= b.y &&
-              tile.y < b.y + def.height
-            );
-          });
-          if (hit) {
-            gameStore.getState().select(hit.id);
+          // Clic sur le sprite opaque (devant → derrière), pas seulement la tuile sol
+          const hitId = bview?.hitTest(worldPt.x, worldPt.y, s) ?? null;
+          if (hitId) {
+            gameStore.getState().select(hitId);
             return;
           }
 
@@ -384,7 +378,6 @@ function GameInner() {
         window.addEventListener("keydown", onKey);
 
         (a as unknown as { __cleanup?: () => void }).__cleanup = () => {
-          if (cloudTicker) a.ticker.remove(cloudTicker);
           canvas.removeEventListener("pointerdown", onPointerDown);
           canvas.removeEventListener("pointermove", onPointerMove);
           canvas.removeEventListener("pointerup", onPointerUp);
@@ -421,7 +414,7 @@ function GameInner() {
       <div
         className="flex h-dvh flex-col items-center justify-center gap-4 px-6 text-center"
         style={{
-          background: "linear-gradient(180deg, #7FD3E0 0%, #3BA7C4 100%)",
+          background: "linear-gradient(180deg, #5eb8d4 0%, #2a8aaa 100%)",
         }}
       >
         <p className="text-stone-800">
@@ -443,7 +436,7 @@ function GameInner() {
       lang="fr"
       className="relative h-dvh w-full overflow-hidden"
       style={{
-        background: "linear-gradient(180deg, #7FD3E0 0%, #3BA7C4 100%)",
+        background: "linear-gradient(180deg, #5eb8d4 0%, #2a8aaa 100%)",
         touchAction: "none",
         userSelect: "none",
         WebkitTouchCallout: "none",

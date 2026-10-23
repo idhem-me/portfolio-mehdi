@@ -1,45 +1,129 @@
 import { Container, Graphics } from "pixi.js";
-import { MAP_SEED, MAP_SIZE, SCENERY_RING } from "@/game/core/balance";
+import {
+  MAP_SEED,
+  MAP_SIZE,
+  SCENERY_EXTENT,
+  SCENERY_RING,
+} from "@/game/core/balance";
 import { mulberry32 } from "@/game/core/rng";
 import {
-  BEACH,
   CLIFF,
-  GRASS,
   MOUNTAIN,
   MOUNTAIN_SNOW,
-  WATER_FOAM,
   facetColors,
   hexToNum,
 } from "./palette";
 import { TILE_H, TILE_W, gridToScreen } from "./iso";
+import {
+  loadGrassAndWater,
+  placeTileSprite,
+  type GroundTileAsset,
+} from "./tileAssets";
 
 /**
- * Décor hors-jeu, entièrement positionné via gridToScreen :
- * montagnes (nord), anneau île irrégulier, écume, îlots, nuages.
+ * Décor hors-jeu : eau / herbe PNG, montagnes, îlots.
  */
 export class Scenery {
   readonly root = new Container();
-  readonly clouds = new Container();
+  private waterLayer = new Container();
+  private landLayer = new Container();
   private drawn = false;
-  private cloudOffsets: { g: Graphics; baseX: number; speed: number }[] = [];
+  private grass: GroundTileAsset | null = null;
+  private water: GroundTileAsset | null = null;
+
+  async loadAssets(): Promise<void> {
+    const assets = await loadGrassAndWater();
+    this.grass = assets.grass;
+    this.water = assets.water;
+  }
 
   build(): void {
     if (this.drawn) return;
     this.drawn = true;
+    this.waterLayer.sortableChildren = true;
+    this.landLayer.sortableChildren = true;
+    this.root.addChild(this.waterLayer);
     this.root.addChild(this.drawMountains());
-    this.root.addChild(this.drawIslandRing());
-    this.root.addChild(this.drawFoam());
+    this.root.addChild(this.landLayer);
+    this.drawWaterAndLand();
     this.root.addChild(this.drawIslets());
-    this.root.addChild(this.clouds);
-    this.buildClouds();
   }
 
-  tickClouds(dtMs: number, reducedMotion: boolean): void {
-    if (reducedMotion) return;
-    for (const c of this.cloudOffsets) {
-      c.g.x = c.baseX + ((performance.now() * c.speed) % (TILE_W * 20));
+  private drawWaterAndLand(): void {
+    const grass = this.grass;
+    const water = this.water;
+    const r = mulberry32(MAP_SEED ^ 0x151a);
+    const pad = SCENERY_EXTENT;
+    const mid = MAP_SIZE - 1;
+
+    /**
+     * Remplissage « rectangle écran » (contraintes sum/diff en grille) :
+     * un carré grille → losange écran (coins AABB vides).
+     * Une boîte |diff|×sum → rectangle écran (plus de vide bleu aux coins).
+     */
+    const sumMin = -2 * pad;
+    const sumMax = 2 * mid + 2 * pad;
+    const diffLim = mid + 2 * pad;
+    const lo = -2 * pad - 1;
+    const hi = MAP_SIZE + 2 * pad + 1;
+
+    for (let y = lo; y < hi; y++) {
+      for (let x = lo; x < hi; x++) {
+        if (x >= 0 && x < MAP_SIZE && y >= 0 && y < MAP_SIZE) continue;
+
+        const sum = x + y;
+        const diff = x - y;
+        if (sum < sumMin || sum > sumMax) continue;
+        if (Math.abs(diff) > diffLim) continue;
+
+        const depth = sum - mid; // <0 nord, >0 sud
+
+        if (grass && depth <= 0) {
+          this.landLayer.addChild(placeTileSprite(grass, x, y, { alpha: 1 }));
+        }
+
+        if (water && depth > 0) {
+          this.waterLayer.addChild(
+            placeTileSprite(water, x, y, {
+              alpha: 0.97 + r() * 0.03,
+              tint: r() > 0.75 ? 0xd8eeff : 0xffffff,
+            })
+          );
+        }
+
+        // Falaises sud près de la côte uniquement
+        const distOut = Math.min(
+          x < 0 ? -x : x >= MAP_SIZE ? x - MAP_SIZE + 1 : 99,
+          y < 0 ? -y : y >= MAP_SIZE ? y - MAP_SIZE + 1 : 99
+        );
+        if (
+          grass &&
+          depth > 0 &&
+          distOut > 0 &&
+          distOut <= SCENERY_RING &&
+          (x >= MAP_SIZE - 1 || y >= MAP_SIZE - 1) &&
+          r() > 0.55
+        ) {
+          const top = gridToScreen(x, y);
+          const cliff = new Graphics();
+          const cf = facetColors(CLIFF);
+          cliff
+            .poly([
+              top.x,
+              top.y + TILE_H,
+              top.x + TILE_W / 2,
+              top.y + TILE_H / 2,
+              top.x + TILE_W / 2,
+              top.y + TILE_H / 2 + 22,
+              top.x,
+              top.y + TILE_H + 22,
+            ])
+            .fill({ color: cf.right, alpha: 0.95 });
+          cliff.zIndex = x + y + 0.1;
+          this.landLayer.addChild(cliff);
+        }
+      }
     }
-    void dtMs;
   }
 
   private drawMountains(): Container {
@@ -87,106 +171,15 @@ export class Scenery {
         ]).fill({ color: hexToNum(MOUNTAIN_SNOW), alpha: 0.92 });
       }
     }
-    // Voile bleuté
-    g.rect(spanL, baseY - 40, spanR - spanL, 70).fill({
-      color: 0xb8d4e8,
-      alpha: 0.28,
-    });
-    layer.addChild(g);
-    return layer;
-  }
-
-  private drawIslandRing(): Container {
-    const layer = new Container();
-    const g = new Graphics();
-    const r = mulberry32(MAP_SEED ^ 0x151a);
-    const ring = SCENERY_RING;
-
-    for (let y = -ring; y < MAP_SIZE + ring; y++) {
-      for (let x = -ring; x < MAP_SIZE + ring; x++) {
-        if (x >= 0 && x < MAP_SIZE && y >= 0 && y < MAP_SIZE) continue;
-        // Irrégulier : skip aléatoire pour contour organique
-        const dist = Math.min(
-          x < 0 ? -x : x >= MAP_SIZE ? x - MAP_SIZE + 1 : ring,
-          y < 0 ? -y : y >= MAP_SIZE ? y - MAP_SIZE + 1 : ring
-        );
-        if (dist > ring) continue;
-        if (r() > 0.72 + dist * 0.08) continue;
-
-        const top = gridToScreen(x, y);
-        const southEast = x >= MAP_SIZE - 1 || y >= MAP_SIZE - 1 || x < 0 && y > MAP_SIZE / 2;
-        const isBeach =
-          (x >= MAP_SIZE || y >= MAP_SIZE) && r() > 0.35;
-        const color = isBeach
-          ? hexToNum(BEACH)
-          : hexToNum(GRASS[Math.floor(r() * 3)]!);
-
-        g.poly([
-          top.x,
-          top.y,
-          top.x + TILE_W / 2,
-          top.y + TILE_H / 2,
-          top.x,
-          top.y + TILE_H,
-          top.x - TILE_W / 2,
-          top.y + TILE_H / 2,
-        ]).fill({ color, alpha: 0.9 });
-
-        // Falaises sud / est
-        if (southEast && (x >= MAP_SIZE - 1 || y >= MAP_SIZE - 1) && r() > 0.4) {
-          const cf = facetColors(CLIFF);
-          g.poly([
-            top.x,
-            top.y + TILE_H,
-            top.x + TILE_W / 2,
-            top.y + TILE_H / 2,
-            top.x + TILE_W / 2,
-            top.y + TILE_H / 2 + 22,
-            top.x,
-            top.y + TILE_H + 22,
-          ]).fill({ color: cf.right, alpha: 0.95 });
-        }
-      }
-    }
-    layer.addChild(g);
-    return layer;
-  }
-
-  private drawFoam(): Container {
-    const layer = new Container();
-    const g = new Graphics();
-    const r = mulberry32(MAP_SEED ^ 0xf0a);
-    const foam = hexToNum(WATER_FOAM);
-    // Écume facettée autour du bord SE de l'île
-    for (let i = -2; i < MAP_SIZE + 3; i++) {
-      for (const [x, y] of [
-        [MAP_SIZE + 1, i],
-        [i, MAP_SIZE + 1],
-        [MAP_SIZE + 2, i],
-        [i, MAP_SIZE + 2],
-      ] as const) {
-        if (r() > 0.55) continue;
-        const top = gridToScreen(x, y);
-        g.poly([
-          top.x,
-          top.y + 4,
-          top.x + TILE_W * 0.35,
-          top.y + TILE_H * 0.35,
-          top.x,
-          top.y + TILE_H * 0.55,
-          top.x - TILE_W * 0.35,
-          top.y + TILE_H * 0.35,
-        ]).fill({ color: foam, alpha: 0.55 + r() * 0.3 });
-      }
-    }
     layer.addChild(g);
     return layer;
   }
 
   private drawIslets(): Container {
     const layer = new Container();
-    const g = new Graphics();
+    layer.sortableChildren = true;
     const r = mulberry32(MAP_SEED ^ 0x151e7);
+    const grass = this.grass;
     const spots = [
       [MAP_SIZE + 4, MAP_SIZE + 2],
       [MAP_SIZE + 3, MAP_SIZE + 5],
@@ -195,54 +188,20 @@ export class Scenery {
     ];
     for (const [gx, gy] of spots) {
       if (r() > 0.85) continue;
+      if (grass) {
+        layer.addChild(placeTileSprite(grass, gx, gy));
+      }
       const top = gridToScreen(gx, gy);
-      const rock = facetColors("#8A8A82");
-      g.poly([
-        top.x,
-        top.y,
-        top.x + TILE_W * 0.4,
-        top.y + TILE_H * 0.35,
-        top.x,
-        top.y + TILE_H * 0.7,
-        top.x - TILE_W * 0.4,
-        top.y + TILE_H * 0.35,
-      ]).fill({ color: rock.left });
-      // Sapin
+      const pine = new Graphics();
       const cx = top.x;
       const cy = top.y + TILE_H * 0.2;
       const leaf = facetColors("#3D6B3A");
-      g.poly([cx, cy - 36, cx + 12, cy - 8, cx - 12, cy - 8]).fill({
+      pine.poly([cx, cy - 36, cx + 12, cy - 8, cx - 12, cy - 8]).fill({
         color: leaf.top,
       });
+      pine.zIndex = gx + gy + 0.2;
+      layer.addChild(pine);
     }
-    layer.addChild(g);
     return layer;
   }
-
-  private buildClouds(): void {
-    const r = mulberry32(MAP_SEED ^ 0xc10d);
-    const far = gridToScreen(MAP_SIZE / 2, 0);
-    for (let i = 0; i < 3; i++) {
-      const g = new Graphics();
-      const cx = far.x + (r() - 0.5) * TILE_W * 12;
-      const cy = far.y - 80 - r() * 60;
-      drawCloud(g, 0, 0);
-      g.x = cx;
-      g.y = cy;
-      g.alpha = 0.55;
-      this.clouds.addChild(g);
-      this.cloudOffsets.push({
-        g,
-        baseX: cx - TILE_W * 10,
-        speed: 0.004 + r() * 0.006,
-      });
-    }
-  }
-}
-
-function drawCloud(g: Graphics, x: number, y: number): void {
-  const c = 0xf4f8fb;
-  g.ellipse(x, y, 40, 16).fill({ color: c });
-  g.ellipse(x - 28, y + 4, 22, 12).fill({ color: c });
-  g.ellipse(x + 30, y + 2, 24, 13).fill({ color: c });
 }

@@ -7,12 +7,19 @@ import {
   PROD_GROWTH,
   STORAGE_BASE_SEC,
   STORAGE_LVL_BONUS,
+  TAX_MULT_BY_NEED,
+  TAX_PER_HAB,
   TIME_CAP_SEC,
   TIME_GROWTH,
   UPGRADE_GROWTH,
   WAREHOUSE_STORAGE_BONUS,
 } from "./balance";
 import { getBuildingDef } from "./buildings";
+import {
+  buildingEfficiency,
+  capacityAtLevel,
+  computeCity,
+} from "./city";
 import type {
   BuildingTypeId,
   Cost,
@@ -108,28 +115,41 @@ export function maxBuildingLevel(state: GameState): number {
   return Math.min(th, MAX_TOWNHALL_LEVEL);
 }
 
-export function populationCap(state: GameState): number {
+/** Capacité de logement (hors chantiers). */
+export function housingCapacity(state: GameState): number {
   let cap = 0;
   for (const b of state.buildings) {
-    if (b.construction) continue;
+    if (b.construction || b.level <= 0) continue;
     const def = getBuildingDef(b.type);
-    cap += def.populationBonus * b.level;
+    cap += capacityAtLevel(def.housing, b.level);
   }
   return cap;
 }
 
-export function workersUsed(state: GameState): number {
-  let used = 0;
+/** Emplois offerts (hors chantiers). */
+export function jobsOffered(state: GameState): number {
+  let jobs = 0;
   for (const b of state.buildings) {
-    if (b.construction) continue;
+    if (b.construction || b.level <= 0) continue;
     const def = getBuildingDef(b.type);
-    used += def.workers;
+    jobs += capacityAtLevel(def.jobs, b.level);
   }
-  return used;
+  return jobs;
 }
 
+/** @deprecated alias — utiliser housingCapacity */
+export function populationCap(state: GameState): number {
+  return housingCapacity(state);
+}
+
+/** @deprecated — jobs offerts (ex-workersUsed) */
+export function workersUsed(state: GameState): number {
+  return jobsOffered(state);
+}
+
+/** @deprecated — plus de gate construction ; conservé pour compat tests/UI. */
 export function workersAvailable(state: GameState): number {
-  return Math.max(0, populationCap(state) - workersUsed(state));
+  return Math.max(0, housingCapacity(state) - jobsOffered(state));
 }
 
 export function activeConstructionCount(state: GameState): number {
@@ -152,7 +172,10 @@ export function storageMultiplier(state: GameState): number {
  * production × 600 × (1 + 0.25 × (lvl-1)) × bonusEntrepôts
  */
 export function storageCap(state: GameState, building: PlacedBuilding): number {
-  const prod = productionPerSec(building.type, building.level);
+  let prod = productionPerSec(building.type, building.level);
+  if (building.type === "townhall") {
+    prod += taxIncomePerSec(state);
+  }
   if (prod <= 0) return 0;
   const levelFactor = 1 + STORAGE_LVL_BONUS * (building.level - 1);
   return prod * STORAGE_BASE_SEC * levelFactor * storageMultiplier(state);
@@ -215,14 +238,29 @@ export function adjacentFountainBonus(
   return 0;
 }
 
+export function taxIncomePerSec(state: GameState): number {
+  const city = computeCity(state);
+  const mult = TAX_MULT_BY_NEED[city.needLevel];
+  return state.population * TAX_PER_HAB * mult;
+}
+
 export function effectiveProductionPerSec(
   state: GameState,
   building: PlacedBuilding
 ): number {
-  if (building.construction) return 0;
+  if (building.construction || building.level <= 0) return 0;
+  const city = computeCity(state);
+  const eff = buildingEfficiency(building, city);
+  const fountain = 1 + adjacentFountainBonus(state, building);
+
+  if (building.type === "townhall") {
+    const base = productionPerSec(building.type, building.level);
+    return (base * fountain + taxIncomePerSec(state)) * eff;
+  }
+
   const base = productionPerSec(building.type, building.level);
   if (base <= 0) return 0;
-  return base * (1 + adjacentFountainBonus(state, building));
+  return base * fountain * eff;
 }
 
 /** Stock accumulé depuis lastCollectedAt, plafonné. */

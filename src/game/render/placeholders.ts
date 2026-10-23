@@ -9,13 +9,18 @@ type Footprint = { w: number; h: number };
 const FOOTPRINT: Record<BuildingTypeId, Footprint> = {
   townhall: { w: 2, h: 2 },
   house: { w: 1, h: 1 },
+  shop: { w: 1, h: 1 },
   sawmill: { w: 1, h: 1 },
   quarry: { w: 1, h: 1 },
+  factory: { w: 2, h: 1 },
   school: { w: 2, h: 1 },
   market: { w: 2, h: 2 },
   warehouse: { w: 1, h: 1 },
   library: { w: 2, h: 2 },
   fountain: { w: 1, h: 1 },
+  coal_plant: { w: 1, h: 1 },
+  solar_plant: { w: 2, h: 1 },
+  nuclear_plant: { w: 2, h: 2 },
   monument: { w: 2, h: 2 },
 };
 
@@ -31,13 +36,18 @@ function bodyHeight(type: BuildingTypeId, tier: number): number {
   const base: Record<BuildingTypeId, number> = {
     townhall: 36,
     house: 22,
+    shop: 20,
     sawmill: 20,
     quarry: 14,
+    factory: 28,
     school: 28,
     market: 24,
     warehouse: 26,
     library: 32,
     fountain: 10,
+    coal_plant: 30,
+    solar_plant: 12,
+    nuclear_plant: 40,
     monument: 48,
   };
   return (base[type] ?? 20) * (0.85 + tier * 0.25);
@@ -46,6 +56,9 @@ function bodyHeight(type: BuildingTypeId, tier: number): number {
 function roofHeight(type: BuildingTypeId, tier: number): number {
   if (type === "fountain") return 6;
   if (type === "quarry") return 4;
+  if (type === "solar_plant") return 4;
+  if (type === "coal_plant") return 8;
+  if (type === "nuclear_plant") return 10;
   return (12 + tier * 4) * (type === "monument" ? 1.4 : 1);
 }
 
@@ -154,6 +167,106 @@ export function drawBuildingPlaceholder(
     return;
   }
 
+  if (type === "solar_plant") {
+    // Panneaux bleus plats
+    const blue = facetColors("#3A7AB8");
+    g.poly([
+      pN.x,
+      pN.y - elev,
+      pE.x,
+      pE.y - elev,
+      pS.x,
+      pS.y - elev,
+      pW.x,
+      pW.y - elev,
+    ]).fill({ color: blue.top });
+    // Lignes de panneaux
+    const mid = (pN.x + pS.x) / 2;
+    g.moveTo(pW.x + 4, (pW.y + pN.y) / 2 - elev)
+      .lineTo(pE.x - 4, (pE.y + pN.y) / 2 - elev)
+      .stroke({ width: 1, color: 0x1a4a70, alpha: 0.7 });
+    g.moveTo(mid - 8, pN.y - elev + 2)
+      .lineTo(mid + 8, pS.y - elev - 2)
+      .stroke({ width: 1, color: 0x1a4a70, alpha: 0.5 });
+    void apexY;
+    return;
+  }
+
+  if (type === "coal_plant") {
+    // Toit bas + cheminée fumante
+    g.poly([
+      apexX,
+      apexY + rh * 0.4,
+      pE.x,
+      pE.y - elev,
+      pS.x,
+      pS.y - elev,
+      pW.x,
+      pW.y - elev,
+      pN.x,
+      pN.y - elev,
+    ]).fill({ color: roof.top });
+    const chimX = apexX + 6;
+    const chimTop = pN.y - elev - rh - 10;
+    g.rect(chimX - 4, chimTop, 8, elev * 0.55 + rh).fill({ color: 0x4a4a48 });
+    // Panache de fumée
+    g.circle(chimX, chimTop - 6, 5).fill({ color: 0x9a9a9a, alpha: 0.55 });
+    g.circle(chimX + 5, chimTop - 14, 7).fill({ color: 0xb0b0b0, alpha: 0.4 });
+    g.circle(chimX + 10, chimTop - 22, 9).fill({ color: 0xc8c8c8, alpha: 0.28 });
+    return;
+  }
+
+  if (type === "nuclear_plant") {
+    // Tour de refroidissement (cône inversé stylisé)
+    const towerTop = pN.y - elev - rh - 18;
+    const towerBot = pN.y - elev;
+    g.poly([
+      apexX - 10,
+      towerBot,
+      apexX + 10,
+      towerBot,
+      apexX + 16,
+      towerTop + 8,
+      apexX - 16,
+      towerTop + 8,
+    ]).fill({ color: roof.left });
+    g.poly([
+      apexX - 16,
+      towerTop + 8,
+      apexX + 16,
+      towerTop + 8,
+      apexX + 12,
+      towerTop,
+      apexX - 12,
+      towerTop,
+    ]).fill({ color: roof.top });
+    // Vapeur
+    g.circle(apexX, towerTop - 8, 6).fill({ color: 0xe8f0f0, alpha: 0.45 });
+    g.circle(apexX + 4, towerTop - 16, 8).fill({ color: 0xf0f6f6, alpha: 0.3 });
+    return;
+  }
+
+  if (type === "factory") {
+    // Toit plat industriel + petite cheminée
+    g.poly([
+      pN.x,
+      pN.y - elev,
+      pE.x,
+      pE.y - elev,
+      pS.x,
+      pS.y - elev,
+      pW.x,
+      pW.y - elev,
+    ]).fill({ color: roof.top });
+    g.rect(apexX + 8, pN.y - elev - 14, 5, 14).fill({ color: 0x6a5a4a });
+    g.circle(apexX + 10, pN.y - elev - 18, 4).fill({
+      color: 0x888888,
+      alpha: 0.45,
+    });
+    void apexY;
+    return;
+  }
+
   // Triangular roof: apex + E/W or N/S ridge
   g.poly([
     apexX,
@@ -190,6 +303,20 @@ export function drawBuildingPlaceholder(
     pW.x,
     pW.y - elev,
   ]).fill({ color: shadeRoof(roof.top) });
+
+  if (type === "shop") {
+    // Auvent commerce
+    g.poly([
+      pN.x - 2,
+      pN.y - elev + 4,
+      pE.x + 2,
+      pE.y - elev + 4,
+      pE.x,
+      pE.y - elev + 10,
+      pN.x,
+      pN.y - elev + 10,
+    ]).fill({ color: 0xc45c3a, alpha: 0.85 });
+  }
 }
 
 function shadeRoof(c: number): number {

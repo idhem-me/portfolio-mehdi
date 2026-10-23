@@ -45,16 +45,49 @@ export const TOWNHALL_MAX_LEVEL = MAX_TOWNHALL_LEVEL;
 export const VISUAL_TIER_THRESHOLDS = [1, 5, 10] as const;
 
 export const START_RESOURCES = {
-  gold: 100,
-  wood: 50,
+  gold: 300,
+  wood: 80,
   stone: 0,
   knowledge: 0,
 } as const;
+
+/** Capacité × (1 + 0.5 × (lvl − 1)). */
+export const CAPACITY_LVL_BONUS = 0.5;
+
+/** Constante de temps pour la convergence population (s). */
+export const POP_TAU_SEC = 60;
+
+/** Part de la population active (emplois). */
+export const ACTIVE_POP_RATIO = 0.6;
+
+/** Impôt or /s / habitant (avant multiplicateur de besoin). */
+export const TAX_PER_HAB = 0.02;
+
+/** Attractivité de base selon niveau de besoins N0–N3. */
+export const ATTRACTIVENESS_BY_NEED = [0.5, 0.8, 0.95, 1.0] as const;
+
+/** Multiplicateur d'impôts selon N0–N3. */
+export const TAX_MULT_BY_NEED = [0.5, 1, 1.5, 2.2] as const;
+
+export const UNEMPLOYMENT_N1_MAX = 0.1;
+export const UNEMPLOYMENT_TARGET_PENALTY = 0.15;
+export const POWER_TARGET_PENALTY = 0.5;
+
+export const ATTRACT_POLLUTION_PENALTY = 0.05;
+export const ATTRACT_LEISURE_BONUS = 0.05;
+export const ATTRACT_MIN = 0.2;
+export const ATTRACT_MAX = 1;
 
 export const MAP_SEED = 0x7111a9e;
 
 /** Anneau hors-jeu (cases décor) autour de la carte jouable. */
 export const SCENERY_RING = 3;
+
+/**
+ * Étendue décor (herbe N / eau S) hors carte.
+ * Assez large pour que le losange iso recouvre tout l'écran au dézoom max.
+ */
+export const SCENERY_EXTENT = SCENERY_RING + 16;
 
 export function maxConcurrentBuilds(townhallLevel: number): number {
   if (townhallLevel >= 7) return 3;

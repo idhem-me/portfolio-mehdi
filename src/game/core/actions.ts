@@ -1,6 +1,7 @@
 import {
   MAX_TOWNHALL_LEVEL,
   PARCEL_COUNT,
+  POP_TAU_SEC,
   START_RESOURCES,
   maxConcurrentBuilds,
   parcelId,
@@ -8,6 +9,7 @@ import {
   startParcelIds,
 } from "./balance";
 import { getBuildingDef } from "./buildings";
+import { computeCity } from "./city";
 import {
   accumulatedStock,
   activeConstructionCount,
@@ -21,7 +23,6 @@ import {
   parcelCost,
   pay,
   upgradeCost,
-  workersAvailable,
 } from "./economy";
 import {
   applyTownhallOccupation,
@@ -30,6 +31,7 @@ import {
   isAdjacentParcel,
   isParcelUnlocked,
   occupyFootprint,
+  parcelBlocks,
   townhallOrigin,
 } from "./grid";
 import type {
@@ -65,27 +67,95 @@ export function createInitialState(now: number): GameState {
     construction: null,
   };
   nextId = 1;
-  const cells = applyTownhallOccupation(createInitialCells());
+  // 4 maisons FR — une par tuile d'une parcelle centrale (2×2)
+  const previewParcel = startParcelIds()[1]!;
+  const { px, py } = parseParcelId(previewParcel);
+  const houseSpots = parcelBlocks(px, py);
+  const previewHouses: PlacedBuilding[] = houseSpots.map((spot) => ({
+    id: makeId("house"),
+    type: "house" as const,
+    x: spot.x,
+    y: spot.y,
+    level: 1,
+    lastCollectedAt: now,
+    construction: null,
+  }));
+  let cells = applyTownhallOccupation(createInitialCells());
+  for (const h of previewHouses) {
+    cells = occupyFootprint(cells, h.x, h.y, 1, 1, h.id);
+  }
   return {
-    version: 1,
+    version: 2,
     resources: { ...START_RESOURCES },
     knowledgeEarned: 0,
-    buildings: [townhall],
+    buildings: [townhall, ...previewHouses],
     cells,
     unlockedParcels: startParcelIds(),
     parcelsBought: 0,
     placingType: null,
     selectedBuildingId: null,
     timeScale: 1,
+    population: 0,
+    populationUpdatedAt: now,
+  };
+}
+
+/**
+ * Migre une sauvegarde v1 (ou partielle) vers GameState v2.
+ */
+export function migrate(raw: unknown): GameState {
+  const s = raw as {
+    version?: number;
+    population?: number;
+    populationUpdatedAt?: number;
+    buildings?: GameState["buildings"];
+    resources?: GameState["resources"];
+    knowledgeEarned?: number;
+    cells?: GameState["cells"];
+    unlockedParcels?: string[];
+    parcelsBought?: number;
+    placingType?: BuildingTypeId | null;
+    selectedBuildingId?: string | null;
+    timeScale?: number;
+  };
+  const now =
+    typeof s.populationUpdatedAt === "number"
+      ? s.populationUpdatedAt
+      : Date.now();
+  if (s.version === 2 && typeof s.population === "number" && s.buildings) {
+    return s as GameState;
+  }
+  const fresh = createInitialState(now);
+  const base = s.buildings
+    ? {
+        ...fresh,
+        ...s,
+        resources: s.resources ?? fresh.resources,
+        knowledgeEarned: s.knowledgeEarned ?? 0,
+        buildings: s.buildings,
+        cells: s.cells ?? fresh.cells,
+        unlockedParcels: s.unlockedParcels ?? fresh.unlockedParcels,
+        parcelsBought: s.parcelsBought ?? 0,
+        placingType: s.placingType ?? null,
+        selectedBuildingId: s.selectedBuildingId ?? null,
+        timeScale: s.timeScale ?? 1,
+      }
+    : fresh;
+  return {
+    ...base,
+    version: 2,
+    population: typeof s.population === "number" ? s.population : 0,
+    populationUpdatedAt: now,
   };
 }
 
 export function tick(state: GameState, now: number): GameState {
-  let changed = false;
-  const buildings = state.buildings.map((b) => {
+  let buildings = state.buildings;
+  let constructionChanged = false;
+  buildings = state.buildings.map((b) => {
     if (!b.construction) return b;
     if (now < b.construction.endsAt) return b;
-    changed = true;
+    constructionChanged = true;
     return {
       ...b,
       level: b.construction.targetLevel,
@@ -93,8 +163,26 @@ export function tick(state: GameState, now: number): GameState {
       lastCollectedAt: now,
     };
   });
-  if (!changed) return state;
-  return { ...state, buildings };
+
+  let next: GameState = constructionChanged
+    ? { ...state, buildings }
+    : state;
+
+  const dtSec = Math.max(0, (now - next.populationUpdatedAt) / 1000);
+  if (dtSec > 0 || constructionChanged) {
+    const city = computeCity(next, now);
+    const target = city.targetPopulation;
+    const pop0 = next.population;
+    const population =
+      target + (pop0 - target) * Math.exp(-dtSec / POP_TAU_SEC);
+    next = {
+      ...next,
+      population,
+      populationUpdatedAt: now,
+    };
+  }
+
+  return next;
 }
 
 export function setPlacingType(
@@ -147,14 +235,6 @@ export function placeBuilding(
   const cost = buildCost(type, countOwned(state, type));
   if (!canAfford(state.resources, cost)) {
     return { ok: false, state, message: "Pas assez de ressources." };
-  }
-
-  if (def.workers > 0 && workersAvailable(state) < def.workers) {
-    return {
-      ok: false,
-      state,
-      message: `Travailleurs insuffisants (besoin de ${def.workers}).`,
-    };
   }
 
   const thLevel = getTownhallLevel(state);

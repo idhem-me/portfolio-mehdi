@@ -1,17 +1,19 @@
 "use client";
 
 import { getBuildingDef } from "@/game/core/buildings";
+import { buildingEfficiency, efficiencyReason } from "@/game/core/city";
 import {
   accumulatedStock,
+  durationSec,
   upgradeCost,
 } from "@/game/core/economy";
 import { formatCompact, formatDuration } from "@/game/core/format";
-import { durationSec } from "@/game/core/economy";
 import { useGameStore, gameStore } from "@/game/store/gameStore";
 import { formatCostLine } from "./buildHelpers";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { useCity } from "./useCity";
 
 export function BuildingPanel() {
   const selectedId = useGameStore((s) => s.selectedBuildingId);
@@ -19,15 +21,19 @@ export function BuildingPanel() {
   const building = useGameStore((s) =>
     s.buildings.find((b) => b.id === s.selectedBuildingId)
   );
+  const city = useCity();
   const isMobile = useIsMobile();
 
   if (!selectedId || !building) return null;
 
+  const state = gameStore.getState();
   const def = getBuildingDef(building.type);
-  const stock = accumulatedStock(gameStore.getState(), building, now);
+  const stock = accumulatedStock(state, building, now);
   const upCost = upgradeCost(building.type, building.level);
   const upTime = durationSec(building.type, building.level);
   const constructing = Boolean(building.construction);
+  const eff = buildingEfficiency(building, city);
+  const reason = efficiencyReason(building, city);
 
   return (
     <aside
@@ -54,6 +60,12 @@ export function BuildingPanel() {
               {formatDuration(
                 Math.max(0, (building.construction.endsAt - now) / 1000)
               )}
+            </p>
+          )}
+          {!constructing && building.level > 0 && (
+            <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+              Efficacité : {Math.round(eff * 100)} %
+              {reason ? ` — ${reason}` : ""}
             </p>
           )}
         </div>
