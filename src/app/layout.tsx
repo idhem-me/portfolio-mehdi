@@ -44,8 +44,8 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: {
-    default: `${profileMeta.name} · ${profileMeta.role}`,
-    template: `%s · ${profileMeta.name}`,
+    default: profileMeta.siteTitle,
+    template: `%s · ${profileMeta.siteTitle}`,
   },
   description:
     "Senior Product Designer — UX/UI, design systems, accessibilité RGAA.",

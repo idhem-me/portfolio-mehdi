@@ -48,6 +48,9 @@ export default async function AProposPage({ params }: Props) {
   return (
     <main className="mx-auto w-full max-w-3xl space-y-12 px-6 py-12">
       <header className="space-y-6">
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          {about.title}
+        </h1>
         <div className="w-fit overflow-hidden rounded-xl ring-1 ring-foreground/5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -66,14 +69,9 @@ export default async function AProposPage({ params }: Props) {
             className="hidden h-auto w-[260px] dark:block"
           />
         </div>
-        <div className="space-y-3">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {about.title}
-          </h1>
-          <p className="max-w-prose text-base leading-relaxed text-muted-foreground">
-            {profile.bio}
-          </p>
-        </div>
+        <p className="max-w-prose text-base leading-relaxed text-muted-foreground">
+          {profile.bio}
+        </p>
       </header>
 
       <section className="space-y-4">

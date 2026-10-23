@@ -1,6 +1,7 @@
 /** Champs de profil invariants (non traduits). */
 export const profileMeta = {
   name: "Mehdi Monteyremard",
+  siteTitle: "Mehdi Design",
   role: "Senior Product Designer",
   locations: ["Romans-sur-Isère", "Lyon"] as const,
   email: "mmonteyremard@gmail.com",

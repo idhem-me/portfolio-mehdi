@@ -22,7 +22,7 @@
     },
     {
       "title": "独立产品与网页设计师",
-      "company": "SARL NFMM | Freelance",
+      "company": "Freelance",
       "period": "2019年5月 – 至今",
       "location": "Romans-sur-Isère",
       "summary": "聚焦的数字设计与创作任务，不做完整产品项目。",

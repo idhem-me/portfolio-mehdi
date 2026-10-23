@@ -28,7 +28,7 @@ export function MobileBrandBar({ className }: { className?: string }) {
           )}
         />
         <span className="min-w-0 flex-1 truncate text-[length:var(--sidebar-menu-text)] font-medium tracking-tight group-data-[collapsible=icon]:hidden">
-          {profileMeta.name}
+          {profileMeta.siteTitle}
         </span>
       </div>
     </div>

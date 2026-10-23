@@ -22,7 +22,7 @@
     },
     {
       "title": "Product & Web Designer Independiente",
-      "company": "SARL NFMM | Freelance",
+      "company": "Freelance",
       "period": "May. 2019 – Actualidad",
       "location": "Romans-sur-Isère",
       "summary": "Encargos concretos de diseño y creación digital, sin proyectos de producto completos.",

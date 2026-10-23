@@ -22,7 +22,7 @@
     },
     {
       "title": "مصمم منتجات وويب مستقل",
-      "company": "SARL NFMM | Freelance",
+      "company": "Freelance",
       "period": "مايو 2019 – حتى اليوم",
       "location": "Romans-sur-Isère",
       "summary": "مهام مركّزة في التصميم والإبداع الرقمي، دون مشاريع منتج كاملة.",
