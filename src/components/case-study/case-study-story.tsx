@@ -10,9 +10,8 @@ import {
   ThemeImage,
   ThemeImageGroup,
 } from "@/components/case-study/theme-image";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
 
 type CaseStudyStoryProps = {
   study: CaseStudyContent;
@@ -172,12 +171,9 @@ export function CaseStudyStory({ study }: CaseStudyStoryProps) {
 
           {section.cta ? (
             <div className="pt-2">
-              <Link
-                href={section.cta.href}
-                className={cn(buttonVariants({ variant: "accent", size: "lg" }))}
-              >
-                {section.cta.label}
-              </Link>
+              <Button asChild variant="accent" size="lg">
+                <Link href={section.cta.href}>{section.cta.label}</Link>
+              </Button>
             </div>
           ) : null}
         </section>

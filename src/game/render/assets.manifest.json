@@ -540,7 +540,7 @@
     {
       "id": "bld_monument_t1",
       "lot": "C",
-      "footprint": "3x3",
+      "footprint": "2x2",
       "accent": "#A9A9A0",
       "subject": "unfinished monument foundations, scaffolding, stone blocks",
       "file": "png/bld_monument_t1.png",
@@ -551,7 +551,7 @@
         1
       ],
       "status": "todo",
-      "note": ""
+      "note": " Retaille V1: monument 2×2."
     },
     {
       "id": "bld_townhall_t2",
@@ -732,7 +732,7 @@
     {
       "id": "bld_monument_t2",
       "lot": "D",
-      "footprint": "3x3",
+      "footprint": "2x2",
       "accent": "#A9A9A0",
       "subject": "finished tall stone obelisk on stepped plaza with small gardens",
       "file": "png/bld_monument_t2.png",
@@ -743,7 +743,7 @@
         1
       ],
       "status": "todo",
-      "note": ""
+      "note": " Retaille V1: monument 2×2."
     },
     {
       "id": "bld_townhall_t3",
@@ -954,12 +954,12 @@
       "note": ""
     },
     {
-      "id": "site_scaffold_3x3",
+      "id": "site_scaffold_2x2_monument",
       "lot": "F",
-      "footprint": "3x3",
+      "footprint": "2x2",
       "accent": "—",
-      "subject": "large wooden scaffolding with small crane",
-      "file": "png/site_scaffold_3x3.png",
+      "subject": "wooden scaffolding for 2x2 monument",
+      "file": "png/site_scaffold_2x2.png",
       "w": null,
       "h": null,
       "anchor": [
@@ -967,7 +967,7 @@
         1
       ],
       "status": "todo",
-      "note": ""
+      "note": " Retaille V1: monument 2×2."
     },
     {
       "id": "deco_tree_apple",

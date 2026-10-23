@@ -54,5 +54,10 @@
     "ui": "UI",
     "project": "项目管理",
     "soft": "软技能"
+  },
+  "Village": {
+    "nav": "村庄",
+    "metaTitle": "村庄",
+    "metaDescription": "等距迷你城市建设 — 建造你的村庄。"
   }
 }

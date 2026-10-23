@@ -54,5 +54,10 @@
     "ui": "UI",
     "project": "Gestione",
     "soft": "Soft Skills"
+  },
+  "Village": {
+    "nav": "Villaggio",
+    "metaTitle": "Villaggio",
+    "metaDescription": "Mini city-builder isometrico — costruisci il tuo villaggio."
   }
 }

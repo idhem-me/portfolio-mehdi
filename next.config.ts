@@ -8,6 +8,8 @@ const SVG_CSP =
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  /** Accès LAN au `next dev` (test mobile) — sans effet en production. */
+  allowedDevOrigins: ["192.168.*.*"],
   turbopack: {
     rules: {
       "*.css": {
