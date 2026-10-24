@@ -27,6 +27,7 @@ function rich(state: GameState): GameState {
       wood: 1_000_000,
       stone: 1_000_000,
       knowledge: 1_000_000,
+      planks: 1_000_000,
     },
     knowledgeEarned: 1_000_000,
   };
@@ -45,7 +46,7 @@ describe("tick / construction", () => {
     const free = ids.find((id) => id !== ids[0] && id !== ids[1])!;
     const [fpx, fpy] = free.split(",").map(Number) as [number, number];
     const origin = parcelBlockOrigin(fpx, fpy);
-    const res = placeBuilding(state, "house", origin.x, origin.y, t0);
+    const res = placeBuilding(state, "house", origin.x + 1, origin.y + 1, t0);
     expect(res.ok).toBe(true);
     state = tick(res.state, t0 + 10_000);
     const done = state.buildings.find((bb) => bb.type === "house");
@@ -55,45 +56,39 @@ describe("tick / construction", () => {
 });
 
 describe("placement parcelles / routes", () => {
-  it("refuse un placement à cheval sur une route", () => {
+  it("refuse un placement sur la route d'entrée bitume", () => {
     const state = rich(createInitialState(0));
     const o = townhallOrigin();
-    // o est coin HG blocs ; o.x+2 est une route (période 3)
-    const ok = canPlaceFootprint(
-      state.cells,
-      state.unlockedParcels,
-      o.x + 1,
-      o.y,
-      2,
-      1
+    // Juste sous la mairie = route permanente
+    const res = placeBuilding(
+      state,
+      "house",
+      o.x,
+      o.y + 4,
+      0
     );
-    expect(ok).toBe(false);
-    const res = placeBuilding(state, "school", o.x + 1, o.y, 0);
     expect(res.ok).toBe(false);
   });
 
   it("refuse un bâtiment à cheval sur deux parcelles", () => {
     const state = rich(createInitialState(0));
-    // School 2×1 : tenter de chevaucher la route entre deux parcelles centrales
     const ids = startParcelIds();
     const { x, y } = parcelBlockOrigin(
       Number(ids[0]!.split(",")[0]),
       Number(ids[0]!.split(",")[1])
     );
-    // Depuis le bord est d'une parcelle vers la suivante
-    const res = placeBuilding(state, "school", x + 1, y, 0);
-    // x+1,y and x+2,y : x+2 is road → refuse
+    // Origine près du bord est → empreinte 8 cases (school 2×1) chevauche le bloc voisin
+    const res = placeBuilding(state, "school", x + 12, y + 2, 0);
     expect(res.ok).toBe(false);
   });
 
   it("accepte un placement 1×1 sur un bloc libre", () => {
     const state = rich(createInitialState(0));
     const ids = startParcelIds();
-    // ids[1] = parcelle 4 maisons preview ; prendre ids[2]
     const other = ids[2]!;
     const [px, py] = other.split(",").map(Number) as [number, number];
     const o = parcelBlockOrigin(px, py);
-    const res = placeBuilding(state, "house", o.x, o.y, 0);
+    const res = placeBuilding(state, "house", o.x + 2, o.y + 2, 0);
     expect(res.ok).toBe(true);
   });
 });
@@ -106,35 +101,24 @@ describe("achat de parcelle", () => {
     expect(res.message).toMatch(/adjacente/i);
   });
 
-  it("accepte une parcelle adjacente et rend les routes visibles", () => {
-    let state = rich(createInitialState(0));
+  it("accepte une parcelle adjacente", () => {
+    const state = rich(createInitialState(0));
     const start = startParcelIds();
     const { px, py } = {
       px: Number(start[0]!.split(",")[0]),
       py: Number(start[0]!.split(",")[1]),
     };
-    // Voisin ouest
     const nx = px - 1;
     const ny = py;
     expect(nx).toBeGreaterThanOrEqual(0);
-    const beforeVisible = isRoadVisible(
-      state.cells,
-      state.unlockedParcels,
-      nx * 3 + 2,
-      ny * 3
-    );
-    void beforeVisible;
     const res = buyParcel(state, nx, ny);
     expect(res.ok).toBe(true);
     expect(res.state.unlockedParcels).toContain(parcelId(nx, ny));
     expect(res.state.parcelsBought).toBe(1);
-    // Route entre ancienne et nouvelle parcelle
-    const roadX = nx * 3 + 2;
-    const roadY = ny * 3;
+    const o = parcelBlockOrigin(nx, ny);
     expect(
-      isRoadVisible(res.state.cells, res.state.unlockedParcels, roadX, roadY)
+      isRoadVisible(res.state.cells, res.state.unlockedParcels, o.x + 1, o.y + 1)
     ).toBe(true);
-    state = res.state;
   });
 
   it("coût exponentiel", () => {
@@ -152,11 +136,12 @@ describe("emplois / chantiers", () => {
     for (const id of ids) {
       const [px, py] = id.split(",").map(Number) as [number, number];
       const o = parcelBlockOrigin(px, py);
+      // Empreintes 4×4 : origines espacées de 4 cases
       spots.push(
-        { x: o.x, y: o.y },
-        { x: o.x + 1, y: o.y },
-        { x: o.x, y: o.y + 1 },
-        { x: o.x + 1, y: o.y + 1 }
+        { x: o.x + 2, y: o.y + 2 },
+        { x: o.x + 6, y: o.y + 2 },
+        { x: o.x + 2, y: o.y + 6 },
+        { x: o.x + 6, y: o.y + 6 }
       );
     }
     for (let i = 0; i < 2; i++) {
@@ -188,10 +173,10 @@ describe("emplois / chantiers", () => {
       Number(ids[1]!.split(",")[0]),
       Number(ids[1]!.split(",")[1])
     );
-    const r1 = placeBuilding(state, "house", a.x, a.y, 0);
+    const r1 = placeBuilding(state, "house", a.x + 2, a.y + 2, 0);
     expect(r1.ok).toBe(true);
     state = r1.state;
-    const r2 = placeBuilding(state, "house", b.x, b.y, 0);
+    const r2 = placeBuilding(state, "house", b.x + 2, b.y + 2, 0);
     expect(r2.ok).toBe(false);
     expect(r2.message).toMatch(/chantiers/i);
   });
@@ -206,7 +191,7 @@ describe("récolte", () => {
       Number(ids[0]!.split(",")[0]),
       Number(ids[0]!.split(",")[1])
     );
-    const placed = placeBuilding(state, "coal_plant", o.x, o.y, 0);
+    const placed = placeBuilding(state, "coal_plant", o.x + 2, o.y + 2, 0);
     expect(placed.ok).toBe(true);
     state = tick(placed.state, 100_000);
     state = { ...state, population: 50, populationUpdatedAt: 100_000 };

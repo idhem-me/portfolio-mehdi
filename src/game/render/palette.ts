@@ -24,6 +24,7 @@ export const ROOF: Record<string, string> = {
   house_0: "#E8A65D",
   house_1: "#7FA7C9",
   house_2: "#C97F9B",
+  apartment: "#8A9BB8",
   shop: "#D4A056",
   sawmill: "#A0764F",
   quarry: "#A9A9A0",

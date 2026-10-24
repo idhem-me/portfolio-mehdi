@@ -1,318 +1,376 @@
-import { Container, Graphics, Sprite, TextStyle, Texture, Text } from "pixi.js";
-import {
-  MAP_SEED,
-  MAP_SIZE,
-  PARCEL_COUNT,
-  parcelId,
-  parseParcelId,
-} from "@/game/core/balance";
-import { mulberry32 } from "@/game/core/rng";
-import {
-  isAdjacentParcel,
-  isRoadVisible,
-  parcelBlockOrigin,
-  roadNeighborMask,
-} from "@/game/core/grid";
-import { parcelCost } from "@/game/core/economy";
-import type { GameState } from "@/game/core/types";
-import {
-  BUYABLE_OUTLINE,
-  CLIFF,
-  CLIFF_DARK,
-  HIGHWAY,
-  ROAD,
-  ROAD_EDGE,
-  ROAD_MARK,
-  facetColors,
-  hexToNum,
-} from "./palette";
-import { TILE_H, TILE_W, gridToScreen } from "./iso";
-import { drawDecorPlaceholder } from "./placeholders";
-import {
-  loadGrassAndWater,
-  placeTileSprite,
-  type GroundTileAsset,
-} from "./tileAssets";
+/**
+ * Sol jouable — vue de dessus (top-down).
+ * Couches : soil → roads → highlights (externe).
+ * Badges de déblocage / tooltips = UI React (screen-space).
+ */
 
-type TexBag = {
-  generateTexture: (displayObject: Graphics) => Texture;
+import { Container, Graphics, Sprite } from "pixi.js";
+import {
+  CELL_PX,
+  HL_BUILD_FILL_ALPHA,
+  HL_BUILD_INVALID,
+  HL_BUILD_VALID,
+  HL_ROAD_PREVIEW_ALPHA,
+  HL_ROAD_VALID,
+  HL_UNLOCK_GOLD,
+  ROAD_SEGMENT_CELLS,
+} from "@/game/core/mapConfig";
+import {
+  LANE_COUNT_X,
+  LANE_COUNT_Y,
+  MAP_HEIGHT_PX,
+  MAP_WIDTH_PX,
+  cellOrigin,
+  cellSize,
+} from "@/game/core/mapLanes";
+import type { GameState, RoadDir } from "@/game/core/types";
+import {
+  getIntersectionTexture,
+  getRoadTexture,
+  getTileTexture,
+  loadVillageAssets,
+} from "./villageAssets";
+
+export type ViewBounds = {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
 };
 
-/**
- * Sol jouable : herbe PNG / forêt teintée / routes auto-tile / autoroute.
- */
 export class IsoMap {
   readonly ground = new Container();
   readonly props = new Container();
-  private grassAsset: GroundTileAsset | null = null;
-  private roadTex = new Map<number, Texture>();
-  private highwayTex: Texture | null = null;
-  private cliffTex: Texture | null = null;
-  private priceStyle: TextStyle | null = null;
-  private outlineGfx = new Graphics();
-  private priceLabels = new Container();
-  private forestTrees = new Container();
-  private tilesLayer = new Container();
+
+  private soilLayer = new Container();
+  private roadsLayer = new Container();
+  private highlightLayer = new Graphics();
   private built = false;
   private lastKey = "";
+  private lastCullKey = "";
+  private lastHlKey = "";
 
   constructor() {
-    this.props.sortableChildren = true;
-    this.forestTrees.sortableChildren = true;
-    this.tilesLayer.sortableChildren = true;
-    this.props.addChild(this.forestTrees);
-    this.ground.addChild(this.tilesLayer);
-    this.ground.addChild(this.outlineGfx);
-    this.ground.addChild(this.priceLabels);
+    this.ground.addChild(this.soilLayer);
+    this.ground.addChild(this.roadsLayer);
+    this.ground.addChild(this.highlightLayer);
   }
 
-  async bake(renderer: TexBag): Promise<void> {
+  async bake(_renderer?: unknown): Promise<void> {
     if (this.built) return;
-
-    const { grass } = await loadGrassAndWater();
-    this.grassAsset = grass;
-
-    // Road masks 0..15
-    for (let mask = 0; mask < 16; mask++) {
-      this.roadTex.set(mask, this.bakeRoad(renderer, mask, false));
-    }
-    this.highwayTex = this.bakeRoad(renderer, 15, true);
-
-    const cliff = new Graphics();
-    const cf = facetColors(CLIFF);
-    cliff
-      .poly([
-        TILE_W / 2,
-        TILE_H,
-        TILE_W,
-        TILE_H / 2,
-        TILE_W,
-        TILE_H / 2 + 28,
-        TILE_W / 2,
-        TILE_H + 28,
-      ])
-      .fill({ color: cf.right });
-    cliff
-      .poly([
-        TILE_W / 2,
-        TILE_H,
-        0,
-        TILE_H / 2,
-        0,
-        TILE_H / 2 + 28,
-        TILE_W / 2,
-        TILE_H + 28,
-      ])
-      .fill({ color: hexToNum(CLIFF_DARK) });
-    this.cliffTex = renderer.generateTexture(cliff);
-    cliff.destroy();
-
-    this.priceStyle = new TextStyle({
-      fontFamily: "system-ui, sans-serif",
-      fontSize: 14,
-      fontWeight: "600",
-      fill: 0x3a3a3a,
-    });
-
+    await loadVillageAssets();
     this.built = true;
   }
 
-  sync(state: GameState, hoverParcel: string | null): void {
+  sync(
+    state: GameState,
+    hoverParcel: string | null,
+    view?: ViewBounds
+  ): void {
     const key = `${state.unlockedParcels.join("|")}:${state.parcelsBought}:${hoverParcel ?? ""}`;
-    if (key === this.lastKey && this.ground.children.length > 2) {
-      // Still refresh buildings layer elsewhere; ground can skip
+    const cullKey = view
+      ? `${view.minX | 0},${view.minY | 0},${view.maxX | 0},${view.maxY | 0}`
+      : "full";
+
+    if (
+      key === this.lastKey &&
+      cullKey === this.lastCullKey &&
+      this.soilLayer.children.length > 0
+    ) {
       return;
     }
     this.lastKey = key;
-    this.rebuild(state, hoverParcel);
+    this.lastCullKey = cullKey;
+    this.rebuild(state, view);
   }
 
-  forceRebuild(state: GameState, hoverParcel: string | null): void {
+  forceRebuild(
+    state: GameState,
+    hoverParcel: string | null,
+    view?: ViewBounds
+  ): void {
     this.lastKey = "";
-    this.sync(state, hoverParcel);
+    this.lastCullKey = "";
+    this.sync(state, hoverParcel, view);
   }
 
-  private rebuild(state: GameState, hoverParcel: string | null): void {
-    this.tilesLayer.removeChildren();
-    this.forestTrees.removeChildren();
-    this.outlineGfx.clear();
-    this.priceLabels.removeChildren();
+  destroy(): void {
+    this.soilLayer.removeChildren();
+    this.roadsLayer.removeChildren();
+    this.highlightLayer.clear();
+    this.built = false;
+  }
 
-    const rand = mulberry32(MAP_SEED ^ 0xf07e);
-    const grass = this.grassAsset;
+  /**
+   * Highlights tool (recalculés seulement si la clé change).
+   */
+  setHighlights(
+    key: string,
+    cells: {
+      x: number;
+      y: number;
+      kind:
+        | "buildValid"
+        | "buildInvalid"
+        | "roadValid"
+        | "unlock"
+        | "coverOk"
+        | "coverMiss";
+      thick?: boolean;
+    }[],
+    view?: ViewBounds
+  ): void {
+    if (key === this.lastHlKey) return;
+    this.lastHlKey = key;
+    this.highlightLayer.clear();
+    const bounds = view ?? {
+      minX: 0,
+      minY: 0,
+      maxX: MAP_WIDTH_PX,
+      maxY: MAP_HEIGHT_PX,
+    };
+    for (const c of cells) {
+      const o = cellOrigin(c.x, c.y);
+      const s = cellSize(c.x, c.y);
+      if (
+        o.x + s.w < bounds.minX ||
+        o.y + s.h < bounds.minY ||
+        o.x > bounds.maxX ||
+        o.y > bounds.maxY
+      ) {
+        continue;
+      }
+      if (c.kind === "buildValid") {
+        this.highlightLayer
+          .rect(o.x, o.y, s.w, s.h)
+          .fill({ color: HL_BUILD_VALID, alpha: HL_BUILD_FILL_ALPHA })
+          .stroke({
+            width: c.thick ? 36 : 18,
+            color: HL_BUILD_VALID,
+            alpha: 0.9,
+          });
+      } else if (c.kind === "buildInvalid") {
+        this.highlightLayer
+          .rect(o.x, o.y, s.w, s.h)
+          .fill({ color: HL_BUILD_INVALID, alpha: HL_BUILD_FILL_ALPHA * 0.6 })
+          .stroke({
+            width: c.thick ? 36 : 14,
+            color: HL_BUILD_INVALID,
+            alpha: 0.85,
+          });
+      } else if (c.kind === "roadValid") {
+        this.highlightLayer.rect(o.x, o.y, s.w, s.h).stroke({
+          width: 14,
+          color: HL_ROAD_VALID,
+          alpha: 0.7,
+        });
+      } else if (c.kind === "unlock") {
+        this.highlightLayer.rect(o.x, o.y, s.w, s.h).stroke({
+          width: 20,
+          color: HL_UNLOCK_GOLD,
+          alpha: 0.85,
+        });
+      } else if (c.kind === "coverOk") {
+        this.highlightLayer
+          .rect(o.x, o.y, s.w, s.h)
+          .fill({ color: 0x22c55e, alpha: 0.28 });
+      } else if (c.kind === "coverMiss") {
+        this.highlightLayer
+          .rect(o.x, o.y, s.w, s.h)
+          .fill({ color: 0xef4444, alpha: 0.22 });
+      }
+    }
+  }
 
-    for (let y = 0; y < MAP_SIZE; y++) {
-      for (let x = 0; x < MAP_SIZE; x++) {
-        const cell = state.cells[y * MAP_SIZE + x]!;
-        const top = gridToScreen(x, y);
+  clearHighlights(): void {
+    this.lastHlKey = "";
+    this.highlightLayer.clear();
+  }
 
-        if (cell.kind === "block" && cell.parcelId) {
-          const unlocked = state.unlockedParcels.includes(cell.parcelId);
-          if (grass) {
-            const spr = placeTileSprite(grass, x, y, {
-              tint: unlocked ? 0xffffff : 0x6a8a55,
-              alpha: unlocked ? 1 : 0.92,
-            });
-            this.tilesLayer.addChild(spr);
-          }
+  private rebuild(state: GameState, view?: ViewBounds): void {
+    this.soilLayer.removeChildren();
+    this.roadsLayer.removeChildren();
 
-          if (!unlocked) {
-            const n = 1 + Math.floor(rand() * 3);
-            for (let i = 0; i < n; i++) {
-              const g = new Graphics();
-              const ox = (rand() - 0.5) * TILE_W * 0.35;
-              const oy = (rand() - 0.5) * TILE_H * 0.25;
-              drawPine(g, top.x + ox, top.y + TILE_H / 2 + oy);
-              g.zIndex = x + y + 0.01 * i;
-              this.forestTrees.addChild(g);
-            }
-          }
-        } else if (cell.kind === "road" || cell.kind === "highway") {
-          if (
-            !isRoadVisible(state.cells, state.unlockedParcels, x, y)
-          ) {
+    const bounds = view ?? {
+      minX: 0,
+      minY: 0,
+      maxX: MAP_WIDTH_PX,
+      maxY: MAP_HEIGHT_PX,
+    };
+    const pad = CELL_PX * 4;
+    const minX = bounds.minX - pad;
+    const minY = bounds.minY - pad;
+    const maxX = bounds.maxX + pad;
+    const maxY = bounds.maxY + pad;
+
+    for (let iy = 0; iy < LANE_COUNT_Y; iy++) {
+      for (let ix = 0; ix < LANE_COUNT_X; ix++) {
+        const o = cellOrigin(ix, iy);
+        const s = cellSize(ix, iy);
+        if (
+          o.x + s.w < minX ||
+          o.y + s.h < minY ||
+          o.x > maxX ||
+          o.y > maxY
+        ) {
+          continue;
+        }
+
+        const cell = state.cells[iy * LANE_COUNT_X + ix];
+        if (!cell) continue;
+
+        const spr = new Sprite(getTileTexture(cell.biome));
+        spr.x = o.x;
+        spr.y = o.y;
+        spr.width = s.w;
+        spr.height = s.h;
+        this.soilLayer.addChild(spr);
+      }
+    }
+
+    this.paintRoads(state, minX, minY, maxX, maxY);
+  }
+
+  /**
+   * 1) Runs H/V continus de route-bitume (y compris sous les carrefours)
+   * 2) Intersection 320² superposée aux croisements (masque les tirets)
+   */
+  private paintRoads(
+    state: GameState,
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number
+  ): void {
+    const cellAt = (x: number, y: number) =>
+      state.cells[y * LANE_COUNT_X + x];
+
+    const addSegment = (
+      sx: number,
+      sy: number,
+      dir: RoadDir,
+      len: number
+    ) => {
+      const o = cellOrigin(sx, sy);
+      const lenPx = len * CELL_PX;
+      if (
+        dir === "H" &&
+        (o.x + lenPx < minX || o.x > maxX || o.y + CELL_PX < minY || o.y > maxY)
+      ) {
+        return;
+      }
+      if (
+        dir === "V" &&
+        (o.x + CELL_PX < minX ||
+          o.x > maxX ||
+          o.y + lenPx < minY ||
+          o.y > maxY)
+      ) {
+        return;
+      }
+      const entry = getRoadTexture("bitume");
+      const road = new Sprite(entry.texture);
+      if (dir === "H") {
+        road.x = o.x;
+        road.y = o.y;
+        road.width = lenPx;
+        road.height = CELL_PX;
+      } else {
+        road.rotation = Math.PI / 2;
+        road.x = o.x + CELL_PX;
+        road.y = o.y;
+        road.width = lenPx;
+        road.height = CELL_PX;
+      }
+      this.roadsLayer.addChild(road);
+    };
+
+    /** Enchaîne des sections ~1254×320 (ROAD_SEGMENT_CELLS). */
+    const addRunChunks = (
+      sx: number,
+      sy: number,
+      dir: RoadDir,
+      len: number
+    ) => {
+      let offset = 0;
+      while (offset < len) {
+        const chunk = Math.min(ROAD_SEGMENT_CELLS, len - offset);
+        if (dir === "H") {
+          addSegment(sx + offset, sy, "H", chunk);
+        } else {
+          addSegment(sx, sy + offset, "V", chunk);
+        }
+        offset += chunk;
+      }
+    };
+
+    // —— Runs horizontaux (toute case bitumée, carrefours inclus)
+    for (let iy = 0; iy < LANE_COUNT_Y; iy++) {
+      let ix = 0;
+      while (ix < LANE_COUNT_X) {
+        if (!cellAt(ix, iy)?.paved) {
+          ix += 1;
+          continue;
+        }
+        const start = ix;
+        while (ix < LANE_COUNT_X && cellAt(ix, iy)?.paved) ix += 1;
+        addRunChunks(start, iy, "H", ix - start);
+      }
+    }
+
+    // —— Runs verticaux
+    for (let ix = 0; ix < LANE_COUNT_X; ix++) {
+      let iy = 0;
+      while (iy < LANE_COUNT_Y) {
+        if (!cellAt(ix, iy)?.paved) {
+          iy += 1;
+          continue;
+        }
+        const start = iy;
+        while (iy < LANE_COUNT_Y && cellAt(ix, iy)?.paved) iy += 1;
+        // Éviter de redessiner un seul plot déjà couvert par un H isolé
+        // (longueur 1 sans voisin V utile) : on dessine quand même si
+        // la case a un voisin V ou est un carrefour — sinon le H suffit.
+        const len = iy - start;
+        if (len === 1) {
+          const c = cellAt(ix, start);
+          const up = start > 0 && cellAt(ix, start - 1)?.paved;
+          const down =
+            start + 1 < LANE_COUNT_Y && cellAt(ix, start + 1)?.paved;
+          if (!up && !down && c?.kind !== "intersection") {
             continue;
           }
-          const mask = roadNeighborMask(
-            state.cells,
-            state.unlockedParcels,
-            x,
-            y
-          );
-          const tex =
-            cell.kind === "highway"
-              ? this.highwayTex!
-              : this.roadTex.get(mask)!;
-          const spr = new Sprite(tex);
-          spr.x = top.x - TILE_W / 2;
-          spr.y = top.y;
-          spr.zIndex = x + y;
-          this.tilesLayer.addChild(spr);
-
-          if (
-            this.cliffTex &&
-            (x === MAP_SIZE - 1 || y === MAP_SIZE - 1)
-          ) {
-            const c = new Sprite(this.cliffTex);
-            c.x = top.x - TILE_W / 2;
-            c.y = top.y;
-            c.zIndex = x + y + 0.05;
-            this.tilesLayer.addChild(c);
-          }
+          // carrefour seul sans V : H suffit + overlay plus bas
+          if (!up && !down) continue;
         }
+        addRunChunks(ix, start, "V", len);
       }
     }
 
-    // Contours + prix des parcelles achetable
-    for (let py = 0; py < PARCEL_COUNT; py++) {
-      for (let px = 0; px < PARCEL_COUNT; px++) {
-        const id = parcelId(px, py);
-        if (state.unlockedParcels.includes(id)) continue;
-        if (!isAdjacentParcel(state.unlockedParcels, px, py)) continue;
-        this.drawBuyableOutline(px, py, id === hoverParcel);
-        if (this.priceStyle) {
-          const o = parcelBlockOrigin(px, py);
-          const c = gridToScreen(o.x + 0.5, o.y + 0.5);
-          const label = new Text({
-            text: `${parcelCost(state.parcelsBought)} or`,
-            style: this.priceStyle,
-          });
-          label.anchor.set(0.5);
-          label.x = c.x;
-          label.y = c.y + TILE_H * 0.35;
-          label.visible = id === hoverParcel;
-          label.zIndex = 9000;
-          this.priceLabels.addChild(label);
+    // —— Overlay intersection (bloc gris sans tirets)
+    for (let iy = 0; iy < LANE_COUNT_Y; iy++) {
+      for (let ix = 0; ix < LANE_COUNT_X; ix++) {
+        const c = cellAt(ix, iy);
+        if (!c?.paved || c.kind !== "intersection") continue;
+        const o = cellOrigin(ix, iy);
+        if (
+          o.x + CELL_PX < minX ||
+          o.x > maxX ||
+          o.y + CELL_PX < minY ||
+          o.y > maxY
+        ) {
+          continue;
         }
+        const cross = new Sprite(getIntersectionTexture("bitume"));
+        cross.x = o.x;
+        cross.y = o.y;
+        cross.width = CELL_PX;
+        cross.height = CELL_PX;
+        this.roadsLayer.addChild(cross);
       }
     }
   }
-
-  private drawBuyableOutline(px: number, py: number, highlight: boolean): void {
-    const o = parcelBlockOrigin(px, py);
-    const pN = gridToScreen(o.x, o.y);
-    const pE = gridToScreen(o.x + 2, o.y);
-    const pS = gridToScreen(o.x + 2, o.y + 2);
-    const pW = gridToScreen(o.x, o.y + 2);
-    this.outlineGfx
-      .poly([pN.x, pN.y, pE.x, pE.y, pS.x, pS.y, pW.x, pW.y])
-      .stroke({
-        width: highlight ? 3 : 2,
-        color: hexToNum(BUYABLE_OUTLINE),
-        alpha: highlight ? 1 : 0.7,
-      });
-  }
-
-  private bakeRoad(
-    renderer: TexBag,
-    mask: number,
-    highway: boolean
-  ): Texture {
-    const g = new Graphics();
-    const fill = hexToNum(highway ? HIGHWAY : ROAD);
-    const edge = hexToNum(ROAD_EDGE);
-    g.poly([
-      TILE_W / 2,
-      0,
-      TILE_W,
-      TILE_H / 2,
-      TILE_W / 2,
-      TILE_H,
-      0,
-      TILE_H / 2,
-    ])
-      .fill({ color: fill })
-      .stroke({ width: 2, color: edge, alpha: 0.85 });
-
-    // Marquage selon connexions (simplifié : ligne centrale si N-S ou E-W)
-    const mark = hexToNum(ROAD_MARK);
-    const n = (mask & 1) !== 0;
-    const e = (mask & 2) !== 0;
-    const s = (mask & 4) !== 0;
-    const w = (mask & 8) !== 0;
-    if ((n || s) && !(e && w && !n && !s)) {
-      g.moveTo(TILE_W / 2, TILE_H * 0.2)
-        .lineTo(TILE_W / 2, TILE_H * 0.8)
-        .stroke({ width: highway ? 2.5 : 1.5, color: mark, alpha: 0.9 });
-    }
-    if ((e || w) && !(n && s && !e && !w)) {
-      g.moveTo(TILE_W * 0.25, TILE_H / 2)
-        .lineTo(TILE_W * 0.75, TILE_H / 2)
-        .stroke({ width: highway ? 2.5 : 1.5, color: mark, alpha: 0.9 });
-    }
-    void parseParcelId;
-    const tex = renderer.generateTexture(g);
-    g.destroy();
-    return tex;
-  }
 }
 
-/** Sapin low-poly ≈ 0,6 bloc de haut. */
-function drawPine(g: Graphics, cx: number, cy: number): void {
-  const h = TILE_H * 0.95; // ~0.6 block visual height
-  const trunk = facetColors("#6B4A2E");
-  const leaf = facetColors("#3D6B3A");
-  g.poly([
-    cx - 3,
-    cy,
-    cx + 3,
-    cy,
-    cx + 2,
-    cy - h * 0.25,
-    cx - 2,
-    cy - h * 0.25,
-  ]).fill({ color: trunk.left });
-  g.poly([cx, cy - h, cx + 14, cy - h * 0.35, cx - 14, cy - h * 0.35]).fill({
-    color: leaf.top,
-  });
-  g.poly([
-    cx,
-    cy - h * 0.7,
-    cx + 11,
-    cy - h * 0.2,
-    cx - 11,
-    cy - h * 0.2,
-  ]).fill({ color: leaf.left });
-}
-
-export { drawDecorPlaceholder };
+void HL_ROAD_PREVIEW_ALPHA;
+void HL_UNLOCK_GOLD;

@@ -23,6 +23,7 @@ export function formatCostLine(cost: Resources): string {
   if (cost.gold) parts.push(`${formatCompact(cost.gold)} or`);
   if (cost.wood) parts.push(`${formatCompact(cost.wood)} bois`);
   if (cost.stone) parts.push(`${formatCompact(cost.stone)} pierre`);
+  if (cost.planks) parts.push(`${formatCompact(cost.planks)} planches`);
   if (cost.knowledge) parts.push(`${formatCompact(cost.knowledge)} savoir`);
   return parts.join(" · ") || "Gratuit";
 }

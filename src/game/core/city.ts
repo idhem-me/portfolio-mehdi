@@ -11,7 +11,12 @@ import {
   UNEMPLOYMENT_TARGET_PENALTY,
 } from "./balance";
 import { getBuildingDef } from "./buildings";
-import type { GameState, PlacedBuilding } from "./types";
+import {
+  computeCoverage,
+  type CoverageSnapshot,
+  type HousingNeedInfo,
+} from "./coverage";
+import type { BuildingDef, GameState, PlacedBuilding } from "./types";
 
 export type NeedLevel = 0 | 1 | 2 | 3;
 
@@ -29,8 +34,15 @@ export type CitySnapshot = {
     commerce: number;
     education: number;
     cultureLeisure: number;
+    health: number;
+    safety: number;
   };
+  /** Besoin moyen (pondéré logement) — impôts / attractivité. */
   needLevel: NeedLevel;
+  /** Répartition % des habitants par niveau N0–N3. */
+  needDistributionPct: Record<NeedLevel, number>;
+  housingNeeds: Map<string, HousingNeedInfo>;
+  coverageDetail: CoverageSnapshot;
   attractiveness: number;
   targetPopulation: number;
   demandRCI: { R: number; C: number; I: number };
@@ -43,6 +55,23 @@ export type CitySnapshot = {
 export function capacityAtLevel(base: number, level: number): number {
   if (level <= 0 || base === 0) return 0;
   return base * (1 + CAPACITY_LVL_BONUS * (level - 1));
+}
+
+/**
+ * Logement d'un bâtiment : table `housingLevels` si présente,
+ * sinon formule capacityAtLevel(def.housing, level).
+ */
+export function housingAtLevel(
+  def: Pick<BuildingDef, "housing" | "housingLevels">,
+  level: number
+): number {
+  if (level <= 0) return 0;
+  const table = def.housingLevels;
+  if (table && table.length > 0) {
+    const idx = Math.min(Math.max(0, level - 1), table.length - 1);
+    return table[idx] ?? 0;
+  }
+  return capacityAtLevel(def.housing, level);
 }
 
 export function isPowerPlant(type: PlacedBuilding["type"]): boolean {
@@ -96,6 +125,8 @@ export function computeCity(state: GameState, _now?: number): CitySnapshot {
   let educationCap = 0;
   let cultureCap = 0;
   let leisureCap = 0;
+  let healthCap = 0;
+  let safetyCap = 0;
   let cultureMult = 1;
   let rawSupply = 0;
   let powerDemand = 0;
@@ -104,7 +135,7 @@ export function computeCity(state: GameState, _now?: number): CitySnapshot {
     const def = getBuildingDef(b.type);
     const lvl = b.level;
     jobs += capacityAtLevel(def.jobs, lvl);
-    housing += capacityAtLevel(def.housing, lvl);
+    housing += housingAtLevel(def, lvl);
     pollution += def.pollution;
     if (def.cultureMultiplier && def.cultureMultiplier > 1) {
       cultureMult = Math.max(cultureMult, def.cultureMultiplier);
@@ -123,6 +154,12 @@ export function computeCity(state: GameState, _now?: number): CitySnapshot {
           break;
         case "leisure":
           leisureCap += cap;
+          break;
+        case "health":
+          healthCap += cap;
+          break;
+        case "safety":
+          safetyCap += cap;
           break;
       }
     }
@@ -154,17 +191,28 @@ export function computeCity(state: GameState, _now?: number): CitySnapshot {
   const covCommerce = coverage(commerceCap, pop);
   const covEducation = coverage(educationCap, pop);
   const covCultureLeisure = coverage(cultureCap + leisureCap, pop);
+  const covHealth = coverage(healthCap, pop);
+  const covSafety = coverage(safetyCap, pop);
 
+  const powerOk = powerRatio >= 1;
+  const jobsOk = unemployment <= UNEMPLOYMENT_N1_MAX;
+  const coverageDetail = computeCoverage(state, { powerOk, jobsOk });
+
+  // needLevel global = niveau où ≥50 % des hab. sont au moins à ce niveau
   let needLevel: NeedLevel = 0;
-  if (
-    powerRatio >= 1 &&
-    unemployment <= UNEMPLOYMENT_N1_MAX &&
-    covCommerce >= 1
-  ) {
-    needLevel = 1;
-    if (covEducation >= 1) {
-      needLevel = 2;
-      if (covCultureLeisure >= 1) needLevel = 3;
+  const pct = coverageDetail.distributionPct;
+  if (pct[1] + pct[2] + pct[3] >= 50) needLevel = 1;
+  if (pct[2] + pct[3] >= 50) needLevel = 2;
+  if (pct[3] >= 50) needLevel = 3;
+  // Fallback si pas de logements : ancien calcul global
+  if (housing <= 0) {
+    needLevel = 0;
+    if (powerOk && jobsOk && covCommerce >= 1) {
+      needLevel = 1;
+      if (covEducation >= 1) {
+        needLevel = 2;
+        if (covCultureLeisure >= 1) needLevel = 3;
+      }
     }
   }
 
@@ -198,6 +246,7 @@ export function computeCity(state: GameState, _now?: number): CitySnapshot {
     needLevel,
     housing,
     pop,
+    needDistributionPct: pct,
   });
 
   return {
@@ -214,8 +263,13 @@ export function computeCity(state: GameState, _now?: number): CitySnapshot {
       commerce: covCommerce,
       education: covEducation,
       cultureLeisure: covCultureLeisure,
+      health: covHealth,
+      safety: covSafety,
     },
     needLevel,
+    needDistributionPct: pct,
+    housingNeeds: coverageDetail.byHousing,
+    coverageDetail,
     attractiveness,
     targetPopulation,
     demandRCI: { R: demandR, C: demandC, I: demandI },
@@ -245,6 +299,7 @@ function buildAdvice(p: {
   needLevel: NeedLevel;
   housing: number;
   pop: number;
+  needDistributionPct: Record<NeedLevel, number>;
 }): string[] {
   const advice: string[] = [];
   if (p.powerRatio < 1) {
@@ -259,16 +314,22 @@ function buildAdvice(p: {
     advice.push("Crée plus d'emplois (industrie, commerce)");
   }
   if (p.covCommerce < 1) {
-    advice.push("Construis une boutique");
+    advice.push("Étends le commerce près des logements");
   }
   if (p.needLevel >= 1 && p.covEducation < 1) {
-    advice.push("Construis une école");
+    advice.push("Place une école à portée des maisons");
   }
   if (p.needLevel >= 2 && p.covCultureLeisure < 1) {
-    advice.push("Ajoute culture ou loisirs (bibliothèque, fontaine)");
+    advice.push("Ajoute parc, église ou loisirs à proximité");
   }
   if (p.housing <= 0 || (p.pop > 0 && p.housing < p.pop)) {
     advice.push("Construis des maisons");
+  }
+  const top = ([3, 2, 1, 0] as NeedLevel[]).find(
+    (n) => p.needDistributionPct[n] > 0
+  );
+  if (advice.length === 0 && top != null) {
+    advice.push(`${p.needDistributionPct[top]} % des habitants en N${top}`);
   }
   if (advice.length === 0 && p.needLevel >= 3) {
     advice.push("Ville épanouie — vise le monument !");

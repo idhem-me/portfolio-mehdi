@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { formatCompact } from "@/game/core/format";
+import type { NeedId } from "@/game/core/types";
 import { useGameStore, gameStore } from "@/game/store/gameStore";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,14 +11,26 @@ import { cn } from "@/lib/utils";
 import { CityPanel } from "./CityPanel";
 import { useCity } from "./useCity";
 
+const COVER_NEEDS: { id: NeedId; label: string }[] = [
+  { id: "commerce", label: "Commerce" },
+  { id: "education", label: "Éducation" },
+  { id: "health", label: "Santé" },
+  { id: "safety", label: "Sécurité" },
+  { id: "culture", label: "Culture" },
+  { id: "leisure", label: "Loisirs" },
+];
+
 export function Hud() {
   const [cityOpen, setCityOpen] = useState(false);
+  const [coverOpen, setCoverOpen] = useState(false);
+  const coverageNeed = useGameStore((s) => s.coverageNeed);
   const resources = useGameStore(
     useShallow((s) => ({
       gold: s.resources.gold,
       wood: s.resources.wood,
       stone: s.resources.stone,
       knowledge: s.resources.knowledge,
+      planks: s.resources.planks ?? 0,
     }))
   );
   const city = useCity();
@@ -49,6 +62,16 @@ export function Hud() {
             >
               Ville
             </Button>
+            <Button
+              type="button"
+              variant={coverageNeed ? "default" : "secondary"}
+              size="sm"
+              className="min-h-11"
+              aria-expanded={coverOpen}
+              onClick={() => setCoverOpen((o) => !o)}
+            >
+              Couverture
+            </Button>
           </div>
           <div className="pointer-events-auto">
             <Button
@@ -61,10 +84,11 @@ export function Hud() {
             </Button>
           </div>
         </div>
-        <div className="mt-2 flex flex-wrap justify-end gap-2">
+        <div className="mt-2 flex flex-col items-start gap-1.5">
           <ResChip label="Or" value={resources.gold} />
           <ResChip label="Bois" value={resources.wood} />
           <ResChip label="Pierre" value={resources.stone} />
+          <ResChip label="Planches" value={resources.planks} />
           <ResChip label="Savoir" value={resources.knowledge} />
           <ResChip
             label="⚡"
@@ -76,14 +100,45 @@ export function Hud() {
             valueLabel={`${formatCompact(pop)}/${formatCompact(housing)}`}
           />
           <ResChip label="💼" valueLabel={`${unemployment} %`} />
-        </div>
-        <div className="mt-1.5 flex flex-wrap justify-end gap-2">
-          <RciBar letter="R" value={R} color="bg-emerald-500" />
-          <RciBar letter="C" value={C} color="bg-sky-500" />
-          <RciBar letter="I" value={I} color="bg-amber-400" />
+          <div className="mt-0.5 flex flex-wrap justify-start gap-2">
+            <RciBar letter="R" value={R} color="bg-emerald-500" />
+            <RciBar letter="C" value={C} color="bg-sky-500" />
+            <RciBar letter="I" value={I} color="bg-amber-400" />
+          </div>
         </div>
       </header>
       <CityPanel open={cityOpen} onClose={() => setCityOpen(false)} />
+      {coverOpen && (
+        <div className="pointer-events-auto absolute left-3 top-16 z-30 flex max-w-xs flex-wrap gap-1.5 rounded-lg border border-border bg-popover p-2 shadow-lg">
+          {COVER_NEEDS.map(({ id, label }) => (
+            <Button
+              key={id}
+              type="button"
+              size="sm"
+              variant={coverageNeed === id ? "default" : "secondary"}
+              className="min-h-9"
+              onClick={() => {
+                const next = coverageNeed === id ? null : id;
+                gameStore.getState().setCoverageNeed(next);
+              }}
+            >
+              {label}
+            </Button>
+          ))}
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            className="min-h-9"
+            onClick={() => {
+              gameStore.getState().setCoverageNeed(null);
+              setCoverOpen(false);
+            }}
+          >
+            Fermer
+          </Button>
+        </div>
+      )}
     </>
   );
 }

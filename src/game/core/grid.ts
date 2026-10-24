@@ -1,11 +1,31 @@
+/**
+ * Logique de grille uniforme (CELL_PX) + placement.
+ * Maths : mapLanes.ts — ce fichier orchestre Cell / unlock / footprint.
+ */
+
 import {
-  MAP_SIZE,
-  PARCEL_COUNT,
-  parcelId,
-  parseParcelId,
-  startParcelIds,
-} from "./balance";
-import type { Cell, CellKind } from "./types";
+  CELLS_PER_TILE,
+  LOCKED_OVERLAY_ALPHA,
+  LOCKED_OVERLAY_ALPHA_FAR,
+  MAP_SEED,
+  type BiomeId,
+} from "./mapConfig";
+import { biomeOfBlock, generateBlockBiomes } from "./mapGen";
+import {
+  LANE_COUNT_X,
+  LANE_COUNT_Y,
+  blockIdOfTile,
+  blockIsletOrigins,
+  blockLaneOrigin,
+  blockOfTileLane,
+  blockTiles,
+  cellGeomKind,
+  cellIndex as laneCellIndex,
+  inLaneBounds,
+  ownerBlockOfRoad,
+  startBlockIds,
+} from "./mapLanes";
+import type { Cell, FootprintRotation } from "./types";
 
 const ORTHO: ReadonlyArray<readonly [number, number]> = [
   [1, 0],
@@ -14,12 +34,25 @@ const ORTHO: ReadonlyArray<readonly [number, number]> = [
   [0, -1],
 ];
 
+export {
+  LANE_COUNT_X,
+  LANE_COUNT_Y,
+  blockIdOfTile,
+  blockIsletOrigins,
+  blockLaneOrigin,
+  blockTiles,
+  cellGeomKind,
+  inLaneBounds,
+  ownerBlockOfRoad,
+  startBlockIds,
+};
+
 export function cellIndex(x: number, y: number): number {
-  return y * MAP_SIZE + x;
+  return laneCellIndex(x, y);
 }
 
 export function inBounds(x: number, y: number): boolean {
-  return x >= 0 && y >= 0 && x < MAP_SIZE && y < MAP_SIZE;
+  return inLaneBounds(x, y);
 }
 
 export function getCell(cells: Cell[], x: number, y: number): Cell | null {
@@ -27,34 +60,22 @@ export function getCell(cells: Cell[], x: number, y: number): Cell | null {
   return cells[cellIndex(x, y)] ?? null;
 }
 
-/** Case route (normale ou autoroute) si x%3===2 ou y%3===2. */
-export function isRoadCoord(x: number, y: number): boolean {
-  return x % 3 === 2 || y % 3 === 2;
+/** @deprecated plus de lanes structurelles — utiliser cell.paved. */
+export function isRoadCoord(_x: number, _y: number): boolean {
+  return false;
 }
 
 export function parcelOfBlock(x: number, y: number): string | null {
-  if (isRoadCoord(x, y)) return null;
-  const px = Math.floor(x / 3);
-  const py = Math.floor(y / 3);
-  if (px < 0 || py < 0 || px >= PARCEL_COUNT || py >= PARCEL_COUNT) {
-    return null;
-  }
-  return parcelId(px, py);
+  return blockIdOfTile(x, y);
 }
 
-/** Origine (coin HG) des 2×2 blocs d'une parcelle. */
+/** @deprecated alias — origine lane NW du bloc. */
 export function parcelBlockOrigin(px: number, py: number): { x: number; y: number } {
-  return { x: px * 3, y: py * 3 };
+  return blockLaneOrigin(px, py);
 }
 
 export function parcelBlocks(px: number, py: number): { x: number; y: number }[] {
-  const o = parcelBlockOrigin(px, py);
-  return [
-    { x: o.x, y: o.y },
-    { x: o.x + 1, y: o.y },
-    { x: o.x, y: o.y + 1 },
-    { x: o.x + 1, y: o.y + 1 },
-  ];
+  return blockTiles(px, py);
 }
 
 export function isParcelUnlocked(
@@ -70,36 +91,52 @@ export function isAdjacentParcel(
   py: number
 ): boolean {
   for (const [dx, dy] of ORTHO) {
-    const nid = parcelId(px + dx, py + dy);
+    const nid = `${px + dx},${py + dy}`;
     if (unlockedParcels.includes(nid)) return true;
   }
   return false;
 }
 
 /**
- * Route visible si elle borde une parcelle débloquée, ou si c'est l'autoroute.
+ * Case bitume jouable : déjà pavée, ou dans un bloc débloqué.
  */
-export function isRoadVisible(
+export function isRoadPlayable(
   cells: Cell[],
   unlockedParcels: string[],
   x: number,
   y: number
 ): boolean {
   const c = getCell(cells, x, y);
-  if (!c || (c.kind !== "road" && c.kind !== "highway")) return false;
-  if (c.kind === "highway") return true;
-  for (const [dx, dy] of ORTHO) {
-    const n = getCell(cells, x + dx, y + dy);
-    if (n?.kind === "block" && n.parcelId && unlockedParcels.includes(n.parcelId)) {
-      return true;
-    }
-  }
-  return false;
+  if (!c) return false;
+  if (c.paved || c.permanent) return true;
+  return Boolean(c.blockId && unlockedParcels.includes(c.blockId));
+}
+
+/** @deprecated alias de isRoadPlayable */
+export function isRoadVisible(
+  cells: Cell[],
+  unlockedParcels: string[],
+  x: number,
+  y: number
+): boolean {
+  return isRoadPlayable(cells, unlockedParcels, x, y);
 }
 
 /**
- * Masque de voisines routes visibles (N=1, E=2, S=4, W=8) pour auto-tiling.
+ * Biome d'affichage d'une route/intersection :
+ * - eau ssi toutes les tuiles voisines ortho sont eau ;
+ * - sinon biome majoritaire des voisines ; herbe en cas d'égalité.
  */
+export function resolveRoadBiome(
+  cells: Cell[],
+  x: number,
+  y: number
+): BiomeId {
+  const self = getCell(cells, x, y);
+  if (self) return self.biome;
+  return "herbe";
+}
+
 export function roadNeighborMask(
   cells: Cell[],
   unlockedParcels: string[],
@@ -117,14 +154,34 @@ export function roadNeighborMask(
     const nx = x + dx;
     const ny = y + dy;
     if (!inBounds(nx, ny)) continue;
-    if (isRoadVisible(cells, unlockedParcels, nx, ny)) mask |= bit;
+    if (isRoadPlayable(cells, unlockedParcels, nx, ny)) mask |= bit;
   }
   return mask;
 }
 
+/** Empreinte en unités tuile bâtiment (1 = 1254 px visuels). */
+export function footprintDims(
+  width: number,
+  height: number,
+  rotation: FootprintRotation = "H"
+): { w: number; h: number } {
+  if (rotation === "V") return { w: height, h: width };
+  return { w: width, h: height };
+}
+
+/** Empreinte en cases de grille (320 px) — 1 tuile = CELLS_PER_TILE cases. */
+export function fineFootprintDims(
+  width: number,
+  height: number,
+  rotation: FootprintRotation = "H"
+): { w: number; h: number } {
+  const { w, h } = footprintDims(width, height, rotation);
+  return { w: w * CELLS_PER_TILE, h: h * CELLS_PER_TILE };
+}
+
 /**
- * Empreinte constructible : uniquement sur des blocks d'une même parcelle
- * débloquée, sans bâtiment, sans chevauchement de route.
+ * Empreinte sur des cases libres d'un même bloc débloqué (pas de bitume).
+ * `width`/`height` = unités tuile bâtiment ; occupancy = × CELLS_PER_TILE.
  */
 export function canPlaceFootprint(
   cells: Cell[],
@@ -132,21 +189,26 @@ export function canPlaceFootprint(
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
+  rotation: FootprintRotation = "H",
+  /** Pendant un déplacement : ignore l'empreinte actuelle de ce bâtiment. */
+  ignoreBuildingId: string | null = null
 ): boolean {
-  if (!inBounds(x, y) || !inBounds(x + width - 1, y + height - 1)) {
-    return false;
-  }
-  let parcel: string | null = null;
-  for (let ty = y; ty < y + height; ty++) {
-    for (let tx = x; tx < x + width; tx++) {
+  const { w, h } = fineFootprintDims(width, height, rotation);
+  if (!inBounds(x, y) || !inBounds(x + w - 1, y + h - 1)) return false;
+
+  let block: string | null = null;
+
+  for (let ty = y; ty < y + h; ty++) {
+    for (let tx = x; tx < x + w; tx++) {
       const c = getCell(cells, tx, ty);
-      if (!c || c.kind !== "block" || !c.parcelId || c.buildingId) {
-        return false;
-      }
-      if (!unlockedParcels.includes(c.parcelId)) return false;
-      if (parcel === null) parcel = c.parcelId;
-      else if (parcel !== c.parcelId) return false;
+      if (!c || !c.blockId) return false;
+      if (c.biome === "eau") return false;
+      if (c.paved) return false;
+      if (c.buildingId && c.buildingId !== ignoreBuildingId) return false;
+      if (!unlockedParcels.includes(c.blockId)) return false;
+      if (block === null) block = c.blockId;
+      else if (block !== c.blockId) return false;
     }
   }
   return true;
@@ -158,11 +220,13 @@ export function occupyFootprint(
   y: number,
   width: number,
   height: number,
-  buildingId: string
+  buildingId: string,
+  rotation: FootprintRotation = "H"
 ): Cell[] {
+  const { w, h } = fineFootprintDims(width, height, rotation);
   const next = cells.slice();
-  for (let ty = y; ty < y + height; ty++) {
-    for (let tx = x; tx < x + width; tx++) {
+  for (let ty = y; ty < y + h; ty++) {
+    for (let tx = x; tx < x + w; tx++) {
       const i = cellIndex(tx, ty);
       const c = next[i];
       if (!c) continue;
@@ -172,73 +236,134 @@ export function occupyFootprint(
   return next;
 }
 
-/**
- * Autoroute : depuis le bord NO jusqu'au réseau des parcelles de départ.
- * Chemin en L le long des routes jusqu'à (origin road near start parcels).
- */
-function highwayCells(): Set<string> {
-  const start = startParcelIds();
-  const { px, py } = parseParcelId(start[0]!);
-  // Point d'entrée : route juste au nord-ouest de la première parcelle
-  const targetX = px * 3 + 2; // route est de la parcelle
-  const targetY = py * 3 - 1; // route nord — peut être <0
-  const entryX = Math.max(2, px * 3 - 1);
-  const entryY = Math.max(2, py * 3 - 1);
-
-  const set = new Set<string>();
-  // Depuis (0,2) bord nord le long y=2 (première route horizontale) puis down
-  // Path: NW corner along top road row (y=2) to entryX, then down to entryY, then to network
-  const topRoadY = 2;
-  for (let x = 0; x <= Math.max(entryX, targetX); x++) {
-    if (isRoadCoord(x, topRoadY)) set.add(`${x},${topRoadY}`);
-  }
-  // Descente verticale sur une colonne route
-  const vertX = entryX % 3 === 2 ? entryX : entryX + (2 - (entryX % 3));
-  for (let y = topRoadY; y <= Math.max(entryY, py * 3 + 2); y++) {
-    if (inBounds(vertX, y) && isRoadCoord(vertX, y)) {
-      set.add(`${vertX},${y}`);
-    }
-  }
-  // Connexion horizontale vers le carrefour des parcelles centrales
-  const midY = py * 3 + 2;
-  for (let x = Math.min(vertX, px * 3); x <= Math.max(vertX, (px + 1) * 3 + 2); x++) {
-    if (inBounds(x, midY) && isRoadCoord(x, midY)) set.add(`${x},${midY}`);
-  }
-  void targetY;
-  return set;
+/** Libère toutes les cases occupées par `buildingId`. */
+export function clearBuildingFromCells(
+  cells: Cell[],
+  buildingId: string
+): Cell[] {
+  let changed = false;
+  const next = cells.map((c) => {
+    if (c.buildingId !== buildingId) return c;
+    changed = true;
+    return { ...c, buildingId: null };
+  });
+  return changed ? next : cells;
 }
 
-export function createInitialCells(): Cell[] {
-  const hwy = highwayCells();
+/**
+ * Carte générée (biomes) + route d'entrée bitume jusqu'à la mairie.
+ */
+export function createInitialCells(seed: number = MAP_SEED): Cell[] {
+  const biomes = generateBlockBiomes(seed);
   const cells: Cell[] = [];
-  for (let y = 0; y < MAP_SIZE; y++) {
-    for (let x = 0; x < MAP_SIZE; x++) {
-      let kind: CellKind;
-      let pid: string | null = null;
-      if (isRoadCoord(x, y)) {
-        kind = hwy.has(`${x},${y}`) ? "highway" : "road";
-      } else {
-        kind = "block";
-        pid = parcelOfBlock(x, y);
+  for (let y = 0; y < LANE_COUNT_Y; y++) {
+    for (let x = 0; x < LANE_COUNT_X; x++) {
+      const blockId = blockIdOfTile(x, y);
+      let biome: BiomeId = "herbe";
+      if (blockId) {
+        const [bx, by] = blockId.split(",").map(Number) as [number, number];
+        biome = biomeOfBlock(biomes, bx, by);
       }
       cells.push({
-        kind,
-        parcelId: pid,
+        kind: "tile",
+        blockId,
+        parcelId: blockId,
+        biome,
+        paved: false,
+        permanent: false,
         buildingId: null,
+        roadDir: null,
       });
     }
   }
-  return cells;
+  return applyEntryHighway(cells);
 }
 
-/** Origine blocs de la parcelle mairie (une des 4 centrales). */
+/**
+ * Mairie : bloc départ NW. Empreinte 4×4 cases ; route d'entrée juste au sud.
+ */
 export function townhallOrigin(): { x: number; y: number } {
-  const id = startParcelIds()[0]!;
-  const { px, py } = parseParcelId(id);
-  return parcelBlockOrigin(px, py);
+  const id = startBlockIds()[0]!;
+  const [bx, by] = id.split(",").map(Number) as [number, number];
+  const o = blockLaneOrigin(bx, by);
+  return { x: o.x + 4, y: o.y + 4 };
+}
+
+/** Ligne Y juste sous l'empreinte mairie (CELLS_PER_TILE cases). */
+export function entryRoadLaneY(): number {
+  return townhallOrigin().y + CELLS_PER_TILE;
+}
+
+/** Route devant le parking mairie (pour orientation / BFS). */
+export function townhallAccessRoad(): { x: number; y: number } {
+  const th = townhallOrigin();
+  return { x: th.x, y: entryRoadLaneY() };
+}
+
+/**
+ * Route d'entrée : du bord droit jusqu'à la mairie.
+ * Un run H continu (route-bitume) ; intersection seulement si branchement.
+ */
+function applyEntryHighway(cells: Cell[]): Cell[] {
+  const roadY = entryRoadLaneY();
+  const endX = townhallOrigin().x;
+  const entryX = LANE_COUNT_X - 1;
+
+  const next = cells.slice();
+  const x0 = Math.min(entryX, endX);
+  const x1 = Math.max(entryX, endX);
+  for (let x = x0; x <= x1; x++) {
+    const i = cellIndex(x, roadY);
+    const c = next[i];
+    if (!c) continue;
+    next[i] = {
+      ...c,
+      paved: true,
+      permanent: true,
+      kind: "road",
+      roadDir: "H",
+    };
+  }
+  return next;
 }
 
 export function applyTownhallOccupation(cells: Cell[]): Cell[] {
   const o = townhallOrigin();
-  return occupyFootprint(cells, o.x, o.y, 2, 2, "townhall-0");
+  return occupyFootprint(cells, o.x, o.y, 1, 1, "townhall-0");
 }
+
+/** Blocs dont au moins une tuile touche la case (pour overlay lock). */
+export function neighboringBlocks(x: number, y: number): string[] {
+  const id = blockIdOfTile(x, y);
+  return id ? [id] : [];
+}
+
+export function isCellLockedVisual(
+  cells: Cell[],
+  unlockedParcels: string[],
+  x: number,
+  y: number
+): boolean {
+  const c = getCell(cells, x, y);
+  if (!c) return true;
+  if (c.permanent || c.paved) return false;
+  return !c.blockId || !unlockedParcels.includes(c.blockId);
+}
+
+/** Alpha de grisé selon accessibilité (adjacent = plus léger). */
+export function lockedOverlayAlphaForCell(
+  unlockedParcels: string[],
+  x: number,
+  y: number
+): number {
+  const id = blockIdOfTile(x, y);
+  if (!id) return LOCKED_OVERLAY_ALPHA_FAR;
+  const [bx, by] = id.split(",").map(Number) as [number, number];
+  return isAdjacentParcel(unlockedParcels, bx, by)
+    ? LOCKED_OVERLAY_ALPHA
+    : LOCKED_OVERLAY_ALPHA_FAR;
+}
+
+void blockOfTileLane;
+void cellGeomKind;
+void ownerBlockOfRoad;

@@ -2,60 +2,92 @@ import {
   Assets,
   Container,
   Graphics,
-  Rectangle,
   Sprite,
   Texture,
 } from "pixi.js";
 import { getBuildingDef } from "@/game/core/buildings";
 import { computeCity } from "@/game/core/city";
-import type { GameState, PlacedBuilding } from "@/game/core/types";
+import { fineFootprintDims } from "@/game/core/grid";
+import { TILE_PX } from "@/game/core/mapConfig";
+import type {
+  BuildingTypeId,
+  GameState,
+  PlacedBuilding,
+} from "@/game/core/types";
 import {
+  ASSET_PX_PER_TILE,
   allBuildingSpriteUrls,
   resolveBuildingAsset,
 } from "./assets";
-import { gridToScreen } from "./iso";
-import { drawBuildingPlaceholder, drawGhostFootprint } from "./placeholders";
+import { TILE, footprintRect, gridToWorld, tileCenter } from "./grid";
+import {
+  bakeBuildingTexture,
+  bakeShadowTexture,
+  drawGhostFootprint,
+} from "./placeholders";
+import { getBuildingTexture, getSiteTexture } from "./villageAssets";
 
-type BuildingNode = Graphics | Sprite;
-
-type Pt = { x: number; y: number };
-
-/** Pointes du losange au sol dans le repère de la texture (frame locale). */
-type FootprintTips = {
-  west: Pt; // jaune
-  south: Pt; // rouge
-  east: Pt; // bleu
-};
+type BuildingNode = Sprite;
 
 type LoadedSprite = {
   texture: Texture;
-  tips: FootprintTips;
-  /** Masque opaque de la frame (1 = cliquable), row-major. */
   hitMask: Uint8Array;
   hitW: number;
   hitH: number;
 };
 
+/**
+ * Bâtiments top-down.
+ * Couches fixes : ombres → bâtiments → indicateurs → fantôme.
+ */
 export class BuildingView {
   readonly layer = new Container();
+  private shadows = new Container();
+  private buildings = new Container();
+  private overlays = new Container();
   private byId = new Map<string, BuildingNode>();
+  private shadowById = new Map<string, Sprite>();
   private spriteMeta = new Map<string, LoadedSprite>();
   private ghost = new Graphics();
+  private ghostSprite = new Sprite();
+  private selection = new Graphics();
   private progress = new Graphics();
   private powerIcons = new Graphics();
   private textures = new Map<string, LoadedSprite>();
 
   constructor() {
-    this.layer.sortableChildren = true;
+    this.ghostSprite.alpha = 0;
+    this.layer.addChild(this.shadows);
+    this.layer.addChild(this.buildings);
+    this.layer.addChild(this.overlays);
     this.layer.addChild(this.ghost);
-    this.layer.addChild(this.progress);
-    this.layer.addChild(this.powerIcons);
+    this.layer.addChild(this.ghostSprite);
+    this.layer.addChild(this.selection);
+    this.overlays.addChild(this.progress);
+    this.overlays.addChild(this.powerIcons);
   }
 
   async loadAssets(): Promise<void> {
     await Promise.all(
       allBuildingSpriteUrls().map(async (url) => {
         try {
+          if (url.startsWith("village://")) {
+            const key = url.replace("village://", "");
+            const entry = getBuildingTexture(
+              key.replace("bld-", "") as BuildingTypeId,
+              1
+            );
+            // coal_plant assemblé
+            const fromVillage =
+              key === "bld-coal_plant"
+                ? getBuildingTexture("coal_plant", 1)
+                : entry;
+            if (fromVillage) {
+              const loaded = await prepareBuildingSprite(fromVillage.texture);
+              this.textures.set(url, loaded);
+            }
+            return;
+          }
           const raw = await Assets.load<Texture>(url);
           const loaded = await prepareBuildingSprite(raw);
           this.textures.set(url, loaded);
@@ -64,67 +96,126 @@ export class BuildingView {
         }
       })
     );
+    // Garantir la centrale assemblée même sans URL catalogue
+    const coal = getBuildingTexture("coal_plant", 1);
+    if (coal) {
+      const loaded = await prepareBuildingSprite(coal.texture);
+      this.textures.set("village://bld-coal_plant", loaded);
+    }
   }
 
   sync(state: GameState, now: number): void {
     const city = computeCity(state, now);
     const unpowered = city.powerRatio < 1;
     const seen = new Set<string>();
+
     for (const b of state.buildings) {
       seen.add(b.id);
       const def = getBuildingDef(b.type);
       const displayLevel = b.construction
         ? Math.max(0, b.level)
         : Math.max(1, b.level);
-      const alpha = b.construction && b.level === 0 ? 0.85 : 1;
+      const baseAlpha = b.construction && b.level === 0 ? 0.85 : 1;
+      const alpha =
+        state.movingBuildingId === b.id ? baseAlpha * 0.35 : baseAlpha;
+      const evolving =
+        typeof b.evolvingUntil === "number" && now < b.evolvingUntil;
       const url = resolveBuildingAsset(b.type, displayLevel);
+      const siteUp = evolving ? getSiteTexture("upgrade") : null;
       const loaded = url ? this.textures.get(url) : undefined;
-      const useSprite = Boolean(loaded);
+      const usePng = Boolean(loaded) || Boolean(siteUp?.texture && !siteUp.placeholder);
 
       let node = this.byId.get(b.id);
-      const isSprite = node instanceof Sprite;
-      if (node && useSprite !== isSprite) {
-        this.layer.removeChild(node);
-        node.destroy();
-        this.byId.delete(b.id);
-        node = undefined;
-      }
+      let shadow = this.shadowById.get(b.id);
 
       if (!node) {
-        node = useSprite ? new Sprite(loaded!.texture) : new Graphics();
+        node = new Sprite();
         this.byId.set(b.id, node);
-        this.layer.addChild(node);
+        this.buildings.addChild(node);
+      }
+      if (!shadow) {
+        shadow = new Sprite();
+        this.shadowById.set(b.id, shadow);
+        this.shadows.addChild(shadow);
       }
 
       node.alpha = alpha;
-      if (node instanceof Sprite && loaded) {
-        this.layoutSprite(node, loaded, b);
-        this.spriteMeta.set(b.id, loaded);
-      } else if (node instanceof Graphics) {
+      shadow.alpha = alpha;
+
+      const { w: fw, h: fh } = fineFootprintDims(
+        def.width,
+        def.height,
+        b.rotation ?? "H"
+      );
+      const rect = footprintRect(b.x, b.y, fw, fh);
+      // Art = TILE_PX par unité (1254), réservation grille = CELLS_PER_TILE × 320.
+      const artW = def.width * TILE_PX;
+      const artH = def.height * TILE_PX;
+      const rot =
+        b.type === "townhall"
+          ? 0
+          : b.rotation === "V"
+            ? Math.PI / 2
+            : 0;
+
+      if (usePng && (siteUp?.texture || loaded)) {
+        const tex = siteUp && !siteUp.placeholder ? siteUp.texture : loaded!.texture;
+        if (loaded && !(siteUp && !siteUp.placeholder)) {
+          this.spriteMeta.set(b.id, loaded);
+        } else {
+          this.spriteMeta.delete(b.id);
+        }
+        node.texture = tex;
+        node.anchor.set(0.5, 0.5);
+        node.scale.set(1);
+        node.rotation = rot;
+        // Art 1254 ancré HG de la réservation grille (4×320 = 1280)
+        node.x = rect.x + artW / 2;
+        node.y = rect.y + artH / 2;
+        node.width = artW;
+        node.height = artH;
+        // DA inclut le socle : pas d'ombre code
+        shadow.alpha = 0;
+      } else {
         this.spriteMeta.delete(b.id);
-        node.clear();
-        drawBuildingPlaceholder(
-          node,
-          b.type,
-          Math.max(1, displayLevel),
-          b.x,
-          b.y,
-          hashId(b.id)
-        );
+        const level = Math.max(1, displayLevel);
+        const seed = hashId(b.id);
+        node.texture = bakeBuildingTexture(b.type, level, seed);
+        node.anchor.set(0.5, 0.5);
+        node.rotation = rot;
+        node.scale.set(1);
+        node.x = rect.x + rect.w / 2;
+        node.y = rect.y + rect.h / 2;
+        node.width = rect.w;
+        node.height = rect.h;
+        shadow.alpha = alpha;
+        shadow.texture = bakeShadowTexture(b.type, level);
+        shadow.anchor.set(0.5, 0.5);
+        shadow.rotation = rot;
+        shadow.x = node.x;
+        shadow.y = node.y;
+        shadow.width = rect.w;
+        shadow.height = rect.h;
       }
 
-      // Tri iso : sud-est devant (x+y), tie-break x
-      const depth =
-        b.x + def.width - 1 + (b.y + def.height - 1) + b.x * 0.01;
-      node.zIndex = depth;
+      void ASSET_PX_PER_TILE;
+      void TILE;
     }
+
+    this.drawSelection(state);
 
     for (const [id, g] of this.byId) {
       if (!seen.has(id)) {
-        this.layer.removeChild(g);
+        this.buildings.removeChild(g);
         g.destroy();
         this.byId.delete(id);
         this.spriteMeta.delete(id);
+        const sh = this.shadowById.get(id);
+        if (sh) {
+          this.shadows.removeChild(sh);
+          sh.destroy();
+          this.shadowById.delete(id);
+        }
       }
     }
 
@@ -133,19 +224,16 @@ export class BuildingView {
   }
 
   /**
-   * Hit-test monde : pixels opaques du sprite, du plus devant au plus derrière.
-   * (Les maisons du fond restent sélectionnables malgré le chevauchement iso.)
+   * Hit-test monde : pixels opaques du sprite, ou AABB empreinte placeholder.
    */
   hitTest(worldX: number, worldY: number, state: GameState): string | null {
-    const ordered = [...this.byId.entries()].sort(
-      (a, b) => b[1].zIndex - a[1].zIndex
-    );
-    for (const [id, node] of ordered) {
-      if (node instanceof Sprite) {
-        const meta = this.spriteMeta.get(id);
-        if (meta && spriteHitsOpaque(node, meta, worldX, worldY)) {
-          return id;
-        }
+    // Du plus récent au plus ancien (pas de z-sort iso)
+    const ids = [...this.byId.keys()].reverse();
+    for (const id of ids) {
+      const node = this.byId.get(id)!;
+      const meta = this.spriteMeta.get(id);
+      if (meta) {
+        if (spriteHitsOpaque(node, meta, worldX, worldY)) return id;
         continue;
       }
       const b = state.buildings.find((x) => x.id === id);
@@ -155,51 +243,59 @@ export class BuildingView {
   }
 
   /**
-   * Aligne jaune→Ouest, rouge→Sud, bleu→Est de la tuile.
+   * Ghost : `w`/`h` en cases de grille (déjà × CELLS_PER_TILE).
+   * Sprite art reste en TILE_PX.
    */
-  private layoutSprite(
-    spr: Sprite,
-    loaded: LoadedSprite,
-    b: PlacedBuilding
-  ): void {
-    const def = getBuildingDef(b.type);
-    const { tips, texture } = loaded;
-    const gx = b.x;
-    const gy = b.y;
-    const fw = def.width;
-    const fh = def.height;
-
-    // Coins tuile : Ouest (jaune), Sud (rouge), Est (bleu)
-    const tileW = gridToScreen(gx, gy + fh);
-    const tileS = gridToScreen(gx + fw, gy + fh);
-    const tileE = gridToScreen(gx + fw, gy);
-
-    const diamondW = Math.max(1, tips.east.x - tips.west.x);
-    const diamondHalfH = Math.max(1, tips.south.y - tips.west.y);
-
-    const scaleX = (tileE.x - tileW.x) / diamondW;
-    const scaleY = (tileS.y - tileW.y) / diamondHalfH;
-
-    spr.texture = texture;
-    spr.anchor.set(0, 0);
-    spr.scale.set(scaleX, scaleY);
-    // Colle le point Ouest (jaune) de l'asset sur l'Ouest de la tuile
-    spr.x = tileW.x - tips.west.x * scaleX;
-    spr.y = tileW.y - tips.west.y * scaleY;
-  }
-
   setGhost(
     gx: number,
     gy: number,
     w: number,
     h: number,
     valid: boolean,
-    visible: boolean
+    visible: boolean,
+    type?: BuildingTypeId | null,
+    rotation: "H" | "V" = "H"
   ): void {
     this.ghost.clear();
+    this.ghostSprite.alpha = 0;
     if (!visible) return;
     drawGhostFootprint(this.ghost, gx, gy, w, h, valid);
-    this.ghost.zIndex = 10_000;
+    if (type) {
+      const url = resolveBuildingAsset(type, 1);
+      const loaded = url ? this.textures.get(url) : undefined;
+      const def = getBuildingDef(type);
+      const rect = footprintRect(gx, gy, w, h);
+      if (loaded) {
+        this.ghostSprite.texture = loaded.texture;
+        this.ghostSprite.anchor.set(0.5, 0.5);
+        this.ghostSprite.rotation = rotation === "V" ? Math.PI / 2 : 0;
+        // Ancré en haut-gauche de la réservation grille (art 1254 dans 1280)
+        this.ghostSprite.x = rect.x + (def.width * TILE_PX) / 2;
+        this.ghostSprite.y = rect.y + (def.height * TILE_PX) / 2;
+        this.ghostSprite.width = def.width * TILE_PX;
+        this.ghostSprite.height = def.height * TILE_PX;
+        this.ghostSprite.alpha = valid ? 0.6 : 0.45;
+        this.ghostSprite.tint = valid ? 0xffffff : 0xe85a5a;
+      }
+    }
+  }
+
+  private drawSelection(state: GameState): void {
+    this.selection.clear();
+    const id = state.selectedBuildingId;
+    if (!id) return;
+    const b = state.buildings.find((x) => x.id === id);
+    if (!b) return;
+    const def = getBuildingDef(b.type);
+    const { w, h } = fineFootprintDims(
+      def.width,
+      def.height,
+      b.rotation ?? "H"
+    );
+    const rect = footprintRect(b.x, b.y, w, h);
+    this.selection
+      .rect(rect.x, rect.y, rect.w, rect.h)
+      .stroke({ width: 20, color: 0xf5f5f4, alpha: 0.95 });
   }
 
   private drawProgressBars(state: GameState, now: number): void {
@@ -212,22 +308,19 @@ export class BuildingView {
 
   private drawBar(b: PlacedBuilding, now: number): void {
     const def = getBuildingDef(b.type);
-    const top = gridToScreen(b.x, b.y);
-    const cx = top.x + ((def.width - def.height) * 64) / 2;
-    const cy = top.y - 8;
+    const c = tileCenter(b.x + def.width / 2 - 0.5, b.y - 0.15);
     const total = b.construction!.endsAt - b.construction!.startedAt;
     const t = Math.min(
       1,
       Math.max(0, (now - b.construction!.startedAt) / total)
     );
-    const w = 40 * def.width;
+    const w = 36 * def.width;
     this.progress
-      .rect(cx - w / 2, cy, w, 6)
+      .rect(c.x - w / 2, c.y, w, 6)
       .fill({ color: 0x222222, alpha: 0.5 });
     this.progress
-      .rect(cx - w / 2, cy, w * t, 6)
+      .rect(c.x - w / 2, c.y, w * t, 6)
       .fill({ color: 0x4ade80 });
-    this.progress.zIndex = 9999;
   }
 
   private drawPowerOffIcons(state: GameState, unpowered: boolean): void {
@@ -237,9 +330,9 @@ export class BuildingView {
       if (b.construction || b.level <= 0) continue;
       const def = getBuildingDef(b.type);
       if (def.power >= 0) continue;
-      const top = gridToScreen(b.x, b.y);
-      const cx = top.x + ((def.width - def.height) * 64) / 2;
-      const cy = top.y - 18;
+      const c = tileCenter(b.x + def.width / 2 - 0.5, b.y);
+      const cx = c.x;
+      const cy = c.y - TILE * 0.35;
       this.powerIcons
         .circle(cx, cy, 8)
         .fill({ color: 0x1c1917, alpha: 0.75 });
@@ -266,52 +359,47 @@ export class BuildingView {
         .lineTo(cx + 7, cy - 6)
         .stroke({ width: 2.5, color: 0xef4444, alpha: 0.95 });
     }
-    this.powerIcons.zIndex = 9998;
   }
 }
 
 async function prepareBuildingSprite(raw: Texture): Promise<LoadedSprite> {
-  const analysis = await analyzeFootprint(raw);
-  if (!analysis) {
-    const tips = fallbackTips(raw);
-    const hitW = Math.max(1, Math.round(raw.width));
-    const hitH = Math.max(1, Math.round(raw.height));
-    return {
-      texture: raw,
-      tips,
-      hitMask: new Uint8Array(hitW * hitH).fill(1),
-      hitW,
-      hitH,
-    };
-  }
-
-  const { frame, tips, hitMask } = analysis;
-  const texture = new Texture({
-    source: raw.source,
-    frame: new Rectangle(frame.x, frame.y, frame.w, frame.h),
-  });
-
-  return {
-    texture,
-    tips: {
-      west: { x: tips.west.x - frame.x, y: tips.west.y - frame.y },
-      south: { x: tips.south.x - frame.x, y: tips.south.y - frame.y },
-      east: { x: tips.east.x - frame.x, y: tips.east.y - frame.y },
-    },
-    hitMask,
-    hitW: frame.w,
-    hitH: frame.h,
-  };
+  const hitW = Math.max(1, Math.round(raw.width));
+  const hitH = Math.max(1, Math.round(raw.height));
+  const hitMask = await buildHitMask(raw, hitW, hitH);
+  return { texture: raw, hitMask, hitW, hitH };
 }
 
-function fallbackTips(tex: Texture): FootprintTips {
-  const w = tex.width;
-  const h = tex.height;
-  return {
-    west: { x: 0, y: h * 0.75 },
-    south: { x: w / 2, y: h },
-    east: { x: w, y: h * 0.75 },
-  };
+async function buildHitMask(
+  tex: Texture,
+  w: number,
+  h: number
+): Promise<Uint8Array> {
+  const mask = new Uint8Array(w * h);
+  const source = tex.source;
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) {
+    mask.fill(1);
+    return mask;
+  }
+  const res = source.resource as CanvasImageSource | undefined;
+  if (!res) {
+    mask.fill(1);
+    return mask;
+  }
+  try {
+    ctx.drawImage(res as CanvasImageSource, 0, 0, w, h);
+  } catch {
+    mask.fill(1);
+    return mask;
+  }
+  const { data } = ctx.getImageData(0, 0, w, h);
+  for (let i = 0; i < w * h; i++) {
+    mask[i] = data[i * 4 + 3]! > 12 ? 1 : 0;
+  }
+  return mask;
 }
 
 function spriteHitsOpaque(
@@ -327,132 +415,24 @@ function spriteHitsOpaque(
   return meta.hitMask[py * meta.hitW + px]! > 0;
 }
 
-/** Volume de clic approx. pour placeholders (losange sol + hauteur). */
-function placeholderHits(b: PlacedBuilding, worldX: number, worldY: number): boolean {
+function placeholderHits(
+  b: PlacedBuilding,
+  worldX: number,
+  worldY: number
+): boolean {
   const def = getBuildingDef(b.type);
-  const top = gridToScreen(b.x, b.y);
-  const south = gridToScreen(b.x + def.width, b.y + def.height);
-  const left = gridToScreen(b.x, b.y + def.height);
-  const right = gridToScreen(b.x + def.width, b.y);
-  const minX = Math.min(top.x, south.x, left.x, right.x) - 8;
-  const maxX = Math.max(top.x, south.x, left.x, right.x) + 8;
-  const minY = top.y - 80;
-  const maxY = south.y + 4;
-  return worldX >= minX && worldX <= maxX && worldY >= minY && worldY <= maxY;
-}
-
-/**
- * Détecte le losange au sol : pointe S (bas), puis O/E à l'équateur
- * (première largeur max en remontant depuis le sud).
- */
-async function analyzeFootprint(tex: Texture): Promise<{
-  frame: { x: number; y: number; w: number; h: number };
-  tips: FootprintTips;
-  hitMask: Uint8Array;
-} | null> {
-  const source = tex.source;
-  const w = Math.round(source.width);
-  const h = Math.round(source.height);
-  if (w <= 0 || h <= 0) return null;
-
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  if (!ctx) return null;
-
-  const res = source.resource as CanvasImageSource | undefined;
-  if (!res) return null;
-  try {
-    ctx.drawImage(res as CanvasImageSource, 0, 0);
-  } catch {
-    return null;
-  }
-
-  const { data } = ctx.getImageData(0, 0, w, h);
-  const opaque = (x: number, y: number) => {
-    const i = (y * w + x) * 4;
-    const a = data[i + 3]!;
-    const r = data[i]!;
-    const g = data[i + 1]!;
-    const b = data[i + 2]!;
-    return a > 12 && r + g + b > 24;
-  };
-
-  let minX = w;
-  let minY = h;
-  let maxX = -1;
-  let maxY = -1;
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      if (!opaque(x, y)) continue;
-      if (x < minX) minX = x;
-      if (y < minY) minY = y;
-      if (x > maxX) maxX = x;
-      if (y > maxY) maxY = y;
-    }
-  }
-  if (maxX < minX) return null;
-
-  // Pointe sud (rouge)
-  let south: Pt | null = null;
-  for (let y = maxY; y >= minY; y--) {
-    const xs: number[] = [];
-    for (let x = minX; x <= maxX; x++) {
-      if (opaque(x, y)) xs.push(x);
-    }
-    if (xs.length) {
-      south = { x: xs[Math.floor(xs.length / 2)]!, y };
-      break;
-    }
-  }
-  if (!south) return null;
-
-  // Équateur du losange : remonter depuis le sud jusqu'à largeur max locale
-  let prevW = 0;
-  let equator: { y: number; L: number; R: number } | null = null;
-  for (let y = south.y; y >= minY; y--) {
-    let L = -1;
-    let R = -1;
-    for (let x = minX; x <= maxX; x++) {
-      if (!opaque(x, y)) continue;
-      if (L < 0) L = x;
-      R = x;
-    }
-    if (L < 0) continue;
-    const ww = R - L;
-    if (ww >= prevW) {
-      prevW = ww;
-      equator = { y, L, R };
-    } else if (south.y - y > 24) {
-      break;
-    }
-  }
-
-  if (!equator) {
-    equator = { y: Math.round((south.y + minY) / 2), L: minX, R: maxX };
-  }
-
-  const tips: FootprintTips = {
-    west: { x: equator.L, y: equator.y },
-    south,
-    east: { x: equator.R, y: equator.y },
-  };
-
-  const pad = 1;
-  const fx = Math.max(0, minX - pad);
-  const fy = Math.max(0, minY - pad);
-  const fw = Math.min(w - fx, maxX - minX + 1 + pad * 2);
-  const fh = Math.min(h - fy, maxY - minY + 1 + pad * 2);
-
-  const hitMask = new Uint8Array(fw * fh);
-  for (let y = 0; y < fh; y++) {
-    for (let x = 0; x < fw; x++) {
-      hitMask[y * fw + x] = opaque(fx + x, fy + y) ? 1 : 0;
-    }
-  }
-
-  return { frame: { x: fx, y: fy, w: fw, h: fh }, tips, hitMask };
+  const { w, h } = fineFootprintDims(
+    def.width,
+    def.height,
+    b.rotation ?? "H"
+  );
+  const r = footprintRect(b.x, b.y, w, h);
+  return (
+    worldX >= r.x &&
+    worldX < r.x + r.w &&
+    worldY >= r.y &&
+    worldY < r.y + r.h
+  );
 }
 
 function hashId(id: string): number {

@@ -1,27 +1,24 @@
 import { Container } from "pixi.js";
 import {
-  MAP_SIZE,
-  PARCEL_COUNT,
-  SCENERY_EXTENT,
-  startParcelIds,
-} from "@/game/core/balance";
-import { parcelBlockOrigin } from "@/game/core/grid";
+  CAMERA_FIT_START_RATIO,
+  CAMERA_MAX_ZOOM,
+  CAMERA_MIN_ZOOM_ABS,
+  BLOCK_PX,
+  CELL_PX,
+} from "@/game/core/mapConfig";
+import {
+  MAP_HEIGHT_PX,
+  MAP_WIDTH_PX,
+  blockWorldOrigin,
+  startBlockIds,
+} from "@/game/core/mapLanes";
 import { parseParcelId } from "@/game/core/balance";
-import { TILE_H, TILE_W, gridToScreen } from "./iso";
 
-/** Zoom max (rapproché). */
-const MAX_ZOOM = 2.5;
-
-/** Surcadrage dézoom : le décor dépasse un peu l'écran. */
+/** Surcadrage dézoom : la carte dépasse un peu l'écran. */
 const COVER_MARGIN = 1.02;
 
-/**
- * Inset monde : le pan s'arrête avant le bord en dents de scie
- * (évite le vide bleu comme sur la 2ᵉ photo).
- * ~1 demi-tuile en X / 1 tuile en Y → crop léger, bord type 1ʳᵉ photo.
- */
-const EDGE_INSET_X = TILE_W * 0.5;
-const EDGE_INSET_Y = TILE_H;
+/** Inset monde pour le clamp pan. */
+const EDGE_INSET = CELL_PX;
 
 export class Camera {
   readonly world: Container;
@@ -53,19 +50,23 @@ export class Camera {
   }
 
   /**
-   * Dézoom max : le rectangle décor (avec inset) couvre tout le viewport.
+   * Dézoom max : couvrir la carte, borné par CAMERA_MIN_ZOOM_ABS
+   * (évite un dézoom extrême sur une grande carte).
    */
   minZoom(): number {
     const { minX, maxX, minY, maxY } = this.usableBounds();
-    const w = Math.max(TILE_W, maxX - minX);
-    const h = Math.max(TILE_H, maxY - minY);
-    const z = Math.max(this.viewW / w, this.viewH / h) * COVER_MARGIN;
-    return Math.min(MAX_ZOOM, Math.max(0.05, z));
+    const w = Math.max(CELL_PX, maxX - minX);
+    const h = Math.max(CELL_PX, maxY - minY);
+    const cover = Math.max(this.viewW / w, this.viewH / h) * COVER_MARGIN;
+    return Math.min(
+      CAMERA_MAX_ZOOM,
+      Math.max(CAMERA_MIN_ZOOM_ABS, cover)
+    );
   }
 
   setZoom(z: number, centerScreenX?: number, centerScreenY?: number): void {
     const minZ = this.minZoom();
-    const next = Math.min(MAX_ZOOM, Math.max(minZ, z));
+    const next = Math.min(CAMERA_MAX_ZOOM, Math.max(minZ, z));
     const cx = centerScreenX ?? this.viewW / 2;
     const cy = centerScreenY ?? this.viewH / 2;
     const before = this.screenToWorld(cx, cy);
@@ -101,37 +102,69 @@ export class Camera {
     };
   }
 
+  /** Client (page) → coords écran du buffer caméra (corrige stretch CSS). */
+  clientToScreen(
+    clientX: number,
+    clientY: number,
+    canvas: HTMLCanvasElement
+  ): { x: number; y: number } {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: ((clientX - rect.left) / Math.max(1, rect.width)) * this.viewW,
+      y: ((clientY - rect.top) / Math.max(1, rect.height)) * this.viewH,
+    };
+  }
+
   /**
-   * Zoom initial : parcelles débloquées + anneau forêt ~70 % de l'écran.
+   * Clic client → monde, en corrigeant le décalage si le canvas CSS
+   * n'a pas la même taille que le buffer Pixi (évite de rater les routes fines).
    */
+  clientToWorld(
+    clientX: number,
+    clientY: number,
+    canvas: HTMLCanvasElement
+  ): { x: number; y: number } {
+    const s = this.clientToScreen(clientX, clientY, canvas);
+    return this.screenToWorld(s.x, s.y);
+  }
+
+  /** Viewport monde actuel (pour culling IsoMap). */
+  viewBounds(): {
+    minX: number;
+    minY: number;
+    maxX: number;
+    maxY: number;
+  } {
+    const tl = this.screenToWorld(0, 0);
+    const br = this.screenToWorld(this.viewW, this.viewH);
+    return {
+      minX: Math.min(tl.x, br.x),
+      minY: Math.min(tl.y, br.y),
+      maxX: Math.max(tl.x, br.x),
+      maxY: Math.max(tl.y, br.y),
+    };
+  }
+
+  /** Centre caméra sur les 4 blocs de départ. */
   fitStartZone(): void {
-    const ids = startParcelIds();
+    const ids = startBlockIds();
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
     let maxY = -Infinity;
     for (const id of ids) {
       const { px, py } = parseParcelId(id);
-      const o = parcelBlockOrigin(
-        Math.max(0, px - 1),
-        Math.max(0, py - 1)
-      );
-      const o2 = parcelBlockOrigin(
-        Math.min(PARCEL_COUNT - 1, px + 1),
-        Math.min(PARCEL_COUNT - 1, py + 1)
-      );
-      const a = gridToScreen(o.x, o.y);
-      const b = gridToScreen(o2.x + 2, o2.y + 2);
-      minX = Math.min(minX, a.x, b.x);
-      maxX = Math.max(maxX, a.x, b.x);
-      minY = Math.min(minY, a.y, b.y);
-      maxY = Math.max(maxY, a.y, b.y);
+      const o = blockWorldOrigin(px, py);
+      minX = Math.min(minX, o.x);
+      minY = Math.min(minY, o.y);
+      maxX = Math.max(maxX, o.x + BLOCK_PX);
+      maxY = Math.max(maxY, o.y + BLOCK_PX);
     }
-    const zoneW = maxX - minX + TILE_W * 2;
-    const zoneH = maxY - minY + TILE_H * 2;
-    const target = Math.min(this.viewW, this.viewH) * 0.7;
+    const zoneW = maxX - minX;
+    const zoneH = maxY - minY;
+    const target = Math.min(this.viewW, this.viewH) * CAMERA_FIT_START_RATIO;
     const z = Math.min(
-      MAX_ZOOM,
+      CAMERA_MAX_ZOOM,
       Math.max(this.minZoom(), target / Math.max(zoneW, zoneH))
     );
     this._zoom = z;
@@ -143,30 +176,20 @@ export class Camera {
     this.clampPan();
   }
 
-  /** Emprise réelle des tuiles décor (rectangle iso sum/diff). */
   private plateauBounds(): {
     minX: number;
     maxX: number;
     minY: number;
     maxY: number;
   } {
-    const pad = SCENERY_EXTENT;
-    const mid = MAP_SIZE - 1;
-    const sumMin = -2 * pad;
-    const sumMax = 2 * mid + 2 * pad;
-    const diffLim = mid + 2 * pad;
     return {
-      minX: -diffLim * (TILE_W / 2),
-      maxX: diffLim * (TILE_W / 2),
-      minY: sumMin * (TILE_H / 2),
-      maxY: sumMax * (TILE_H / 2) + TILE_H,
+      minX: 0,
+      maxX: MAP_WIDTH_PX,
+      minY: 0,
+      maxY: MAP_HEIGHT_PX,
     };
   }
 
-  /**
-   * Zone « panable » : plateau réduit d'un inset pour garder
-   * le bord dentelé hors écran (crop) plutôt que du vide à côté.
-   */
   private usableBounds(): {
     minX: number;
     maxX: number;
@@ -175,17 +198,13 @@ export class Camera {
   } {
     const b = this.plateauBounds();
     return {
-      minX: b.minX + EDGE_INSET_X,
-      maxX: b.maxX - EDGE_INSET_X,
-      minY: b.minY + EDGE_INSET_Y,
-      maxY: b.maxY - EDGE_INSET_Y,
+      minX: b.minX + EDGE_INSET,
+      maxX: b.maxX - EDGE_INSET,
+      minY: b.minY + EDGE_INSET,
+      maxY: b.maxY - EDGE_INSET,
     };
   }
 
-  /**
-   * Le viewport reste toujours à l'intérieur de usableBounds :
-   * les tuiles dépassent l'écran, le vide bleu n'apparaît pas.
-   */
   private clampPan(): void {
     const { minX, maxX, minY, maxY } = this.usableBounds();
     const z = this._zoom;

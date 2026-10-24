@@ -8,7 +8,7 @@ export function Toasts() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => gameStore.getState().clearToast(), 2800);
+    const t = setTimeout(() => gameStore.getState().clearToast(), 2000);
     return () => clearTimeout(t);
   }, [toast]);
 

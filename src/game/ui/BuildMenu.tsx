@@ -7,6 +7,7 @@ import {
   countOwned,
   isUnlocked,
 } from "@/game/core/economy";
+import { ROAD_COST } from "@/game/core/mapConfig";
 import type { BuildingCategory, BuildingTypeId } from "@/game/core/types";
 import { useGameStore, gameStore } from "@/game/store/gameStore";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -42,6 +43,9 @@ export function BuildMenu() {
   const [tab, setTab] = useState<BuildingCategory | "all">("all");
   const isMobile = useIsMobile();
   const placingType = useGameStore((s) => s.placingType);
+  const placingRoad = useGameStore((s) => s.placingRoad);
+  const bulldozeMode = useGameStore((s) => s.bulldozeMode);
+  const placingRotation = useGameStore((s) => s.placingRotation);
   const revision = useGameStore(
     (s) =>
       `${s.buildings.length}:${s.knowledgeEarned}:${getTownhallLvl(s)}`
@@ -77,6 +81,19 @@ export function BuildMenu() {
       role="dialog"
       aria-label="Boutique de construction"
     >
+      {placingType &&
+        getBuildingDef(placingType).width !==
+          getBuildingDef(placingType).height && (
+          <button
+            type="button"
+            className="mb-1 flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-amber-500/60 bg-amber-500/10 text-sm font-medium"
+            onClick={() => gameStore.getState().rotatePlace()}
+            title="Pivoter (R)"
+          >
+            Pivoter {placingRotation === "H" ? "→ vertical" : "→ horizontal"}{" "}
+            <kbd className="rounded bg-muted px-1.5 text-xs">R</kbd>
+          </button>
+        )}
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-stone-800 dark:text-stone-100">
           Construire
@@ -112,6 +129,31 @@ export function BuildMenu() {
       </div>
 
       <ul className="flex flex-col gap-1.5">
+        <li>
+          <button
+            type="button"
+            className={cn(
+              "flex w-full min-h-11 flex-col items-start rounded-md border px-3 py-2 text-left text-sm transition-colors",
+              placingRoad
+                ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
+                : "border-border bg-background/90 hover:bg-muted"
+            )}
+            title={`Route — ${ROAD_COST}🪙 / case. Glisser pour tracer.`}
+            onClick={() => {
+              if (placingRoad) {
+                gameStore.getState().cancelPlace();
+              } else {
+                gameStore.getState().startRoad();
+              }
+              if (isMobile) setOpen(false);
+            }}
+          >
+            <span className="font-medium">Route</span>
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {ROAD_COST}🪙 / case · Glisser pour tracer
+            </span>
+          </button>
+        </li>
         {listIds.map((id) => {
           const def = getBuildingDef(id);
           const unlocked = isUnlocked(state, id);
@@ -129,6 +171,11 @@ export function BuildMenu() {
                     : "border-border bg-background/90 hover:bg-muted",
                   !unlocked && "cursor-not-allowed opacity-50"
                 )}
+                title={
+                  unlocked
+                    ? `${def.nameFr} — ${formatCostLine(cost)}`
+                    : `${def.nameFr} — Verrouillé`
+                }
                 onClick={() => {
                   if (!unlocked) return;
                   gameStore.getState().startPlace(id);
@@ -142,6 +189,11 @@ export function BuildMenu() {
                   ⚡{def.power > 0 ? `+${def.power}` : def.power} MW
                   {" · "}
                   💼{def.jobs}
+                  {(def.housingLevels?.[0] ?? def.housing) > 0 && (
+                    <>
+                      {" · "}🏠{def.housingLevels?.[0] ?? def.housing} hab.
+                    </>
+                  )}
                 </span>
               </button>
             </li>
@@ -153,7 +205,7 @@ export function BuildMenu() {
 
   return (
     <>
-      <div className="pointer-events-auto absolute bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] z-20">
+      <div className="pointer-events-auto absolute bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-[max(0.75rem,env(safe-area-inset-left))] z-20 flex gap-2">
         <Button
           type="button"
           className="min-h-11 min-w-11"
@@ -162,6 +214,26 @@ export function BuildMenu() {
           onClick={() => setOpen((o) => !o)}
         >
           Construire
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          className={cn(
+            "min-h-11 min-w-11",
+            bulldozeMode &&
+              "border border-rose-500 bg-rose-50 text-rose-900 hover:bg-rose-100 dark:bg-rose-950 dark:text-rose-100 dark:hover:bg-rose-900"
+          )}
+          title="Bulldozer — sélectionner un bâtiment ou une route, puis confirmer"
+          aria-pressed={bulldozeMode}
+          onClick={() => {
+            if (bulldozeMode) {
+              gameStore.getState().cancelPlace();
+            } else {
+              gameStore.getState().startBulldoze();
+            }
+          }}
+        >
+          Bulldozer
         </Button>
       </div>
 

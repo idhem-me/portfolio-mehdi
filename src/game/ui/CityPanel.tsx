@@ -3,12 +3,13 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { NeedLevel } from "@/game/core/city";
 import { useCity } from "./useCity";
 
 const LEVELS: { n: 1 | 2 | 3; label: string }[] = [
-  { n: 1, label: "Énergie, emplois, commerce" },
-  { n: 2, label: "Éducation" },
-  { n: 3, label: "Culture & loisirs" },
+  { n: 1, label: "Énergie, emplois, commerce (local)" },
+  { n: 2, label: "Éducation à portée" },
+  { n: 3, label: "Culture & loisirs à portée" },
 ];
 
 export function CityPanel({
@@ -22,6 +23,9 @@ export function CityPanel({
   const city = useCity();
 
   if (!open) return null;
+
+  const pct = city.needDistributionPct ?? { 0: 0, 1: 0, 2: 0, 3: 0 };
+  const levels = ([0, 1, 2, 3] as NeedLevel[]).filter((n) => pct[n] > 0);
 
   return (
     <div
@@ -47,6 +51,24 @@ export function CityPanel({
           >
             Fermer
           </Button>
+        </div>
+
+        <div className="rounded-md border border-border bg-muted/30 px-2.5 py-2">
+          <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+            Répartition des habitants
+          </p>
+          {levels.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Aucun logement actif</p>
+          ) : (
+            <ul className="space-y-1 text-sm">
+              {levels.map((n) => (
+                <li key={n} className="flex justify-between tabular-nums">
+                  <span>N{n}</span>
+                  <span className="font-medium">{pct[n]} %</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <ol className="flex flex-col gap-2">
@@ -86,7 +108,7 @@ export function CityPanel({
         )}
 
         <p className="text-xs text-muted-foreground">
-          Niveau actuel : N{city.needLevel}
+          Niveau moyen : N{city.needLevel}
         </p>
       </div>
     </div>

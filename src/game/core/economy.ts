@@ -13,12 +13,14 @@ import {
   TIME_GROWTH,
   UPGRADE_GROWTH,
   WAREHOUSE_STORAGE_BONUS,
+  WOOD_PER_PLANK,
 } from "./balance";
 import { getBuildingDef } from "./buildings";
 import {
   buildingEfficiency,
   capacityAtLevel,
   computeCity,
+  housingAtLevel,
 } from "./city";
 import type {
   BuildingTypeId,
@@ -35,7 +37,7 @@ export function roundCost(n: number): number {
 }
 
 export function emptyResources(): Resources {
-  return { gold: 0, wood: 0, stone: 0, knowledge: 0 };
+  return { gold: 0, wood: 0, stone: 0, knowledge: 0, planks: 0 };
 }
 
 export function scaleCost(base: Resources, factor: number): Resources {
@@ -44,6 +46,7 @@ export function scaleCost(base: Resources, factor: number): Resources {
     wood: roundCost(base.wood * factor),
     stone: roundCost(base.stone * factor),
     knowledge: roundCost(base.knowledge * factor),
+    planks: roundCost((base.planks ?? 0) * factor),
   };
 }
 
@@ -81,10 +84,10 @@ export function parcelCost(parcelsBought: number): number {
 }
 
 export function canAfford(resources: Resources, cost: Cost): boolean {
-  const keys: ResourceId[] = ["gold", "wood", "stone", "knowledge"];
+  const keys: ResourceId[] = ["gold", "wood", "stone", "knowledge", "planks"];
   for (const k of keys) {
     const need = cost[k] ?? 0;
-    if (need > 0 && resources[k] < need) return false;
+    if (need > 0 && (resources[k] ?? 0) < need) return false;
   }
   return true;
 }
@@ -95,7 +98,24 @@ export function pay(resources: Resources, cost: Cost): Resources {
     wood: resources.wood - (cost.wood ?? 0),
     stone: resources.stone - (cost.stone ?? 0),
     knowledge: resources.knowledge - (cost.knowledge ?? 0),
+    planks: (resources.planks ?? 0) - (cost.planks ?? 0),
   };
+}
+
+/**
+ * Production charpentier plafonnée par le bois disponible.
+ * planks = min(théorique, floor(wood / WOOD_PER_PLANK)).
+ */
+export function carpenterPlanksFromDt(
+  theoreticalPlanks: number,
+  woodAvailable: number
+): { planks: number; woodSpent: number } {
+  const byWood = Math.floor(Math.max(0, woodAvailable) / WOOD_PER_PLANK);
+  const planks = Math.max(
+    0,
+    Math.min(theoreticalPlanks, byWood)
+  );
+  return { planks, woodSpent: planks * WOOD_PER_PLANK };
 }
 
 export function countOwned(state: GameState, type: BuildingTypeId): number {
@@ -115,13 +135,27 @@ export function maxBuildingLevel(state: GameState): number {
   return Math.min(th, MAX_TOWNHALL_LEVEL);
 }
 
+/** Plafond d'amélioration pour un type (table logement ou mairie). */
+export function maxLevelForType(
+  state: GameState,
+  type: BuildingTypeId
+): number {
+  if (type === "townhall") return MAX_TOWNHALL_LEVEL;
+  const thCap = maxBuildingLevel(state);
+  const def = getBuildingDef(type);
+  if (def.housingLevels && def.housingLevels.length > 0) {
+    return Math.min(thCap, def.housingLevels.length);
+  }
+  return thCap;
+}
+
 /** Capacité de logement (hors chantiers). */
 export function housingCapacity(state: GameState): number {
   let cap = 0;
   for (const b of state.buildings) {
     if (b.construction || b.level <= 0) continue;
     const def = getBuildingDef(b.type);
-    cap += capacityAtLevel(def.housing, b.level);
+    cap += housingAtLevel(def, b.level);
   }
   return cap;
 }
@@ -275,7 +309,12 @@ export function accumulatedStock(
   if (rate <= 0) return 0;
   const elapsed = Math.max(0, (now - building.lastCollectedAt) / 1000);
   const cap = storageCap(state, building);
-  return Math.min(elapsed * rate, cap);
+  let amount = Math.min(elapsed * rate, cap);
+  if (building.type === "carpenter") {
+    const { planks } = carpenterPlanksFromDt(amount, state.resources.wood);
+    amount = planks;
+  }
+  return amount;
 }
 
 export function isUnlocked(
