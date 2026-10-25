@@ -90,14 +90,18 @@ export function LavaBoard({
               />
             )}
           </linearGradient>
-          <radialGradient id={id + "core"} cx="35%" cy="25%" r="90%">
-            <stop stopColor="white" stopOpacity=".85" />
-            <stop offset=".5" stopColor="white" stopOpacity=".28" />
+          <radialGradient id={id + "core"} cx="48%" cy="52%" r="68%">
+            <stop stopColor="white" stopOpacity=".55" />
+            <stop offset=".5" stopColor="white" stopOpacity=".12" />
             <stop offset="1" stopColor="white" stopOpacity="0" />
           </radialGradient>
-          <linearGradient id={id + "oil"} x2="0" y2="1">
+          <linearGradient id={id + "oil"} x2="1" y2="1">
             <stop stopColor="white" stopOpacity=".8" />
-            <stop offset=".25" stopColor="white" stopOpacity="0" />
+            <stop offset=".2" stopColor="white" stopOpacity="0" />
+            <stop offset=".56" stopColor="white" stopOpacity="0" />
+            <stop offset=".64" stopColor="white" stopOpacity=".26" />
+            <stop offset=".73" stopColor="white" stopOpacity="0" />
+            <stop offset="1" stopColor="black" stopOpacity=".22" />
           </linearGradient>
         </defs>
         {!g.over && (
@@ -112,6 +116,13 @@ export function LavaBoard({
               <path d={settledPath} fill={`url(#${id}mass)`} />
               <path d={settledPath} fill={`url(#${id}core)`} />
               <path d={settledPath} fill={`url(#${id}oil)`} />
+              <path
+                d={settledPath}
+                fill="none"
+                stroke="white"
+                strokeOpacity={lavaMaterial.glassRimOpacity}
+                strokeWidth={lavaMaterial.glassRimWidth}
+              />
             </g>
             {!g.over && (
               <g data-layer="active">
@@ -121,6 +132,13 @@ export function LavaBoard({
                 />
                 <path d={activePath} fill={`url(#${id}core)`} />
                 <path d={activePath} fill={`url(#${id}oil)`} />
+                <path
+                  d={activePath}
+                  fill="none"
+                  stroke="white"
+                  strokeOpacity={lavaMaterial.glassRimOpacity}
+                  strokeWidth={lavaMaterial.glassRimWidth}
+                />
               </g>
             )}
           </>
