@@ -85,3 +85,9 @@ Le classement fonctionne sur un serveur Node avec disque persistant (SQLite int�
 Sur **Vercel**, activer le jeu et le son au build et au runtime, mais conserver `NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD=false` : il faut connecter une base distante durable avant de publier ce classement. Ne pas utiliser `/tmp` comme stockage permanent. `.env.local` et les fichiers SQLite ne sont ni commités ni téléversés.
 
 La croix en jeu ouvre Pause. Reprendre conserve la partie ; Quitter (bouton destructif) l’abandonne et retourne au menu. Les raccourcis P et Échap restent disponibles. Les pages restent en noindex.
+
+## Android et classement persistant
+
+Les contraintes mobiles et les couleurs de l’avatar sont vérifiées par `tests/responsive.spec.ts` sur Chrome Android émulé, Chromium et WebKit. Captures dans `docs/tetris/responsive/`. Le test Auto Dark compare les pixels de l’avatar ; les sept traductions doivent rester dans le viewport. Cela complète les tests iPhone ; un contrôle physique Samsung Internet reste nécessaire.
+
+Le backend persistant du classement est maintenant intégré via Turso/libSQL. Configuration serveur : `TURSO_DATABASE_URL` et `TURSO_AUTH_TOKEN`. Sans ces paramètres, le classement ne peut pas être activé sur Vercel et n’utilise jamais son disque éphémère. Les tables sont créées automatiquement dans une base dédiée. Voir [la procédure d’activation complète](docs/tetris/LEADERBOARD_SETUP.md). Les anciennes indications demandant un adaptateur distant sont désormais satisfaites ; il reste à connecter la base et vérifier la persistance en production.

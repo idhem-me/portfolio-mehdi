@@ -10,7 +10,7 @@ Off par défaut, un seul toggle Son On / Off dans les réglages, choix mémoris�
 
 Top 20 des records des 90 derniers jours, un record par navigateur, pseudonyme de 2 à 20 caractères et envoi volontaire après une partie terminée. Partie guidée exclue. Le serveur fournit une graine puis rejoue chaque action pour recalculer le score. Les pauses sont autorisées. Hors ligne, le solo et son record local restent disponibles.
 
-SQLite persistant sur serveur Node avec disque durable, localement dans `.local/tetris/leaderboard.sqlite`. Le classement est désactivé sur Vercel tant qu’un stockage distant durable n’est pas configuré ; le jeu et le son fonctionnent indépendamment. Aucun stockage éphémère présenté comme persistant.
+SQLite persistant sur serveur Node avec disque durable, localement dans `.local/tetris/leaderboard.sqlite`. L’adaptateur Turso/libSQL est intégré et testé avec deux connexions locales indépendantes. Le classement est désactivé sur Vercel tant que ses variables serveur TURSO_DATABASE_URL et TURSO_AUTH_TOKEN ne sont pas configurées ; le jeu et le son fonctionnent indépendamment. Aucun stockage éphémère présenté comme persistant.
 
 ## Publication
 
