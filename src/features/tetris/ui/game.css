@@ -872,3 +872,54 @@
     var(--tetris-piece-z)
   );
 }
+
+/* Intrinsic sizing: support narrow Android viewports, tablets and enlarged text. */
+.lava-game {
+  min-width: 0;
+}
+.lava-side,
+.lava-side > div {
+  min-width: 0;
+  max-width: 100%;
+}
+.lava-side .lava-score,
+.lava-hud-bottom > span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.lava-cover {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.lava-cover > * {
+  flex-shrink: 0;
+}
+.lava-lobby-panel {
+  max-width: 100%;
+}
+.lava-controls button {
+  min-width: 0;
+}
+@media (max-width: 359px) {
+  .lava-game {
+    --tetris-gap: calc(var(--spacing) * 2);
+  }
+  .lava-controls button {
+    padding-inline: var(--spacing);
+  }
+}
+@media (max-height: 420px) {
+  .lava-cover {
+    justify-content: flex-start;
+  }
+}
+
+.lava-cover button {
+  max-width: 100%;
+  white-space: normal;
+  height: auto;
+  min-height: var(--control-height);
+}
+.lava-cover button[data-variant="accent"] {
+  min-height: var(--control-height-accent);
+}

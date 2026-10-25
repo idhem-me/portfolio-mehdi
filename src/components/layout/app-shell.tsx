@@ -35,9 +35,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <TooltipProvider>
       <SidebarProvider defaultOpen>
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset className="min-w-0">
           <MobileHeader />
-          <div className="flex-1">{children}</div>
+          <div className="min-w-0 flex-1">{children}</div>
         </SidebarInset>
         <ConsentBanner />
       </SidebarProvider>

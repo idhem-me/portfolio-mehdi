@@ -70,10 +70,10 @@ export function Leaderboard({
                   key={i}
                   className="flex justify-between gap-4 border-b border-border pb-4"
                 >
-                  <span>
+                  <span className="min-w-0 break-words">
                     {row.rank}. {row.name}
                   </span>
-                  <span className="text-right font-mono">
+                  <span className="shrink-0 text-right font-mono">
                     {row.score.toLocaleString("fr")}
                     <small className="block text-muted-foreground">
                       {row.lines} lignes

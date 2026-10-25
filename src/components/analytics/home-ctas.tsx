@@ -62,11 +62,7 @@ export function HomeStatus() {
         label="Fiverr"
         logoSrc="/img/logos/fiverr.svg"
       />
-      <span
-        data-physics-item
-        className="inline-block rounded-lg"
-        aria-hidden
-      >
+      <span data-physics-item className="inline-block rounded-lg" aria-hidden>
         ·
       </span>
       <span
@@ -96,9 +92,13 @@ export function HomeCtas() {
       <span
         data-physics-item
         data-physics-button
-        className="inline-flex rounded-lg"
+        className="inline-flex max-w-full rounded-lg"
       >
-        <Button asChild variant="default">
+        <Button
+          asChild
+          variant="default"
+          className="h-auto! min-h-(--control-height) max-w-full whitespace-normal! text-start"
+        >
           <TrackedLink
             href="/product-designer"
             event={AnalyticsEvents.home_cta}
@@ -112,9 +112,13 @@ export function HomeCtas() {
       <span
         data-physics-item
         data-physics-button
-        className="inline-flex rounded-lg"
+        className="inline-flex max-w-full rounded-lg"
       >
-        <Button asChild variant="secondary">
+        <Button
+          asChild
+          variant="secondary"
+          className="h-auto! min-h-(--control-height) max-w-full whitespace-normal! text-start"
+        >
           <TrackedLink
             href="/contact"
             event={AnalyticsEvents.home_cta}
