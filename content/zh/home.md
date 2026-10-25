@@ -1,9 +1,9 @@
 ---
 {
   "status": "自由职业平台 Malt Fiverr · Worldline 产品设计师",
-  "title": "欢迎来到我的工作室",
-  "titleMuted": "数字内容、产品设计与用户体验。",
-  "intro": "我是数字内容创作自由职业者，也是 Worldline 的产品设计师。我打造实用的界面、快速原型，并帮助团队建立稳健的设计系统。",
+  "title": "每个屏幕背后，",
+  "titleMuted": "都有一个想法。",
+  "intro": "我的项目、成长历程，还有一些好玩的探索。",
   "keywords": [
     { "label": "数字内容", "definition": "为网页与社交渠道创作内容。" },
     { "label": "UX", "definition": "以用户体验为中心的设计。" },

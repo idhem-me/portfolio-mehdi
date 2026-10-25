@@ -1,9 +1,9 @@
 ---
 {
   "status": "Freelance su Malt Fiverr · Product Designer presso Worldline",
-  "title": "Benvenuto nel mio atelier",
-  "titleMuted": "contenuti digitali, product design e UX.",
-  "intro": "Freelance nella creazione di contenuti digitali e product designer in Worldline. Progetto interfacce utili, prototipo in fretta e aiuto i team a costruire un design system solido.",
+  "title": "Dietro ogni schermata,",
+  "titleMuted": "un’idea.",
+  "intro": "I miei progetti, il mio percorso e qualche pausa per giocare.",
   "keywords": [
     { "label": "Contenuti digitali", "definition": "Creazione di contenuti per web e social." },
     { "label": "UX", "definition": "Progettazione centrata sull’esperienza utente." },
