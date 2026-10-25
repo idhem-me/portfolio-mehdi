@@ -1,4 +1,4 @@
-# Lava — corrections V3
+# Lava — version locale
 
 Travail local sur `feature/tetris`, sans push/déploiement ni modification de main. Aucune fonctionnalité V2 développée ; Classement est un bouton désactivé.
 
@@ -21,7 +21,7 @@ La liste et la page du jeu restent en noindex. Aucun sitemap n’existe dans le 
 
 Lava n’écrit plus dans les styles de body/html. Les verrous tactiles et le conteneur fixed sont locaux au jeu. Tous les tokens Lava sont hérités de `.lava-game`. Le header du portfolio n’est pas masqué par CSS : la page du jeu appartient au groupe `(game)`, hors AppShell. En revenant à Jeux, le shell normal est retrouvé. Le hook mobile utilise matchMedia/useSyncExternalStore et ne dépend plus d’une frame Safari.
 
-Le défaut global de scroll est confirmé dans l’ancienne implémentation. La disparition exacte signalée sur téléphone physique n’a pas été reproduite sur une navigation fraîche WebKit : ne pas confondre le défaut identifié et une preuve de causalité du symptôme. Les tests iPhone vérifient le menu et Touche-moi avant/après partie **sans rechargement de la page**, avec flag activé puis désactivé. Détails : DECISIONS.md, section P0.
+Le verrou de scroll global de la première version est supprimé. Un autre blocage a ensuite été reproduit sur l’adresse LAN du Mac : les taps arrivaient sur Jouer, mais le client de développement ne démarrait pas correctement, avec échec du WebSocket HMR. next.config.ts autorise maintenant les seuls hostname/IPv4 locaux de la machine, sans wildcard. Le test WebKit LAN valide le premier tap, le déplacement, la pose et la pause/reprise. Pour l’iPhone, utiliser l’IPv4 du Mac à la place de localhost ; redémarrer le serveur si son adresse réseau change. Le menu et Touche-moi restent testés avant/après retour au site.
 
 ## Structure et réglages
 
@@ -60,3 +60,9 @@ Safari avec sa barre d’adresse visible/masquée, rotation de l’appareil, enc
 ## Attribution
 
 Logique adaptée de [sen-ltd/tetris](https://github.com/sen-ltd/tetris), commit `9280c94c2f36a79d7cb184927ec0c8d1f0d48572`, MIT, © 2026 SEN LLC. Licence conservée dans engine/LICENSE.source et consultable dans Règles et informations. Les références de récompense sont les deux images fournies par l’utilisateur, archivées dans docs/tetris/references ; aucun texte ou asset de leur jeu n’est intégré au rendu.
+
+## Derniers retours appliqués
+
+Ordre du bandeau : Pause, Réglages, Quitter. L’effacement de quatre lignes affiche **Tetris**. Les liens de retour utilisent ArrowLeft de Lucide. Les panneaux règles/réglages définissent leurs propres tokens d’espacement car les portails Radix sont hors du conteneur du jeu : marges de 24 px, interlignes et contrôles tactiles aérés.
+
+Les cellules posées partagent une seule matière : violet lumineux dominant, reflets cyan/rose sur un cycle doux de 32 secondes. La pièce active et les previews restent colorées. Les vraies cases vides restent visibles et le moteur ne change pas. Réglages : render/material.ts ; rendu WebGL et fallback SVG cohérents. Captures actualisées dans docs/tetris/v4.

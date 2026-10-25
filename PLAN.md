@@ -20,3 +20,6 @@ Les étapes 1 à 7 sont exécutées. Moteur (78 tests), shader WebGL 1 et fallba
 
 ## Corrections V3
 P0 puis sections 1–6 exécutées dans des commits distincts : isolation iPhone, section Jeux, menu minimal, plein écran/HUD/pause, silhouettes lumineuses, récompenses et caméra par ligne, ouverture première partie. Vérification finale : 83 tests unitaires et 9 parcours activés ; 2 parcours flag off en production locale. Rapport et 30 captures : docs/tetris/v3. Aucune feature V2.
+
+## Retours suivants
+Priorités traitées : Safari via LAN (reproduit/corrigé), aération des portails, boutons et retours, puis matière posée unique irisée. 83 tests unitaires, 10 parcours activés et 2 parcours flag off passent ; builds/lint/types validés. Captures et diagnostic : docs/tetris/v4.
