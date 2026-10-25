@@ -14,3 +14,6 @@ Tokens : globals.css :root/.dark, couleurs sémantiques neutres, radius .625rem 
 5. Entrée Markdown, page et process ; flag commun liste/page/proxy, noindex, exclusion sitemap.
 6. Tests engine, lint, types, build ; serveur local et captures Playwright light/dark mobile/desktop ; vérification des deux flags.
 7. Documentation de lancement, limites observées et commits locaux atomiques. Aucun push/déploiement.
+
+## Réalisation et vérification
+Les étapes 1 à 7 sont exécutées. Moteur (78 tests), shader WebGL 1 et fallback, springs/haptiques, contrôles tactiles/clavier, settings persistés, récit Markdown/covers et feature gate livrés. Sept tests navigateur passent, dont paysage et fallback. Flag désactivé vérifié sur un build de production local : carte absente et 404 HTTP dans quatre variantes de langue, absence du sitemap. Détails et limites matérielles : docs/tetris/VERIFICATION.md et TETRIS_README.md.

@@ -11,3 +11,9 @@
 
 - Mobile : la partie passe dans un espace fixe 100dvh, avec bouton quitter ; les contrôles et le plateau restent dégagés de la navigation et de la bannière de consentement. Pause et fin conservent cet espace jusqu’à fermeture.
 - Next.js/next-intl : binding --hostname 127.0.0.1 provoque une boucle 307 locale déjà connue (https://github.com/vectorize-io/hindsight/pull/1934). Le serveur est lancé avec --hostname 0.0.0.0, consulté via localhost ; aucune modification du routage global.
+
+- Révision source MIT : `9280c94c2f36a79d7cb184927ec0c8d1f0d48572`. Tables converties en TypeScript, moteur enrichi (hold, lock delay, score guideline, combos/B2B, événements). Le spawn est avancé d’une ligne cachée pour donner immédiatement un repère visible.
+- Motion fournit les springs ; WebGL 1 reste volontairement le socle (indices de tableaux GLSL constants ou symboles de boucle). Le champ échantillonne un voisinage fixe, réutilisant les contributions plutôt que de parcourir tout le plateau par pixel.
+- Covers PNG produites depuis le plateau jouable dans Chromium ; script reproductible conservé. Aucun visuel de la référence MIT repris.
+- Le marqueur de développement Next est désactivé, car il recouvrait le bouton tactile inférieur gauche.
+- L’audit npm retrouve une vulnérabilité transitive body-parser préexistante dans l’outillage ; pas de mise à jour globale des dépendances étrangères au jeu.
