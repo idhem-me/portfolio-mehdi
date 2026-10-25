@@ -78,12 +78,23 @@ export class LeaderboardStore {
   }
 }
 type Backend =
-  LeaderboardStore | import("./remote-store").RemoteLeaderboardStore;
+  | LeaderboardStore
+  | import("./remote-store").RemoteLeaderboardStore
+  | import("./supabase-store").SupabaseLeaderboardStore;
 const globalStore = globalThis as typeof globalThis & {
   lavaStore?: Promise<Backend>;
 };
 export async function store(): Promise<Backend> {
   return (globalStore.lavaStore ??= (async () => {
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey =
+      process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (supabaseUrl || supabaseKey) {
+      if (!supabaseUrl || !supabaseKey)
+        throw Error("Configuration Supabase incomplète.");
+      const { SupabaseLeaderboardStore } = await import("./supabase-store");
+      return new SupabaseLeaderboardStore(supabaseUrl, supabaseKey);
+    }
     const url = process.env.TURSO_DATABASE_URL;
     const token = process.env.TURSO_AUTH_TOKEN;
     if (url || token) {
