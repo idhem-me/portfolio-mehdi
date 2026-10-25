@@ -58,6 +58,8 @@ export default function DashboardPage() {
   }, [router]);
 
   useEffect(() => {
+    // Hydration synchronizes browser-only state after the server render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load(period);
   }, [load, period]);
 

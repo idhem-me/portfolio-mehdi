@@ -16,6 +16,8 @@ function MobileHeader() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Hydration synchronizes browser-only state after the server render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setReady(true);
   }, []);
 

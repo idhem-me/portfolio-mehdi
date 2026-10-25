@@ -17,8 +17,8 @@ export function ConsentBanner() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setStatus(getConsent());
-    setMounted(true);
+    const frame = requestAnimationFrame(() => { setStatus(getConsent()); setMounted(true); });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   if (!mounted || status !== null) return null;

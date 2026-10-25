@@ -124,6 +124,8 @@ export function ThemePairImage({
 
   useEffect(() => {
     if (!resolvedTheme) return;
+    // Hydration synchronizes browser-only state after the server render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMode(resolvedTheme === "dark" ? "dark" : "light");
   }, [resolvedTheme]);
 

@@ -77,10 +77,11 @@ function LightboxOverlay({
   } | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    const frame = requestAnimationFrame(() => setMounted(true));
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
+      cancelAnimationFrame(frame);
       document.body.style.overflow = prev;
     };
   }, []);
@@ -269,6 +270,8 @@ function LightboxOverlay({
           className="pointer-events-none absolute top-1/2 left-1/2 max-h-[min(100%,90dvh)] max-w-[min(100%,96vw)] select-none object-contain"
           style={{
             transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${scale})`,
+            // Existing imperative DOM bridge; refs do not determine React state.
+            // eslint-disable-next-line react-hooks/refs
             transition: dragging.current ? undefined : "transform 160ms ease-out",
           }}
         />

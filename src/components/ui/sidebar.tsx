@@ -93,6 +93,8 @@ function SidebarProvider({
   const [isResizing, setIsResizing] = React.useState(false)
 
   React.useEffect(() => {
+    // Hydration synchronizes browser-only state after the server render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     _setWidth(readSidebarWidthCookie())
   }, [])
 
@@ -727,6 +729,8 @@ function SidebarMenuSkeleton({
   // Stable on SSR; randomize after mount to avoid hydration mismatch.
   const [width, setWidth] = React.useState("70%")
   React.useEffect(() => {
+    // Hydration synchronizes browser-only state after the server render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWidth(`${Math.floor(Math.random() * 40) + 50}%`)
   }, [])
 

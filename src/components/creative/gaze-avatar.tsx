@@ -206,6 +206,8 @@ export function GazeAvatar() {
     return avatarSrc(headRef.current, gazeRef.current);
   };
 
+  // Existing imperative DOM bridge; refs do not determine React state.
+  // eslint-disable-next-line react-hooks/refs
   applyRef.current = (dx: number, dy: number) => {
     if (winkRef.current) return;
 
@@ -219,6 +221,8 @@ export function GazeAvatar() {
     }
   };
 
+  // Existing imperative DOM bridge; refs do not determine React state.
+  // eslint-disable-next-line react-hooks/refs
   pointerRef.current = (clientX: number, clientY: number) => {
     const el = wrapRef.current;
     if (!el) return;
