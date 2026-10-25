@@ -256,14 +256,6 @@ export function Tetris() {
   }, [stopRepeat]);
   useEffect(() => {
     if (!expanded) return;
-    const body = document.body;
-    const html = document.documentElement;
-    const old = {
-      overflow: body.style.overflow,
-      overscroll: html.style.overscrollBehavior,
-    };
-    body.style.overflow = "hidden";
-    html.style.overscrollBehavior = "none";
     let raf = 0,
       last = performance.now(),
       ui = last;
@@ -279,8 +271,6 @@ export function Tetris() {
     raf = requestAnimationFrame(loop);
     return () => {
       cancelAnimationFrame(raf);
-      body.style.overflow = old.overflow;
-      html.style.overscrollBehavior = old.overscroll;
     };
   }, [status, expanded]);
   const toggle = (key: keyof Settings) => {

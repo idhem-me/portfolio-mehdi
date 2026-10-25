@@ -1,5 +1,5 @@
 /* Additive game tokens. Theme, font, spacing, radii and controls inherit the portfolio. */
-:root {
+.lava-game {
   --tetris-piece-t: #a32eff;
   --tetris-piece-j: #2554ff;
   --tetris-piece-l: #ef6500;
@@ -18,7 +18,7 @@
   --tetris-glow: 0 0 0 transparent;
   --tetris-line-duration: 420ms;
 }
-.dark {
+.dark .lava-game {
   --tetris-piece-t: #c35cff;
   --tetris-piece-j: #5780ff;
   --tetris-piece-l: #ff8b24;
@@ -248,7 +248,7 @@
   }
 }
 @media (max-width: 767px) {
-  :root {
+  .lava-game {
     --tetris-board-height: min(49dvh, 28rem);
     --tetris-gap: calc(var(--spacing) * 2);
     --tetris-touch: 3rem;
@@ -270,7 +270,7 @@
   }
 }
 @media (max-height: 500px) and (orientation: landscape) {
-  :root {
+  .lava-game {
     --tetris-board-height: 65dvh;
   }
   .lava-game {
@@ -357,4 +357,9 @@
   .lava-game[data-expanded="true"] {
     padding-right: calc(32% + env(safe-area-inset-right));
   }
+}
+
+.lava-game[data-expanded="true"] {
+  touch-action: none;
+  overscroll-behavior: none;
 }
