@@ -23,3 +23,6 @@ P0 puis sections 1–6 exécutées dans des commits distincts : isolation iPhone
 
 ## Retours suivants
 Priorités traitées : Safari via LAN (reproduit/corrigé), aération des portails, boutons et retours, puis matière posée unique irisée. 83 tests unitaires, 10 parcours activés et 2 parcours flag off passent ; builds/lint/types validés. Captures et diagnostic : docs/tetris/v4.
+
+## Roadmap V2
+La planification des fonctionnalités futures est détaillée dans [V2_PLAN.md](V2_PLAN.md). Elle ne démarre aucun développement : priorité à la fiabilité matérielle puis au son, suivis du défi quotidien, du classement et du duel privé.
