@@ -59,3 +59,6 @@ Validation des retours : 83 tests unitaires, 10 parcours activés dont WebKit LA
 
 ## Roadmap V2 — planification seulement
 La demande de planification autorise un document, pas l’implémentation ou l’activation des fonctionnalités. V2_PLAN.md ordonne la consolidation matérielle, le son optionnel, le défi quotidien local, le leaderboard vérifié puis le duel privé. Le backend est différé jusqu’à validation du défi ; aucun fournisseur ni abonnement créé. La simulation reproductible et la version des règles sont des prérequis communs. L’onboarding n’entre pas dans les modes compétitifs. Tous les garde-fous locaux, flags et noindex sont conservés. Pas de dates promises : tailles relatives et critères de sortie par lot.
+
+## Précision roadmap V2 — son et duels
+Son Off initialement, un seul bouton toggle On/Off, aucun slider de volume ; les gains internes restent un réglage de développement. Choix utilisateur mémorisé. Les explications de duel distinguent score en deux minutes et survie avec attaques ; seul le premier demeure dans le premier périmètre. Le matchmaking public est documenté comme une extension future : file par mode/version, niveau estimé, élargissement progressif, confirmation, serveur arbitre, gestion des absences et de la faible fréquentation. Aucun système audio ou multijoueur implémenté.

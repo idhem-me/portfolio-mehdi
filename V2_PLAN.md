@@ -33,14 +33,14 @@ Aucune régression bloquante sur les appareils cibles. Cible de rendu : 60 fps ;
 
 ### Expérience minimale
 
-Le jeu reste silencieux par défaut. Dans Réglages : une option Son et un volume. Le joueur peut activer le son au menu ; son choix est mémorisé.
+Le jeu démarre avec le son **Off** à la première visite. L’interface propose un seul bouton toggle **Son : On / Off**, sans slider ni réglage de volume. Le joueur choisit explicitement On ; son choix est mémorisé.
 
 Palette courte : déplacement très discret, rotation, pose souple, chute rapide, effacement progressif de 1 à 3 lignes, Tetris, montée de niveau et fin de partie. Un petit nombre de variations évite la répétition mécanique. Pas de musique dans cette première tranche.
 
 ### Réalisation prévue
 
 - Ajouter un adaptateur audio isolé abonné au bus d’événements existant, sans dépendance audio dans `engine/`.
-- Centraliser volumes, priorités, variations et temporisations dans un fichier de configuration.
+- Fixer les niveaux sonores internes dans la configuration et centraliser priorités, variations et temporisations ; aucune interface de volume.
 - Démarrer les capacités audio après une interaction du joueur. Si l’audio est refusé ou indisponible, le jeu continue normalement.
 - Limiter le nombre de sons simultanés et éviter les doublons : l’événement d’effacement pilote le son de ligne, Tetris/combo ne relancent pas un second son identique.
 - Suspendre les sons à la pause, hors focus et au démontage. Son, haptiques et effets visuels restent réglables indépendamment.
@@ -49,7 +49,7 @@ Palette courte : déplacement très discret, rotation, pose souple, chute rapide
 ### Critères d’acceptation
 
 1. Aucun son avant activation explicite, aucun blocage du premier tap sur Safari.
-2. Mute/volume persistants ; pas de son résiduel après avoir quitté le jeu.
+2. Toggle On/Off persistant, état initial Off, aucun réglage de volume ; pas de son résiduel après avoir quitté le jeu.
 3. Retour sonore perceptible mais discret ; pas de saturation lors d’un maintien gauche/droite ou d’un combo.
 4. Tests sur haut-parleur iPhone et casque ; pas de baisse sensible de fluidité par rapport au lot 0.
 
@@ -118,6 +118,22 @@ Les essais avec pause, retour depuis l’arrière-plan ou fonctionnement hors li
 Un joueur crée un salon privé, partage un lien ou un code, puis les deux joueurs se déclarent prêts. Un compte à rebours synchronisé lance le duel. Chacun voit son plateau et un aperçu discret de celui de l’autre ; les contrôles mobiles restent identiques.
 
 Premier périmètre : **duel de score sur deux minutes**, même seed et mêmes règles, sans lignes envoyées à l’adversaire. Cela permet de valider la connexion et le plaisir de jouer ensemble avant de concevoir un mode versus avec attaques. Pas de matchmaking public, de chat ni de mode spectateur.
+
+### Formats possibles et matchmaking futur
+
+Le duel de score est le premier périmètre retenu. Un format survie avec attaques peut être étudié ensuite : des effacements envoient des lignes de pénalité chez l’adversaire, et le dernier joueur en jeu gagne. Le barème d’attaque, les contre-attaques et les égalités seraient des règles propres à Lava, à définir et tester ; aucun barème officiel n’est supposé dans ce plan.
+
+Le **matchmaking** désigne la recherche automatique d’un adversaire. Un salon privé n’en a pas besoin : le lien ou le code associe directement deux personnes.
+
+Pour un futur mode public :
+1. Le joueur sélectionne « Trouver un adversaire » et entre dans une file avec le mode et la version de règles choisis.
+2. Le serveur cherche un adversaire de niveau estimé proche, avec une connexion compatible ; les nouveaux joueurs commencent dans une phase de calibration.
+3. La plage de niveau s’élargit progressivement si l’attente dure, tout en restant dans le même mode et la même version. L’attente et l’annulation sont visibles.
+4. Les deux joueurs confirment qu’ils sont prêts. Le serveur crée le salon, attribue la même seed et annonce un départ synchronisé.
+5. En cas d’absence avant le départ, l’autre joueur retrouve la file sans défaite. Pendant le match, les règles de déconnexion/abandon annoncées s’appliquent.
+6. Le résultat validé par le serveur met à jour le classement de duel, séparé du leaderboard quotidien. Le score marathon brut ne suffit pas à estimer le niveau.
+
+Le matchmaking public reste une extension après les salons privés. Avec peu de joueurs simultanés, la file peut rester vide : conserver le partage de lien et le solo, sans inventer de faux adversaire ni garantir un temps d’attente.
 
 ### Réalisation prévue
 
