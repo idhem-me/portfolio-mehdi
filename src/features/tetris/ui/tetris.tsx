@@ -322,6 +322,7 @@ export function Tetris({
       ref={root}
       tabIndex={0}
       className="lava-game"
+      data-controls={settings.overlay}
       data-expanded={expanded}
       data-playing={status === "playing"}
       data-state={status}
@@ -387,23 +388,23 @@ export function Tetris({
             </div>
           </div>
           <div className="lava-stage">
-            <aside className="lava-side">
+            <aside className="lava-side lava-side-left">
               <div>
-                <div className="lava-label">Score</div>
+                <Badge variant="secondary">Réserve</Badge>
+                <Mini name={g.held} />
+              </div>
+              <div>
+                <Badge variant="secondary">Score</Badge>
                 <Score value={g.score} reduced={reduced} />
               </div>
               <div>
-                <div className="lava-label">Record</div>
-                {best}
+                <Badge variant="secondary">Lignes</Badge>
+                <span className="lava-score">{g.lines}</span>
               </div>
-              <div>
-                <div className="lava-label">Réserve</div>
-                <Mini name={g.held} />
+              <div className="lava-hud-bottom">
+                <Badge variant="secondary">Record</Badge>
+                <span>{best.toLocaleString("fr")}</span>
               </div>
-              <p className="lava-legend">
-                ← → déplacer · ↓ descendre · X / Z pivoter · Espace lâcher · C
-                réserve
-              </p>
             </aside>
             <motion.div
               className="lava-board"
@@ -508,46 +509,66 @@ export function Tetris({
                 {announcement}
               </div>
 
-              {status !== "playing" && (
-                <div className="lava-cover">
-                  <h2>
-                    {status === "paused" ? "On respire ?" : "Encore une ?"}
-                  </h2>
-                  <p>
-                    {status === "paused"
-                      ? "Votre partie vous attend."
-                      : `${g.score} points · ${g.lines} lignes`}
-                  </p>
+              {status === "paused" ? (
+                <Card className="lava-cover lava-pause">
+                  <Button
+                    className="lava-pause-quit"
+                    variant="ghost"
+                    aria-label="Quitter la partie"
+                    onClick={() => {
+                      stopRepeat();
+                      setExpanded(false);
+                      setStatus("ready");
+                    }}
+                  >
+                    <X />
+                  </Button>
+                  <h2>Pause</h2>
                   <Button
                     variant="accent"
-                    onClick={
-                      status === "paused"
-                        ? () => {
-                            setStatus("playing");
-                            root.current?.focus({ preventScroll: true });
-                          }
-                        : start
-                    }
+                    onClick={() => {
+                      setStatus("playing");
+                      root.current?.focus({ preventScroll: true });
+                    }}
                   >
-                    {status === "paused" ? "Reprendre" : "Rejouer"}
+                    Reprendre
                   </Button>
-                </div>
-              )}
+                </Card>
+              ) : status === "over" ? (
+                <Card className="lava-cover">
+                  <h2>Encore une ?</h2>
+                  <p>
+                    {g.score} points · {g.lines} lignes · niveau {g.level}
+                  </p>
+                  <p>
+                    {g.pieces} pièces · {Math.floor(g.elapsed / 1000)} s ·
+                    Record {best}
+                  </p>
+                  <Button variant="accent" onClick={start}>
+                    Rejouer
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setExpanded(false);
+                      setStatus("ready");
+                    }}
+                  >
+                    Menu
+                  </Button>
+                </Card>
+              ) : null}
             </motion.div>
-            <aside className="lava-side">
+            <aside className="lava-side lava-side-right">
               <div>
-                <div className="lava-label">Ensuite</div>
+                <Badge variant="secondary">Ensuite</Badge>
                 {g.next.map((n, i) => (
                   <Mini key={`${i}-${n}`} name={n} />
                 ))}
               </div>
-              <div>
-                <div className="lava-label">Niveau</div>
-                {g.level}
-              </div>
-              <div>
-                <div className="lava-label">Lignes</div>
-                {g.lines}
+              <div className="lava-hud-bottom">
+                <Badge variant="secondary">Niveau</Badge>
+                <span className="lava-score">{g.level}</span>
               </div>
             </aside>
           </div>

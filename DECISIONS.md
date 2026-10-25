@@ -26,3 +26,6 @@ Liste /jeux dupliquée depuis le template réalisations, même frontmatter JSON 
 
 ## 2 — Menu du jeu
 Le h1, la tagline et les métadonnées restent accessibles/présents ; aucun récit visuel sous le jeu. Process et licence MIT complète consultables dans une Sheet Radix « Règles et informations ». Menu principal centré utilisant Card/Button/Badge du portfolio ; Classement est seulement un bouton désactivé Bientôt, sans fonctionnalité V2. GameplayBackground est un composant décoratif autonome remplaçable, respectant reduced motion et la visibilité.
+
+## 3 — Plein écran et HUD
+Page /jeux/tetris déplacée dans le groupe de routes (game), hors du layout (site) et de son AppShell. Le header du portfolio n’est donc jamais monté sur cette page, et reste intact sur les autres pages. Retour au menu puis lien Jeux pour retrouver la navigation. Aucun sélecteur CSS visant le header partagé. Conteneur fixed 100dvh et safe areas uniquement local au jeu. HUD en badges : Réserve/Score/Lignes puis Record en bas à gauche, Ensuite et Niveau en bas à droite. Suppression de la légende redondante. Pause plein écran : seulement Pause, Reprendre et icône Quitter la partie.
