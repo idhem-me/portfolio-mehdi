@@ -29,12 +29,14 @@ export const feel = {
   },
 };
 export type Settings = {
+  sound: boolean;
   haptics: boolean;
   ios: boolean;
   reduced: boolean;
   overlay: boolean;
 };
 export const defaults: Settings = {
+  sound: false,
   haptics: true,
   ios: false,
   reduced: false,
