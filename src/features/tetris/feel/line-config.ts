@@ -37,7 +37,7 @@ export const lineFeel = {
     haptics: [15, 20, 25, 20, 35],
   },
   4: {
-    label: "4 lignes",
+    label: "Tetris",
     duration: 2150,
     scale: 1.08,
     stars: 20,

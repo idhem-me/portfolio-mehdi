@@ -281,9 +281,11 @@ export function Tetris({
           <GameplayBackground />
           <Link
             href="/jeux"
-            className="lava-back text-sm text-muted-foreground"
+            className="lava-back inline-flex items-center gap-2 text-sm text-muted-foreground"
+            aria-label="Retour aux jeux"
           >
-            ← Jeux
+            <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
+            <span>Jeux</span>
           </Link>
           <Card className="lava-lobby-panel">
             <span className="lava-wordmark" aria-hidden="true">
@@ -308,17 +310,6 @@ export function Tetris({
           <div className="lava-top">
             <span className="lava-wordmark">lava.</span>
             <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                aria-label="Quitter la partie"
-                onClick={() => {
-                  stopRepeat();
-                  setExpanded(false);
-                  setStatus("ready");
-                }}
-              >
-                <X />
-              </Button>
               <Button variant="ghost" aria-label="Pause" onClick={pause}>
                 <Pause />
               </Button>
@@ -331,6 +322,17 @@ export function Tetris({
                 }}
               >
                 <Settings2 />
+              </Button>
+              <Button
+                variant="ghost"
+                aria-label="Quitter la partie"
+                onClick={() => {
+                  stopRepeat();
+                  setExpanded(false);
+                  setStatus("ready");
+                }}
+              >
+                <X />
               </Button>
             </div>
           </div>
@@ -521,7 +523,7 @@ export function Tetris({
       )}
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         {" "}
-        <SheetContent className="z-[80]">
+        <SheetContent className="lava-sheet z-[80]">
           <SheetHeader>
             <SheetTitle>À votre rythme.</SheetTitle>
             <SheetDescription>
@@ -559,7 +561,7 @@ export function Tetris({
         </SheetContent>
       </Sheet>
       <Sheet open={rulesOpen} onOpenChange={setRulesOpen}>
-        <SheetContent className="z-[80] overflow-y-auto">
+        <SheetContent className="lava-sheet z-[80]">
           <SheetHeader>
             <SheetTitle>Règles et informations</SheetTitle>
             <SheetDescription>Les repères pour jouer à Lava.</SheetDescription>

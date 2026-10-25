@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -22,9 +23,10 @@ export default function PlaygroundLayout({
             </p>
             <Link
               href="/"
-              className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
-              ← Retour au site
+              <ArrowLeft className="size-4" aria-hidden="true" />
+              Retour au site
             </Link>
           </div>
         </header>

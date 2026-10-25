@@ -8,7 +8,7 @@ export async function setup(page: Page, theme = "light") {
 }
 export async function captureFlow(page: Page, theme: string, device: string) {
   const capture = (name: string) =>
-    page.screenshot({ path: `docs/tetris/v3/${device}-${theme}-${name}.png` });
+    page.screenshot({ path: `docs/tetris/v4/${device}-${theme}-${name}.png` });
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await setup(page, theme);
@@ -34,6 +34,14 @@ export async function captureFlow(page: Page, theme: string, device: string) {
   await capture("menu");
   await page.getByRole("button", { name: "Règles", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText("MIT");
+  const dialogBox = await page.getByRole("dialog").boundingBox();
+  const paragraphBox = await page
+    .getByRole("dialog")
+    .locator("p")
+    .last()
+    .boundingBox();
+  expect(paragraphBox!.x - dialogBox!.x).toBeGreaterThanOrEqual(20);
+  await capture("regles");
   await page.keyboard.press("Escape");
   async function start() {
     await page.getByRole("button", { name: "Jouer", exact: true }).click();
@@ -47,8 +55,8 @@ export async function captureFlow(page: Page, theme: string, device: string) {
     );
   }
   async function place(i: number, two = false) {
-    const {x}=onboardingConfig.reference[i];
-    let {rot}=onboardingConfig.reference[i];
+    const { x } = onboardingConfig.reference[i];
+    let { rot } = onboardingConfig.reference[i];
     if (two && i === 5) rot = 1;
     for (let r = 0; r < rot; r++) await page.keyboard.press("x");
     for (let m = 0; m < Math.abs(x - 3); m++)
@@ -83,9 +91,9 @@ export async function captureFlow(page: Page, theme: string, device: string) {
   await page.evaluate(() => localStorage.removeItem("tetris.onboardingDone"));
   await start();
   for (let i = 0; i < 10; i++) await place(i);
-  await expect(page.locator(".lava-reward-type")).toHaveText("4 lignes");
+  await expect(page.locator(".lava-reward-type")).toHaveText("Tetris");
   await page.waitForTimeout(350);
-  await capture("4-lignes");
+  await capture("tetris");
   await page.waitForTimeout(2200);
   await page.evaluate(() => window.dispatchEvent(new Event("blur")));
   await expect(page.locator(".lava-game")).toHaveAttribute(
@@ -98,6 +106,7 @@ export async function captureFlow(page: Page, theme: string, device: string) {
   await expect(
     page.getByRole("switch", { name: /Effets réduits/ }),
   ).toHaveAttribute("aria-checked", "true");
+  await capture("reglages");
   await page.keyboard.press("Escape");
   expect(
     await page.evaluate(

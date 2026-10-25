@@ -35,7 +35,9 @@ test("P0: iPhone navigation and touch interaction before and after Lava", async 
     await page
       .getByRole("button", { name: /Quitter le jeu|Quitter la partie/ })
       .tap();
-    await page.getByRole("link", { name: "← Jeux", exact: true }).tap();
+    await page
+      .getByRole("link", { name: "Retour aux jeux", exact: true })
+      .tap();
     await page.locator('[data-slot="sidebar-trigger"]').first().tap();
     await page.getByRole("link", { name: "Accueil", exact: true }).tap();
     await home(false);

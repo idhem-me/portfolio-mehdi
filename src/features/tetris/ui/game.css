@@ -801,3 +801,66 @@
     --tetris-board-height: calc(100dvh - 4.5rem);
   }
 }
+
+/* Sheets are Radix portals: their spacing tokens must live on the portal itself. */
+.lava-sheet[data-slot="sheet-content"] {
+  --tetris-gap: calc(var(--spacing) * 4);
+  --lava-sheet-padding: calc(var(--spacing) * 6);
+  gap: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.lava-sheet [data-slot="sheet-header"] {
+  flex-shrink: 0;
+  padding: calc(var(--lava-sheet-padding) * 1.35)
+    calc(var(--lava-sheet-padding) + var(--control-height-lg))
+    var(--lava-sheet-padding) var(--lava-sheet-padding);
+  gap: calc(var(--spacing) * 3);
+}
+.lava-sheet [data-slot="sheet-description"] {
+  line-height: 1.7;
+}
+.lava-sheet .lava-settings {
+  padding: calc(var(--lava-sheet-padding) / 2) var(--lava-sheet-padding)
+    var(--lava-sheet-padding);
+  gap: var(--lava-sheet-padding);
+  line-height: 1.75;
+}
+.lava-sheet .lava-settings section {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--spacing) * 3);
+}
+.lava-sheet .lava-settings p {
+  margin: 0;
+}
+.lava-sheet .lava-settings button {
+  min-height: 4rem;
+  padding: calc(var(--spacing) * 4);
+  gap: calc(var(--spacing) * 4);
+  align-items: center;
+}
+.lava-sheet .lava-settings [data-slot="badge"] {
+  flex-shrink: 0;
+}
+.lava-sheet .lava-settings details {
+  padding: calc(var(--spacing) * 4);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-wrap: anywhere;
+}
+.lava-sheet .lava-settings pre {
+  margin-top: calc(var(--spacing) * 4);
+  line-height: 1.75;
+}
+.lava-sheet > [data-slot="sheet-close"] {
+  position: fixed;
+  z-index: 2;
+  top: max(calc(var(--spacing) * 4), env(safe-area-inset-top));
+  right: max(calc(var(--spacing) * 4), env(safe-area-inset-right));
+  background: var(--popover);
+}
