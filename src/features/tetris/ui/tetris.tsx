@@ -44,6 +44,8 @@ import { PieceShape as Mini } from "./piece-shape";
 import { GameplayBackground } from "./gameplay-background";
 import { Link } from "@/i18n/navigation";
 import type { CaseStudySection } from "@/lib/content";
+import { LineCelebration } from "../feel/line-celebration";
+import { lineFeel, lineCount } from "../feel/line-config";
 import { haptic } from "../feel/haptics";
 import { sourceLicense } from "../engine/source-license";
 import "./game.css";
@@ -165,7 +167,9 @@ export function Tetris({
   useEffect(() => {
     const g = game.current;
     return g.on((e) => {
-      haptic(e, settingsRef.current, iosSwitch.current);
+      // One line-clear event owns reward, haptics and camera; tetris/combo notifications must not duplicate them.
+      if (e.type !== "tetris" && e.type !== "combo")
+        haptic(e, settingsRef.current, iosSwitch.current);
       if (e.type === "gameOver") {
         setStatus("over");
         setBest((old) => {
@@ -174,48 +178,28 @@ export function Tetris({
           return value;
         });
       }
-      if (
-        [
-          "lock",
-          "hardDrop",
-          "lineClear",
-          "tetris",
-          "combo",
-          "levelUp",
-        ].includes(e.type)
-      ) {
-        setFeedback((old) => ({
-          id: ++serial.current,
-          e: {
-            ...e,
-            rows:
-              e.rows ??
-              (["tetris", "combo"].includes(e.type) ? old?.e.rows : undefined),
-          },
-        }));
-        if (!reducedRef.current) {
-          const strong = ["tetris", "combo"].includes(e.type);
+      if (e.type === "lineClear") {
+        const config = lineFeel[lineCount(e.n)];
+        setFeedback({ id: ++serial.current, e });
+        if (!reducedRef.current)
           void camera
             .start({
-              scale: strong
-                ? feel.camera.strongZoom
-                : e.type === "lineClear"
-                  ? feel.camera.lineZoom
-                  : feel.camera.lockZoom,
-              x: strong ? -feel.camera.shake : 0,
-              y: e.type === "hardDrop" ? feel.camera.dropBump : 1,
+              scale: config.zoom,
+              x: config.shake ? -config.shake : 0,
               transition: feel.spring,
             })
             .then(() =>
-              camera.start({ scale: 1, x: 0, y: 0, transition: feel.spring }),
+              camera.start({ scale: 1, x: 0, transition: feel.spring }),
             );
-        }
       }
     });
   }, [status, camera]);
   useEffect(() => {
     if (!feedback) return;
-    const timer = setTimeout(() => setFeedback(null), feel.pulse);
+    const timer = setTimeout(
+      () => setFeedback(null),
+      lineFeel[lineCount(feedback.e.n)].duration,
+    );
     return () => clearTimeout(timer);
   }, [feedback]);
   useEffect(() => bindKeyboard(root.current!, act, pause), [act, pause]);
@@ -277,18 +261,6 @@ export function Tetris({
   };
   const g = game.current;
   const effect = feedback?.e;
-  const lineEffect =
-    effect && ["lineClear", "tetris", "combo"].includes(effect.type);
-  const announcement =
-    effect?.type === "tetris"
-      ? "TETRIS"
-      : effect?.type === "combo"
-        ? `COMBO ×${effect.n + 1}`
-        : effect?.type === "levelUp"
-          ? `NIVEAU ${effect.n}`
-          : effect?.type === "lineClear"
-            ? `${effect.n} LIGNE${effect.n > 1 ? "S" : ""}`
-            : "";
   return (
     <Card
       ref={root}
@@ -428,59 +400,24 @@ export function Tetris({
                 active={status === "playing"}
                 reduced={reduced}
               />
+              {feedback && (
+                <LineCelebration
+                  key={feedback.id}
+                  event={feedback.e}
+                  reduced={reduced}
+                />
+              )}
               {effect &&
-                !reduced &&
-                [
-                  "hardDrop",
-                  "lock",
-                  "lineClear",
-                  "tetris",
-                  "combo",
-                  "levelUp",
-                ].includes(effect.type) && (
+                lineFeel[lineCount(effect.n)].flash > 0 &&
+                !reduced && (
                   <motion.div
-                    key={`flash-${feedback.id}`}
+                    key={`flash-${feedback?.id}`}
                     className="lava-flash"
-                    style={{
-                      background: `var(--tetris-piece-${effect.color?.toLowerCase()})`,
-                    }}
-                    initial={{ opacity: feel.flashOpacity }}
+                    initial={{ opacity: lineFeel[lineCount(effect.n)].flash }}
                     animate={{ opacity: 0 }}
-                    transition={{ duration: feel.pulse / 1000 }}
+                    transition={{ duration: 0.45 }}
                   />
                 )}
-              {effect?.rows?.map((row) => (
-                <div
-                  key={`${feedback?.id}-${row}`}
-                  className="lava-line"
-                  style={{ top: `${(row - 2) * 5}%` }}
-                />
-              ))}
-              {lineEffect &&
-                !reduced &&
-                Array.from({ length: feel.particles }, (_, i) => (
-                  <motion.i
-                    key={`${feedback?.id}-${i}`}
-                    className="lava-droplet"
-                    style={{
-                      left: `${(i * 37) % 100}%`,
-                      top: "70%",
-                      background: `var(--tetris-piece-${effect.color?.toLowerCase()})`,
-                    }}
-                    initial={{ opacity: 1, y: 0, scale: 1 }}
-                    animate={{
-                      opacity: 0,
-                      y: -30 - (i % 5) * 15,
-                      x: (i % 2 ? 1 : -1) * (10 + i * 2),
-                      scale: 0,
-                    }}
-                    transition={{ duration: feel.pulse / 1000 }}
-                  />
-                ))}
-              <div aria-live="polite" className="lava-feedback">
-                {announcement}
-              </div>
-
               {status === "paused" ? (
                 <Card className="lava-cover lava-pause">
                   <Button

@@ -19,6 +19,7 @@ export type GameEvent = {
   n: number;
   rows?: number[];
   color?: PieceName;
+  cells?: { x: number; y: number; color: PieceName }[];
 };
 export type Action = "left" | "right" | "cw" | "ccw" | "soft" | "hard" | "hold";
 export const emptyBoard = (): Board =>
@@ -102,7 +103,15 @@ export class Game {
     };
   }
   private emit(type: GameEvent["type"], n = 0, rows?: number[]) {
-    const e = { type, n, rows, color: this.current.piece };
+    const cells =
+      type === "lineClear"
+        ? rows?.flatMap((y) =>
+            this.board[y].flatMap((color, x) =>
+              color ? [{ x, y, color }] : [],
+            ),
+          )
+        : undefined;
+    const e = { type, n, rows, color: this.current.piece, cells };
     this.listeners.forEach((fn) => fn(e));
   }
   private advance() {

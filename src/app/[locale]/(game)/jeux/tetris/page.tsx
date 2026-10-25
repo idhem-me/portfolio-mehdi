@@ -1,3 +1,10 @@
+import { Fredoka } from "next/font/google";
+const display = Fredoka({
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  variable: "--font-lava-display",
+  display: "swap",
+});
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
@@ -31,7 +38,7 @@ export default async function TetrisPage({ params }: Props) {
   setRequestLocale(locale);
   const study = getCaseStudy(locale, "tetris");
   return (
-    <main>
+    <main className={display.variable}>
       <header className="sr-only">
         <h1>{study.title}</h1>
         <p>{study.tagline}</p>

@@ -1,0 +1,53 @@
+export type LineCount = 1 | 2 | 3 | 4;
+export const lineFeel = {
+  1: {
+    label: "1 ligne",
+    duration: 1100,
+    scale: 0.76,
+    stars: 3,
+    rays: 0.14,
+    zoom: 1.008,
+    shake: 0,
+    flash: 0,
+    particles: 6,
+    haptics: [12, 30, 16],
+  },
+  2: {
+    label: "2 lignes",
+    duration: 1350,
+    scale: 0.88,
+    stars: 6,
+    rays: 0.23,
+    zoom: 1.018,
+    shake: 0,
+    flash: 0,
+    particles: 7,
+    haptics: [16, 25, 25],
+  },
+  3: {
+    label: "3 lignes",
+    duration: 1650,
+    scale: 1,
+    stars: 10,
+    rays: 0.32,
+    zoom: 1.035,
+    shake: 1.4,
+    flash: 0.06,
+    particles: 8,
+    haptics: [15, 20, 25, 20, 35],
+  },
+  4: {
+    label: "4 lignes",
+    duration: 2150,
+    scale: 1.08,
+    stars: 20,
+    rays: 0.44,
+    zoom: 1.065,
+    shake: 3,
+    flash: 0.14,
+    particles: 10,
+    haptics: [15, 20, 25, 25, 35, 25, 55],
+  },
+} as const;
+export const lineCount = (n: number) =>
+  Math.min(4, Math.max(1, n)) as LineCount;
