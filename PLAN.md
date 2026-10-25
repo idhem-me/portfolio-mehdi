@@ -17,3 +17,6 @@ Tokens : globals.css :root/.dark, couleurs sémantiques neutres, radius .625rem 
 
 ## Réalisation et vérification
 Les étapes 1 à 7 sont exécutées. Moteur (78 tests), shader WebGL 1 et fallback, springs/haptiques, contrôles tactiles/clavier, settings persistés, récit Markdown/covers et feature gate livrés. Sept tests navigateur passent, dont paysage et fallback. Flag désactivé vérifié sur un build de production local : carte absente et 404 HTTP dans quatre variantes de langue, absence du sitemap. Détails et limites matérielles : docs/tetris/VERIFICATION.md et TETRIS_README.md.
+
+## Corrections V3
+P0 puis sections 1–6 exécutées dans des commits distincts : isolation iPhone, section Jeux, menu minimal, plein écran/HUD/pause, silhouettes lumineuses, récompenses et caméra par ligne, ouverture première partie. Vérification finale : 83 tests unitaires et 9 parcours activés ; 2 parcours flag off en production locale. Rapport et 30 captures : docs/tetris/v3. Aucune feature V2.

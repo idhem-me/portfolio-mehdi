@@ -1,72 +1,62 @@
-# Lava — Tetris
+# Lava — corrections V3
 
-Expérience jouable intégrée aux réalisations du portfolio. Tout le travail est local sur `feature/tetris`. Aucun push ni déploiement.
+Travail local sur `feature/tetris`, sans push/déploiement ni modification de main. Aucune fonctionnalité V2 développée ; Classement est un bouton désactivé.
 
-## Lancement
+## Prévisualisation
 
 ```sh
 npm ci
 npm run dev -- --hostname 0.0.0.0 --port 3000
 ```
 
-Ouvrir http://localhost:3000/realisations/tetris (français) ou `/en/realisations/tetris`. Le binding `0.0.0.0` évite une boucle de redirection locale Next.js/next-intl ; le serveur peut être accessible sur le réseau local. Pour une machine non fiable, filtrer le port au niveau du système. `.env.local`, ignoré par Git, contient déjà :
+- Jeux : http://localhost:3000/jeux
+- Lava : http://localhost:3000/jeux/tetris
+- Rejouer l’onboarding : http://localhost:3000/jeux/tetris?resetOnboarding — **développement uniquement**, paramètre consommé au chargement.
 
-```dotenv
-NEXT_PUBLIC_ENABLE_TETRIS=true
-```
+`.env.local` ignoré par Git contient `NEXT_PUBLIC_ENABLE_TETRIS=true`. Sans variable ou avec `false`, la navigation Jeux est absente et `/jeux`, `/jeux/tetris`, ainsi que l’ancienne URL, renvoient HTTP 404. Redémarrer après changement de flag et reconstruire en production locale. L’ancienne URL `/realisations/tetris` redirige en 308 vers `/jeux/tetris` seulement si le jeu est activé. Lava ne figure plus dans les réalisations, dans aucune langue.
 
-Sans cette variable ou avec `false`, la carte disparaît dans toutes les langues et la route renvoie HTTP 404, avant streaming. Après tout changement de flag, redémarrer le serveur ; pour la production locale, reconstruire. `.env.example` conserve `false`.
+La liste et la page du jeu restent en noindex. Aucun sitemap n’existe dans le dépôt : aucune route Jeux n’est ajoutée à un sitemap. Le binding `0.0.0.0` évite une boucle locale Next/next-intl ; il permet aussi l’accès depuis le réseau local.
 
-Le projet n’avait pas de sitemap : aucun sitemap n’est ajouté et Lava n’est donc référencé dans aucun sitemap. Même activée, la réalisation porte `noindex,nofollow` (gate manuelle `tetrisPublic = false` dans `src/features/tetris/flags.ts`). Un flag d’affichage ne constitue pas une authentification : la preview locale n’est pas destinée à contenir de données secrètes.
+## iPhone et isolation
 
-## Jouer
+Lava n’écrit plus dans les styles de body/html. Les verrous tactiles et le conteneur fixed sont locaux au jeu. Tous les tokens Lava sont hérités de `.lava-game`. Le header du portfolio n’est pas masqué par CSS : la page du jeu appartient au groupe `(game)`, hors AppShell. En revenant à Jeux, le shell normal est retrouvé. Le hook mobile utilise matchMedia/useSyncExternalStore et ne dépend plus d’une frame Safari.
 
-Mobile : boutons sous le plateau, répétition sur maintien gauche/droite/descente ; tap pour tourner, glisser latéralement pour déplacer, vers le bas pour descendre, vers le haut en moins de 330 ms pour lâcher. La partie occupe l’écran disponible et respecte les safe areas ; × revient à la réalisation. Les contrôles peuvent être masqués dans les réglages.
+Le défaut global de scroll est confirmé dans l’ancienne implémentation. La disparition exacte signalée sur téléphone physique n’a pas été reproduite sur une navigation fraîche WebKit : ne pas confondre le défaut identifié et une preuve de causalité du symptôme. Les tests iPhone vérifient le menu et Touche-moi avant/après partie **sans rechargement de la page**, avec flag activé puis désactivé. Détails : DECISIONS.md, section P0.
 
-Desktop : flèches, Espace pour lâcher, C/Shift pour réserver, X/↑ et Z pour tourner, P/Échap pour pause. La zone de jeu doit avoir le focus, acquis au démarrage. Les raccourcis ne capturent pas le reste du portfolio. DAS 130 ms / ARR 32 ms. La perte de focus ou de visibilité met en pause ; reprise explicite.
+## Structure et réglages
 
-Réserve limitée à une utilisation par pièce, trois pièces suivantes, ghost, 7-bag, SRS complet. Pose après 500 ms, maximum 15 resets par pièce. Single/double/triple/tetris : 100/300/500/800 × niveau ; B2B tetris ×1,5, combo +50 × index × niveau. Soft drop +1/cellule, hard drop +2/cellule. Niveau tous les dix lignes. Pas de T-spin scoring dans cette V1.
+- `engine/` : logique pure TypeScript, SRS, collision, lock delay, score, hold, 7-bag, événements. `Game.on(listener)` renvoie un désabonnement.
+- `engine/opening.ts` : option enabled, séquence de dix pièces et placements de référence qui réalisent un Tetris. Le stockage `tetris.onboardingDone` est écrit dès le premier Jouer. Les parties suivantes sont standard ; la transition du script conserve un sac entier et évite une duplication immédiate de I.
+- `controls/onboarding.ts` : stockage tolérant aux erreurs, reset local en développement seulement. `resetOpening` est également exportée pour les tests.
+- `feel/config.ts` : DAS 130 ms, ARR 32 ms, gestes, spring et réglages utilisateur.
+- **`feel/line-config.ts`** : libellés 1 à 4 lignes, durées, taille, rayons, nombre de particules/étoiles, zoom/shake/flash et patterns haptiques. La caméra réagit uniquement à lineClear. Un événement synchronise tous les retours ; tetris/combo ne doublonnent pas les effets.
+- `feel/line-celebration.tsx` : styles doré et irisé, pop, hachures, rayons, étoiles et traînées. Avec effets réduits ou prefers-reduced-motion : fondu de texte, aucun zoom/shake/flash ni particules.
+- `render/lava.ts` : champ de distance aux **frontières exposées** des masses, cœur lumineux et reflet glossy. Les arêtes internes ne participent pas à la normale ; aucun biseau entre cellules de même couleur. Résolution adaptative 40–100 %, DPR plafonné à 1,5.
+- `render/silhouette.ts` : union vectorielle utilisée par ghost, réserve, preview et fallback. Suppression des arêtes partagées ; coins extérieurs convexes arrondis, jonctions concaves franches.
+- `ui/game.css` : palette light/dark, géométrie dvh, safe areas, HUD et menus. Le HUD utilise les Badge et les contrôles les Button du portfolio. `GameplayBackground` est un placeholder autonome remplaçable.
 
-## Réglages et tuning
+Les réglages restent dans `lava-settings`, le record dans `lava-best`. L’option haptique iOS reste non officielle, expérimentale et désactivée par défaut. Aucun son.
 
-- `src/features/tetris/feel/config.ts` : DAS/ARR, seuils gestes, springs, zooms, bump, shake, nombre de gouttelettes, durée de feedback, patterns haptiques. Toutes les durées haptiques sont en ms.
-- `src/features/tetris/ui/game.css` : tokens `--tetris-piece-{i,o,t,s,z,j,l}` light/dark, spacing via `--spacing`, radius via `--radius`, ombres, hauteur plateau, touch targets, easing et durées des menus/lignes. Surfaces, texte et boutons consomment les tokens/composants du portfolio.
-- `src/features/tetris/render/lava.ts` : shader de densité, seuil lissé, normale, reflets, Fresnel, bulles, respiration, étirement et fonte ; paramètres numériques du matériau au même endroit. Résolution adaptative entre 40 et 100 %, DPR plafonné à 1,5. Moyenne de 60 frames, baisse au-delà de 21 ms/frame.
-- `render/board.tsx` : fallback SVG goo + dégradé brillant en cas d’indisponibilité/échec/perte WebGL. L’animation s’arrête en pause et hors focus.
-- `feel/haptics.ts` : `navigator.vibrate` protégé. Le switch iOS 18+ est une expérimentation **non officielle**, désactivée par défaut, sans garantie d’effet ; seule la pose et les événements ligne/tetris le déclenchent.
-- Les réglages sont conservés sous `lava-settings`, le record sous `lava-best`. Une indisponibilité de localStorage n’interrompt pas le jeu. `prefers-reduced-motion` réduit la matière et supprime caméra, gouttelettes et zooms de score, indépendamment de l’option utilisateur.
-
-`Game.on(listener)` renvoie une fonction de désabonnement. Le moteur ne dépend ni du DOM ni de React. Les événements typés `move`, `rotate`, `lock`, `hardDrop`, `lineClear`, `tetris`, `combo`, `levelUp`, `gameOver`, `hold` alimentent le feedback. Un futur adaptateur audio s’abonnera au même bus ; aucun son ou contexte audio n’est créé aujourd’hui.
-
-## Vérification
+## Vérifications
 
 ```sh
 npm test
 npm run lint
 npm run typecheck
 npm run build
-# Avec le serveur de dev démarré et le flag activé :
+npx playwright install chromium webkit
+# Serveur de dev démarré, flag true :
 npm run test:tetris:browser
-# Avec le serveur redémarré et NEXT_PUBLIC_ENABLE_TETRIS=false :
+# Serveur redémarré / build reconstruit, flag false :
 TETRIS_TEST_DISABLED=true npm run test:tetris:browser
 ```
 
-Les captures sont dans `docs/tetris/`. Les covers proviennent du véritable plateau, sans assets externes : `node tools/tetris/capture-covers.mjs` avec le serveur démarré. `npx playwright install chromium` installe le navigateur si nécessaire.
+`docs/tetris/v3/` contient les captures clair/sombre, Chromium desktop et WebKit iPhone : accueil du portfolio, Jeux, menu, partie, pause, 2 lignes et 4 lignes. Ces deux derniers états sont obtenus par de vraies actions du moteur, sans injection de plateau ni route de démonstration. Des captures de géométrie 320×568 et 844×390 complètent la couverture.
 
-## Publication manuelle, plus tard
+## À contrôler sur téléphone physique
 
-1. Relire la réalisation et traduire le contenu de Lava (fallback français actuellement).
-2. Tester sur les iPhone/Android visés, en clair/sombre, petites hauteurs et Safari ; mesurer les temps GPU et vérifier les haptiques avec un appareil physique.
-3. Garder le flag désactivé par défaut. Activer uniquement dans l’environnement local prévu pour prévisualisation. Pour une future publication, décider explicitement d’étendre l’activation à l’environnement cible.
-4. Passer **manuellement** `tetrisPublic` à `true` pour autoriser l’indexation, compléter le sitemap public si un sitemap est créé, puis reconstruire et vérifier robots + métadonnées.
-5. Faire une revue avant toute fusion ou livraison. Ce travail n’effectue aucune de ces opérations distantes.
-
-## Limites et suite
-
-La cible 60 fps repose sur le rendu à voisinage borné et sa résolution adaptative ; les captures Chromium ne prouvent pas les performances sur un mobile physique. La matière est une simulation visuelle, pas un fluide physique. L’inertie après effacement est une compensation visuelle globale ; le fallback SVG est plus simple. L’astuce haptique iOS peut ne rien produire. Le français est le fallback éditorial pour Lava dans les autres langues. Un warning lint préexistant reste sur `gaze-avatar.tsx` ; le lint sort avec succès. Le build peut avertir que Google Sans n’a pas de métriques de fallback. L’audit npm signale `body-parser` transitif déjà présent via l’outillage : conservé hors du périmètre, sans `audit fix` global.
-
-V2 : son via le bus existant, T-spins et finesse de jeu, leaderboard avec consentement, défis quotidiens déterministes, mode multijoueur, calibration GPU sur appareils et transitions cellule par cellule plus poussées.
+Safari avec sa barre d’adresse visible/masquée, rotation de l’appareil, encoches et safe areas ; sortie/reprise après verrouillage du téléphone ; précision des swipes et maintien des boutons ; qualité et temps GPU sur Android milieu de gamme ; haptiques disponibles et absence d’erreur avec l’option iOS. WebKit automatisé ne certifie ni les vibrations ni les 60 fps matériels. La matière reste une simulation visuelle, avec inertie d’effacement simplifiée. Le contenu éditorial du jeu utilise le fallback français pour les autres langues.
 
 ## Attribution
 
-Logique de formes, SRS, collision et randomizer adaptée depuis [sen-ltd/tetris](https://github.com/sen-ltd/tetris), commit `9280c94c2f36a79d7cb184927ec0c8d1f0d48572`, MIT, © 2026 SEN LLC. Licence complète conservée dans `src/features/tetris/engine/LICENSE.source`. Aucun rendu ou composant UI repris.
+Logique adaptée de [sen-ltd/tetris](https://github.com/sen-ltd/tetris), commit `9280c94c2f36a79d7cb184927ec0c8d1f0d48572`, MIT, © 2026 SEN LLC. Licence conservée dans engine/LICENSE.source et consultable dans Règles et informations. Les références de récompense sont les deux images fournies par l’utilisateur, archivées dans docs/tetris/references ; aucun texte ou asset de leur jeu n’est intégré au rendu.

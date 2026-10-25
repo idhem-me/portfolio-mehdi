@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { captureFlow } from "./helpers/v3";
 const enabled = process.env.TETRIS_TEST_DISABLED !== "true";
 test("P0: iPhone navigation and touch interaction before and after Lava", async ({
   page,
@@ -6,17 +7,15 @@ test("P0: iPhone navigation and touch interaction before and after Lava", async 
   await page.addInitScript(() =>
     localStorage.setItem("analytics_consent", "denied"),
   );
-  async function home() {
-    await page.goto("/");
+  async function home(navigate = true) {
+    if (navigate) await page.goto("/");
     const trigger = page.locator('[data-slot="sidebar-trigger"]').first();
     await expect(trigger).toBeVisible();
     await trigger.tap();
     await expect(page.getByRole("dialog")).toBeVisible();
     await page.getByRole("link", { name: "Accueil", exact: true }).tap();
     await page.getByRole("button", { name: "Touche-moi", exact: true }).tap();
-    await expect(
-      page.getByRole("button", { name: /Reset/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /Reset/i })).toBeVisible();
     await expect(page.locator("[data-physics-item]").first()).toHaveCSS(
       "visibility",
       "hidden",
@@ -35,8 +34,10 @@ test("P0: iPhone navigation and touch interaction before and after Lava", async 
     await page
       .getByRole("button", { name: /Quitter le jeu|Quitter la partie/ })
       .tap();
-    await page.goto("/");
-    await home();
+    await page.getByRole("link", { name: "← Jeux", exact: true }).tap();
+    await page.locator('[data-slot="sidebar-trigger"]').first().tap();
+    await page.getByRole("link", { name: "Accueil", exact: true }).tap();
+    await home(false);
   } else {
     await page.goto("/realisations");
     await expect(page.getByRole("link", { name: /Lava/ })).toHaveCount(0);
@@ -45,3 +46,9 @@ test("P0: iPhone navigation and touch interaction before and after Lava", async 
     ).toHaveCount(0);
   }
 });
+
+for (const theme of ["light", "dark"])
+  test(`iPhone ${theme}: complete V3 capture flow`, async ({ page }) => {
+    test.skip(!enabled);
+    await captureFlow(page, theme, "webkit-iphone");
+  });
