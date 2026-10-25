@@ -923,3 +923,177 @@
 .lava-cover button[data-variant="accent"] {
   min-height: var(--control-height-accent);
 }
+
+/* Finish is outside the animated board: always visible and scrollable on phones. */
+.lava-gameover {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: var(--background);
+  justify-content: flex-start;
+  padding: max(calc(var(--tetris-gap) * 2), env(safe-area-inset-top))
+    max(calc(var(--tetris-gap) * 2), env(safe-area-inset-right))
+    max(calc(var(--tetris-gap) * 2), env(safe-area-inset-bottom))
+    max(calc(var(--tetris-gap) * 2), env(safe-area-inset-left));
+}
+.lava-end-panel {
+  width: 100%;
+  max-width: calc(var(--spacing) * 128);
+  padding: calc(var(--tetris-gap) * 2);
+  margin-block: auto;
+  gap: calc(var(--tetris-gap) * 2);
+}
+.lava-end-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--tetris-gap);
+}
+.lava-end-stats > div {
+  padding: var(--tetris-gap);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.lava-end-stats dd {
+  margin-top: var(--tetris-gap);
+  overflow-wrap: anywhere;
+}
+.lava-end-actions,
+.lava-identity-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--tetris-gap);
+}
+.lava-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tetris-gap);
+}
+.lava-identity-options button {
+  min-width: 0;
+  white-space: normal;
+  min-height: var(--control-height-lg);
+}
+.lava-score-form {
+  text-align: start;
+}
+.lava-score-form > label {
+  display: block;
+}
+.lava-score-form > button {
+  width: 100%;
+}
+.lava-game[data-state="over"] .lava-top,
+.lava-game[data-state="over"] .lava-stage,
+.lava-game[data-state="over"] .lava-controls {
+  visibility: hidden;
+}
+/* No external gradient or drop shadow behind the board. The liquid retains its highlights. */
+.lava-board {
+  box-shadow: none;
+}
+/* Wide layouts put the header above HUD columns without consuming a full board row. */
+@media (min-width: 768px) and (min-height: 501px) {
+  .lava-game[data-expanded="true"] {
+    --tetris-board-height: min(
+      calc(100dvh - var(--tetris-control-space) - 3rem),
+      calc((100vw - 2 * var(--tetris-hud-width) - 4 * var(--tetris-gap)) * 2)
+    );
+  }
+  .lava-top {
+    height: 0;
+    flex: 0 0 0;
+    position: relative;
+    z-index: 1;
+    width: calc(
+      var(--tetris-board-height) / 2 + 2 * var(--tetris-hud-width) + 2 *
+        var(--tetris-gap)
+    );
+    max-width: none;
+    margin-bottom: calc(-1 * var(--tetris-gap));
+  }
+  .lava-top > .lava-wordmark {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+  }
+  .lava-top > div {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 0;
+  }
+  .lava-side {
+    padding-top: calc(var(--control-height-lg) + 2 * var(--tetris-gap));
+    box-sizing: border-box;
+  }
+  .lava-game[data-expanded="true"] .lava-stage {
+    align-content: start;
+  }
+}
+
+.lava-gameover {
+  border-radius: 0;
+}
+
+/* Figma reference: compact hierarchy, using the portfolio Card and Button components. */
+.lava-end-panel {
+  max-width: calc(var(--spacing) * 104);
+  text-align: start;
+}
+.lava-end-panel > [data-slot="card-header"],
+.lava-end-content,
+.lava-end-panel > [data-slot="card-footer"] {
+  padding: 0;
+}
+.lava-end-panel > [data-slot="card-header"] h2 {
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.lava-end-content {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--tetris-gap) * 2);
+}
+.lava-end-stats {
+  gap: calc(var(--tetris-gap) * 2);
+}
+.lava-end-stats > div {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+.lava-end-stats dd {
+  margin-top: var(--spacing);
+}
+.lava-end-number {
+  font-size: calc(var(--spacing) * 9);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.lava-end-state {
+  font-size: var(--control-text);
+  line-height: 1.4;
+}
+.lava-end-panel > .lava-end-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing);
+  border: 0;
+  background: transparent;
+}
+.lava-score-saved > button {
+  width: 100%;
+}
+
+/* Match the lobby's content width, padding and thumb targets. */
+.lava-end-panel {
+  width: min(85vw, 20rem);
+  padding: calc(var(--tetris-gap) * 3);
+}
+.lava-end-panel button {
+  width: 100%;
+  min-height: var(--tetris-touch);
+}
+.lava-end-panel > .lava-end-actions {
+  gap: var(--tetris-gap);
+}

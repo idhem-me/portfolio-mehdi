@@ -55,7 +55,13 @@ export class RemoteLeaderboardStore {
       transaction.close();
     }
   }
-  async submit(owner: string, id: string, name: string, steps: unknown) {
+  async submit(
+    owner: string,
+    id: string,
+    name: string,
+    steps: unknown,
+    recordOwner = owner,
+  ) {
     name = name.normalize("NFKC").trim();
     if (!/^[\p{L}\p{N} ._-]{2,20}$/u.test(name))
       throw Error(
@@ -87,13 +93,22 @@ export class RemoteLeaderboardStore {
       if (claimed.rowsAffected !== 1) throw Error("Score déjà envoyé.");
       await transaction.execute({
         sql: `INSERT INTO scores VALUES (?,?,?,?,?) ON CONFLICT(owner) DO UPDATE SET name=excluded.name,score=excluded.score,lines=excluded.lines,created=excluded.created WHERE excluded.score>scores.score OR (excluded.score=scores.score AND excluded.lines>scores.lines)`,
-        args: [identity, name, game.score, game.lines, Date.now()],
+        args: [hash(recordOwner), name, game.score, game.lines, Date.now()],
       });
       await transaction.commit();
       return { score: game.score, lines: game.lines };
     } finally {
       transaction.close();
     }
+  }
+  async rank(owner: string) {
+    await this.initialize();
+    const result = await this.db.execute({
+      sql: "SELECT owner,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM scores WHERE created>? ORDER BY score DESC,lines DESC,created ASC LIMIT 20",
+      args: [Date.now() - 90 * 86400000],
+    });
+    const row = result.rows.find((row) => row.owner === hash(owner));
+    return row ? Number(row.rank) : null;
   }
   async list() {
     await this.initialize();

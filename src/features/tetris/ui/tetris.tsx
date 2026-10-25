@@ -50,7 +50,10 @@ import { sourceLicense } from "../engine/source-license";
 import { GameAudio } from "../feel/audio";
 import { soundEnabled, leaderboardEnabled } from "../flags";
 import { seeded, replayLimit } from "../engine/replay";
-import { Leaderboard, SubmitScore, type RankedRun } from "./leaderboard";
+import { Leaderboard, type RankedRun } from "./leaderboard";
+import { PlayerIdentityProvider } from "./player-identity";
+import { GameOver } from "./game-over";
+import { clearDraft, recoverDraft, type ScoreDraft } from "../auth/draft";
 import "./game.css";
 const controls = [
   ["left", "Gauche", "←", ArrowLeft],
@@ -82,11 +85,12 @@ function Score({ value, reduced }: { value: number; reduced: boolean }) {
     </motion.div>
   );
 }
-export function Tetris({
+function TetrisGame({
   information = [],
 }: {
   information?: CaseStudySection[];
 }) {
+  const [recovered, setRecovered] = useState<ScoreDraft | null>(null);
   const audio = useRef<GameAudio | null>(null);
   const ranked = useRef<RankedRun | null>(null);
   const [preparing, setPreparing] = useState(false);
@@ -160,6 +164,12 @@ export function Tetris({
         ...readStore<Settings>("lava-settings", defaults),
       });
       setBest(readStore<number>("lava-best", 0));
+      const draft = recoverDraft();
+      if (draft) {
+        setRecovered(draft);
+        setExpanded(true);
+        setStatus("over");
+      }
     });
     return () => cancelAnimationFrame(raf);
   }, []);
@@ -196,6 +206,8 @@ export function Tetris({
   }, [stopRepeat]);
   const start = async () => {
     if (preparing) return;
+    clearDraft();
+    setRecovered(null);
     unlockAudio();
     setPreparing(true);
     ranked.current = null;
@@ -266,7 +278,10 @@ export function Tetris({
     );
     return () => clearTimeout(timer);
   }, [feedback]);
-  useEffect(() => bindKeyboard(root.current!, act, pause), [act, pause]);
+  useEffect(() => {
+    if (status !== "playing" && status !== "paused") return;
+    return bindKeyboard(root.current!, act, pause);
+  }, [act, pause, status]);
   useEffect(() => {
     const blur = () => {
       audio.current?.mute();
@@ -506,37 +521,6 @@ export function Tetris({
                     transition={{ duration: 0.45 }}
                   />
                 )}
-              {status === "over" ? (
-                <Card className="lava-cover">
-                  <h2>Encore une ?</h2>
-                  <p>
-                    {g.score} points · {g.lines} lignes · niveau {g.level}
-                  </p>
-                  <p>
-                    {g.pieces} pièces · {Math.floor(g.elapsed / 1000)} s ·
-                    Record {best}
-                  </p>
-                  {leaderboardEnabled && (
-                    <SubmitScore
-                      key={serial.current + "-" + g.pieces}
-                      run={ranked.current}
-                      onOpen={() => setLeaderboardOpen(true)}
-                    />
-                  )}
-                  <Button variant="accent" onClick={start} disabled={preparing}>
-                    Rejouer
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setExpanded(false);
-                      setStatus("ready");
-                    }}
-                  >
-                    Menu
-                  </Button>
-                </Card>
-              ) : null}
             </motion.div>
             <aside className="lava-side lava-side-right">
               <div>
@@ -584,6 +568,31 @@ export function Tetris({
           )}
         </>
       )}
+      {status === "over" && (
+        <GameOver
+          summary={
+            recovered?.summary ?? {
+              score: g.score,
+              lines: g.lines,
+              level: g.level,
+              pieces: g.pieces,
+              elapsed: g.elapsed,
+              best: Math.max(best, g.score),
+            }
+          }
+          run={recovered?.run ?? ranked.current}
+          initialName={recovered?.name}
+          preparing={preparing}
+          onReplay={start}
+          onMenu={() => {
+            clearDraft();
+            setRecovered(null);
+            setExpanded(false);
+            setStatus("ready");
+          }}
+          onLeaderboard={() => setLeaderboardOpen(true)}
+        />
+      )}
       {status === "paused" && (
         <Card className="lava-cover lava-pause">
           <h2>Pause</h2>
@@ -615,9 +624,9 @@ export function Tetris({
         {" "}
         <SheetContent className="lava-sheet z-[80]">
           <SheetHeader>
-            <SheetTitle>À votre rythme.</SheetTitle>
-            <SheetDescription>
-              Le plaisir de jouer, avec juste les effets qu’il vous faut.
+            <SheetTitle>Réglages</SheetTitle>
+            <SheetDescription className="sr-only">
+              Effets et commandes du jeu.
             </SheetDescription>
           </SheetHeader>
           <div className="lava-settings">
@@ -665,13 +674,37 @@ export function Tetris({
         </SheetContent>
       </Sheet>
       {leaderboardEnabled && (
-        <Leaderboard open={leaderboardOpen} onOpenChange={setLeaderboardOpen} />
+        <Leaderboard
+          open={leaderboardOpen}
+          onOpenChange={setLeaderboardOpen}
+          draft={
+            status === "over"
+              ? (recovered ??
+                (ranked.current
+                  ? {
+                      run: ranked.current,
+                      summary: {
+                        score: g.score,
+                        lines: g.lines,
+                        level: g.level,
+                        pieces: g.pieces,
+                        elapsed: g.elapsed,
+                        best: Math.max(best, g.score),
+                      },
+                      name: "",
+                    }
+                  : undefined))
+              : undefined
+          }
+        />
       )}
       <Sheet open={rulesOpen} onOpenChange={setRulesOpen}>
         <SheetContent className="lava-sheet z-[80]">
           <SheetHeader>
-            <SheetTitle>Règles et informations</SheetTitle>
-            <SheetDescription>Les repères pour jouer à Lava.</SheetDescription>
+            <SheetTitle>Règles</SheetTitle>
+            <SheetDescription className="sr-only">
+              Contrôles, score et crédits.
+            </SheetDescription>
           </SheetHeader>
           <div className="lava-settings text-sm">
             <h2 className="font-semibold">Contrôles</h2>
@@ -726,11 +759,19 @@ export function Tetris({
       />
       <span className="sr-only" aria-live="polite">
         {status === "over"
-          ? `Partie terminée. ${g.score} points.`
+          ? `Partie terminée. ${recovered?.summary.score ?? g.score} points.`
           : status === "paused"
             ? "Partie en pause."
             : ""}
       </span>
     </Card>
+  );
+}
+
+export function Tetris(props: { information?: CaseStudySection[] }) {
+  return (
+    <PlayerIdentityProvider>
+      <TetrisGame {...props} />
+    </PlayerIdentityProvider>
   );
 }

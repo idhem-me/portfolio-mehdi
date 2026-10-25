@@ -33,7 +33,13 @@ export class LeaderboardStore {
       .run(hash(id), hash(owner), seed, now);
     return { id, seed };
   }
-  submit(owner: string, id: string, name: string, steps: unknown) {
+  submit(
+    owner: string,
+    id: string,
+    name: string,
+    steps: unknown,
+    recordOwner = owner,
+  ) {
     name = name.normalize("NFKC").trim();
     if (!/^[\p{L}\p{N} ._-]{2,20}$/u.test(name))
       throw Error(
@@ -61,13 +67,22 @@ export class LeaderboardStore {
         .prepare(
           `INSERT INTO scores VALUES (?,?,?,?,?) ON CONFLICT(owner) DO UPDATE SET name=excluded.name,score=excluded.score,lines=excluded.lines,created=excluded.created WHERE excluded.score>scores.score OR (excluded.score=scores.score AND excluded.lines>scores.lines)`,
         )
-        .run(hash(owner), name, game.score, game.lines, Date.now());
+        .run(hash(recordOwner), name, game.score, game.lines, Date.now());
       this.db.exec("COMMIT");
     } catch (error) {
       this.db.exec("ROLLBACK");
       throw error;
     }
     return { score: game.score, lines: game.lines };
+  }
+  rank(owner: string) {
+    const rows = this.db
+      .prepare(
+        "SELECT owner,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM scores WHERE created>? ORDER BY score DESC,lines DESC,created ASC LIMIT 20",
+      )
+      .all(Date.now() - 90 * 86400000);
+    const row = rows.find((row) => row.owner === hash(owner));
+    return row ? Number(row.rank) : null;
   }
   list() {
     return this.db

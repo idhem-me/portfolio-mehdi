@@ -28,6 +28,7 @@ export function reportSupabaseFailure(
     "tetris_start_session",
     "tetris_read_session",
     "tetris_commit_score",
+    "tetris_commit_score_v2",
     "tetris_leaderboard",
   ]);
   console.error("[tetris:supabase]", {

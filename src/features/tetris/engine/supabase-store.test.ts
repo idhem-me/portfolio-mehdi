@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { test, mock } from "node:test";
 import {
   reportBackendFailure,
@@ -21,6 +22,14 @@ async function setup() {
   const sql = await readFile(migration, "utf8");
   await db.exec(sql);
   await db.exec(sql); // rerunning is safe
+  const googleSql = await readFile(
+    new URL(
+      "../../../../supabase/migrations/202610250002_tetris_google_records.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  await db.exec(googleSql);
   await db.exec("set role service_role");
   const calls: {
     name: string;
@@ -58,6 +67,19 @@ async function setup() {
             args.p_score,
             args.p_lines,
           ]);
+          rows = null;
+        } else if (name === "tetris_commit_score_v2") {
+          await db.query(
+            "select public.tetris_commit_score_v2($1,$2,$3,$4,$5,$6)",
+            [
+              args.p_id,
+              args.p_owner,
+              args.p_record_owner,
+              args.p_name,
+              args.p_score,
+              args.p_lines,
+            ],
+          );
           rows = null;
         } else if (name === "tetris_leaderboard")
           rows = (await db.query("select * from public.tetris_leaderboard()"))
@@ -297,4 +319,75 @@ test("private backend diagnostics never log secrets or raw provider errors", () 
   } finally {
     spy.mock.restore();
   }
+});
+
+test("Google records follow the verified account while replay sessions stay bound to their original browser", async () => {
+  const { db, store } = await setup();
+  try {
+    const a = await store.session("browser-one"),
+      b = await store.session("browser-two");
+    await assert.rejects(() =>
+      store.submit(
+        "wrong-browser",
+        a.id,
+        "Joueur",
+        finish(a.seed).steps,
+        "google:account",
+      ),
+    );
+    await store.submit(
+      "browser-one",
+      a.id,
+      "Joueur",
+      finish(a.seed).steps,
+      "google:account",
+    );
+    await store.submit(
+      "browser-two",
+      b.id,
+      "Joueur",
+      finish(b.seed).steps,
+      "google:account",
+    );
+    assert.equal((await store.list()).length, 1);
+    const c = await store.session("browser-three");
+    await store.submit("browser-three", c.id, "Invité", finish(c.seed).steps);
+    assert.equal((await store.list()).length, 2);
+    await db.exec("set role anon");
+    await assert.rejects(
+      () =>
+        db.query("select public.tetris_commit_score_v2('x','x','x','x',0,0)"),
+      /permission denied/,
+    );
+  } finally {
+    await db.close();
+  }
+});
+
+test("private top-20 rank uses owner, preserves ties and never matches a nickname", async () => {
+  const owner = createHash("sha256").update("player").digest("hex");
+  let rows = [
+    { owner: "other", score: 300, lines: 5 },
+    { owner: "tie", score: 200, lines: 3 },
+    { owner, score: 200, lines: 3 },
+  ];
+  const store = new SupabaseLeaderboardStore(
+    "https://test.supabase.co",
+    "sb_secret_test",
+    async (url, init) => {
+      const parsed = new URL(url);
+      assert.equal(parsed.pathname, "/rest/v1/tetris_scores");
+      assert.equal(parsed.searchParams.get("limit"), "20");
+      assert.equal(
+        parsed.searchParams.get("order"),
+        "score.desc,lines.desc,created.asc",
+      );
+      assert.equal(init.method, "GET");
+      return Response.json(rows);
+    },
+  );
+  assert.equal(await store.rank("player"), 2);
+  assert.equal(await store.rank("not-in-top"), null);
+  rows = [{ owner, score: 400, lines: 6 }];
+  assert.equal(await store.rank("player"), 1);
 });

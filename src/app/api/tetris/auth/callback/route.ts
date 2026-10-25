@@ -1,0 +1,32 @@
+import { NextRequest, NextResponse } from "next/server";
+import { gate } from "@/features/tetris/server/http";
+import { authClient, googleConfigured } from "@/features/tetris/server/auth";
+import { safeGamePath } from "@/features/tetris/auth/identity";
+export async function GET(request: NextRequest) {
+  const denied = gate(request);
+  if (denied) return denied;
+  const path = safeGamePath(request.cookies.get("lava-auth-return")?.value);
+  const origin = request.nextUrl.protocol + "//" + request.headers.get("host");
+  let success = false;
+  const context = googleConfigured() ? authClient(request) : null;
+  const code = request.nextUrl.searchParams.get("code");
+  if (context && code && !request.nextUrl.searchParams.has("error")) {
+    try {
+      const { error } = await context.client.auth.exchangeCodeForSession(code);
+      success = !error;
+    } catch {}
+  }
+  const response = NextResponse.redirect(
+    new URL(path + (success ? "?auth=success" : "?auth=error"), origin),
+    303,
+  );
+  response.cookies.set("lava-auth-return", "", {
+    path: "/api/tetris",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 0,
+  });
+  response.headers.set("Cache-Control", "private, no-store");
+  response.headers.set("Referrer-Policy", "no-referrer");
+  return context ? context.apply(response) : response;
+}

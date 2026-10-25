@@ -9,14 +9,18 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import type { Step } from "../engine/replay";
-export type RankedRun = { id: string; seed: number; steps: Step[] };
+import { clearDraft, type RankedRun, type ScoreDraft } from "../auth/draft";
+import { IdentityChoices, usePlayerIdentity } from "./player-identity";
+import { writeStore } from "../feel/config";
+export type { RankedRun } from "../auth/draft";
 export function Leaderboard({
   open,
   onOpenChange,
+  draft,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  draft?: ScoreDraft;
 }) {
   const [rows, setRows] = useState<
       { name: string; score: number; lines: number; rank: number }[] | null
@@ -48,21 +52,19 @@ export function Leaderboard({
       <SheetContent className="lava-sheet z-[80]">
         <SheetHeader>
           <SheetTitle>Classement général</SheetTitle>
-          <SheetDescription>
-            Marathon classique · les 20 meilleurs scores des 90 derniers jours.
-            Un record par navigateur.
-          </SheetDescription>
+          <SheetDescription>Les 20 meilleurs scores.</SheetDescription>
         </SheetHeader>
         <div className="lava-settings">
+          <IdentityChoices draft={draft} />
           {error ? (
             <>
-              <p role="alert">Le classement est momentanément indisponible.</p>
+              <p role="alert">Classement indisponible.</p>
               <Button onClick={() => setRetry((v) => v + 1)}>Réessayer</Button>
             </>
           ) : rows === null ? (
             <p role="status">Chargement…</p>
           ) : rows.length === 0 ? (
-            <p>Aucun score pour le moment. À vous d’ouvrir le bal.</p>
+            <p>Aucun score.</p>
           ) : (
             <ol className="space-y-4">
               {rows.map((row, i) => (
@@ -84,8 +86,8 @@ export function Leaderboard({
             </ol>
           )}
           <p className="text-xs text-muted-foreground">
-            Envoi volontaire après une partie. Pseudonyme public, sans compte.
-            Le record local reste indépendant.
+            Envoi volontaire après une partie, avec un pseudo ou Google. Le
+            record local reste indépendant.
           </p>
         </div>
       </SheetContent>
@@ -95,23 +97,42 @@ export function Leaderboard({
 export function SubmitScore({
   run,
   onOpen,
+  draft,
+  initialName,
+  onSubmitted,
 }: {
   run: RankedRun | null;
   onOpen: () => void;
+  draft?: ScoreDraft;
+  initialName?: string;
+  onSubmitted?: (rank: number | null | undefined) => void;
 }) {
-  const [name, setName] = useState(""),
+  const identity = usePlayerIdentity();
+  const [name, setName] = useState<string | undefined>(
+      initialName || undefined,
+    ),
     [state, setState] = useState(""),
     [pending, setPending] = useState(false),
     [done, setDone] = useState(false);
+  const publicName =
+    name ??
+    (identity.mode === "google" ? identity.auth.user?.displayName || "" : "");
   if (!run)
+    return <p className="text-xs text-muted-foreground">Partie non classée.</p>;
+  if (done)
     return (
-      <p className="text-xs text-muted-foreground">
-        Partie locale : jouez à nouveau pour rejoindre le classement.
-      </p>
+      <div className="lava-score-saved">
+        <span className="sr-only" role="status">
+          Score enregistré
+        </span>
+        <Button type="button" variant="outline" onClick={onOpen}>
+          Voir le classement
+        </Button>
+      </div>
     );
   return (
     <form
-      className="space-y-2 w-full max-w-64"
+      className="lava-score-form w-full space-y-3"
       onSubmit={async (e) => {
         e.preventDefault();
         if (pending || done) return;
@@ -121,13 +142,19 @@ export function SubmitScore({
           const r = await fetch("/api/tetris/leaderboard", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...run, name }),
+            body: JSON.stringify({
+              ...run,
+              name: publicName,
+              identity: identity.mode,
+            }),
             signal: AbortSignal.timeout(15000),
           });
           const data = await r.json();
           if (!r.ok) throw Error(data.error);
+          clearDraft();
+          writeStore("lava-nickname", publicName);
           setDone(true);
-          setState("Record pris en compte.");
+          onSubmitted?.(data.rank);
         } catch (error) {
           setState(
             error instanceof Error ? error.message : "Envoi impossible.",
@@ -137,25 +164,32 @@ export function SubmitScore({
         }
       }}
     >
+      <IdentityChoices
+        disabled={pending || done}
+        draft={draft ? { ...draft, name: publicName } : undefined}
+      />
       <label htmlFor="lava-pseudo" className="text-sm">
-        Votre pseudonyme public
+        {identity.mode === "google"
+          ? "Nom affiché au classement"
+          : "Votre pseudonyme public"}
       </label>
       <Input
         id="lava-pseudo"
         minLength={2}
         maxLength={20}
         required
-        value={name}
+        value={publicName}
         onChange={(e) => setName(e.target.value)}
         disabled={pending || done}
         autoComplete="nickname"
       />
-      <Button type="submit" disabled={pending || done}>
-        {pending
-          ? "Vérification…"
-          : done
-            ? "Score envoyé"
-            : "Envoyer mon score"}
+      <Button
+        type="submit"
+        variant="accent"
+        size="lg"
+        disabled={pending || done}
+      >
+        {pending ? "Vérification…" : done ? "Score envoyé" : "Valider"}
       </Button>
       <p role="status" className="text-xs">
         {state}

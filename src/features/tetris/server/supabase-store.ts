@@ -69,7 +69,13 @@ export class SupabaseLeaderboardStore {
     });
     return { id, seed };
   }
-  async submit(owner: string, id: string, name: string, steps: unknown) {
+  async submit(
+    owner: string,
+    id: string,
+    name: string,
+    steps: unknown,
+    recordOwner = owner,
+  ) {
     name = name.normalize("NFKC").trim();
     if (!/^[\p{L}\p{N} ._-]{2,20}$/u.test(name))
       throw Error(
@@ -90,14 +96,47 @@ export class SupabaseLeaderboardStore {
     const game = verifyReplay(Number(session.seed), steps);
     if (game.elapsed > Date.now() - Number(session.created) + 2000)
       throw Error("Durée de partie invalide.");
-    await this.rpc("tetris_commit_score", {
-      p_id: sessionId,
-      p_owner: identity,
-      p_name: name,
-      p_score: game.score,
-      p_lines: game.lines,
-    });
+    await this.rpc(
+      recordOwner === owner ? "tetris_commit_score" : "tetris_commit_score_v2",
+      {
+        ...(recordOwner === owner ? {} : { p_record_owner: hash(recordOwner) }),
+        p_id: sessionId,
+        p_owner: identity,
+        p_name: name,
+        p_score: game.score,
+        p_lines: game.lines,
+      },
+    );
     return { score: game.score, lines: game.lines };
+  }
+  /** Private owner lookup: hashes never leave the server; no new SQL migration. */
+  async rank(owner: string) {
+    const url = new URL("../tetris_scores", this.base);
+    url.searchParams.set("select", "owner,score,lines");
+    url.searchParams.set("created", "gt." + (Date.now() - 90 * 86400000));
+    url.searchParams.set("order", "score.desc,lines.desc,created.asc");
+    url.searchParams.set("limit", "20");
+    const response = await this.request(url.toString(), {
+      method: "GET",
+      headers: this.headers,
+      cache: "no-store",
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) throw Error("Classement indisponible.");
+    const rows = (await response.json()) as {
+      owner: string;
+      score: number;
+      lines: number;
+    }[];
+    const index = rows.findIndex((row) => row.owner === hash(owner));
+    if (index < 0) return null;
+    return (
+      rows.findIndex(
+        (row) =>
+          Number(row.score) === Number(rows[index].score) &&
+          Number(row.lines) === Number(rows[index].lines),
+      ) + 1
+    );
   }
   async list() {
     const rows =
