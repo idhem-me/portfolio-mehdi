@@ -176,8 +176,20 @@ export class Game {
     }
   }
   lock() {
-    for (const [x, y] of blocks(this.current))
+    const cells = blocks(this.current);
+    // Recolor only existing masses supporting this piece, before adding its cells.
+    const pending = cells.map(([x, y]) => [x, y + 1] as const);
+    const visited = new Set<number>();
+    while (pending.length) {
+      const [x, y] = pending.pop()!;
+      if (x < 0 || x >= 10 || y < 0 || y >= 22 || !this.board[y][x]) continue;
+      const key = y * 10 + x;
+      if (visited.has(key)) continue;
+      visited.add(key);
       this.board[y][x] = this.current.piece;
+      pending.push([x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]);
+    }
+    for (const [x, y] of cells) this.board[y][x] = this.current.piece;
     this.pieces++;
     this.emit("lock");
     const result = clear(this.board);

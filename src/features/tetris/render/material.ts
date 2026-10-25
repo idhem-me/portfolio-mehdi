@@ -1,4 +1,4 @@
-/** Visual identity only. Engine cells retain their original piece and occupancy. */
+/** Visual identity. Settled texture IDs start at 8, followed by the piece color index. */
 export const lavaMaterial = {
   settledId: 8,
   cycleSeconds: 32,

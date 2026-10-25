@@ -67,7 +67,7 @@ test("SVG fallback and reduced motion remain playable", async ({ page }) => {
   await expect(page.locator('[data-layer="settled"]')).toHaveCount(1);
   await expect(
     page.locator('[data-layer="settled"] path').first(),
-  ).toHaveAttribute("fill", /^url\(#/);
+  ).toHaveAttribute("fill", /^var\(--tetris-piece-[a-z]\)$/);
   await expect(page.locator("animateTransform")).toHaveCount(0);
   for (let i = 0; i < 35; i++) {
     if (

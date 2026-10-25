@@ -16,8 +16,7 @@ for(int i=0;i<9;i++){vec2 c=base+vec2(mod(float(i),3.)-1.,floor(float(i)/3.)-1.)
 if(t>.5)edge(p,c+vec2(tl,0.),c+vec2(1.-tr,0.),k);if(b>.5)edge(p,c+vec2(bl,1.),c+vec2(1.-br,1.),k);if(l>.5)edge(p,c+vec2(0.,tl),c+vec2(0.,1.-bl),k);if(r>.5)edge(p,c+vec2(1.,tr),c+vec2(1.,1.-br),k);
 if(tl>0.)arc(p,c+vec2(radius),vec2(-1.,-1.),radius,k);if(tr>0.)arc(p,c+vec2(1.-radius,radius),vec2(1.,-1.),radius,k);if(bl>0.)arc(p,c+vec2(radius,1.-radius),vec2(-1.,1.),radius,k);if(br>0.)arc(p,c+vec2(1.-radius),vec2(1.,1.),radius,k);
 if(inside>.5&&abs(c.x-base.x)<.1&&abs(c.y-base.y)<.1){vec2 d=p-c;if(tl>0.&&d.x<radius&&d.y<radius&&length(d-vec2(radius))>radius)signValue=1.;if(tr>0.&&d.x>1.-radius&&d.y<radius&&length(d-vec2(1.-radius,radius))>radius)signValue=1.;if(bl>0.&&d.x<radius&&d.y>1.-radius&&length(d-vec2(radius,1.-radius))>radius)signValue=1.;if(br>0.&&d.x>1.-radius&&d.y>1.-radius&&length(d-vec2(1.-radius))>radius)signValue=1.;}}
-if(chosen<.5)discard;if(best>5.){best=1.;nearest=p;}float sd=best*signValue;float melting=texture2D(uGrid,(clamp(base,vec2(0.),vec2(9.,19.))+.5)/vec2(10.,20.)).a*uMelt;sd+=melting*.45;float shape=(1.-smoothstep(-.02,.02,sd))*(1.-melting);float alpha=shape;if(alpha<.008)discard;vec3 color=vec3(0.);for(int i=0;i<7;i++)if(abs(chosen-float(i+1))<.1)color=uColors[i];
-if(chosen>${(lavaMaterial.settledId - 0.5).toFixed(1)}){float flow=.5+.5*sin(p.x*.18+p.y*.09+uTime*${((2 * 3.14159265) / lavaMaterial.cycleSeconds).toFixed(6)});float sheen=.5+.5*cos(p.x*.12-p.y*.08-uTime*${((2 * 3.14159265) / lavaMaterial.cycleSeconds).toFixed(6)});color=mix(uColors[0],uColors[5],flow*${lavaMaterial.cyanAmount.toFixed(2)});color=mix(color,uColors[4],sheen*${lavaMaterial.pinkAmount.toFixed(2)});}
+if(chosen<.5)discard;if(best>5.){best=1.;nearest=p;}float sd=best*signValue;float melting=texture2D(uGrid,(clamp(base,vec2(0.),vec2(9.,19.))+.5)/vec2(10.,20.)).a*uMelt;sd+=melting*.45;float shape=(1.-smoothstep(-.02,.02,sd))*(1.-melting);float alpha=shape;if(alpha<.008)discard;vec3 color=vec3(0.);for(int i=0;i<7;i++)if(abs(chosen-float(i+1))<.1||abs(chosen-float(i+8))<.1)color=uColors[i];
 // Deep inside a solid mass, nearest equals p: keep its normal finite.
 float rim=1.-smoothstep(0.,.3,-sd);vec2 delta=p-nearest;vec2 normal=delta/max(length(delta),.001)*signValue;vec3 n=normalize(vec3(normal*rim*.95,1.));
 float spec=pow(max(dot(n,normalize(vec3(-.45,-.75,1.))),0.),42.);float core=smoothstep(.02,.58,-sd);float wave=.5+.5*sin(p.x*.5+p.y*.23+uTime*.18);float bubble=1.-smoothstep(.035,.075,length(vec2(fract(p.x*1.7)-.5,fract(p.y*.65+uTime*.07)-.5)));
@@ -151,7 +150,8 @@ export function createLava(canvas: HTMLCanvasElement) {
         board.slice(2).forEach((row, y) =>
           row.forEach((c, x) => {
             if (c) {
-              pixels[(y * 10 + x) * 4] = lavaMaterial.settledId;
+              pixels[(y * 10 + x) * 4] =
+                PIECE_NAMES.indexOf(c) + lavaMaterial.settledId;
               if (melting && clearing!.rows.includes(y + 2))
                 pixels[(y * 10 + x) * 4 + 3] = 255;
             }
