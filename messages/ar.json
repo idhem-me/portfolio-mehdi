@@ -18,9 +18,11 @@
     "label": "اللغة",
     "switchTo": "التبديل إلى {language}"
   },
+  "aboutTabs": {
+    "career": "المسار المهني"
+  },
   "home": {
-    "ctaPath": "اكتشف مهنتي",
-    "ctaContact": "تواصل معي",
+    "ctaPlay": "العب",
     "freelanceOn": "عمل حر عبر",
     "productDesignerAtWorldline": "مصمم منتجات في Worldline",
     "gravityPlay": "المسني",

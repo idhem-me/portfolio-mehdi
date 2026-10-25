@@ -18,9 +18,11 @@
     "label": "语言",
     "switchTo": "切换至{language}"
   },
+  "aboutTabs": {
+    "career": "经历"
+  },
   "home": {
-    "ctaPath": "了解我的职业",
-    "ctaContact": "联系我",
+    "ctaPlay": "开始游戏",
     "freelanceOn": "自由职业平台",
     "productDesignerAtWorldline": "Worldline 产品设计师",
     "gravityPlay": "点我",
