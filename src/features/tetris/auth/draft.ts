@@ -1,5 +1,10 @@
 import { replayLimit, type Step } from "../engine/replay";
-export type RankedRun = { id: string; seed: number; steps: Step[] };
+export type RankedRun = {
+  id: string;
+  seed: number;
+  steps: Step[];
+  opening?: boolean;
+};
 export type GameSummary = {
   score: number;
   lines: number;
@@ -8,11 +13,26 @@ export type GameSummary = {
   elapsed: number;
   best: number;
 };
-export type ScoreDraft = { run: RankedRun; summary: GameSummary; name: string };
+export type ScoreDraft = {
+  run: RankedRun;
+  summary: GameSummary;
+  name: string;
+  recipient?: string;
+};
 const key = "lava-pending-score-v1";
 type StoragePort = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 export function saveDraft(draft: ScoreDraft, storage?: StoragePort) {
   try {
+    const source = storage ?? sessionStorage;
+    try {
+      const previous = JSON.parse(source.getItem(key) || "null");
+      const recipient =
+        previous?.draft?.run?.id === draft.run.id
+          ? previous.draft.recipient
+          : undefined;
+      if (typeof recipient === "string" && /^[a-f0-9]{64}$/.test(recipient))
+        draft = { ...draft, recipient };
+    } catch {}
     const payload = JSON.stringify({ created: Date.now(), draft });
     if (payload.length > 2200000) return false;
     (storage ?? sessionStorage).setItem(key, payload);
@@ -21,24 +41,33 @@ export function saveDraft(draft: ScoreDraft, storage?: StoragePort) {
     return false;
   }
 }
-export function clearDraft(storage?: StoragePort) {
+export function clearDraft(storage?: StoragePort, runId?: string) {
   try {
-    (storage ?? sessionStorage).removeItem(key);
+    const source = storage ?? sessionStorage;
+    if (
+      runId &&
+      JSON.parse(source.getItem(key) || "null")?.draft?.run?.id !== runId
+    )
+      return;
+    source.removeItem(key);
   } catch {}
 }
 export function recoverDraft(storage?: StoragePort): ScoreDraft | null {
   try {
     const source = storage ?? sessionStorage,
       raw = source.getItem(key);
-    source.removeItem(key);
+
     if (!raw || raw.length > 2200000) return null;
     const value = JSON.parse(raw),
       d = value.draft as ScoreDraft;
     if (
       !Number.isFinite(value.created) ||
-      Date.now() - value.created > 1800000 ||
+      Date.now() - value.created > 86400000 ||
       value.created > Date.now() + 5000 ||
       !d ||
+      (d.recipient !== undefined &&
+        (typeof d.recipient !== "string" ||
+          !/^[a-f0-9]{64}$/.test(d.recipient))) ||
       !d.run ||
       !d.summary ||
       typeof d.name !== "string" ||

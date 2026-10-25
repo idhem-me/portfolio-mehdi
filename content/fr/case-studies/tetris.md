@@ -1,7 +1,7 @@
 ---
 {
   "slug": "tetris",
-  "title": "Lava — Tetris",
+  "title": "Tetris",
   "tagline": "Transformer un classique en une matière que l’on a envie de toucher.",
   "backLabel": "Réalisations",
   "meta": {

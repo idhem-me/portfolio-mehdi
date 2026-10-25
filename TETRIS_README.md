@@ -1,6 +1,6 @@
-# Lava — version locale
+# Tetris — version locale
 
-Travail local sur `feature/tetris`, sans push/déploiement ni modification de main. Aucune fonctionnalité V2 développée ; Classement est un bouton désactivé.
+Travail local sur `feature/tetris-v2`, sans nouveau push ni déploiement pendant cette tâche. Les profils et la sauvegarde automatique décrits plus bas réutilisent le classement et l’authentification Google déjà présents.
 
 ## Prévisualisation
 
@@ -10,10 +10,10 @@ npm run dev -- --hostname 0.0.0.0 --port 3000
 ```
 
 - Jeux : http://localhost:3000/jeux
-- Lava : http://localhost:3000/jeux/tetris
+- Tetris : http://localhost:3000/jeux/tetris
 - Rejouer l’onboarding : http://localhost:3000/jeux/tetris?resetOnboarding — **développement uniquement**, paramètre consommé au chargement.
 
-`.env.local` ignoré par Git contient `NEXT_PUBLIC_ENABLE_TETRIS=true`. Sans variable ou avec `false`, la navigation Jeux est absente et `/jeux`, `/jeux/tetris`, ainsi que l’ancienne URL, renvoient HTTP 404. Redémarrer après changement de flag et reconstruire en production locale. L’ancienne URL `/realisations/tetris` redirige en 308 vers `/jeux/tetris` seulement si le jeu est activé. Lava ne figure plus dans les réalisations, dans aucune langue.
+`.env.local` ignoré par Git contient `NEXT_PUBLIC_ENABLE_TETRIS=true`. Sans variable ou avec `false`, la navigation Jeux est absente et `/jeux`, `/jeux/tetris`, ainsi que l’ancienne URL, renvoient HTTP 404. Redémarrer après changement de flag et reconstruire en production locale. L’ancienne URL `/realisations/tetris` redirige en 308 vers `/jeux/tetris` seulement si le jeu est activé. Tetris apparaît dans la section Jeux et reste absent des Réalisations.
 
 La liste et la page du jeu restent en noindex. Aucun sitemap n’existe dans le dépôt : aucune route Jeux n’est ajoutée à un sitemap. Le binding `0.0.0.0` évite une boucle locale Next/next-intl ; il permet aussi l’accès depuis le réseau local.
 
@@ -67,7 +67,6 @@ Ordre du bandeau : Pause, Réglages, Quitter. L’effacement de quatre lignes af
 
 Les cellules posées partagent une seule matière : violet lumineux dominant, reflets cyan/rose sur un cycle doux de 32 secondes. La pièce active et les previews restent colorées. Les vraies cases vides restent visibles et le moteur ne change pas. Réglages : render/material.ts ; rendu WebGL et fallback SVG cohérents. Captures actualisées dans docs/tetris/v4.
 
-
 ## V2 : son et classement
 
 Branche `feature/tetris-v2`. Flags indépendants (false par défaut dans `.env.example`) :
@@ -80,9 +79,9 @@ NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD=true
 
 Redémarrer le dev server ou reconstruire après changement des flags publics. Le son reste **Off** pour une première visite ; un seul toggle On / Off dans Réglages, aucun volume. Les fréquences, enveloppes, gain et limites sont dans `src/features/tetris/feel/audio.ts`. Vérifier le volume réel et les interruptions sur iPhone physique avant d’ajuster le gain.
 
-Le classement fonctionne sur un serveur Node avec disque persistant (SQLite intégré ; Node 22.13+ requis). Fichier ignoré par Git : `.local/tetris/leaderboard.sqlite`, chemin personnalisable via `TETRIS_DB_PATH`. Le top 20 affiche les records de moins de 90 jours. Un cookie anonyme distingue les navigateurs ; effacer les cookies crée une nouvelle identité. Les scores ne sont envoyés qu’après une fin de partie et un choix explicite de pseudonyme. La première partie guidée est exclue. Les enregistrements générés par les tests sont de vraies parties de test, pas des joueurs réels.
+Le top 20 public affiche les records de moins de 90 jours. Les envois manuels sans profil restent disponibles ; avec un profil local, les parties terminées sont automatiquement vérifiées puis enregistrées dans un historique privé, distinct du classement public. Les comptes Google gardent leur identité et leurs records existants. La première partie guidée reste exclue du classement Google. Les enregistrements générés par les tests sont des données de test, pas des joueurs réels.
 
-Sur **Vercel**, activer le jeu et le son au build et au runtime, mais conserver `NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD=false` : il faut connecter une base distante durable avant de publier ce classement. Ne pas utiliser `/tmp` comme stockage permanent. `.env.local` et les fichiers SQLite ne sont ni commités ni téléversés.
+Sur **Vercel**, le classement doit utiliser le backend Supabase configuré et les migrations à jour ; ne pas activer son flag si la migration 003 n’a pas été appliquée. Les secrets Supabase restent exclusivement côté serveur. `.env.local` et les fichiers SQLite ne sont ni commités ni téléversés.
 
 La croix en jeu ouvre Pause. Reprendre conserve la partie ; Quitter (bouton destructif) l’abandonne et retourne au menu. Les raccourcis P et Échap restent disponibles. Les pages restent en noindex.
 
@@ -94,10 +93,34 @@ Le backend persistant du classement est maintenant intégré via Turso/libSQL. C
 
 ## Supabase (backend recommandé avec votre compte existant)
 
-L’adaptateur Supabase est intégré. Appliquer la migration SQL de `supabase/migrations/`, configurer `SUPABASE_URL` et `SUPABASE_SECRET_KEY` exclusivement côté serveur dans Vercel, puis activer le flag du classement et reconstruire. Le backend Supabase est prioritaire sur Turso si ses variables sont présentes. Le mode local SQLite reste disponible sans configuration distante. Voir [le guide Supabase](docs/tetris/LEADERBOARD_SETUP.md) pour les étapes exactes. Aucun accès à votre projet Supabase n’a encore été fourni : la préparation du code ne signifie pas que la base est connectée.
+L’adaptateur Supabase est intégré. Appliquer les migrations 001, 002 puis 003, configurer `SUPABASE_URL` et `SUPABASE_SECRET_KEY` exclusivement côté serveur dans Vercel, puis reconstruire. Le backend Supabase est prioritaire sur Turso si ses variables sont présentes. Voir [le guide Supabase](docs/tetris/LEADERBOARD_SETUP.md) pour les étapes exactes.
 
 ## Game over, choix d’identité et rendu verre
 
-L’écran Game over est plein écran et dispose du récapitulatif, de Rejouer, du retour Menu et de l’envoi volontaire sous pseudo ou compte Google. Le parcours Google conserve la partie pendant la redirection ; l’activation réelle du fournisseur est détaillée dans [GOOGLE_AUTH_SETUP.md](docs/tetris/GOOGLE_AUTH_SETUP.md).
+L’écran Game over propose le récapitulatif et la relance. Sans profil joueur, l’envoi public au pseudo ou avec Google reste volontaire. Avec un profil, la sauvegarde est automatique ; les scores de profil local restent privés, tandis que Google conserve le classement public. La configuration du fournisseur est détaillée dans [GOOGLE_AUTH_SETUP.md](docs/tetris/GOOGLE_AUTH_SETUP.md).
 
 Le halo extérieur du plateau a été supprimé. Le titre et les actions occupent le haut des colonnes sur desktop/tablette, tandis que les petits écrans conservent des cibles tactiles utilisables. Le néon intérieur, les reflets de verre et leur intensité se règlent dans `src/features/tetris/render/material.ts`. WebGL et fallback SVG partagent cette intention de matière ; les menus et Game over restent dans la DA neutre du portfolio. Captures de la version courante : `docs/tetris/v5/`.
+
+## Profils joueurs et sauvegarde automatique
+
+La même icône avatar en haut de `/jeux` et dans Tetris ouvre une popup pour le pseudo et la photo. Le profil est lié à un cookie HttpOnly serveur et partagé entre les deux interfaces. Les fichiers acceptés sont JPEG, PNG ou WebP ; ils sont réduits à 512 px et 180 Ko avant envoi. La photo peut être retirée.
+
+Avec un profil local, chaque partie terminée est rejouée et validée par le serveur puis conservée dans l’historique privé local, sans publication au classement Google. Si le navigateur est hors ligne, un petit nombre de runs est mis en file et retenté au retour du réseau. Avec Google authentifié, l’identité Google et le classement général existant sont conservés ; les parties admissibles sont envoyées automatiquement au compte. Aucun rapprochement d’identités ne se fait par pseudo.
+
+Pour le backend Supabase, appliquer aussi `supabase/migrations/202610250003_tetris_local_profiles.sql` après les migrations 001 et 002. Cette migration ajoute l’avatar Google et crée le stockage privé des profils/historiques. Elle n’est pas appliquée automatiquement depuis l’application. Les anciens records restent en place ; ils affichent l’avatar par défaut lorsqu’aucune photo n’avait été enregistrée.
+
+L’accueil et la carte de `/jeux` dessinent les formes à partir de `PieceShape`, donc reprennent directement les couleurs et matières actuelles du plateau. Les noms techniques et clés `lava-*` sont conservés pour compatibilité ; seul le nom affiché est « Tetris ».
+
+## Correction identité / Game over (25 octobre 2026)
+
+Le bouton Google est désormais rendu par Google Identity Services, via un composant partagé entre Profil joueur et Game over. Le jeton est échangé côté serveur avec `signInWithIdToken` dans **le même projet Supabase Auth** ; nonce aléatoire en cookie HttpOnly et empreinte SHA-256 transmise à Google. Aucun token de session n’est stocké dans le navigateur. Le flux OAuth PKCE historique reste compatible pour ses retours existants.
+
+Configurer `GOOGLE_CLIENT_ID` avec **le Client ID Web déjà déclaré dans le fournisseur Google Supabase**, puis autoriser les origines JavaScript exactes du site et du développement dans Google Cloud. Aucun deuxième client OAuth à créer. Les variables Supabase du guide Google restent nécessaires. Le bouton signale son indisponibilité si la configuration ou le script externe manque.
+
+Appliquer après 001–003 la migration additive `supabase/migrations/202610250004_tetris_identity_receipts.sql`. Elle ajoute des confirmations privées par partie pour des nouvelles tentatives idempotentes, sans effacer les anciens scores ni profils. Les personnalisations Google utilisent la table de profils existante sous l’identifiant de compte ; le profil local du navigateur reste distinct et réapparaît après déconnexion. Aucun rapprochement par pseudo.
+
+Game over : un profil local ou une identité Google validée suffit à déclencher la sauvegarde automatique. Un joueur anonyme choisit un pseudo (création du profil persistant puis sauvegarde privée) ou Google (sauvegarde automatique au compte, sauf partie guidée). Le brouillon et le replay restent dans sessionStorage jusqu’à confirmation, dans la limite de validité serveur de 24 h. La file locale est liée à l’identité destinataire ; un changement de compte bloque l’attribution et conserve le score en attente. Les anciens scores publics invités restent lisibles, mais le nouveau parcours pseudo crée un profil privé.
+
+La sidebar conserve Sheet/Avatar/Input/Button et des espacements dédiés, indépendants des grands contrôles des réglages. Enregistrer utilise explicitement `primary`, alias compatible des tokens neutres du variant `default`. Le bouton photo secondaire utilise les dimensions compactes du design system, avec les cibles tactiles mobiles conservées.
+
+Les parcours navigateur Google émulent uniquement la frontière du SDK Google et l’échange de jeton : ils ne certifient pas une connexion personnelle auprès du fournisseur. Utiliser `TETRIS_TEST_BASE_URL=http://localhost:3001` pour vérifier une preview sur un autre port. Les tests réels SQLite/libSQL/PostgreSQL couvrent les transactions et l’absence de doublons.

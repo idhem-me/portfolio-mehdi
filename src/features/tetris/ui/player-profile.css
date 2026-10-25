@@ -1,0 +1,29 @@
+.player-profile-sheet[data-slot="sheet-content"] {
+  gap: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.player-profile-sheet [data-slot="sheet-header"] {
+  gap: calc(var(--spacing) * 2);
+  padding: calc(var(--spacing) * 6);
+  padding-inline-end: calc(var(--spacing) * 16);
+}
+.player-profile-sheet [data-slot="sheet-description"] {
+  line-height: 1.5;
+}
+.player-profile-form {
+  display: grid;
+  gap: calc(var(--spacing) * 4);
+  padding: calc(var(--spacing) * 2) calc(var(--spacing) * 6)
+    calc(var(--spacing) * 6);
+}
+.player-profile-form > label {
+  margin-bottom: calc(var(--spacing) * -2);
+  font-size: var(--control-text);
+}
+.player-profile-form > button {
+  width: 100%;
+}

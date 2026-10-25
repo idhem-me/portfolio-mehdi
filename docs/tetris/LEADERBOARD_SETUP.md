@@ -8,9 +8,9 @@ Dans votre projet Supabase existant, ouvrir **SQL Editor → New query**, coller
 
 [`supabase/migrations/202610250001_tetris_leaderboard.sql`](../../supabase/migrations/202610250001_tetris_leaderboard.sql)
 
-Puis cliquer **Run**. La migration peut être réexécutée. Elle crée uniquement les tables préfixées `tetris_` et les quatre fonctions du classement ; elle ne modifie pas les tables d’une autre application.
+Puis cliquer **Run**. Pour conserver Google déjà configuré, appliquer ensuite `202610250002_tetris_google_records.sql`, puis `202610250003_tetris_local_profiles.sql` afin d’activer les profils, les historiques privés et les avatars Google. Ces migrations ne suppriment aucun record existant. Elles peuvent être exécutées dans l’ordre depuis SQL Editor.
 
-Les tables ont RLS activé. Les rôles navigateur `anon` et `authenticated` ne peuvent ni les lire ni appeler les fonctions. Seul le serveur Next.js, avec la clé secrète du projet, y accède. Le serveur rejoue une partie avant de soumettre un résultat ; PostgreSQL assure l’enregistrement atomique et empêche un double envoi. La première partie guidée reste hors classement.
+Les tables ont RLS activé. Les rôles navigateur `anon` et `authenticated` ne peuvent ni les lire ni appeler les fonctions. Seul le serveur Next.js, avec la clé secrète du projet, y accède. Le serveur rejoue une partie avant de soumettre un résultat ; PostgreSQL assure l’enregistrement atomique et empêche un double envoi. Les scores Google restent dans le classement public existant. Les nouveaux profils locaux et leurs parties restent dans des tables privées distinctes, hors du classement Google. La première partie guidée est conservée uniquement dans l’historique local.
 
 ## 2. Configurer Vercel
 
@@ -18,11 +18,11 @@ Récupérer **Project URL** et une **Secret API key** (`sb_secret_…`) dans le 
 
 Dans Vercel → projet **portfolio-mehdi** → **Settings → Environment Variables**, pour **Production** :
 
-| Variable | Valeur |
-| --- | --- |
-| `SUPABASE_URL` | `https://votre-projet.supabase.co` |
-| `SUPABASE_SECRET_KEY` | La clé secrète Supabase, enregistrée comme secret |
-| `NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD` | Modifier `false` en `true` |
+| Variable                                | Valeur                                            |
+| --------------------------------------- | ------------------------------------------------- |
+| `SUPABASE_URL`                          | `https://votre-projet.supabase.co`                |
+| `SUPABASE_SECRET_KEY`                   | La clé secrète Supabase, enregistrée comme secret |
+| `NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD` | Modifier `false` en `true`                        |
 
 Alternative ancienne clé : utiliser `SUPABASE_SERVICE_ROLE_KEY` au lieu de `SUPABASE_SECRET_KEY`.
 
@@ -44,12 +44,12 @@ Vérifier ensuite :
 2. Terminer une partie classique après la première partie guidée, puis envoyer un score avec un pseudonyme.
 3. Vérifier depuis un autre téléphone que le score apparaît, puis qu’il reste présent après redéploiement.
 
-Le classement affiche les 20 premiers records de moins de 90 jours, avec un seul record par navigateur. Les pauses sont permises. Aucun compte joueur requis. Le cookie distingue les navigateurs, pas les personnes ; la validation des replays ne détecte pas tous les bots.
+Le classement affiche les 20 premiers records de moins de 90 jours, avec un seul record par identité Google ou navigateur invité historique. Les profils locaux sont liés au cookie HttpOnly et leurs scores ne sont pas publics. Les pauses sont permises. Aucun compte Google requis pour le profil local ; le cookie distingue les navigateurs, pas les personnes.
 
 ## Dépannage
 
 - HTTP 404 : le flag était désactivé lors du build ; modifier la valeur puis reconstruire.
-- HTTP 503 : vérifier Project URL, Secret API key, disponibilité du projet Supabase et exécution complète de la migration. Laisser le Data API Supabase actif pour ce backend REST/RPC.
+- HTTP 503 lors de la sauvegarde de profil ou d’un avatar : vérifier Project URL, Secret API key, disponibilité du projet Supabase et application des migrations 001, 002 et 003 dans cet ordre. Laisser le Data API Supabase actif pour ce backend REST/RPC.
 - Une clé publique est refusée par l’adaptateur ; utiliser une clé serveur secrète.
 - Si le classement est indisponible, la partie et son record local restent disponibles.
 - Pour désactiver le classement, remettre son flag à false et redéployer, sans supprimer les tables.
@@ -63,3 +63,7 @@ L’ancien adaptateur Turso reste disponible ; son [guide séparé](LEADERBOARD_
 ## Pseudo ou compte Google
 
 Le pseudo sans compte reste le parcours de base. L’option Google, la migration complémentaire et la configuration du fournisseur sont décrites dans [le guide Google](GOOGLE_AUTH_SETUP.md). Les scores restent vérifiés côté serveur dans les deux cas.
+
+## Confirmation des sauvegardes et profils Google
+
+Appliquer aussi `supabase/migrations/202610250004_tetris_identity_receipts.sql` après 003 avant d’utiliser cette version. Cette migration conserve les données existantes, ajoute des confirmations privées par session/identité et permet une nouvelle tentative après une réponse réseau perdue. Les rôles navigateur n’ont aucun accès aux confirmations. Les profils Google personnalisés et les profils locaux restent séparés ; aucune fusion par pseudonyme.

@@ -1,6 +1,10 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { reportSupabaseFailure } from "./diagnostics";
 import { verifyReplay } from "../engine/replay";
+import {
+  validateProfileAvatar,
+  validateProfileName,
+} from "../profile/validation";
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
 type RpcFetch = (url: string, init: RequestInit) => Promise<Response>;
@@ -75,12 +79,22 @@ export class SupabaseLeaderboardStore {
     name: string,
     steps: unknown,
     recordOwner = owner,
+    avatar: string | null = null,
   ) {
     name = name.normalize("NFKC").trim();
     if (!/^[\p{L}\p{N} ._-]{2,20}$/u.test(name))
       throw Error(
         "Pseudonyme : 2 à 20 lettres, chiffres, espaces, points ou tirets.",
       );
+    const receipts = await this.rpc<{ score: number; lines: number }[]>(
+      "tetris_score_receipt",
+      { p_id: hash(id), p_owner: hash(owner), p_target: hash(recordOwner) },
+    );
+    if (receipts[0])
+      return {
+        score: Number(receipts[0].score),
+        lines: Number(receipts[0].lines),
+      };
     const identity = hash(owner),
       sessionId = hash(id);
     const sessions = await this.rpc<
@@ -97,9 +111,11 @@ export class SupabaseLeaderboardStore {
     if (game.elapsed > Date.now() - Number(session.created) + 2000)
       throw Error("Durée de partie invalide.");
     await this.rpc(
-      recordOwner === owner ? "tetris_commit_score" : "tetris_commit_score_v2",
+      recordOwner === owner ? "tetris_commit_score" : "tetris_commit_score_v3",
       {
-        ...(recordOwner === owner ? {} : { p_record_owner: hash(recordOwner) }),
+        ...(recordOwner === owner
+          ? {}
+          : { p_record_owner: hash(recordOwner), p_avatar: avatar }),
         p_id: sessionId,
         p_owner: identity,
         p_name: name,
@@ -107,6 +123,64 @@ export class SupabaseLeaderboardStore {
         p_lines: game.lines,
       },
     );
+    return { score: game.score, lines: game.lines };
+  }
+  async profile(owner: string) {
+    const rows = await this.rpc<{ name: string; avatar: string | null }[]>(
+      "tetris_get_profile",
+      { p_owner: hash(owner) },
+    );
+    return rows[0] ?? null;
+  }
+  async saveProfile(owner: string, name: string, avatar: string | null) {
+    name = validateProfileName(name);
+    validateProfileAvatar(avatar);
+    const result = await this.rpc<{ name: string; avatar: string | null }[]>(
+      "tetris_save_profile",
+      { p_owner: hash(owner), p_name: name, p_avatar: avatar },
+    );
+    return result[0] ?? { name, avatar };
+  }
+  async submitLocal(
+    owner: string,
+    id: string,
+    steps: unknown,
+    opening = false,
+  ) {
+    const receipts = await this.rpc<{ score: number; lines: number }[]>(
+      "tetris_score_receipt",
+      {
+        p_id: hash(id),
+        p_owner: hash(owner),
+        p_target: "local:" + hash(owner),
+      },
+    );
+    if (receipts[0])
+      return {
+        score: Number(receipts[0].score),
+        lines: Number(receipts[0].lines),
+      };
+    const identity = hash(owner),
+      sessionId = hash(id);
+    const sessions = await this.rpc<
+      { seed: number; created: number; used: boolean }[]
+    >("tetris_read_session", { p_id: sessionId, p_owner: identity });
+    const session = sessions[0];
+    if (
+      !session ||
+      session.used ||
+      Date.now() - Number(session.created) > 86400000
+    )
+      throw Error("Session expirée ou déjà envoyée.");
+    const game = verifyReplay(Number(session.seed), steps, opening);
+    if (game.elapsed > Date.now() - Number(session.created) + 2000)
+      throw Error("Durée de partie invalide.");
+    await this.rpc("tetris_commit_local_score", {
+      p_id: sessionId,
+      p_owner: identity,
+      p_score: game.score,
+      p_lines: game.lines,
+    });
     return { score: game.score, lines: game.lines };
   }
   /** Private owner lookup: hashes never leave the server; no new SQL migration. */
@@ -139,14 +213,35 @@ export class SupabaseLeaderboardStore {
     );
   }
   async list() {
-    const rows =
-      await this.rpc<
-        { name: string; score: number; lines: number; rank: number }[]
-      >("tetris_leaderboard");
+    let rows: {
+      name: string;
+      score: number;
+      lines: number;
+      avatar: string | null;
+      rank: number;
+    }[];
+    try {
+      rows = await this.rpc<
+        {
+          name: string;
+          score: number;
+          lines: number;
+          avatar: string | null;
+          rank: number;
+        }[]
+      >("tetris_leaderboard_v3");
+    } catch {
+      const legacy =
+        await this.rpc<
+          { name: string; score: number; lines: number; rank: number }[]
+        >("tetris_leaderboard");
+      rows = legacy.map((row) => ({ ...row, avatar: null }));
+    }
     return rows.map((row) => ({
       name: row.name,
       score: Number(row.score),
       lines: Number(row.lines),
+      avatar: row.avatar ?? null,
       rank: Number(row.rank),
     }));
   }

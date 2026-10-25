@@ -1,5 +1,6 @@
 /* Additive game tokens. Theme, font, spacing, radii and controls inherit the portfolio. */
-.lava-game {
+.lava-game,
+.tetris-cover {
   --tetris-piece-t: #a32eff;
   --tetris-piece-j: #2554ff;
   --tetris-piece-l: #ef6500;
@@ -18,7 +19,8 @@
   --tetris-glow: 0 0 0 transparent;
   --tetris-line-duration: 420ms;
 }
-.dark .lava-game {
+.dark .lava-game,
+.dark .tetris-cover {
   --tetris-piece-t: #c35cff;
   --tetris-piece-j: #5780ff;
   --tetris-piece-l: #ff8b24;
@@ -381,6 +383,35 @@
   box-shadow: var(--tetris-shadow);
   background: color-mix(in oklch, var(--card), transparent 12%);
   backdrop-filter: blur(24px);
+}
+.lava-lobby-profile {
+  position: absolute;
+  z-index: 3;
+  top: max(var(--tetris-gap), env(safe-area-inset-top));
+  right: max(var(--tetris-gap), env(safe-area-inset-right));
+}
+.tetris-cover {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background:
+    radial-gradient(
+      ellipse at 50% 50%,
+      color-mix(in oklch, var(--tetris-piece-t) 18%, transparent),
+      transparent 65%
+    ),
+    var(--muted);
+}
+.tetris-cover > span {
+  position: absolute;
+  width: clamp(3rem, 9vw, 6.5rem);
+  filter: drop-shadow(
+    0 8px 18px color-mix(in oklch, var(--tetris-piece-t) 25%, transparent)
+  );
+}
+.tetris-cover .lava-mini {
+  width: 100%;
+  height: auto;
 }
 .lava-lobby-panel .lava-wordmark {
   margin-bottom: var(--tetris-gap);
@@ -1096,4 +1127,17 @@
 }
 .lava-end-panel > .lava-end-actions {
   gap: var(--tetris-gap);
+}
+
+/* Identity controls must fit alongside the title and the official Google button. */
+.lava-end-panel {
+  width: min(100%, calc(var(--spacing) * 104));
+  padding: calc(var(--spacing) * 6);
+}
+.lava-end-panel > [data-slot="card-header"] button {
+  width: var(--control-height-icon);
+  min-height: var(--control-height-icon);
+}
+.lava-end-content, .lava-end-content > * {
+  min-width: 0;
 }

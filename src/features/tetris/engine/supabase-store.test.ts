@@ -30,6 +30,23 @@ async function setup() {
     "utf8",
   );
   await db.exec(googleSql);
+  const localSql = await readFile(
+    new URL(
+      "../../../../supabase/migrations/202610250003_tetris_local_profiles.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  await db.exec(localSql);
+  const receiptsSql = await readFile(
+    new URL(
+      "../../../../supabase/migrations/202610250004_tetris_identity_receipts.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  await db.exec(receiptsSql);
+  await db.exec(receiptsSql);
   await db.exec("set role service_role");
   const calls: {
     name: string;
@@ -45,7 +62,14 @@ async function setup() {
       calls.push({ name, args, headers: new Headers(init.headers) });
       try {
         let rows: unknown;
-        if (name === "tetris_start_session") {
+        if (name === "tetris_score_receipt")
+          rows = (
+            await db.query(
+              "select * from public.tetris_score_receipt($1,$2,$3)",
+              [args.p_id, args.p_owner, args.p_target],
+            )
+          ).rows;
+        else if (name === "tetris_start_session") {
           await db.query("select public.tetris_start_session($1,$2,$3)", [
             args.p_id,
             args.p_owner,
@@ -68,9 +92,9 @@ async function setup() {
             args.p_lines,
           ]);
           rows = null;
-        } else if (name === "tetris_commit_score_v2") {
+        } else if (name === "tetris_commit_score_v3") {
           await db.query(
-            "select public.tetris_commit_score_v2($1,$2,$3,$4,$5,$6)",
+            "select public.tetris_commit_score_v3($1,$2,$3,$4,$5,$6,$7)",
             [
               args.p_id,
               args.p_owner,
@@ -78,7 +102,31 @@ async function setup() {
               args.p_name,
               args.p_score,
               args.p_lines,
+              args.p_avatar,
             ],
+          );
+          rows = null;
+        } else if (name === "tetris_leaderboard_v3")
+          rows = (
+            await db.query("select * from public.tetris_leaderboard_v3()")
+          ).rows;
+        else if (name === "tetris_get_profile")
+          rows = (
+            await db.query("select * from public.tetris_get_profile($1)", [
+              args.p_owner,
+            ])
+          ).rows;
+        else if (name === "tetris_save_profile")
+          rows = (
+            await db.query(
+              "select * from public.tetris_save_profile($1,$2,$3)",
+              [args.p_owner, args.p_name, args.p_avatar],
+            )
+          ).rows;
+        else if (name === "tetris_commit_local_score") {
+          await db.query(
+            "select public.tetris_commit_local_score($1,$2,$3,$4)",
+            [args.p_id, args.p_owner, args.p_score, args.p_lines],
           );
           rows = null;
         } else if (name === "tetris_leaderboard")
@@ -131,9 +179,10 @@ test("Supabase RPC + PostgreSQL migration verifies scores and prevents reused se
       lines: game.lines,
     });
     assert.equal((await store.list())[0].score, game.score);
-    await assert.rejects(() =>
-      store.submit("alice", session.id, "Alice", steps),
-    );
+    assert.deepEqual(await store.submit("alice", session.id, "Alice", steps), {
+      score: game.score,
+      lines: game.lines,
+    });
     const commit = calls.find((call) => call.name === "tetris_commit_score")!;
     assert.equal(commit.args.p_score, game.score);
     assert.notEqual(commit.args.p_id, session.id);
@@ -184,16 +233,22 @@ test("Supabase permissions deny browser roles and failed score upserts roll back
       "Alice",
       finish(session.seed).steps,
     );
-    await assert.rejects(
-      () =>
-        db.query("select public.tetris_commit_score($1,$2,$3,$4,$5)", [
-          args.p_id,
-          args.p_owner,
-          "Alice",
-          999999,
-          0,
-        ]),
-      /tetris_session_used/,
+    await db.query("select public.tetris_commit_score($1,$2,$3,$4,$5)", [
+      args.p_id,
+      args.p_owner,
+      "Alice",
+      999999,
+      0,
+    ]);
+    assert.notEqual((await store.list())[0].score, 999999);
+    await assert.rejects(() =>
+      store.submit(
+        "alice",
+        session.id,
+        "Other",
+        finish(session.seed).steps,
+        "google:other",
+      ),
     );
   } finally {
     await db.close();
@@ -341,6 +396,7 @@ test("Google records follow the verified account while replay sessions stay boun
       "Joueur",
       finish(a.seed).steps,
       "google:account",
+      "https://lh3.googleusercontent.com/avatar.png",
     );
     await store.submit(
       "browser-two",
@@ -350,6 +406,10 @@ test("Google records follow the verified account while replay sessions stay boun
       "google:account",
     );
     assert.equal((await store.list()).length, 1);
+    assert.equal(
+      (await store.list())[0].avatar,
+      "https://lh3.googleusercontent.com/avatar.png",
+    );
     const c = await store.session("browser-three");
     await store.submit("browser-three", c.id, "Invité", finish(c.seed).steps);
     assert.equal((await store.list()).length, 2);
@@ -358,6 +418,42 @@ test("Google records follow the verified account while replay sessions stay boun
       () =>
         db.query("select public.tetris_commit_score_v2('x','x','x','x',0,0)"),
       /permission denied/,
+    );
+  } finally {
+    await db.close();
+  }
+});
+
+test("local player profiles persist privately and their scores stay outside the Google leaderboard", async () => {
+  const { db, store } = await setup();
+  try {
+    const session = await store.session("local-browser");
+    const profile = await store.saveProfile(
+      "local-browser",
+      "Joueur Local",
+      null,
+    );
+    assert.equal(profile.name, "Joueur Local");
+    const run = finish(session.seed);
+    await store.submitLocal("local-browser", session.id, run.steps);
+    assert.equal((await store.profile("local-browser"))?.name, "Joueur Local");
+    assert.equal((await store.list()).length, 0);
+    const privateRows = await db.query(
+      "select owner,score from public.tetris_local_scores",
+    );
+    assert.equal(privateRows.rows.length, 1);
+    await assert.rejects(
+      () => store.saveProfile("local-browser", "x", null),
+      /Pseudo/,
+    );
+    await assert.rejects(
+      () =>
+        store.saveProfile(
+          "local-browser",
+          "Local",
+          "data:image/png;base64,AA==",
+        ),
+      /photo ne correspond pas/,
     );
   } finally {
     await db.close();

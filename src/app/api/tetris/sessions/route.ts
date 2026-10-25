@@ -1,9 +1,14 @@
 import { NextRequest } from "next/server";
-import { gate, player, json, failure } from "@/features/tetris/server/http";
+import { player, json, failure } from "@/features/tetris/server/http";
 import { store } from "@/features/tetris/server/store";
+import { tetrisEnabled } from "@/features/tetris/flags";
 export async function POST(request: NextRequest) {
-  const denied = gate(request, true);
-  if (denied) return denied;
+  if (!tetrisEnabled) return new Response("Not Found", { status: 404 });
+  if (
+    request.headers.get("origin") !==
+    request.nextUrl.protocol + "//" + request.headers.get("host")
+  )
+    return new Response("Forbidden", { status: 403 });
   try {
     const owner = player(request),
       response = json(await (await store()).session(owner));

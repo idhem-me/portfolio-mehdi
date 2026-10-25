@@ -22,16 +22,16 @@ export async function captureFlow(page: Page, theme: string, device: string) {
     "content",
     /noindex/,
   );
-  await expect(page.getByRole("link", { name: /Lava/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Tetris/ })).toBeVisible();
   await capture("jeux");
-  await page.getByRole("link", { name: /Lava/ }).click();
+  await page.getByRole("link", { name: /Tetris/ }).click();
   const ranking = page.getByRole("button", { name: /^Classement/ });
   if ((await ranking.textContent())?.includes("Bientôt"))
     await expect(ranking).toBeDisabled();
   else await expect(ranking).toBeEnabled();
   await expect(
-    page.getByRole("heading", { name: "Lava — Tetris", exact: true }),
-  ).toHaveText("Lava — Tetris");
+    page.getByRole("heading", { name: "Tetris", exact: true }),
+  ).toHaveText("Tetris");
   await capture("menu");
   await page.getByRole("button", { name: "Règles", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText("MIT");
@@ -63,7 +63,7 @@ export async function captureFlow(page: Page, theme: string, device: string) {
         .evaluateAll((buttons) =>
           buttons.map((button) => button.getAttribute("aria-label")),
         ),
-    ).toEqual(["Réglages", "Mettre en pause"]);
+    ).toEqual(["Créer mon profil joueur", "Réglages", "Mettre en pause"]);
     await expect(page.locator(".lava-side-right svg").first()).toHaveAttribute(
       "aria-label",
       "O",

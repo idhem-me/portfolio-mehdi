@@ -1,5 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { loadProfile, syncLocalScores } from "../profile/client-store";
+import { GoogleSignIn } from "./google-sign-in";
 import { Button } from "@/components/ui/button";
 import { leaderboardEnabled } from "../flags";
 import { saveDraft, type ScoreDraft } from "../auth/draft";
@@ -14,6 +16,7 @@ type Identity = {
   choose: (mode: "guest" | "google") => void;
   login: (draft?: ScoreDraft) => void;
   logout: () => void;
+  refresh: () => Promise<void>;
   message: string;
 };
 const Context = createContext<Identity | null>(null);
@@ -31,6 +34,16 @@ export function PlayerIdentityProvider({
     [message, setMessage] = useState("");
   const chosen = useRef(false);
   useEffect(() => {
+    void loadProfile().then(() => syncLocalScores());
+    const reload = () => void loadProfile(true).then(() => syncLocalScores());
+    window.addEventListener("online", reload);
+    window.addEventListener("focus", reload);
+    return () => {
+      window.removeEventListener("online", reload);
+      window.removeEventListener("focus", reload);
+    };
+  }, []);
+  useEffect(() => {
     if (!leaderboardEnabled) return;
     const abort = new AbortController();
     const url = new URL(location.href),
@@ -39,7 +52,10 @@ export function PlayerIdentityProvider({
       url.searchParams.delete("auth");
       history.replaceState(history.state, "", url);
     }
-    fetch("/api/tetris/auth", { signal: abort.signal, cache: "no-store" })
+    fetch("/api/tetris/auth", {
+      signal: AbortSignal.any([abort.signal, AbortSignal.timeout(10000)]),
+      cache: "no-store",
+    })
       .then(async (r) => {
         if (!r.ok) throw Error();
         return r.json();
@@ -56,6 +72,23 @@ export function PlayerIdentityProvider({
       });
     return () => abort.abort();
   }, []);
+  const refresh = async () => {
+    setAuth((state) => ({ ...state, loading: true }));
+    try {
+      const response = await fetch("/api/tetris/auth", {
+        cache: "no-store",
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!response.ok) throw Error("Connexion indisponible.");
+      const data = await response.json();
+      await loadProfile(true);
+      setAuth({ ...data, loading: false });
+      if (data.user) setMode("google");
+    } catch (error) {
+      setAuth((state) => ({ ...state, loading: false }));
+      throw error;
+    }
+  };
   const choose = (value: "guest" | "google") => {
     chosen.current = true;
     setMode(value);
@@ -77,17 +110,23 @@ export function PlayerIdentityProvider({
   const logout = async () => {
     setAuth((s) => ({ ...s, loading: true }));
     try {
-      const response = await fetch("/api/tetris/auth", { method: "POST" });
+      const response = await fetch("/api/tetris/auth", {
+        method: "POST",
+        signal: AbortSignal.timeout(10000),
+      });
       if (!response.ok) throw Error();
       setAuth((s) => ({ ...s, user: null, loading: false }));
       choose("guest");
+      await loadProfile(true);
     } catch {
       setAuth((s) => ({ ...s, loading: false }));
       setMessage("Déconnexion impossible pour le moment.");
     }
   };
   return (
-    <Context.Provider value={{ auth, mode, choose, login, logout, message }}>
+    <Context.Provider
+      value={{ auth, mode, choose, login, logout, refresh, message }}
+    >
       {children}
     </Context.Provider>
   );
@@ -104,7 +143,7 @@ export function IdentityChoices({
   draft?: ScoreDraft;
   disabled?: boolean;
 }) {
-  const { auth, mode, choose, login, logout, message } = usePlayerIdentity();
+  const { auth, mode, choose, logout, message } = usePlayerIdentity();
   return (
     <div className="lava-identity">
       <div
@@ -121,15 +160,7 @@ export function IdentityChoices({
         >
           Avec un pseudo
         </Button>
-        <Button
-          type="button"
-          variant={mode === "google" ? "secondary" : "outline"}
-          aria-pressed={mode === "google"}
-          disabled={disabled || auth.loading || !auth.googleAvailable}
-          onClick={() => (auth.user ? choose("google") : login(draft))}
-        >
-          Avec Google
-        </Button>
+        {!auth.user && <GoogleSignIn draft={draft} disabled={disabled} />}
       </div>
       {auth.user && (
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">

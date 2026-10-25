@@ -46,7 +46,7 @@ test("only verified Google identities choose account records; public suggestions
   assert.equal(suggestedNickname({ full_name: "Mehdi Designer" }), "Mehdi");
   assert.equal(suggestedNickname({}), "Joueur");
 });
-test("an ended game survives an OAuth redirect once, with no trusted score data", () => {
+test("an ended game survives retries until acknowledged, with no trusted score data", () => {
   const port = storage(),
     draft: ScoreDraft = {
       run: { id: "a".repeat(64), seed: 42, steps: ["hard", 16] },
@@ -62,7 +62,7 @@ test("an ended game survives an OAuth redirect once, with no trusted score data"
     };
   assert.equal(saveDraft(draft, port), true);
   assert.deepEqual(recoverDraft(port), draft);
-  assert.equal(recoverDraft(port), null);
+  assert.deepEqual(recoverDraft(port), draft);
   saveDraft(draft, port);
   clearDraft(port);
   assert.equal(recoverDraft(port), null);
@@ -80,4 +80,33 @@ test("blocked storage never redirects away from an unsaved game", () => {
     }),
     false,
   );
+});
+
+test("draft retries cannot erase or replace an already selected recipient", () => {
+  const port = storage();
+  const draft: ScoreDraft = {
+    run: { id: "a".repeat(64), seed: 1, steps: ["hard"] },
+    name: "Alice",
+    summary: { score: 1, lines: 0, level: 1, pieces: 1, elapsed: 0, best: 1 },
+    recipient: "b".repeat(64),
+  };
+  assert.equal(saveDraft(draft, port), true);
+  saveDraft({ ...draft, recipient: undefined }, port);
+  assert.equal(recoverDraft(port)?.recipient, draft.recipient);
+  saveDraft({ ...draft, recipient: "c".repeat(64) }, port);
+  assert.equal(recoverDraft(port)?.recipient, draft.recipient);
+});
+
+test("a late acknowledgement cannot delete a newer pending game", () => {
+  const port = storage();
+  const draft: ScoreDraft = {
+    run: { id: "b".repeat(64), seed: 1, steps: ["hard"] },
+    name: "Alice",
+    summary: { score: 1, lines: 0, level: 1, pieces: 1, elapsed: 0, best: 1 },
+  };
+  saveDraft(draft, port);
+  clearDraft(port, "a".repeat(64));
+  assert.deepEqual(recoverDraft(port), draft);
+  clearDraft(port, draft.run.id);
+  assert.equal(recoverDraft(port), null);
 });

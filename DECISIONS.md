@@ -19,55 +19,67 @@
 - L’audit npm retrouve une vulnérabilité transitive body-parser préexistante dans l’outillage ; pas de mise à jour globale des dépendances étrangères au jeu.
 
 ## P0 — isolation iPhone
+
 Comparaison main effectuée sur tous les fichiers partagés. Défaut exact trouvé : Tetris écrivait `body.style.overflow=hidden` et `html.style.overscrollBehavior=none` pendant tout état expanded (pause comprise), avec restauration d’un snapshot global à chaque changement de statut. Ce verrou global partage l’état de scroll avec les autres propriétaires (Sheet Radix) et n’est pas limité au jeu ; sa présence est confirmée, mais sa causalité sur le symptôme physique reste à confirmer. Suppression complète : aucun style global ni listener tactile global dans Lava ; le conteneur fixed gère touch-action et overscroll. Tous les tokens CSS Lava sont désormais hérités de .lava-game, pas :root/.dark. Le hook mobile partagé avait été modifié par rapport à main pour attendre une requestAnimationFrame ; remplacé par un abonnement matchMedia useSyncExternalStore pour ne pas dépendre du scheduling Safari. Sur WebKit iPhone 13, avant correction, l’accueil frais affichait bien le menu et Touche-moi : la disparition signalée sur l’iPhone physique n’a pas été reproduite sur cette navigation fraîche ; nous ne l’attribuons pas sans preuve à un listener inexistant. Le test ajoute explicitement les parcours avant/après partie et flag off/on pour couvrir les conditions de retour.
 
 ## 1 — Jeux
+
 Liste /jeux dupliquée depuis le template réalisations, même frontmatter JSON et cartes. Nouveau content/fr/jeux.md avec fallback éditorial existant. Lava retiré des sept fichiers réalisations. Navigation Jeux traduite et présente uniquement sous flag. Ancienne URL : 308 vers la nouvelle URL localisée quand activé, 404 sinon. Liste et jeu noindex, aucun ajout au sitemap. Proxy bloque toute la branche /jeux avant streaming lorsque désactivée.
 
 ## 2 — Menu du jeu
+
 Le h1, la tagline et les métadonnées restent accessibles/présents ; aucun récit visuel sous le jeu. Process et licence MIT complète consultables dans une Sheet Radix « Règles et informations ». Menu principal centré utilisant Card/Button/Badge du portfolio ; Classement est seulement un bouton désactivé Bientôt, sans fonctionnalité V2. GameplayBackground est un composant décoratif autonome remplaçable, respectant reduced motion et la visibilité.
 
 ## 3 — Plein écran et HUD
+
 Page /jeux/tetris déplacée dans le groupe de routes (game), hors du layout (site) et de son AppShell. Le header du portfolio n’est donc jamais monté sur cette page, et reste intact sur les autres pages. Retour au menu puis lien Jeux pour retrouver la navigation. Aucun sélecteur CSS visant le header partagé. Conteneur fixed 100dvh et safe areas uniquement local au jeu. HUD en badges : Réserve/Score/Lignes puis Record en bas à gauche, Ensuite et Niveau en bas à droite. Suppression de la légende redondante. Pause plein écran : seulement Pause, Reprendre et icône Quitter la partie.
 
 ## 4 — Matière et silhouettes
+
 Champ de distance de cellules jointives, en supprimant les coutures : les rectangles s’étendent uniquement dans leurs voisins de même couleur ; radius limité aux quadrants extérieurs. Éclairage intérieur via cœur blanc/pigment, dégradé de profondeur, ondulation et reflets de surface. Ghost, preview, réserve et fallback utilisent le même traceur d’union SVG (arêtes partagées supprimées, coins convexes arrondis, concavités franches). Aucun carré arrondi individuel ni trou central des pièces O. Fallback vectoriel continu avec gradients internes brillants.
 
 ## 5 — Récompenses et caméra
+
 Les références jointes ont été consultées puis archivées dans docs/tetris/references (le dossier annoncé était absent). Leur texte n’est pas repris. Fredoka, chargée uniquement sur la page de jeu via next/font, donne la silhouette bubble ; interface générale inchangée. Styles A doré et B irisé : contour clair, reflet haut, rayons, hachures et étoiles ; quatre libellés sans ponctuation pour éviter toute ambiguïté typographique. Un seul événement lineClear pilote la caméra, les gouttelettes multicolores (couleurs réelles de chaque cellule), les étincelles/halos, le texte et les haptiques. Les événements tetris/combo ne doublonnent pas la séquence. Aucun mouvement caméra hors effacement. Intensités/labels/durées/patterns dans feel/line-config.ts. Reduced motion : fondu de texte uniquement, pas de trajectoires, shake, zoom ni flash instantané (la contrainte commune la plus restrictive est retenue).
 
 ## 6 — Première partie
+
 Séquence de dix pièces O, O, L, Z, T, J, J, Z, T, I, testée par placements normaux (rotation/mouvement/hard drop), qui permet un puits à droite puis un Tetris. Aucun pré-remplissage du plateau, aucune assistance cachée ni changement du score. La séquence et le booléen enabled sont dans engine/opening.ts, avec un placement de référence vérifié. Le stockage tetris.onboardingDone est réclamé dès Jouer, même si la partie est abandonnée. Une deuxième partie utilise le 7-bag normal. Après le script, un sac entier commence ; seule sa première paire est échangée si nécessaire pour éviter I suivi immédiatement de I, sans changer la distribution. ?resetOnboarding est consommé uniquement en développement puis retiré de l’URL ; aucune backdoor de rendu/capture en production. Le moteur reste indépendant de localStorage, via injection de la séquence.
 
 ## Vérification V3 — revue visuelle
+
 Les captures ont révélé que la première union SDF supprimait les trous mais conservait des biseaux lumineux par cellule. Le shader final calcule la distance uniquement aux frontières exposées et aux arcs convexes extérieurs : normales et reflets ne voient plus les arêtes internes. La pause est un sibling du plateau, hors transformation caméra, avec fond opaque immédiat ; les contrôles sont cachés dessous. Une marge de caméra évite le recouvrement des boutons au zoom maximal. Les états 2/4 lignes des captures proviennent de placements réels, pas d’un mode de démonstration. Aucun hook de capture ni plateau injecté dans le code livré.
 
 ## Résultats finaux V3
+
 83 tests unitaires, neuf parcours navigateur activés et deux parcours flag off passent. Le flag off est vérifié sur un build de production local : menu + Touche-moi sur WebKit, absence de Jeux et de Lava dans réalisations, 404 dans quatre variantes de langue pour toutes les anciennes/nouvelles routes, sitemap sans jeu. Comparaison de source avec main vide sur les sept listes de réalisations, globals.css, MobileBrandBar et GravityPlayground ; aucun checkout de main. Lint zéro erreur (warning gaze-avatar préexistant), type-check et builds réussis. 28 captures demandées + deux de géométrie dans docs/tetris/v3. La preview est rétablie à true uniquement dans .env.local ; défaut versionné false.
 
 ## Retours suivants — P0 Safari iPhone / LAN
+
 Reproduction nouvelle, différente du simple localhost : WebKit iPhone sur http://192.168.1.12:3000 reçoit pointerdown/touchstart/pointerup/touchend/click sur Jouer, mais le handler React ne s’exécute pas (état ready, onboardingDone absent), même après trois taps. Le client journalise l’échec du WebSocket /_next/hmr (« cannot parse response »). Le même parcours sur localhost démarre et les vrais taps déplacent/posent les pièces. Le guide Next local allowedDevOrigins.md confirme le filtrage des origines dev hors localhost. Correction : autoriser uniquement le hostname et les IPv4 non internes de la machine, calculés dans next.config.ts ; aucune wildcard, aucun assouplissement des headers de production. Test WebKit sur l’adresse LAN réelle : premier tap, déplacement, hard drop et pause/reprise, sans clavier.
 Validation après correction : le même test WebKit sur la même IPv4 LAN passe dès le premier tap, puis déplacement, pose et pause/reprise fonctionnent, sans erreur JavaScript ni WebSocket. Le défaut localhost/LAN est donc désormais reproduit puis corrigé, au lieu de rester une hypothèse physique.
 
 ## Retours suivants — interface
+
 Priorité 2 : les Sheet Radix sont des portails, donc n’héritaient pas du --tetris-gap défini uniquement sur .lava-game ; gap/padding invalides devenaient nuls. Chaque panneau possède désormais sa classe lava-sheet et ses tokens locaux : 24 px de marge, interlignes confortables, rangées tactiles de réglage de 64 px et fermeture accessible avec safe areas. Aucun style du menu de navigation partagé n’est modifié. Priorité 3 : actions en jeu dans l’ordre Pause, Réglages, Quitter ; libellé quatre lignes remplacé par Tetris via la config. Les liens de retour à Jeux, au site depuis le playground et depuis le dashboard utilisent ArrowLeft de Lucide ; les flèches clavier restent dans la légende des contrôles uniquement.
 
 ## Retours suivants — masse posée
+
 Priorité 4 : toutes les cellules verrouillées partagent une identité de matière unique (8 dans la texture WebGL), indépendamment de leur type de pièce moteur. Le champ de distance supprime donc les frontières, coutures et petits jours entre couleurs différentes. Un violet dominant reçoit de légers reflets cyan/rose qui dérivent sur un cycle de 32 secondes, dans le même champ de couleur spatial pour toute la masse. La pièce active, la réserve et les previews gardent leurs sept couleurs. Le fallback SVG trace une seule union des cellules posées, avec le même dégradé irisé doucement animé. Reduced motion fige le fallback et ralentit le shader. Les vraies cases vides du plateau restent vides : aucune modification du score, des collisions ou de la lisibilité des trous à combler. Paramètres de matière : render/material.ts.
 
 Validation des retours : 83 tests unitaires, 10 parcours activés dont WebKit LAN, et 2 parcours flag false réussis. 38 captures dans docs/tetris/v4. Le test de padding attend la fin de l’animation Radix et mesure les deux bords dans la même frame pour éviter une fausse mesure liée au glissement.
 
 ## Roadmap V2 — planification seulement
+
 La demande de planification autorise un document, pas l’implémentation ou l’activation des fonctionnalités. V2_PLAN.md ordonne la consolidation matérielle, le son optionnel, le défi quotidien local, le leaderboard vérifié puis le duel privé. Le backend est différé jusqu’à validation du défi ; aucun fournisseur ni abonnement créé. La simulation reproductible et la version des règles sont des prérequis communs. L’onboarding n’entre pas dans les modes compétitifs. Tous les garde-fous locaux, flags et noindex sont conservés. Pas de dates promises : tailles relatives et critères de sortie par lot.
 
 ## Précision roadmap V2 — son et duels
-Son Off initialement, un seul bouton toggle On/Off, aucun slider de volume ; les gains internes restent un réglage de développement. Choix utilisateur mémorisé. Les explications de duel distinguent score en deux minutes et survie avec attaques ; seul le premier demeure dans le premier périmètre. Le matchmaking public est documenté comme une extension future : file par mode/version, niveau estimé, élargissement progressif, confirmation, serveur arbitre, gestion des absences et de la faible fréquentation. Aucun système audio ou multijoueur implémenté.
 
+Son Off initialement, un seul bouton toggle On/Off, aucun slider de volume ; les gains internes restent un réglage de développement. Choix utilisateur mémorisé. Les explications de duel distinguent score en deux minutes et survie avec attaques ; seul le premier demeure dans le premier périmètre. Le matchmaking public est documenté comme une extension future : file par mode/version, niveau estimé, élargissement progressif, confirmation, serveur arbitre, gestion des absences et de la faible fréquentation. Aucun système audio ou multijoueur implémenté.
 
 ## V2 — navigation de pause simplifiée
 
 La croix du bandeau ouvre désormais la pause, sans abandonner la partie. Le bouton à icône Pause du bandeau est supprimé ; le raccourci clavier et le bouton textuel Pause restent accessibles. L’écran présente, dans cet ordre, Pause, Reprendre et Quitter (variante destructive de la bibliothèque existante). Quitter coupe le son, abandonne la session de classement et retourne au menu. Le bouton Règles adopte la même variante outline que Classement et Réglages. Les parcours existants sont adaptés à ce passage obligatoire par la pause.
-
 
 ## V2 — périmètre et préparation Vercel
 
@@ -103,7 +115,6 @@ Pas d’accès Supabase connecté à cette session : la migration n’est pas ap
 
 Validation Supabase : 96 tests passent, incluant PostgreSQL, droits anon/authenticated, transaction annulée en cas d’échec d’upsert, consommation unique de session, anciennes clés service_role et priorité du backend. Lint et type-check passent ; le build utilise le flag de classement désactivé en attendant les identifiants du projet réel. Les déclarations Next générées en double ont été résolues en régénérant le cache, sans modifier les sources du framework ni le tsconfig.
 
-
 ## Diagnostic de l’activation Supabase en production
 
 Après activation du flag par le propriétaire, le panneau est accessible mais la lecture renvoie HTTP 503. L’export Vercel remplace les valeurs sensibles par un marqueur : leur absence d’URL analysable dans cet export ne prouve pas une mauvaise configuration réelle. Ajout de journaux privés limités à des codes de configuration, statut HTTP et code PostgREST/PostgreSQL. Aucune URL, clé, réponse brute ni stack n’est journalisée. Les messages publics restent génériques. Les contrôles d’accès n’inscrivent aucun score de test au classement.
@@ -128,10 +139,30 @@ L’ancien récapitulatif était enfermé dans le plateau étroit. Il est rempla
 
 Émission saturée à l’intérieur de la silhouette, reflets spéculaires resserrés, fresnel interne, caustiques lentes et reflet de surface. La masse posée demeure continue, irisée doucement et sans coutures entre cellules ; aucune modification de la grille moteur. Les aperçus, réserve et fallback SVG reçoivent un cœur lumineux et une couche de reflets diagonaux, avec un fin liseré de verre. Les intensités principales sont centralisées dans render/material.ts. La qualité adaptative et le ralentissement reduced-motion restent actifs. Cible 60 fps conservée, non revendiquée comme mesurée sur un téléphone physique.
 
-
 ## Hiérarchie Game over — exemple Figma 70:96
 
 La maquette a été consultée dans Figma via le navigateur (fichier Archives, nœud 70:96). Son exemple compact est adapté aux composants CardHeader/CardTitle/CardContent/CardFooter, Input et Button existants, sans reprise de composants Figma autonomes. Titre unique Game over, résultats en deux colonnes (Record/Classement puis Score/Lignes), nom public et validation, Rejouer en action principale, Menu discret. Suppression du wordmark redondant, du texte « Partie terminée / Encore une ? » et des explications décoratives. Pas de rang numérique inventé : Classement indique Aucun puis Enregistré après réponse du serveur. Les détails techniques restent dans la documentation. Le principe de texte utile et de hiérarchie claire s’applique aussi aux libellés Réglages/Règles et aux états vides/erreurs ; les textes éditoriaux du portfolio ne sont pas réécrits sans nécessité.
 
 ### Game over : validation et classement réel
+
 « Valider » est l’action principale accent, comme « Jouer ». Rejouer et Menu reprennent les boutons outline du menu, la largeur du panneau, ses espacements et ses cibles tactiles. Après validation, le serveur cherche le record du propriétaire dans les vingt entrées réellement affichées (ordre et ex æquo identiques au classement). Affichage « 1er », « 2e », etc., ou « Hors du top 20 ». Un ancien meilleur record conservé reste la référence. Aucun pseudonyme n’est utilisé comme identifiant. Une panne de lecture du rang n’annule pas un score déjà enregistré : « Indisponible ». La lecture Supabase utilise les permissions serveur existantes sur tetris_scores, sans migration supplémentaire.
+
+## Tetris — profils locaux et avatar du classement Google (2026-10-25)
+
+Le nom visible devient « Tetris » dans la liste Jeux, la fiche et le jeu. Les clés historiques `lava-*`, les routes, les noms de classes et l’identifiant de stockage restent inchangés pour éviter de casser les sessions, les préférences et les liens existants. La couverture de la carte est désormais rendue par `PieceShape` à partir des sept formes existantes : aucun visuel statique concurrent n’est introduit.
+
+Le classement public existant reste le même ensemble de records ; les records déjà enregistrés ne sont pas copiés ni rejoués. Pour les nouveaux records Google, le nom et l’avatar ne sont pris que depuis le compte validé côté serveur. Les URL d’avatar sont limitées à HTTPS et `googleusercontent.com`; l’interface utilise un avatar initial si la photo manque. Les invités gardent l’envoi explicite au classement général tant qu’ils n’ont pas de profil local.
+
+Les profils locaux sont liés au cookie joueur `lava-player` (HttpOnly, 90 jours), dont la valeur aléatoire est hachée côté serveur. Le localStorage ne sert pas d’identité. Pseudo et photo WebP/PNG/JPEG compressée (180 Ko max, contrôle d’en-tête du fichier) sont sauvegardés via les Route Handlers. Une partie terminée avec profil est vérifiée par replay puis inscrite une seule fois dans un historique privé séparé ; aucun score invité nouveau n’est publié dans le classement Google. Le mode Google conserve l’identité Google et envoie automatiquement ses parties admissibles à son record de compte. Les scores locaux hors ligne restent dans une file courte et sont retentés au retour du réseau. Les runs guidés restent exclus du classement Google ; ils peuvent être conservés dans l’historique local privé.
+
+Migration Supabase complémentaire requise : `supabase/migrations/202610250003_tetris_local_profiles.sql`. Elle ajoute l’avatar aux records existants sans effacer de données et crée les tables privées de profils et d’historique local, accessibles uniquement à `service_role`. Elle n’a pas été appliquée au projet distant dans cette session. La migration doit être exécutée dans Supabase avant d’utiliser les profils avec ce backend. Le classement garde un mode de lecture de compatibilité avant migration, mais l’écriture de profil exige la migration.
+
+Validation locale : tests SQLite et PGlite couvrent les profils, l’avatar Google, le caractère privé de l’historique et l’idempotence ; un parcours Playwright couvre la persistance de l’interface entre Jeux et Tetris. Les vérifications réseau réelles, l’application de la migration distante et les essais sur appareils physiques restent à effectuer après la migration.
+
+## Correction identité, bouton officiel et Game over
+
+Le nouveau parcours remplace la confirmation publique manuelle au Game over : profil local persistant ou session Google validée déclenchent la sauvegarde sans saisie supplémentaire. L’anonyme choisit pseudo/création locale ou Google. Le bouton est rendu par GIS et son ID token est échangé côté serveur dans Supabase Auth existant, avec nonce vérifié et cookies HttpOnly. Le Client ID Web existant doit être exposé par la configuration serveur `GOOGLE_CLIENT_ID` ; aucun client OAuth parallèle.
+
+Le profil actif est résolu côté serveur, avec priorité à Google et personnalisation séparée par identifiant de compte. Le profil de navigateur reste conservé. Les envois différés portent une empreinte du destinataire et sont refusés si l’identité a changé. Les brouillons sont conservés jusqu’à confirmation dans les 24 h de validité du replay. Migration 004 additive : confirmation atomique par partie et destinataire pour reconnaître les répétitions sans nouvelle écriture ; SQLite/libSQL partagent le même contrat.
+
+La sidebar utilise des styles locaux dédiés pour ne plus hériter des boutons de réglages hauts de 64 px. Le variant explicite `primary` est un alias neutre compatible de `default`. Les cibles tactiles mobiles du design system sont conservées. Le moteur et le gameplay ne changent pas.

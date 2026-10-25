@@ -3,11 +3,15 @@ export default defineConfig({
   testDir: "./tests",
   timeout: 60000,
   workers: 1,
-  use: { baseURL: "http://localhost:3000", headless: true, locale: "fr-FR" },
+  use: {
+    baseURL: process.env.TETRIS_TEST_BASE_URL || "http://localhost:3000",
+    headless: true,
+    locale: "fr-FR",
+  },
   projects: [
     {
       name: "android-chrome",
-      testMatch: /responsive/,
+      testMatch: /responsive|identity-profile/,
       use: { ...devices["Pixel 7"], browserName: "chromium" },
     },
     {
@@ -17,7 +21,7 @@ export default defineConfig({
     },
     {
       name: "webkit-iphone",
-      testMatch: /iphone|v2|responsive/,
+      testMatch: /iphone|v2|responsive|profile/,
       use: { ...devices["iPhone 13"], browserName: "webkit" },
     },
   ],

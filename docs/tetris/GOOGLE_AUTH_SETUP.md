@@ -60,3 +60,17 @@ Cookies HttpOnly/SameSite Lax limités à `/api/tetris`, client Supabase créé 
 Les tests exécutent les fonctions PostgreSQL et simulent le retour OAuth dans Chromium, Chrome Android émulé et WebKit iPhone. Une connexion réelle à Google doit être vérifiée une fois ces paramètres configurés ; aucune session Google personnelle n’est utilisée par les tests automatisés.
 
 Source : [documentation officielle Supabase Google](https://supabase.com/docs/guides/auth/social-login/auth-google).
+
+## Parcours courant — bouton officiel GIS
+
+Les paragraphes historiques concernant la confirmation manuelle après connexion sont remplacés par ce parcours : le profil Google est reconnu directement et la partie admissible en attente est enregistrée automatiquement. Le choix pseudo au Game over crée maintenant un profil local privé persistant, puis enregistre cette partie et les suivantes automatiquement.
+
+1. Conserver le fournisseur Google, le Client ID et le Client Secret existants dans Supabase.
+2. Configurer côté application `GOOGLE_CLIENT_ID` avec **ce même Client ID Web** (identifiant public, jamais le Client Secret).
+3. Dans Google Cloud → client OAuth existant → Authorized JavaScript origins, ajouter les origines exactes utilisées, par exemple `http://localhost:3000` et le domaine HTTPS du site. Un test sur le port 3001 nécessite son origine exacte. Le callback Supabase existant reste inchangé.
+4. Appliquer les migrations 001, 002, 003 puis `202610250004_tetris_identity_receipts.sql`.
+5. Vérifier une vraie connexion desktop/mobile, la fermeture de la fenêtre Google, les erreurs et la nouvelle tentative. Ne pas désactiver la vérification du nonce dans Supabase.
+
+`google.accounts.id.renderButton` dessine le bouton officiel. `/api/tetris/auth/credential` prépare le nonce puis échange le jeton Google via le client Supabase SSR existant. La session conserve ses cookies HttpOnly ; aucun nouveau système d’authentification n’est créé. Le profil applicatif utilise le nom et l’avatar Google comme valeurs initiales et garde ses personnalisations en base, sans modifier le compte externe.
+
+Une fermeture de fenêtre n’efface ni le score ni le pseudo ; aucune obligation d’identification pour jouer. Le brouillon n’est supprimé qu’après confirmation de sauvegarde (ou exclusion de la partie guidée Google), avec une validité de 24 h alignée sur la session serveur.

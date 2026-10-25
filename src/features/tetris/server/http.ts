@@ -36,6 +36,11 @@ const publicErrors = new Set([
   "Partie inachevée ou trop longue.",
   "Partie trop longue.",
   "Envoi invalide.",
+  "Profil invalide.",
+  "Pseudo : 2 à 20 lettres, chiffres, espaces, points ou tirets.",
+  "Image non valide (WebP, PNG ou JPEG, 180 Ko max).",
+  "Le contenu de la photo ne correspond pas à son format.",
+  "Profil joueur introuvable.",
 ]);
 export function failure(error: unknown) {
   const message = error instanceof Error ? error.message : "";

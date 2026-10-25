@@ -1,4 +1,5 @@
 import { Game, type Action } from "./game";
+import { onboardingConfig } from "./opening";
 export type Step = Action | number;
 export const replayLimit = 200000;
 export function seeded(seed: number) {
@@ -10,10 +11,10 @@ export function seeded(seed: number) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-export function verifyReplay(seed: number, steps: unknown): Game {
+export function verifyReplay(seed: number, steps: unknown, opening = false): Game {
   if (!Array.isArray(steps) || !steps.length || steps.length > replayLimit)
     throw Error("Partie trop longue ou invalide.");
-  const game = new Game(seeded(seed));
+  const game = new Game(seeded(seed), opening ? onboardingConfig.sequence : []);
   for (const step of steps) {
     if (game.over) throw Error("Actions après la fin.");
     if (

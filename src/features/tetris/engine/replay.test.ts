@@ -38,7 +38,10 @@ test("SQLite stores server-derived scores, rejects ownership/reuse and retains o
       lines: g.lines,
     });
     assert.equal(db.list()[0].score, g.score);
-    assert.throws(() => db.submit("alice", session.id, "Alice", steps));
+    assert.deepEqual(db.submit("alice", session.id, "Alice", steps), {
+      score: g.score,
+      lines: g.lines,
+    });
     const second = db.session("alice");
     db.submit("alice", second.id, "Alice", finished(second.seed).steps);
     assert.equal(db.list().length, 1);
@@ -57,15 +60,57 @@ test("session expiration, ranked ties, and per-player start rate limits", () => 
     for (let i = 0; i < 10; i++) db.session("bob");
     assert.throws(() => db.session("bob"));
     db.db
-      .prepare("INSERT INTO scores VALUES (?,?,?,?,?)")
+      .prepare(
+        "INSERT INTO scores(owner,name,score,lines,created) VALUES (?,?,?,?,?)",
+      )
       .run("a", "Alice", 100, 1, Date.now());
     db.db
-      .prepare("INSERT INTO scores VALUES (?,?,?,?,?)")
+      .prepare(
+        "INSERT INTO scores(owner,name,score,lines,created) VALUES (?,?,?,?,?)",
+      )
       .run("b", "Bob", 100, 1, Date.now());
     assert.deepEqual(
       db.list().map((r) => r.rank),
       [1, 1],
     );
+  } finally {
+    db.db.close();
+  }
+});
+
+test("local player profile persists and private completed scores are idempotent and unranked", () => {
+  const db = new LeaderboardStore(":memory:");
+  try {
+    const session = db.session("browser");
+    assert.equal(db.profile("browser"), null);
+    assert.deepEqual(db.saveProfile("browser", "Joueur", null), {
+      name: "Joueur",
+      avatar: null,
+    });
+    assert.equal(db.profile("browser")?.name, "Joueur");
+    const game = new Game(seeded(session.seed));
+    const steps: Step[] = [];
+    while (!game.over) {
+      steps.push("hard");
+      game.action("hard");
+    }
+    assert.deepEqual(db.submitLocal("browser", session.id, steps), {
+      score: game.score,
+      lines: game.lines,
+    });
+    assert.equal(db.list().length, 0);
+    assert.equal(
+      db.db.prepare("SELECT count(*) AS count FROM local_scores").get()?.count,
+      1,
+    );
+    assert.deepEqual(db.submitLocal("browser", session.id, steps), {
+      score: game.score,
+      lines: game.lines,
+    });
+    assert.throws(() =>
+      db.submit("browser", session.id, "Joueur", steps, "google:other"),
+    );
+    assert.throws(() => db.saveProfile("browser", "x", null), /Pseudo/);
   } finally {
     db.db.close();
   }

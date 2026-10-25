@@ -40,7 +40,10 @@ test("libSQL adapter derives scores, validates ownership and persists across ind
     });
     first.close();
     assert.equal((await b.list())[0].score, game.score);
-    await assert.rejects(() => b.submit("alice", session.id, "Alice", steps));
+    assert.deepEqual(await b.submit("alice", session.id, "Alice", steps), {
+      score: game.score,
+      lines: game.lines,
+    });
     const next = await b.session("alice");
     await b.submit("alice", next.id, "Alice", finished(next.seed).steps);
     assert.equal((await b.list()).length, 1);
@@ -62,7 +65,7 @@ test("libSQL adapter expires sessions, limits starts and filters old scores", as
     for (let i = 0; i < 10; i++) await db.session("bob");
     await assert.rejects(() => db.session("bob"));
     await client.execute({
-      sql: "INSERT INTO scores VALUES (?,?,?,?,?)",
+      sql: "INSERT INTO scores(owner,name,score,lines,created) VALUES (?,?,?,?,?)",
       args: ["old", "Ancien", 1000, 10, 0],
     });
     assert.equal((await db.list()).length, 0);

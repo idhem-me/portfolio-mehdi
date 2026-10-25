@@ -53,3 +53,7 @@ Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, 
 - Paddings agrandis (overrides par taille via compound variants) ; hauteurs via `--control-height-accent*` (≥ 44px en mobile)
 - États : default, hover (fond un peu plus sombre), active, focus-visible (`ring-accent`), disabled (opacity base)
 - Hover : brillance texturée (`accent-shine-sweep`, −5°, droite → gauche) + léger lift/glow ; désactivé si `prefers-reduced-motion`
+
+## Button — variante `primary`
+
+`primary` est un alias explicite et compatible de `default` : mêmes tokens `--primary` / `--primary-foreground`, hover, focus, active et disabled. Il sert notamment à Enregistrer dans Profil joueur. `accent` reste réservé aux actions utilisant la couleur de marque ; les boutons photo utilisent `secondary` avec la taille `sm`, en conservant les cibles tactiles mobiles.

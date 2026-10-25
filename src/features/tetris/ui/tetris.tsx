@@ -48,12 +48,13 @@ import { lineFeel, lineCount } from "../feel/line-config";
 import { haptic } from "../feel/haptics";
 import { sourceLicense } from "../engine/source-license";
 import { GameAudio } from "../feel/audio";
-import { soundEnabled, leaderboardEnabled } from "../flags";
+import { soundEnabled, leaderboardEnabled, tetrisEnabled } from "../flags";
 import { seeded, replayLimit } from "../engine/replay";
 import { Leaderboard, type RankedRun } from "./leaderboard";
 import { PlayerIdentityProvider } from "./player-identity";
 import { GameOver } from "./game-over";
-import { clearDraft, recoverDraft, type ScoreDraft } from "../auth/draft";
+import { PlayerProfileButton } from "./player-profile";
+import { recoverDraft, type ScoreDraft } from "../auth/draft";
 import "./game.css";
 const controls = [
   ["left", "Gauche", "←", ArrowLeft],
@@ -93,6 +94,7 @@ function TetrisGame({
   const [recovered, setRecovered] = useState<ScoreDraft | null>(null);
   const audio = useRef<GameAudio | null>(null);
   const ranked = useRef<RankedRun | null>(null);
+  const localRun = useRef<(RankedRun & { opening: boolean }) | null>(null);
   const [preparing, setPreparing] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const mounted = useRef(true);
@@ -183,7 +185,13 @@ function TetrisGame({
   const act = useCallback(
     (a: Action) => {
       if (statusRef.current !== "playing" || game.current.over) return;
-      if (ranked.current) {
+      const capture = localRun.current;
+      if (capture) {
+        if (capture.steps.length >= replayLimit) {
+          localRun.current = null;
+          ranked.current = null;
+        } else capture.steps.push(a);
+      } else if (ranked.current) {
         if (ranked.current.steps.length >= replayLimit) ranked.current = null;
         else ranked.current.steps.push(a);
       }
@@ -206,14 +214,14 @@ function TetrisGame({
   }, [stopRepeat]);
   const start = async () => {
     if (preparing) return;
-    clearDraft();
     setRecovered(null);
     unlockAudio();
     setPreparing(true);
     ranked.current = null;
+    localRun.current = null;
     const opening = claimOpening();
     let rng = Math.random;
-    if (leaderboardEnabled && !opening.length) {
+    if (tetrisEnabled) {
       try {
         const response = await fetch("/api/tetris/sessions", {
           method: "POST",
@@ -221,7 +229,13 @@ function TetrisGame({
         });
         if (response.ok) {
           const session = await response.json();
-          ranked.current = { ...session, steps: [] };
+          localRun.current = {
+            ...session,
+            steps: [],
+            opening: opening.length > 0,
+          };
+          if (leaderboardEnabled && !opening.length)
+            ranked.current = localRun.current;
           rng = seeded(session.seed);
         }
       } catch {
@@ -307,7 +321,13 @@ function TetrisGame({
     const loop = (now: number) => {
       if (status === "playing" && !game.current.over) {
         const dt = Math.max(0, Math.min(50, now - last));
-        if (ranked.current) {
+        const capture = localRun.current;
+        if (capture) {
+          if (capture.steps.length >= replayLimit) {
+            localRun.current = null;
+            ranked.current = null;
+          } else capture.steps.push(dt);
+        } else if (ranked.current) {
           if (ranked.current.steps.length >= replayLimit) ranked.current = null;
           else ranked.current.steps.push(dt);
         }
@@ -364,7 +384,7 @@ function TetrisGame({
       data-playing={status === "playing"}
       data-state={status}
       data-reduced={reduced}
-      aria-label="Tetris Lava, zone de jeu"
+      aria-label="Tetris, zone de jeu"
     >
       {status === "ready" ? (
         <div className="lava-lobby">
@@ -377,9 +397,10 @@ function TetrisGame({
             <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
             <span>Jeux</span>
           </Link>
+          <PlayerProfileButton className="lava-lobby-profile" />
           <Card className="lava-lobby-panel">
             <span className="lava-wordmark" aria-hidden="true">
-              lava.
+              Tetris
             </span>
             <Button
               variant="accent"
@@ -410,7 +431,8 @@ function TetrisGame({
       ) : (
         <>
           <div className="lava-top">
-            <span className="lava-wordmark">lava.</span>
+            <span className="lava-wordmark">Tetris</span>
+            <PlayerProfileButton />
             <div className="flex gap-2">
               <Button
                 variant="ghost"
@@ -581,16 +603,21 @@ function TetrisGame({
             }
           }
           run={recovered?.run ?? ranked.current}
+          localRun={
+            localRun.current ??
+            (recovered
+              ? { ...recovered.run, opening: recovered.run.opening === true }
+              : null)
+          }
           initialName={recovered?.name}
+          expectedRecipient={recovered?.recipient}
           preparing={preparing}
           onReplay={start}
           onMenu={() => {
-            clearDraft();
             setRecovered(null);
             setExpanded(false);
             setStatus("ready");
           }}
-          onLeaderboard={() => setLeaderboardOpen(true)}
         />
       )}
       {status === "paused" && (

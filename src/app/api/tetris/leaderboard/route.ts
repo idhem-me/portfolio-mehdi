@@ -1,3 +1,4 @@
+import { activePlayer } from "@/features/tetris/server/player";
 import { NextRequest, NextResponse, connection } from "next/server";
 import { gate, player, json, failure } from "@/features/tetris/server/http";
 import { reportBackendFailure } from "@/features/tetris/server/diagnostics";
@@ -34,6 +35,24 @@ export async function POST(request: NextRequest) {
     const auth =
       body.identity === "google" ? await verifiedGoogleUser(request) : null;
     const account = auth?.user ? googleIdentity(auth.user) : null;
+    const metadata = auth?.user?.user_metadata ?? {};
+    const rawAvatar =
+      typeof metadata.picture === "string"
+        ? metadata.picture
+        : typeof metadata.avatar_url === "string"
+          ? metadata.avatar_url
+          : "";
+    let googleAvatar: string | null = null;
+    let publicName = body.name;
+    try {
+      const url = new URL(rawAvatar);
+      if (
+        url.protocol === "https:" &&
+        (url.hostname === "googleusercontent.com" ||
+          url.hostname.endsWith(".googleusercontent.com"))
+      )
+        googleAvatar = url.toString();
+    } catch {}
     if (body.identity === "google" && !account) {
       const response = NextResponse.json(
         { error: "Reconnectez-vous à Google ou choisissez un pseudo." },
@@ -41,13 +60,33 @@ export async function POST(request: NextRequest) {
       );
       return auth ? auth.apply(response) : response;
     }
+    if (body.recipient !== undefined) {
+      const active = await activePlayer(request);
+      if (
+        !active.profile ||
+        active.profile.kind !== "google" ||
+        active.profile.key !== body.recipient
+      )
+        return Response.json(
+          { error: "Identité modifiée. Le score reste en attente." },
+          { status: 401 },
+        );
+    }
+    if (body.identity === "google" && body.recipient) {
+      const active = await activePlayer(request);
+      if (active.profile) {
+        publicName = active.profile.name;
+        googleAvatar = active.profile.avatar;
+      }
+    }
     const backend = await store();
     const result = await backend.submit(
       guest,
       body.id,
-      body.name,
+      publicName,
       body.steps,
       account || guest,
+      googleAvatar,
     );
     // Saving succeeded even if a subsequent rank lookup is temporarily unavailable.
     let rank: number | null | undefined;

@@ -12,6 +12,7 @@ import {
 import { clearDraft, type RankedRun, type ScoreDraft } from "../auth/draft";
 import { IdentityChoices, usePlayerIdentity } from "./player-identity";
 import { writeStore } from "../feel/config";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export type { RankedRun } from "../auth/draft";
 export function Leaderboard({
   open,
@@ -23,7 +24,14 @@ export function Leaderboard({
   draft?: ScoreDraft;
 }) {
   const [rows, setRows] = useState<
-      { name: string; score: number; lines: number; rank: number }[] | null
+      | {
+          name: string;
+          score: number;
+          lines: number;
+          rank: number;
+          avatar?: string | null;
+        }[]
+      | null
     >(null),
     [error, setError] = useState(false),
     [retry, setRetry] = useState(0);
@@ -70,24 +78,33 @@ export function Leaderboard({
               {rows.map((row, i) => (
                 <li
                   key={i}
-                  className="flex justify-between gap-4 border-b border-border pb-4"
+                  className="flex items-center gap-3 border-b border-border pb-4"
                 >
-                  <span className="min-w-0 break-words">
+                  <Avatar className="size-9">
+                    {row.avatar && (
+                      <AvatarImage
+                        src={row.avatar}
+                        alt=""
+                        referrerPolicy="no-referrer"
+                      />
+                    )}
+                    <AvatarFallback>
+                      {row.name.slice(0, 1).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="min-w-0 flex-1 truncate" title={row.name}>
                     {row.rank}. {row.name}
                   </span>
                   <span className="shrink-0 text-right font-mono">
                     {row.score.toLocaleString("fr")}
-                    <small className="block text-muted-foreground">
-                      {row.lines} lignes
-                    </small>
                   </span>
                 </li>
               ))}
             </ol>
           )}
           <p className="text-xs text-muted-foreground">
-            Envoi volontaire après une partie, avec un pseudo ou Google. Le
-            record local reste indépendant.
+            Google et envois publics au pseudo. Les profils locaux restent
+            privés.
           </p>
         </div>
       </SheetContent>

@@ -71,19 +71,20 @@ for (const theme of ["light", "dark"])
       await page.getByRole("button", { name: "Lâcher", exact: false }).click();
     await expect(title).toHaveAttribute("data-state", "over");
     await page
-      .getByLabel("Votre pseudonyme public")
+      .getByLabel("Pseudo", { exact: true })
       .fill(`Lava ${info.project.name === "chromium" ? "Chrome" : "Safari"}`);
-    await page.getByRole("button", { name: "Valider", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Enregistrer avec un pseudo", exact: true })
+      .click();
     await expect(
       page.getByRole("status").filter({ hasText: "Score enregistré" }),
     ).toHaveCount(1);
     await page.screenshot({
       path: `docs/tetris/v2/${info.project.name}-${theme}-score.png`,
     });
-    await page
-      .getByRole("button", { name: "Voir le classement", exact: true })
-      .click();
-    await expect(page.getByRole("dialog")).toContainText("Lava");
+    await page.getByRole("button", { name: "Menu", exact: true }).click();
+    await page.getByRole("button", { name: "Classement", exact: true }).click();
+    await expect(page.getByRole("dialog")).toContainText("Classement général");
     await page.screenshot({
       path: `docs/tetris/v2/${info.project.name}-${theme}-classement.png`,
     });
