@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { networkInterfaces } from "node:os";
 import { captureFlow } from "./helpers/v3";
 const enabled = process.env.TETRIS_TEST_DISABLED !== "true";
 test("P0: iPhone navigation and touch interaction before and after Lava", async ({
@@ -52,3 +53,46 @@ for (const theme of ["light", "dark"])
     test.skip(!enabled);
     await captureFlow(page, theme, "webkit-iphone");
   });
+
+test("iPhone LAN: first tap starts, real touch controls move and lock, resume works", async ({
+  page,
+}) => {
+  test.skip(!enabled);
+  const address = Object.values(networkInterfaces())
+    .flat()
+    .find(
+      (entry) => entry && !entry.internal && entry.family === "IPv4",
+    )?.address;
+  test.skip(!address, "No local IPv4 interface");
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("console", (m) => {
+    if (m.type() === "error" && m.text().includes("WebSocket"))
+      errors.push(m.text());
+  });
+  await page.goto(`http://${address}:3000/jeux/tetris`);
+  await page.getByRole("button", { name: "Jouer", exact: true }).tap();
+  await expect(page.locator(".lava-game")).toHaveAttribute(
+    "data-state",
+    "playing",
+  );
+  const ghost = page.locator(".lava-ghost");
+  const before = await ghost.getAttribute("d");
+  await page.getByRole("button", { name: "Gauche", exact: true }).tap();
+  await expect(ghost).not.toHaveAttribute("d", before!);
+  await page.getByRole("button", { name: "Lâcher", exact: true }).tap();
+  await expect(
+    page.locator(".lava-side-left .lava-score").first(),
+  ).not.toHaveText("0");
+  await page
+    .locator(".lava-top")
+    .getByRole("button", { name: "Pause", exact: true })
+    .tap();
+  await expect(page.locator(".lava-pause")).toBeVisible();
+  await page.getByRole("button", { name: "Reprendre", exact: true }).tap();
+  await expect(page.locator(".lava-game")).toHaveAttribute(
+    "data-state",
+    "playing",
+  );
+  expect(errors).toEqual([]);
+});

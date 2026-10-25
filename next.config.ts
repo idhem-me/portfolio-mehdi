@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { hostname, networkInterfaces } from "node:os";
 import createNextIntlPlugin from "next-intl/plugin";
 
 /** Aligné avec `SVG_CONTENT_SECURITY_POLICY` dans `src/lib/sanitize-svg.ts`. */
@@ -7,6 +8,16 @@ const SVG_CSP =
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  // iPhone previews use this Mac's LAN hostname/IP, not localhost. Exact local
+  // addresses only: never allow a wildcard origin or relax production headers.
+  allowedDevOrigins: [
+    hostname(),
+    ...Object.values(networkInterfaces()).flatMap((entries) =>
+      (entries ?? [])
+        .filter((entry) => !entry.internal && entry.family === "IPv4")
+        .map((entry) => entry.address),
+    ),
+  ],
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
