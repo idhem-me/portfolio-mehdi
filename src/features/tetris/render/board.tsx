@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, useId, type RefObject } from "react";
 import { blocks, ghost, type Game } from "../engine/game";
 import { PIECE_NAMES } from "../engine/pieces";
+import { silhouette } from "./silhouette";
 import { createLava } from "./lava";
 export function LavaBoard({
   game,
@@ -49,6 +50,7 @@ export function LavaBoard({
   }, [game, active, reduced]);
   const g = game.current;
   const ghostCells = blocks(ghost(g.board, g.current));
+  const activeCells = !g.over ? blocks(g.current) : [];
   return (
     <>
       <canvas
@@ -59,63 +61,46 @@ export function LavaBoard({
       />
       <svg className="lava-vector" viewBox="0 0 10 20" aria-hidden="true">
         <defs>
-          <filter id={id}>
-            <feGaussianBlur stdDeviation=".1" />
-            <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -7" />
-          </filter>
-          <linearGradient id={id + "shine"} x2=".6" y2="1">
+          <radialGradient id={id + "core"} cx="35%" cy="25%" r="90%">
+            <stop stopColor="white" stopOpacity=".85" />
+            <stop offset=".5" stopColor="white" stopOpacity=".28" />
+            <stop offset="1" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id={id + "oil"} x2="0" y2="1">
             <stop stopColor="white" stopOpacity=".8" />
-            <stop offset=".35" stopColor="white" stopOpacity="0" />
-            <stop offset="1" stopColor="black" stopOpacity=".25" />
+            <stop offset=".25" stopColor="white" stopOpacity="0" />
           </linearGradient>
         </defs>
-        {!g.over &&
-          ghostCells.map(([x, y]) => (
-            <rect
-              key={`${x}-${y}`}
-              x={x + 0.12}
-              y={y - 2 + 0.12}
-              width=".76"
-              height=".76"
-              rx=".2"
-              className="lava-ghost"
-            />
-          ))}
+        {!g.over && (
+          <path
+            d={silhouette(ghostCells.map(([x, y]) => [x, y - 2] as const))}
+            className="lava-ghost"
+          />
+        )}
         {fallback &&
-          PIECE_NAMES.map((name) => (
-            <g
-              key={name}
-              fill={`var(--tetris-piece-${name.toLowerCase()})`}
-              filter={`url(#${id})`}
-            >
-              {[
-                ...g.board.flatMap((r, y) =>
-                  r.flatMap((c, x) => (c === name ? [[x, y]] : [])),
+          PIECE_NAMES.map((name) => {
+            const cells = [
+              ...g.board.flatMap((row, y) =>
+                row.flatMap((c, x) =>
+                  c === name ? [[x, y - 2] as const] : [],
                 ),
-                ...(!g.over && g.current.piece === name
-                  ? blocks(g.current)
-                  : []),
-              ].map(([x, y]) => (
-                <g key={`${x}-${y}`}>
-                  <rect
-                    x={x + 0.04}
-                    y={y - 2 + 0.04}
-                    width=".92"
-                    height=".92"
-                    rx=".3"
-                  />
-                  <rect
-                    x={x + 0.04}
-                    y={y - 2 + 0.04}
-                    width=".92"
-                    height=".92"
-                    rx=".3"
-                    fill={`url(#${id}shine)`}
-                  />
-                </g>
-              ))}
-            </g>
-          ))}
+              ),
+              ...(g.current.piece === name
+                ? activeCells.map(([x, y]) => [x, y - 2] as const)
+                : []),
+            ];
+            const path = silhouette(cells);
+            return (
+              <g key={name} className="lava-fallback-piece">
+                <path
+                  d={path}
+                  fill={`var(--tetris-piece-${name.toLowerCase()})`}
+                />
+                <path d={path} fill={`url(#${id}core)`} />
+                <path d={path} fill={`url(#${id}oil)`} />
+              </g>
+            );
+          })}
       </svg>
     </>
   );

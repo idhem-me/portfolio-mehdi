@@ -29,13 +29,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import {
-  Game,
-  blocks,
-  spawn,
-  type Action,
-  type GameEvent,
-} from "../engine/game";
+import { Game, type Action, type GameEvent } from "../engine/game";
 import type { PieceName } from "../engine/pieces";
 import { LavaBoard } from "../render/board";
 import { bindKeyboard } from "../controls/input";
@@ -46,6 +40,7 @@ import {
   writeStore,
   type Settings,
 } from "../feel/config";
+import { PieceShape as Mini } from "./piece-shape";
 import { GameplayBackground } from "./gameplay-background";
 import { Link } from "@/i18n/navigation";
 import type { CaseStudySection } from "@/lib/content";
@@ -61,29 +56,6 @@ const controls = [
   ["ccw", "Pivoter ↶", "Z", RotateCw],
   ["hard", "Lâcher", "Espace", ChevronsDown],
 ] as const;
-function Mini({ name }: { name: PieceName | null }) {
-  return (
-    <svg
-      className="lava-mini"
-      viewBox="0 0 4 3"
-      role="img"
-      aria-label={name ?? "Réserve vide"}
-    >
-      {name &&
-        blocks(spawn(name)).map(([x, y]) => (
-          <rect
-            key={`${x}-${y}`}
-            x={x - 3 + 0.07}
-            y={y + 0.07}
-            width=".86"
-            height=".86"
-            rx=".28"
-            fill={`var(--tetris-piece-${name.toLowerCase()})`}
-          />
-        ))}
-    </svg>
-  );
-}
 function Score({ value, reduced }: { value: number; reduced: boolean }) {
   const target = useMotionValue(value);
   const spring = useSpring(target, { stiffness: 160, damping: 25 });

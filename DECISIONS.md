@@ -29,3 +29,6 @@ Le h1, la tagline et les métadonnées restent accessibles/présents ; aucun ré
 
 ## 3 — Plein écran et HUD
 Page /jeux/tetris déplacée dans le groupe de routes (game), hors du layout (site) et de son AppShell. Le header du portfolio n’est donc jamais monté sur cette page, et reste intact sur les autres pages. Retour au menu puis lien Jeux pour retrouver la navigation. Aucun sélecteur CSS visant le header partagé. Conteneur fixed 100dvh et safe areas uniquement local au jeu. HUD en badges : Réserve/Score/Lignes puis Record en bas à gauche, Ensuite et Niveau en bas à droite. Suppression de la légende redondante. Pause plein écran : seulement Pause, Reprendre et icône Quitter la partie.
+
+## 4 — Matière et silhouettes
+Champ de distance de cellules jointives, en supprimant les coutures : les rectangles s’étendent uniquement dans leurs voisins de même couleur ; radius limité aux quadrants extérieurs. Éclairage intérieur via cœur blanc/pigment, dégradé de profondeur, ondulation et reflets de surface. Ghost, preview, réserve et fallback utilisent le même traceur d’union SVG (arêtes partagées supprimées, coins convexes arrondis, concavités franches). Aucun carré arrondi individuel ni trou central des pièces O. Fallback vectoriel continu avec gradients internes brillants.

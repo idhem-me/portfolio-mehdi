@@ -601,3 +601,16 @@
     padding-right: max(var(--tetris-gap), env(safe-area-inset-right));
   }
 }
+
+.lava-ghost {
+  stroke-dasharray: none;
+  stroke-width: 0.045;
+  fill: color-mix(in oklch, var(--tetris-piece-i), transparent 94%);
+  stroke: color-mix(in oklch, var(--foreground), transparent 58%);
+}
+.lava-fallback-piece {
+  filter: drop-shadow(0 0 0.05px var(--tetris-piece-i));
+}
+.lava-mini {
+  overflow: visible;
+}

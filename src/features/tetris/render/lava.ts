@@ -3,16 +3,13 @@ import { PIECE_NAMES } from "../engine/pieces";
 export const vertex = `attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 // Constant 3x3 sampling: cost is independent of the number of occupied cells.
 export const fragment = `precision mediump float;
-uniform sampler2D uGrid; uniform vec2 uSize; uniform float uTime; uniform vec3 uColors[7]; uniform float uGlow; uniform float uImpulse; uniform float uMelt; uniform float uFall; uniform float uStretch;
+uniform sampler2D uGrid;uniform vec2 uSize;uniform float uTime;uniform vec3 uColors[7];uniform float uGlow;uniform float uImpulse;uniform float uMelt;uniform float uFall;uniform float uStretch;
 float id(vec2 p){if(p.x<0.||p.x>=10.||p.y<0.||p.y>=20.)return 0.;return floor(texture2D(uGrid,(p+.5)/vec2(10.,20.)).r*255.+.5);}
-void main(){vec2 p=vec2(gl_FragCoord.x/uSize.x*10.,(1.-gl_FragCoord.y/uSize.y)*20.);p.y+=uFall;vec2 base=floor(p);float best=0.;float chosen=0.;vec2 norm=vec2(0.);
-float ids[9];float weights[9];vec2 gradients[9];
-for(int idx=0;idx<9;idx++){vec2 c=base+vec2(mod(float(idx),3.)-1.,floor(float(idx)/3.)-1.);ids[idx]=id(c);vec2 d=p-(c+.5);d+=.012*sin(uTime*.8+c.yx*2.)+uImpulse*.025*sin(c.yx*3.+uTime*15.);vec4 tex=texture2D(uGrid,(clamp(c,vec2(0.),vec2(9.,19.))+.5)/vec2(10.,20.));d.y*=1.-tex.b*uStretch*.12;d.x*=1.+tex.b*uStretch*.04;float melting=1.-tex.a*uMelt;weights[idx]=exp(-dot(d,d)*(5.3+tex.a*uMelt*12.))*melting;gradients[idx]=d*weights[idx];}
-for(int i=0;i<9;i++){if(ids[i]<.5)continue;float density=0.;vec2 grad=vec2(0.);for(int j=0;j<9;j++){if(abs(ids[i]-ids[j])<.1){density+=weights[j];grad+=gradients[j];}}if(density>best){best=density;chosen=ids[i];norm=grad;}}
-if(chosen<.5)discard;float alpha=smoothstep(.29,.36,best);if(alpha<.01)discard;vec3 color=vec3(0.);for(int i=0;i<7;i++){if(abs(chosen-float(i+1))<.1)color=uColors[i];}
-vec3 n=normalize(vec3(norm*5.,.7));vec3 light=normalize(vec3(-.65,-.8,1.));float spec=pow(max(dot(n,light),0.),25.);float edge=pow(1.-n.z,2.);float sheen=pow(max(dot(n,normalize(vec3(.4,.7,1.))),0.),10.);
-vec2 bubble=vec2(fract(p.x*1.7)-.5,fract(p.y*.65+uTime*.14)-.5);float bubbles=(1.-smoothstep(.045,.09,length(bubble)))*.12;
-vec3 glossy=color*(.72+.28*n.z)+vec3(spec*.85+sheen*.18+bubbles)+color*edge*(.25+uGlow);gl_FragColor=vec4(glossy,alpha);}`;
+float same(float a,float b){return a>.5&&abs(a-b)<.1?1.:0.;}
+void main(){vec2 p=vec2(gl_FragCoord.x/uSize.x*10.,(1.-gl_FragCoord.y/uSize.y)*20.);p.y+=uFall;vec2 base=floor(p);float best=100.;float chosen=0.;vec2 normal=vec2(0.);
+for(int i=0;i<9;i++){vec2 c=base+vec2(mod(float(i),3.)-1.,floor(float(i)/3.)-1.);float k=id(c);if(k<.5)continue;vec4 tex=texture2D(uGrid,(c+.5)/vec2(10.,20.));float l=same(k,id(c-vec2(1.,0.))),r=same(k,id(c+vec2(1.,0.))),t=same(k,id(c-vec2(0.,1.))),b=same(k,id(c+vec2(0.,1.)));vec2 d=p-(c+.5);d+=.008*sin(uTime*.6+c.yx)+uImpulse*.012*sin(c.yx+uTime*10.);d.y*=1.-tex.b*uStretch*.06;float adjacentX=d.x<0.?l:r;float adjacentY=d.y<0.?t:b;float radius=.19*(1.-max(adjacentX,adjacentY));vec2 shift=vec2(r-l,b-t)*.125;vec2 halfSize=vec2(.5)+vec2(l+r,t+b)*.125;vec2 q=abs(d-shift)-(halfSize-radius);float sd=length(max(q,0.))+min(max(q.x,q.y),0.)-radius+tex.a*uMelt*.9;
+if(sd<best){best=sd;chosen=k;vec2 grad=q.x>q.y?vec2(sign(d.x),0.):vec2(0.,sign(d.y));if(max(q.x,q.y)>0.)grad=normalize(max(q,0.)+.001)*sign(d);normal=grad;}}
+if(chosen<.5)discard;float shape=1.-smoothstep(-.025,.025,best);float aura=uGlow*exp(-max(best,0.)*18.)*.22;float alpha=max(shape,aura);if(alpha<.008)discard;vec3 color=vec3(0.);for(int i=0;i<7;i++)if(abs(chosen-float(i+1))<.1)color=uColors[i];float edge=1.-smoothstep(0.,.2,-best);vec3 n=normalize(vec3(normal*edge*.85,1.));float spec=pow(max(dot(n,normalize(vec3(-.5,-.8,1.))),0.),22.);float core=smoothstep(0.,.45,-best);float wave=.5+.5*sin(p.x*.5+p.y*.23+uTime*.35);float bubble=1.-smoothstep(.035,.075,length(vec2(fract(p.x*1.7)-.5,fract(p.y*.65+uTime*.12)-.5)));vec3 glossy=mix(color,vec3(1.),core*(.32+.18*wave))+color*.16+vec3(spec*.8+bubble*.08)+color*edge*.18;gl_FragColor=vec4(glossy,alpha);}`;
 export function createLava(canvas: HTMLCanvasElement) {
   const gl = canvas.getContext("webgl", {
     alpha: true,
