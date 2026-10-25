@@ -5,7 +5,8 @@
     "about": "نبذة عني",
     "contact": "تواصل معي",
     "photoAlt": "صورة {name}",
-    "realisations": "الإنجازات"
+    "realisations": "الإنجازات",
+    "games": "ألعاب"
   },
   "theme": {
     "enableLight": "تفعيل الوضع الفاتح",
@@ -46,7 +47,8 @@
     "productDesigner": "مصمم منتجات",
     "about": "نبذة عني",
     "contact": "تواصل معي",
-    "realisations": "الإنجازات"
+    "realisations": "الإنجازات",
+    "games": "ألعاب"
   },
   "skills": {
     "tools": "الأدوات",

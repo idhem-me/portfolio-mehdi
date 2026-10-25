@@ -5,7 +5,8 @@
     "about": "About me",
     "contact": "Contact me",
     "photoAlt": "Photo of {name}",
-    "realisations": "Work"
+    "realisations": "Work",
+    "games": "Games"
   },
   "theme": {
     "enableLight": "Enable light mode",
@@ -46,7 +47,8 @@
     "productDesigner": "Product designer",
     "about": "About me",
     "contact": "Contact me",
-    "realisations": "Work"
+    "realisations": "Work",
+    "games": "Games"
   },
   "skills": {
     "tools": "Tools",

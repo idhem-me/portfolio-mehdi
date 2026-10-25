@@ -63,7 +63,7 @@ export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Early response guarantees HTTP 404 before any App Router streaming.
-  if (!tetrisEnabled && /^\/(?:[a-z]{2}\/)?realisations\/tetris\/?$/.test(pathname)) {
+  if (!tetrisEnabled && /^\/(?:[a-z]{2}\/)?(?:realisations\/tetris\/?|jeux(?:\/.*)?)$/.test(pathname)) {
     return new NextResponse("Not Found", { status: 404, headers: { "X-Robots-Tag": "noindex" } });
   }
 

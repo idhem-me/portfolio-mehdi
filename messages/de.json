@@ -5,7 +5,8 @@
     "about": "Über mich",
     "contact": "Kontakt",
     "photoAlt": "Foto von {name}",
-    "realisations": "Arbeiten"
+    "realisations": "Arbeiten",
+    "games": "Spiele"
   },
   "theme": {
     "enableLight": "Hellen Modus aktivieren",
@@ -46,7 +47,8 @@
     "productDesigner": "Product designer",
     "about": "Über mich",
     "contact": "Kontakt",
-    "realisations": "Arbeiten"
+    "realisations": "Arbeiten",
+    "games": "Spiele"
   },
   "skills": {
     "tools": "Tools",

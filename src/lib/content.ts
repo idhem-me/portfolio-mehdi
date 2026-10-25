@@ -221,3 +221,7 @@ export function getCaseStudy(
   const { data } = readMarkdown(locale, `case-studies/${slug}.md`);
   return data as CaseStudyContent;
 }
+
+export function getGames(locale:string):RealisationsContent {
+ const {data}=readMarkdown(locale,"jeux.md");const page=data as RealisationsContent;return {...page,caseStudies:tetrisEnabled?page.caseStudies:[]};
+}

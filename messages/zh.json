@@ -5,7 +5,8 @@
     "about": "关于我",
     "contact": "联系我",
     "photoAlt": "{name}的照片",
-    "realisations": "作品"
+    "realisations": "作品",
+    "games": "游戏"
   },
   "theme": {
     "enableLight": "启用浅色模式",
@@ -46,7 +47,8 @@
     "productDesigner": "产品设计师",
     "about": "关于我",
     "contact": "联系我",
-    "realisations": "作品"
+    "realisations": "作品",
+    "games": "游戏"
   },
   "skills": {
     "tools": "工具",

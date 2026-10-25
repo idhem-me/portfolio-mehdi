@@ -30,7 +30,7 @@ test("P0: iPhone navigation and touch interaction before and after Lava", async 
   }
   await home();
   if (enabled) {
-    await page.goto("/realisations/tetris");
+    await page.goto("/jeux/tetris");
     await page.getByRole("button", { name: "Jouer", exact: true }).tap();
     await page
       .getByRole("button", { name: /Quitter le jeu|Quitter la partie/ })

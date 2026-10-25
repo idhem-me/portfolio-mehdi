@@ -5,7 +5,8 @@
     "about": "Sobre mí",
     "contact": "Contactarme",
     "photoAlt": "Foto de {name}",
-    "realisations": "Realizaciones"
+    "realisations": "Realizaciones",
+    "games": "Juegos"
   },
   "theme": {
     "enableLight": "Activar el modo claro",
@@ -46,7 +47,8 @@
     "productDesigner": "Product designer",
     "about": "Sobre mí",
     "contact": "Contactarme",
-    "realisations": "Realizaciones"
+    "realisations": "Realizaciones",
+    "games": "Juegos"
   },
   "skills": {
     "tools": "Herramientas",

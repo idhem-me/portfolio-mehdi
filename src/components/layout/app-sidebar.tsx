@@ -1,6 +1,6 @@
 "use client";
 
-import { Briefcase, Home, Layers, UserRound } from "lucide-react";
+import { Briefcase, Home, Layers, UserRound, Gamepad2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
@@ -25,6 +25,8 @@ import { AnalyticsEvents } from "@/lib/analytics/events";
 import { profileMeta } from "@/data/profile-meta";
 import { usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+
+import {tetrisEnabled} from "@/features/tetris/flags";
 
 const HAS_AVATAR = true;
 const AVATAR_SRC = "/img/photos/avatar.png";
@@ -58,6 +60,7 @@ export function AppSidebar() {
       icon: Layers,
       match: (path: string) => path.startsWith("/realisations"),
     },
+    ...(tetrisEnabled ? [{href:"/jeux",label:t("games"),icon:Gamepad2,match:(path:string)=>path.startsWith("/jeux")}] : []),
     {
       href: "/a-propos",
       label: t("about"),
