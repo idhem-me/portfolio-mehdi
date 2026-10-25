@@ -30,8 +30,8 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Game, type Action, type GameEvent } from "../engine/game";
-import type { PieceName } from "../engine/pieces";
 import { LavaBoard } from "../render/board";
+import { claimOpening, resetOpeningFromDevUrl } from "../controls/onboarding";
 import { bindKeyboard } from "../controls/input";
 import {
   defaults,
@@ -142,6 +142,9 @@ export function Tetris({
     });
     return () => cancelAnimationFrame(raf);
   }, []);
+  useEffect(() => {
+    resetOpeningFromDevUrl();
+  }, []);
   const stopRepeat = useCallback(() => {
     if (repeat.current) clearTimeout(repeat.current);
     repeat.current = null;
@@ -158,7 +161,7 @@ export function Tetris({
     );
   }, [stopRepeat]);
   const start = () => {
-    game.current = new Game();
+    game.current = new Game(Math.random, claimOpening());
     setExpanded(true);
     setStatus("playing");
     root.current?.scrollIntoView({ block: "center" });

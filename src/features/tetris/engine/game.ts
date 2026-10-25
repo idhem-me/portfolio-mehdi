@@ -1,6 +1,6 @@
 /** Collision/rotation/bag logic adapted from sen-ltd/tetris, MIT © 2026 SEN LLC.
  * Original license: ./LICENSE.source. UI and event architecture are original. */
-import { SHAPES, createBag, getKicks, type PieceName } from "./pieces";
+import { SHAPES, createPieceSource, getKicks, type PieceName } from "./pieces";
 export type Piece = { piece: PieceName; rot: number; x: number; y: number };
 export type Cell = PieceName | null;
 export type Board = Cell[][];
@@ -91,8 +91,8 @@ export class Game {
   stats = [0, 0, 0, 0, 0];
   private bag;
   private listeners = new Set<(e: GameEvent) => void>();
-  constructor(rng = Math.random) {
-    this.bag = createBag(rng);
+  constructor(rng = Math.random, opening: readonly PieceName[] = []) {
+    this.bag = createPieceSource(rng, opening);
     this.current = spawn(this.bag.next());
     for (let i = 0; i < 3; i++) this.next.push(this.bag.next());
   }

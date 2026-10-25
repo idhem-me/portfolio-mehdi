@@ -355,3 +355,25 @@ export function createBag(rng: () => number) {
     },
   };
 }
+
+/** A finite opening followed by whole 7-bags, with no duplicate at the handoff. */
+export function createPieceSource(
+  rng: () => number,
+  opening: readonly PieceName[] = [],
+) {
+  const bag = createBag(rng);
+  if (!opening.length) return bag;
+  const script = [...opening];
+  let first: PieceName[] | null = null;
+  return {
+    next(): PieceName {
+      if (script.length) return script.shift()!;
+      if (first === null) {
+        first = Array.from({ length: 7 }, () => bag.next());
+        if (first[0] === opening[opening.length - 1])
+          [first[0], first[1]] = [first[1], first[0]];
+      }
+      return first.shift() ?? bag.next();
+    },
+  };
+}
