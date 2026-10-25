@@ -1,4 +1,5 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
+import { reportSupabaseFailure } from "./diagnostics";
 import { verifyReplay } from "../engine/replay";
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
@@ -53,6 +54,7 @@ export class SupabaseLeaderboardStore {
         throw Error("Patientez une minute avant de rejouer en classement.");
       if (data?.message === "tetris_session_used")
         throw Error("Score déjà envoyé.");
+      reportSupabaseFailure(response.status, data?.code, name);
       throw Error("Connexion au classement indisponible.");
     }
     return data as T;

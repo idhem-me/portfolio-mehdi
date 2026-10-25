@@ -1,4 +1,8 @@
-import { test } from "node:test";
+import { test, mock } from "node:test";
+import {
+  reportBackendFailure,
+  reportSupabaseFailure,
+} from "../server/diagnostics";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { PGlite } from "@electric-sql/pglite";
@@ -273,5 +277,24 @@ test("configured Supabase is preferred over Turso and incomplete configuration i
       if (original[name] === undefined) delete process.env[name];
       else process.env[name] = original[name];
     }
+  }
+});
+
+test("private backend diagnostics never log secrets or raw provider errors", () => {
+  const spy = mock.method(console, "error", () => undefined);
+  try {
+    reportBackendFailure(new Error("private sb_secret_do_not_log"));
+    reportBackendFailure(
+      new Error("Supabase nécessite une clé secrète serveur."),
+    );
+    reportSupabaseFailure(401, "sb_secret_do_not_log", "secret operation");
+    reportSupabaseFailure(404, "PGRST202", "tetris_leaderboard");
+    const output = JSON.stringify(spy.mock.calls.map((call) => call.arguments));
+    assert.equal(output.includes("sb_secret"), false);
+    assert.equal(output.includes("secret operation"), false);
+    assert.ok(output.includes("SUPABASE_SERVER_KEY_REQUIRED"));
+    assert.ok(output.includes("PGRST202"));
+  } finally {
+    spy.mock.restore();
   }
 });

@@ -1,5 +1,6 @@
 import { NextRequest, connection } from "next/server";
 import { gate, player, json, failure } from "@/features/tetris/server/http";
+import { reportBackendFailure } from "@/features/tetris/server/diagnostics";
 import { store } from "@/features/tetris/server/store";
 export async function GET(request: NextRequest) {
   const denied = gate(request);
@@ -7,7 +8,8 @@ export async function GET(request: NextRequest) {
   try {
     await connection();
     return json(await (await store()).list());
-  } catch {
+  } catch (error) {
+    reportBackendFailure(error);
     return new Response("Classement indisponible", { status: 503 });
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
+import { reportBackendFailure } from "./diagnostics";
 import { leaderboardEnabled } from "../flags";
 export function gate(request: NextRequest, mutation = false) {
   if (!leaderboardEnabled)
@@ -39,6 +40,7 @@ const publicErrors = new Set([
 export function failure(error: unknown) {
   const message = error instanceof Error ? error.message : "";
   const isPublic = publicErrors.has(message);
+  if (!isPublic) reportBackendFailure(error);
   return NextResponse.json(
     {
       error: isPublic

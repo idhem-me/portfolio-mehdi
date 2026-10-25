@@ -102,3 +102,8 @@ Migration dédiée `supabase/migrations/202610250001_tetris_leaderboard.sql` : t
 Pas d’accès Supabase connecté à cette session : la migration n’est pas appliquée à un projet réel et le flag reste désactivé sur la production actuelle. SQL et permissions sont exécutés dans PostgreSQL local via PGlite, dépendance de test uniquement. Le contrat HTTP est testé avec ces fonctions réelles. Guide de connexion mis à jour : `docs/tetris/LEADERBOARD_SETUP.md` ; ancien guide Turso conservé séparément. Sources officielles consultées : https://supabase.com/docs/guides/getting-started/api-keys et https://supabase.com/docs/guides/database/functions.
 
 Validation Supabase : 96 tests passent, incluant PostgreSQL, droits anon/authenticated, transaction annulée en cas d’échec d’upsert, consommation unique de session, anciennes clés service_role et priorité du backend. Lint et type-check passent ; le build utilise le flag de classement désactivé en attendant les identifiants du projet réel. Les déclarations Next générées en double ont été résolues en régénérant le cache, sans modifier les sources du framework ni le tsconfig.
+
+
+## Diagnostic de l’activation Supabase en production
+
+Après activation du flag par le propriétaire, le panneau est accessible mais la lecture renvoie HTTP 503. L’export Vercel remplace les valeurs sensibles par un marqueur : leur absence d’URL analysable dans cet export ne prouve pas une mauvaise configuration réelle. Ajout de journaux privés limités à des codes de configuration, statut HTTP et code PostgREST/PostgreSQL. Aucune URL, clé, réponse brute ni stack n’est journalisée. Les messages publics restent génériques. Les contrôles d’accès n’inscrivent aucun score de test au classement.
