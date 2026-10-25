@@ -14,7 +14,6 @@ import {
   ArrowRight,
   ChevronsDown,
   RotateCw,
-  Pause,
   Settings2,
   Repeat2,
   X,
@@ -48,6 +47,10 @@ import { LineCelebration } from "../feel/line-celebration";
 import { lineFeel, lineCount } from "../feel/line-config";
 import { haptic } from "../feel/haptics";
 import { sourceLicense } from "../engine/source-license";
+import { GameAudio } from "../feel/audio";
+import { soundEnabled, leaderboardEnabled } from "../flags";
+import { seeded, replayLimit } from "../engine/replay";
+import { Leaderboard, SubmitScore, type RankedRun } from "./leaderboard";
 import "./game.css";
 const controls = [
   ["left", "Gauche", "←", ArrowLeft],
@@ -84,6 +87,24 @@ export function Tetris({
 }: {
   information?: CaseStudySection[];
 }) {
+  const audio = useRef<GameAudio | null>(null);
+  const ranked = useRef<RankedRun | null>(null);
+  const [preparing, setPreparing] = useState(false);
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      audio.current?.close();
+    };
+  }, []);
+  const unlockAudio = () => {
+    if (soundEnabled && settingsRef.current.sound) {
+      audio.current ??= new GameAudio();
+      audio.current.unlock();
+    }
+  };
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const game = useRef(new Game(() => 0.5));
@@ -149,27 +170,67 @@ export function Tetris({
     if (repeat.current) clearTimeout(repeat.current);
     repeat.current = null;
   }, []);
-  const act = useCallback((a: Action) => {
-    if (statusRef.current !== "playing") return;
-    game.current.action(a);
-    refresh((v) => v + 1);
-  }, []);
+  const act = useCallback(
+    (a: Action) => {
+      if (statusRef.current !== "playing" || game.current.over) return;
+      if (ranked.current) {
+        if (ranked.current.steps.length >= replayLimit) ranked.current = null;
+        else ranked.current.steps.push(a);
+      }
+      game.current.action(a);
+      refresh((v) => v + 1);
+    },
+    [refresh],
+  );
   const pause = useCallback(() => {
+    if (
+      statusRef.current === "paused" &&
+      soundEnabled &&
+      settingsRef.current.sound
+    )
+      audio.current?.unlock();
     stopRepeat();
     setStatus((s) =>
       s === "playing" ? "paused" : s === "paused" ? "playing" : s,
     );
   }, [stopRepeat]);
-  const start = () => {
-    game.current = new Game(Math.random, claimOpening());
+  const start = async () => {
+    if (preparing) return;
+    unlockAudio();
+    setPreparing(true);
+    ranked.current = null;
+    const opening = claimOpening();
+    let rng = Math.random;
+    if (leaderboardEnabled && !opening.length) {
+      try {
+        const response = await fetch("/api/tetris/sessions", {
+          method: "POST",
+          signal: AbortSignal.timeout(1500),
+        });
+        if (response.ok) {
+          const session = await response.json();
+          ranked.current = { ...session, steps: [] };
+          rng = seeded(session.seed);
+        }
+      } catch {
+        /* Offline: retain the complete solo game. */
+      }
+    }
+    if (!mounted.current) return;
+    game.current = new Game(rng, opening);
+    setPreparing(false);
     setExpanded(true);
     setStatus("playing");
     root.current?.scrollIntoView({ block: "center" });
     root.current?.focus({ preventScroll: true });
   };
   useEffect(() => {
+    if (status !== "playing") audio.current?.mute();
+  }, [status]);
+  useEffect(() => {
     const g = game.current;
     return g.on((e) => {
+      if (soundEnabled && settingsRef.current.sound) audio.current?.emit(e);
       // One line-clear event owns reward, haptics and camera; tetris/combo notifications must not duplicate them.
       if (e.type !== "tetris" && e.type !== "combo")
         haptic(e, settingsRef.current, iosSwitch.current);
@@ -208,6 +269,7 @@ export function Tetris({
   useEffect(() => bindKeyboard(root.current!, act, pause), [act, pause]);
   useEffect(() => {
     const blur = () => {
+      audio.current?.mute();
       stopRepeat();
       setStatus((s) => (s === "playing" ? "paused" : s));
     };
@@ -228,7 +290,14 @@ export function Tetris({
       last = performance.now(),
       ui = last;
     const loop = (now: number) => {
-      if (status === "playing") game.current.tick(Math.min(50, now - last));
+      if (status === "playing" && !game.current.over) {
+        const dt = Math.max(0, Math.min(50, now - last));
+        if (ranked.current) {
+          if (ranked.current.steps.length >= replayLimit) ranked.current = null;
+          else ranked.current.steps.push(dt);
+        }
+        game.current.tick(dt);
+      }
       last = now;
       if (now - ui > 40) {
         refresh((v) => v + 1);
@@ -242,6 +311,12 @@ export function Tetris({
     };
   }, [status, expanded]);
   const toggle = (key: keyof Settings) => {
+    if (key === "sound") {
+      if (!settings.sound) {
+        audio.current ??= new GameAudio();
+        audio.current.unlock();
+      } else audio.current?.mute();
+    }
     setSettings((s) => {
       const next = { ...s, [key]: !s[key] };
       writeStore("lava-settings", next);
@@ -291,16 +366,28 @@ export function Tetris({
             <span className="lava-wordmark" aria-hidden="true">
               lava.
             </span>
-            <Button variant="accent" size="lg" onClick={start}>
-              Jouer
+            <Button
+              variant="accent"
+              size="lg"
+              onClick={start}
+              disabled={preparing}
+            >
+              {preparing ? "Préparation…" : "Jouer"}
             </Button>
-            <Button variant="outline" disabled>
-              Classement <Badge variant="secondary">Bientôt</Badge>
+            <Button
+              variant="outline"
+              disabled={!leaderboardEnabled}
+              onClick={() => setLeaderboardOpen(true)}
+            >
+              Classement{" "}
+              {!leaderboardEnabled && (
+                <Badge variant="secondary">Bientôt</Badge>
+              )}
             </Button>
             <Button variant="outline" onClick={() => setSettingsOpen(true)}>
               Réglages
             </Button>
-            <Button variant="ghost" onClick={() => setRulesOpen(true)}>
+            <Button variant="outline" onClick={() => setRulesOpen(true)}>
               Règles
             </Button>
           </Card>
@@ -310,9 +397,6 @@ export function Tetris({
           <div className="lava-top">
             <span className="lava-wordmark">lava.</span>
             <div className="flex gap-2">
-              <Button variant="ghost" aria-label="Pause" onClick={pause}>
-                <Pause />
-              </Button>
               <Button
                 variant="ghost"
                 aria-label="Réglages"
@@ -325,11 +409,10 @@ export function Tetris({
               </Button>
               <Button
                 variant="ghost"
-                aria-label="Quitter la partie"
+                aria-label="Mettre en pause"
                 onClick={() => {
                   stopRepeat();
-                  setExpanded(false);
-                  setStatus("ready");
+                  setStatus("paused");
                 }}
               >
                 <X />
@@ -433,7 +516,14 @@ export function Tetris({
                     {g.pieces} pièces · {Math.floor(g.elapsed / 1000)} s ·
                     Record {best}
                   </p>
-                  <Button variant="accent" onClick={start}>
+                  {leaderboardEnabled && (
+                    <SubmitScore
+                      key={serial.current + "-" + g.pieces}
+                      run={ranked.current}
+                      onOpen={() => setLeaderboardOpen(true)}
+                    />
+                  )}
+                  <Button variant="accent" onClick={start} disabled={preparing}>
                     Rejouer
                   </Button>
                   <Button
@@ -487,7 +577,6 @@ export function Tetris({
                 </Button>
               ))}
               <Button variant="outline" onClick={pause}>
-                <Pause />
                 <span>Pause</span>
                 <kbd>P / Échap</kbd>
               </Button>
@@ -497,27 +586,28 @@ export function Tetris({
       )}
       {status === "paused" && (
         <Card className="lava-cover lava-pause">
-          <Button
-            className="lava-pause-quit"
-            variant="ghost"
-            aria-label="Quitter la partie"
-            onClick={() => {
-              stopRepeat();
-              setExpanded(false);
-              setStatus("ready");
-            }}
-          >
-            <X />
-          </Button>
           <h2>Pause</h2>
           <Button
             variant="accent"
             onClick={() => {
+              unlockAudio();
               setStatus("playing");
               root.current?.focus({ preventScroll: true });
             }}
           >
             Reprendre
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => {
+              stopRepeat();
+              audio.current?.mute();
+              ranked.current = null;
+              setExpanded(false);
+              setStatus("ready");
+            }}
+          >
+            Quitter
           </Button>
         </Card>
       )}
@@ -531,6 +621,20 @@ export function Tetris({
             </SheetDescription>
           </SheetHeader>
           <div className="lava-settings">
+            {soundEnabled && (
+              <Button
+                variant="outline"
+                role="switch"
+                aria-label="Son"
+                aria-checked={settings.sound}
+                onClick={() => toggle("sound")}
+              >
+                Son{" "}
+                <Badge variant={settings.sound ? "default" : "secondary"}>
+                  {settings.sound ? "On" : "Off"}
+                </Badge>
+              </Button>
+            )}
             {(
               [
                 ["haptics", "Haptiques"],
@@ -560,6 +664,9 @@ export function Tetris({
           </div>
         </SheetContent>
       </Sheet>
+      {leaderboardEnabled && (
+        <Leaderboard open={leaderboardOpen} onOpenChange={setLeaderboardOpen} />
+      )}
       <Sheet open={rulesOpen} onOpenChange={setRulesOpen}>
         <SheetContent className="lava-sheet z-[80]">
           <SheetHeader>

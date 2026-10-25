@@ -553,11 +553,6 @@
   box-shadow: none;
   background: var(--background);
 }
-.lava-pause-quit {
-  position: absolute;
-  top: max(var(--tetris-gap), env(safe-area-inset-top));
-  right: max(var(--tetris-gap), env(safe-area-inset-right));
-}
 .lava-game[data-state="paused"] > .lava-top {
   visibility: hidden;
 }

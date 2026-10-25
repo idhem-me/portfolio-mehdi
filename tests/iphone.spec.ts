@@ -33,8 +33,9 @@ test("P0: iPhone navigation and touch interaction before and after Lava", async 
     await page.goto("/jeux/tetris");
     await page.getByRole("button", { name: "Jouer", exact: true }).tap();
     await page
-      .getByRole("button", { name: /Quitter le jeu|Quitter la partie/ })
+      .getByRole("button", { name: "Mettre en pause", exact: true })
       .tap();
+    await page.getByRole("button", { name: "Quitter", exact: true }).tap();
     await page
       .getByRole("link", { name: "Retour aux jeux", exact: true })
       .tap();
@@ -88,7 +89,7 @@ test("iPhone LAN: first tap starts, real touch controls move and lock, resume wo
   ).not.toHaveText("0");
   await page
     .locator(".lava-top")
-    .getByRole("button", { name: "Pause", exact: true })
+    .getByRole("button", { name: "Mettre en pause", exact: true })
     .tap();
   await expect(page.locator(".lava-pause")).toBeVisible();
   await page.getByRole("button", { name: "Reprendre", exact: true }).tap();

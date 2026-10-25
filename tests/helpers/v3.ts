@@ -25,9 +25,10 @@ export async function captureFlow(page: Page, theme: string, device: string) {
   await expect(page.getByRole("link", { name: /Lava/ })).toBeVisible();
   await capture("jeux");
   await page.getByRole("link", { name: /Lava/ }).click();
-  await expect(
-    page.getByRole("button", { name: "Classement Bientôt" }),
-  ).toBeDisabled();
+  const ranking = page.getByRole("button", { name: /^Classement/ });
+  if ((await ranking.textContent())?.includes("Bientôt"))
+    await expect(ranking).toBeDisabled();
+  else await expect(ranking).toBeEnabled();
   await expect(
     page.getByRole("heading", { name: "Lava — Tetris", exact: true }),
   ).toHaveText("Lava — Tetris");
@@ -62,7 +63,7 @@ export async function captureFlow(page: Page, theme: string, device: string) {
         .evaluateAll((buttons) =>
           buttons.map((button) => button.getAttribute("aria-label")),
         ),
-    ).toEqual(["Pause", "Réglages", "Quitter la partie"]);
+    ).toEqual(["Réglages", "Mettre en pause"]);
     await expect(page.locator(".lava-side-right svg").first()).toHaveAttribute(
       "aria-label",
       "O",
@@ -93,7 +94,7 @@ export async function captureFlow(page: Page, theme: string, device: string) {
     page.viewportSize()!.height,
   );
   await page.keyboard.press("p");
-  await expect(page.locator(".lava-pause")).toHaveText("PauseReprendre");
+  await expect(page.locator(".lava-pause")).toHaveText("PauseReprendreQuitter");
   await page.waitForTimeout(500);
   await capture("pause");
   await page.getByRole("button", { name: "Reprendre", exact: true }).click();
@@ -101,7 +102,10 @@ export async function captureFlow(page: Page, theme: string, device: string) {
   await expect(page.locator(".lava-reward-type")).toHaveText("2 lignes");
   await page.waitForTimeout(250);
   await capture("2-lignes");
-  await page.getByRole("button", { name: "Quitter la partie" }).click();
+  await page
+    .getByRole("button", { name: "Mettre en pause", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Quitter", exact: true }).click();
   await page.evaluate(() => localStorage.removeItem("tetris.onboardingDone"));
   await start();
   for (let i = 0; i < 10; i++) await place(i);
@@ -114,7 +118,7 @@ export async function captureFlow(page: Page, theme: string, device: string) {
     "data-state",
     "paused",
   );
-  await page.getByRole("button", { name: "Quitter la partie" }).last().click();
+  await page.getByRole("button", { name: "Quitter", exact: true }).click();
   await page.getByRole("button", { name: "Réglages", exact: true }).click();
   await page.getByRole("switch", { name: /Effets réduits/ }).click();
   await expect(

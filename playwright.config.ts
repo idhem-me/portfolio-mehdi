@@ -12,7 +12,7 @@ export default defineConfig({
     },
     {
       name: "webkit-iphone",
-      testMatch: /iphone/,
+      testMatch: /iphone|v2/,
       use: { ...devices["iPhone 13"], browserName: "webkit" },
     },
   ],
