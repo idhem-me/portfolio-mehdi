@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useId, type RefObject } from "react";
 import { blocks, ghost, type Game } from "../engine/game";
-import { PIECE_NAMES } from "../engine/pieces";
+import { lavaMaterial } from "./material";
 import { silhouette } from "./silhouette";
 import { createLava } from "./lava";
 export function LavaBoard({
@@ -51,6 +51,13 @@ export function LavaBoard({
   const g = game.current;
   const ghostCells = blocks(ghost(g.board, g.current));
   const activeCells = !g.over ? blocks(g.current) : [];
+  const settledCells = (fallback ? g.board : []).flatMap((row, y) =>
+    row.flatMap((c, x) => (c ? [[x, y - 2] as const] : [])),
+  );
+  const settledPath = silhouette(settledCells);
+  const activePath = fallback
+    ? silhouette(activeCells.map(([x, y]) => [x, y - 2] as const))
+    : "";
   return (
     <>
       <canvas
@@ -61,6 +68,28 @@ export function LavaBoard({
       />
       <svg className="lava-vector" viewBox="0 0 10 20" aria-hidden="true">
         <defs>
+          <linearGradient
+            id={id + "mass"}
+            gradientUnits="userSpaceOnUse"
+            x1="0"
+            y1="0"
+            x2="10"
+            y2="20"
+          >
+            <stop offset="0" stopColor="var(--tetris-piece-t)" />
+            <stop offset=".38" stopColor="var(--tetris-mass-cyan)" />
+            <stop offset=".7" stopColor="var(--tetris-piece-t)" />
+            <stop offset="1" stopColor="var(--tetris-mass-pink)" />
+            {fallback && active && !reduced && (
+              <animateTransform
+                attributeName="gradientTransform"
+                type="translate"
+                values="-2 -1;2 1;-2 -1"
+                dur={`${lavaMaterial.cycleSeconds}s`}
+                repeatCount="indefinite"
+              />
+            )}
+          </linearGradient>
           <radialGradient id={id + "core"} cx="35%" cy="25%" r="90%">
             <stop stopColor="white" stopOpacity=".85" />
             <stop offset=".5" stopColor="white" stopOpacity=".28" />
@@ -77,30 +106,25 @@ export function LavaBoard({
             className="lava-ghost"
           />
         )}
-        {fallback &&
-          PIECE_NAMES.map((name) => {
-            const cells = [
-              ...g.board.flatMap((row, y) =>
-                row.flatMap((c, x) =>
-                  c === name ? [[x, y - 2] as const] : [],
-                ),
-              ),
-              ...(g.current.piece === name
-                ? activeCells.map(([x, y]) => [x, y - 2] as const)
-                : []),
-            ];
-            const path = silhouette(cells);
-            return (
-              <g key={name} className="lava-fallback-piece">
+        {fallback && (
+          <>
+            <g className="lava-fallback-piece" data-layer="settled">
+              <path d={settledPath} fill={`url(#${id}mass)`} />
+              <path d={settledPath} fill={`url(#${id}core)`} />
+              <path d={settledPath} fill={`url(#${id}oil)`} />
+            </g>
+            {!g.over && (
+              <g data-layer="active">
                 <path
-                  d={path}
-                  fill={`var(--tetris-piece-${name.toLowerCase()})`}
+                  d={activePath}
+                  fill={`var(--tetris-piece-${g.current.piece.toLowerCase()})`}
                 />
-                <path d={path} fill={`url(#${id}core)`} />
-                <path d={path} fill={`url(#${id}oil)`} />
+                <path d={activePath} fill={`url(#${id}core)`} />
+                <path d={activePath} fill={`url(#${id}oil)`} />
               </g>
-            );
-          })}
+            )}
+          </>
+        )}
       </svg>
     </>
   );

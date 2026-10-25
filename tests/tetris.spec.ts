@@ -63,6 +63,12 @@ test("SVG fallback and reduced motion remain playable", async ({ page }) => {
     "data-reduced",
     "true",
   );
+  await page.keyboard.press("Space");
+  await expect(page.locator('[data-layer="settled"]')).toHaveCount(1);
+  await expect(
+    page.locator('[data-layer="settled"] path').first(),
+  ).toHaveAttribute("fill", /^url\(#/);
+  await expect(page.locator("animateTransform")).toHaveCount(0);
   for (let i = 0; i < 35; i++) {
     if (
       await page
@@ -95,7 +101,7 @@ test("landscape and small portrait fit the viewport", async ({ page }) => {
     expect(board!.y + board!.height).toBeLessThanOrEqual(viewport.height);
     expect(controls!.y + controls!.height).toBeLessThanOrEqual(viewport.height);
     await page.screenshot({
-      path: `docs/tetris/v3/geometry-${viewport.width}x${viewport.height}.png`,
+      path: `docs/tetris/v4/geometry-${viewport.width}x${viewport.height}.png`,
     });
   }
 });

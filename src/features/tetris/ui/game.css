@@ -864,3 +864,16 @@
   right: max(calc(var(--spacing) * 4), env(safe-area-inset-right));
   background: var(--popover);
 }
+
+.lava-game {
+  --tetris-mass-cyan: color-mix(
+    in srgb,
+    var(--tetris-piece-t) 70%,
+    var(--tetris-piece-i)
+  );
+  --tetris-mass-pink: color-mix(
+    in srgb,
+    var(--tetris-piece-t) 80%,
+    var(--tetris-piece-z)
+  );
+}

@@ -34,13 +34,20 @@ export async function captureFlow(page: Page, theme: string, device: string) {
   await capture("menu");
   await page.getByRole("button", { name: "Règles", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText("MIT");
-  const dialogBox = await page.getByRole("dialog").boundingBox();
-  const paragraphBox = await page
-    .getByRole("dialog")
-    .locator("p")
-    .last()
-    .boundingBox();
-  expect(paragraphBox!.x - dialogBox!.x).toBeGreaterThanOrEqual(20);
+  const dialog = page.getByRole("dialog");
+  await dialog.evaluate(async (element) => {
+    await Promise.allSettled(
+      element.getAnimations().map((animation) => animation.finished),
+    );
+  });
+  const inset = await dialog.evaluate((element) => {
+    const paragraph = element.querySelector(".lava-settings p")!;
+    return (
+      paragraph.getBoundingClientRect().left -
+      element.getBoundingClientRect().left
+    );
+  });
+  expect(inset).toBeGreaterThanOrEqual(20);
   await capture("regles");
   await page.keyboard.press("Escape");
   async function start() {
@@ -49,6 +56,13 @@ export async function captureFlow(page: Page, theme: string, device: string) {
       "data-state",
       "playing",
     );
+    expect(
+      await page
+        .locator(".lava-top button")
+        .evaluateAll((buttons) =>
+          buttons.map((button) => button.getAttribute("aria-label")),
+        ),
+    ).toEqual(["Pause", "Réglages", "Quitter la partie"]);
     await expect(page.locator(".lava-side-right svg").first()).toHaveAttribute(
       "aria-label",
       "O",
@@ -106,6 +120,11 @@ export async function captureFlow(page: Page, theme: string, device: string) {
   await expect(
     page.getByRole("switch", { name: /Effets réduits/ }),
   ).toHaveAttribute("aria-checked", "true");
+  await page.getByRole("dialog").evaluate(async (element) => {
+    await Promise.allSettled(
+      element.getAnimations().map((animation) => animation.finished),
+    );
+  });
   await capture("reglages");
   await page.keyboard.press("Escape");
   expect(

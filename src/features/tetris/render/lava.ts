@@ -1,4 +1,5 @@
 import { blocks, type Game, type GameEvent } from "../engine/game";
+import { lavaMaterial } from "./material";
 import { PIECE_NAMES } from "../engine/pieces";
 export const vertex = `attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 // Constant 3x3 sampling: cost is independent of the number of occupied cells.
@@ -15,7 +16,9 @@ for(int i=0;i<9;i++){vec2 c=base+vec2(mod(float(i),3.)-1.,floor(float(i)/3.)-1.)
 if(t>.5)edge(p,c+vec2(tl,0.),c+vec2(1.-tr,0.),k);if(b>.5)edge(p,c+vec2(bl,1.),c+vec2(1.-br,1.),k);if(l>.5)edge(p,c+vec2(0.,tl),c+vec2(0.,1.-bl),k);if(r>.5)edge(p,c+vec2(1.,tr),c+vec2(1.,1.-br),k);
 if(tl>0.)arc(p,c+vec2(radius),vec2(-1.,-1.),radius,k);if(tr>0.)arc(p,c+vec2(1.-radius,radius),vec2(1.,-1.),radius,k);if(bl>0.)arc(p,c+vec2(radius,1.-radius),vec2(-1.,1.),radius,k);if(br>0.)arc(p,c+vec2(1.-radius),vec2(1.,1.),radius,k);
 if(inside>.5&&abs(c.x-base.x)<.1&&abs(c.y-base.y)<.1){vec2 d=p-c;if(tl>0.&&d.x<radius&&d.y<radius&&length(d-vec2(radius))>radius)signValue=1.;if(tr>0.&&d.x>1.-radius&&d.y<radius&&length(d-vec2(1.-radius,radius))>radius)signValue=1.;if(bl>0.&&d.x<radius&&d.y>1.-radius&&length(d-vec2(radius,1.-radius))>radius)signValue=1.;if(br>0.&&d.x>1.-radius&&d.y>1.-radius&&length(d-vec2(1.-radius))>radius)signValue=1.;}}
-if(chosen<.5)discard;if(best>5.){best=1.;nearest=p;}float sd=best*signValue;float melting=texture2D(uGrid,(clamp(base,vec2(0.),vec2(9.,19.))+.5)/vec2(10.,20.)).a*uMelt;sd+=melting*.45;float shape=(1.-smoothstep(-.02,.02,sd))*(1.-melting);float aura=uGlow*exp(-max(sd,0.)*18.)*.2;float alpha=max(shape,aura);if(alpha<.008)discard;vec3 color=vec3(0.);for(int i=0;i<7;i++)if(abs(chosen-float(i+1))<.1)color=uColors[i];float rim=1.-smoothstep(0.,.24,-sd);vec2 normal=best<.001?vec2(0.):normalize(p-nearest)*signValue;vec3 n=normalize(vec3(normal*rim*.8,1.));float spec=pow(max(dot(n,normalize(vec3(-.5,-.8,1.))),0.),22.);float core=smoothstep(0.,.55,-sd);float wave=.5+.5*sin(p.x*.5+p.y*.23+uTime*.35);float bubble=1.-smoothstep(.035,.075,length(vec2(fract(p.x*1.7)-.5,fract(p.y*.65+uTime*.12)-.5)));vec3 glossy=mix(color,vec3(1.),core*(.24+.16*wave))+color*.13+vec3(spec*.7+bubble*.045)+color*rim*.12;gl_FragColor=vec4(glossy,alpha);}`;
+if(chosen<.5)discard;if(best>5.){best=1.;nearest=p;}float sd=best*signValue;float melting=texture2D(uGrid,(clamp(base,vec2(0.),vec2(9.,19.))+.5)/vec2(10.,20.)).a*uMelt;sd+=melting*.45;float shape=(1.-smoothstep(-.02,.02,sd))*(1.-melting);float aura=uGlow*exp(-max(sd,0.)*18.)*.2;float alpha=max(shape,aura);if(alpha<.008)discard;vec3 color=vec3(0.);for(int i=0;i<7;i++)if(abs(chosen-float(i+1))<.1)color=uColors[i];
+if(chosen>${(lavaMaterial.settledId - 0.5).toFixed(1)}){float flow=.5+.5*sin(p.x*.18+p.y*.09+uTime*${((2 * 3.14159265) / lavaMaterial.cycleSeconds).toFixed(6)});float sheen=.5+.5*cos(p.x*.12-p.y*.08-uTime*${((2 * 3.14159265) / lavaMaterial.cycleSeconds).toFixed(6)});color=mix(uColors[0],uColors[5],flow*${lavaMaterial.cyanAmount.toFixed(2)});color=mix(color,uColors[4],sheen*${lavaMaterial.pinkAmount.toFixed(2)});}
+float rim=1.-smoothstep(0.,.24,-sd);vec2 normal=best<.001?vec2(0.):normalize(p-nearest)*signValue;vec3 n=normalize(vec3(normal*rim*.8,1.));float spec=pow(max(dot(n,normalize(vec3(-.5,-.8,1.))),0.),22.);float core=smoothstep(0.,.55,-sd);float wave=.5+.5*sin(p.x*.5+p.y*.23+uTime*.35);float bubble=1.-smoothstep(.035,.075,length(vec2(fract(p.x*1.7)-.5,fract(p.y*.65+uTime*.12)-.5)));vec3 glossy=mix(color,vec3(1.),core*(.24+.16*wave))+color*.13+vec3(spec*.7+bubble*.045)+color*rim*.12;gl_FragColor=vec4(glossy,alpha);}`;
 export function createLava(canvas: HTMLCanvasElement) {
   const gl = canvas.getContext("webgl", {
     alpha: true,
@@ -143,7 +146,7 @@ export function createLava(canvas: HTMLCanvasElement) {
         board.slice(2).forEach((row, y) =>
           row.forEach((c, x) => {
             if (c) {
-              pixels[(y * 10 + x) * 4] = PIECE_NAMES.indexOf(c) + 1;
+              pixels[(y * 10 + x) * 4] = lavaMaterial.settledId;
               if (melting && clearing!.rows.includes(y + 2))
                 pixels[(y * 10 + x) * 4 + 3] = 255;
             }
