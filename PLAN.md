@@ -1,0 +1,16 @@
+# Tetris Lava — plan et analyse
+
+## Existant
+Next.js 16.4.2 App Router, React 19, TypeScript strict, next-intl (7 langues, français sans préfixe). Tailwind 4 et globals.css. Les guides locaux Next page/not-found/sitemap ont été consultés.
+Réalisations : content/{locale}/realisations.md, frontmatter JSON lu par gray-matter dans src/lib/content.ts. CaseStudyCard : title/status/slug/cover light+dark. Liste : app/[locale]/(site)/realisations/page.tsx. Étude : content/{locale}/case-studies/{slug}.md, getCaseStudy et CaseStudyStory ; métadonnées Next par page. Lava réutilise ces formats, le shell et les composants de récit ; insertion du jeu avant le process.
+UI obligatoire : composants locaux shadcn/Radix Button, Badge, Card, Sheet. Typographie héritée Google Sans, mono Geist. Aucun moteur d’animation : CSS existant, easing cubic-bezier(.22,1,.36,1), reveal 450ms, shine 750ms. Ajout de motion pour les springs caméra.
+Tokens : globals.css :root/.dark, couleurs sémantiques neutres, radius .625rem décliné, spacing Tailwind, contrôles 32px desktop/44px mobile (<768px). Pas de tokens de motion nommés : extension additive pour Lava. Palette et intensités centralisées ; aucun changement de DA globale.
+
+## Exécution
+1. Branche feature/tetris, npm ci, référence MIT temporaire et attribution.
+2. Engine TypeScript isolé : SRS, collisions, 7-bag, lock delay capé, score/combo/B2B, hold et événements ; tests déterministes.
+3. Rendu WebGL à voisinage borné, metaballs par couleur, reflets et bulles ; fallback SVG. Résolution adaptative, suspension hors focus.
+4. Contrôles clavier DAS/ARR et tactiles/gestes, safe areas et dvh. UI existante, réglages persistés, reduced motion, haptiques isolées.
+5. Entrée Markdown, page et process ; flag commun liste/page/proxy, noindex, exclusion sitemap.
+6. Tests engine, lint, types, build ; serveur local et captures Playwright light/dark mobile/desktop ; vérification des deux flags.
+7. Documentation de lancement, limites observées et commits locaux atomiques. Aucun push/déploiement.
