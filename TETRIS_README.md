@@ -66,3 +66,22 @@ Logique adaptée de [sen-ltd/tetris](https://github.com/sen-ltd/tetris), commit 
 Ordre du bandeau : Pause, Réglages, Quitter. L’effacement de quatre lignes affiche **Tetris**. Les liens de retour utilisent ArrowLeft de Lucide. Les panneaux règles/réglages définissent leurs propres tokens d’espacement car les portails Radix sont hors du conteneur du jeu : marges de 24 px, interlignes et contrôles tactiles aérés.
 
 Les cellules posées partagent une seule matière : violet lumineux dominant, reflets cyan/rose sur un cycle doux de 32 secondes. La pièce active et les previews restent colorées. Les vraies cases vides restent visibles et le moteur ne change pas. Réglages : render/material.ts ; rendu WebGL et fallback SVG cohérents. Captures actualisées dans docs/tetris/v4.
+
+
+## V2 : son et classement
+
+Branche `feature/tetris-v2`. Flags indépendants (false par défaut dans `.env.example`) :
+
+```env
+NEXT_PUBLIC_ENABLE_TETRIS=true
+NEXT_PUBLIC_ENABLE_TETRIS_SOUND=true
+NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD=true
+```
+
+Redémarrer le dev server ou reconstruire après changement des flags publics. Le son reste **Off** pour une première visite ; un seul toggle On / Off dans Réglages, aucun volume. Les fréquences, enveloppes, gain et limites sont dans `src/features/tetris/feel/audio.ts`. Vérifier le volume réel et les interruptions sur iPhone physique avant d’ajuster le gain.
+
+Le classement fonctionne sur un serveur Node avec disque persistant (SQLite intégré ; Node 22.13+ requis). Fichier ignoré par Git : `.local/tetris/leaderboard.sqlite`, chemin personnalisable via `TETRIS_DB_PATH`. Le top 20 affiche les records de moins de 90 jours. Un cookie anonyme distingue les navigateurs ; effacer les cookies crée une nouvelle identité. Les scores ne sont envoyés qu’après une fin de partie et un choix explicite de pseudonyme. La première partie guidée est exclue. Les enregistrements générés par les tests sont de vraies parties de test, pas des joueurs réels.
+
+Sur **Vercel**, activer le jeu et le son au build et au runtime, mais conserver `NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD=false` : il faut connecter une base distante durable avant de publier ce classement. Ne pas utiliser `/tmp` comme stockage permanent. `.env.local` et les fichiers SQLite ne sont ni commités ni téléversés.
+
+La croix en jeu ouvre Pause. Reprendre conserve la partie ; Quitter (bouton destructif) l’abandonne et retourne au menu. Les raccourcis P et Échap restent disponibles. Les pages restent en noindex.

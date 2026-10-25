@@ -62,3 +62,17 @@ La demande de planification autorise un document, pas l’implémentation ou l�
 
 ## Précision roadmap V2 — son et duels
 Son Off initialement, un seul bouton toggle On/Off, aucun slider de volume ; les gains internes restent un réglage de développement. Choix utilisateur mémorisé. Les explications de duel distinguent score en deux minutes et survie avec attaques ; seul le premier demeure dans le premier périmètre. Le matchmaking public est documenté comme une extension future : file par mode/version, niveau estimé, élargissement progressif, confirmation, serveur arbitre, gestion des absences et de la faible fréquentation. Aucun système audio ou multijoueur implémenté.
+
+
+## V2 — navigation de pause simplifiée
+
+La croix du bandeau ouvre désormais la pause, sans abandonner la partie. Le bouton à icône Pause du bandeau est supprimé ; le raccourci clavier et le bouton textuel Pause restent accessibles. L’écran présente, dans cet ordre, Pause, Reprendre et Quitter (variante destructive de la bibliothèque existante). Quitter coupe le son, abandonne la session de classement et retourne au menu. Le bouton Règles adopte la même variante outline que Classement et Réglages. Les parcours existants sont adaptés à ce passage obligatoire par la pause.
+
+
+## V2 — périmètre et préparation Vercel
+
+La demande finale remplace la roadmap initiale : uniquement son et classement général classique. Le moteur reste sans dépendance audio. Les sons sont synthétisés par Web Audio à partir des événements, avec nombre de voix et fréquence des déplacements bornés ; aucun contexte audio avant un choix On ou un geste de reprise après ce choix. Sources techniques : https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/resume et https://nodejs.org/api/sqlite.html.
+
+Le classement local utilise SQLite intégré à Node. La graine de session est générée côté serveur ; une relecture bornée recalcule le score, vérifie la fin de partie et refuse une session réutilisée, expirée ou détenue par un autre navigateur. Cookie anonyme HttpOnly, SameSite Lax ; pseudonyme volontaire ; un meilleur score par navigateur, conservation 90 jours. Une nouvelle identité ou un bot ne sont pas empêchés : cette version ne constitue pas un système de compétition sécurisé. La première partie guidée n’est pas classée ; le solo reste disponible en cas de panne réseau. Les pauses sont permises dans ce classement de marathon au score.
+
+La demande « push et déploie » autorise désormais la publication de la branche `feature/tetris-v2`, sans modification de main. Le jeu et le son seront activés via les variables de déploiement, en conservant noindex. Le classement reste désactivé sur Vercel : un fichier SQLite dans le filesystem d’une Function ne fournit pas la persistance partagée nécessaire. Son activation publique nécessite un adaptateur de base distante durable et sa validation, sans créer de service payant implicitement. Documentation déploiement : https://vercel.com/docs/projects/deploy-from-cli.
