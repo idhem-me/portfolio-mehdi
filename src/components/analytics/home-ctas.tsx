@@ -6,7 +6,6 @@ import {
   TrackedAnchor,
   TrackedLink,
 } from "@/components/analytics/tracked-link";
-import { setAvatarWink } from "@/components/creative/gaze-avatar";
 import { Button } from "@/components/ui/button";
 import { AnalyticsEvents } from "@/lib/analytics/events";
 import { profileMeta } from "@/data/profile-meta";
@@ -85,7 +84,8 @@ export function HomeStatus() {
 }
 
 export function HomeCtas() {
-  const t = useTranslations("home");
+  const t = useTranslations("nav");
+  const tHome = useTranslations("home");
 
   return (
     <div className="flex flex-col items-start gap-2">
@@ -100,11 +100,11 @@ export function HomeCtas() {
           className="h-auto! min-h-(--control-height) max-w-full whitespace-normal! text-start"
         >
           <TrackedLink
-            href="/product-designer"
+            href="/realisations"
             event={AnalyticsEvents.home_cta}
-            eventProps={{ href: "/product-designer", label: "parcours" }}
+            eventProps={{ href: "/realisations", label: "realisations" }}
           >
-            {t("ctaPath")}
+            {t("realisations")}
             <ArrowRight data-icon="inline-end" />
           </TrackedLink>
         </Button>
@@ -120,13 +120,11 @@ export function HomeCtas() {
           className="h-auto! min-h-(--control-height) max-w-full whitespace-normal! text-start"
         >
           <TrackedLink
-            href="/contact"
+            href="/jeux"
             event={AnalyticsEvents.home_cta}
-            eventProps={{ href: "/contact", label: "contact" }}
-            onMouseEnter={() => setAvatarWink("AG-clin")}
-            onMouseLeave={() => setAvatarWink(null)}
+            eventProps={{ href: "/jeux", label: "jeux" }}
           >
-            {t("ctaContact")}
+            {tHome("ctaPlay")}
           </TrackedLink>
         </Button>
       </span>

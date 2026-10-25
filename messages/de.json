@@ -18,9 +18,11 @@
     "label": "Sprache",
     "switchTo": "Zu {language} wechseln"
   },
+  "aboutTabs": {
+    "career": "Werdegang"
+  },
   "home": {
-    "ctaPath": "Meinen Beruf entdecken",
-    "ctaContact": "Kontakt aufnehmen",
+    "ctaPlay": "Spielen",
     "freelanceOn": "Freelance auf",
     "productDesignerAtWorldline": "Product Designer bei Worldline",
     "gravityPlay": "Berühr mich",

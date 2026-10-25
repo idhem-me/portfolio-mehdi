@@ -1,6 +1,6 @@
 "use client";
 
-import { Briefcase, Home, Layers, UserRound, Gamepad2 } from "lucide-react";
+import { Home, Layers, UserRound, Gamepad2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
@@ -47,12 +47,6 @@ export function AppSidebar() {
       label: t("home"),
       icon: Home,
       match: (path: string) => path === "/",
-    },
-    {
-      href: "/product-designer",
-      label: t("productDesigner"),
-      icon: Briefcase,
-      match: (path: string) => path.startsWith("/product-designer"),
     },
     {
       href: "/realisations",
