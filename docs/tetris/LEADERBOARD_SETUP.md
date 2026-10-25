@@ -59,3 +59,7 @@ Sans connexion à votre compte, la migration et les permissions sont testées lo
 Sources officielles : [clés Supabase](https://supabase.com/docs/guides/getting-started/api-keys), [fonctions PostgreSQL](https://supabase.com/docs/guides/database/functions), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
 
 L’ancien adaptateur Turso reste disponible ; son [guide séparé](LEADERBOARD_TURSO_SETUP.md) est conservé pour les environnements qui l’utilisent déjà.
+
+## Pseudo ou compte Google
+
+Le pseudo sans compte reste le parcours de base. L’option Google, la migration complémentaire et la configuration du fournisseur sont décrites dans [le guide Google](GOOGLE_AUTH_SETUP.md). Les scores restent vérifiés côté serveur dans les deux cas.

@@ -107,3 +107,31 @@ Validation Supabase : 96 tests passent, incluant PostgreSQL, droits anon/authent
 ## Diagnostic de l’activation Supabase en production
 
 Après activation du flag par le propriétaire, le panneau est accessible mais la lecture renvoie HTTP 503. L’export Vercel remplace les valeurs sensibles par un marqueur : leur absence d’URL analysable dans cet export ne prouve pas une mauvaise configuration réelle. Ajout de journaux privés limités à des codes de configuration, statut HTTP et code PostgREST/PostgreSQL. Aucune URL, clé, réponse brute ni stack n’est journalisée. Les messages publics restent génériques. Les contrôles d’accès n’inscrivent aucun score de test au classement.
+
+## Identité du classement : invité ou Google
+
+Choix explicite « Avec un pseudo » / « Avec Google », dans Classement et sur Game over. Le serveur utilise Supabase Auth via les bibliothèques officielles SSR et JS ; aucun client Auth dans le bundle navigateur. Flux PKCE avec cookies HttpOnly, SameSite Lax et chemin /api/tetris, client par requête et actualisation des tokens dans les seuls Route Handlers du jeu. Les routes de retour sont limitées aux sept variantes locales de /jeux/tetris, sans redirection libre. Aucune modification du proxy partagé, ni connexion automatique sur le reste du portfolio.
+
+Une partie déjà terminée est conservée dans sessionStorage pendant la redirection OAuth, pendant 30 minutes maximum, puis consommée une seule fois au retour. Ce récapitulatif n’est jamais une source de vérité du score : le serveur rejoue toujours les actions. Si le stockage est indisponible, la redirection est refusée et le parcours pseudo reste disponible. Le cookie anonyme de partie reste utilisé pour en vérifier la propriété ; la clé du record peut être remplacée par le compte Google uniquement après getUser() côté serveur. Migration 0002 : consommation de session et record de compte atomiques, réservées à service_role. Les anciens records invités ne sont pas fusionnés implicitement.
+
+Aucun e-mail dans le classement. Le prénom Google peut être suggéré, le nom public restant modifiable et sa publication explicitement confirmée. Configuration externe nécessaire : fournisseur Google dans Supabase, client OAuth Google Cloud, URL de callback autorisée et SUPABASE_PUBLISHABLE_KEY. Guide : docs/tetris/GOOGLE_AUTH_SETUP.md. Le parcours automatisé OAuth est simulé : il ne valide pas à lui seul la configuration du compte Google distant.
+
+## Game over visible et navigable
+
+L’ancien récapitulatif était enfermé dans le plateau étroit. Il est remplacé par un écran Game over indépendant de la caméra, plein écran, avec carte responsive et défilement local sur petit écran. Score, lignes, niveau, record, pièces et durée sont conservés ; Rejouer et Menu restent accessibles. Le clavier du moteur est désactivé sur les menus et Game over pour préserver les champs de pseudo et l’activation native des boutons au clavier.
+
+## UI : hauteur du plateau et absence de halo
+
+À partir de 768 px de largeur et au-dessus de 500 px de hauteur, le titre et les actions sont superposés aux espaces supérieurs des colonnes HUD, sans réserver une ligne complète au-dessus du plateau. Le plateau reprend cette hauteur. Les téléphones étroits et le paysage compact gardent leur barre dédiée : deux cibles tactiles de 44 px ne tiennent pas dans une colonne HUD de 50–60 px sans recouvrir le plateau. Le box-shadow du plateau est supprimé dans tous les modes ; aucun halo extérieur du shader ne subsiste.
+
+## Matière : néon interne et verre liquide
+
+Émission saturée à l’intérieur de la silhouette, reflets spéculaires resserrés, fresnel interne, caustiques lentes et reflet de surface. La masse posée demeure continue, irisée doucement et sans coutures entre cellules ; aucune modification de la grille moteur. Les aperçus, réserve et fallback SVG reçoivent un cœur lumineux et une couche de reflets diagonaux, avec un fin liseré de verre. Les intensités principales sont centralisées dans render/material.ts. La qualité adaptative et le ralentissement reduced-motion restent actifs. Cible 60 fps conservée, non revendiquée comme mesurée sur un téléphone physique.
+
+
+## Hiérarchie Game over — exemple Figma 70:96
+
+La maquette a été consultée dans Figma via le navigateur (fichier Archives, nœud 70:96). Son exemple compact est adapté aux composants CardHeader/CardTitle/CardContent/CardFooter, Input et Button existants, sans reprise de composants Figma autonomes. Titre unique Game over, résultats en deux colonnes (Record/Classement puis Score/Lignes), nom public et validation, Rejouer en action principale, Menu discret. Suppression du wordmark redondant, du texte « Partie terminée / Encore une ? » et des explications décoratives. Pas de rang numérique inventé : Classement indique Aucun puis Enregistré après réponse du serveur. Les détails techniques restent dans la documentation. Le principe de texte utile et de hiérarchie claire s’applique aussi aux libellés Réglages/Règles et aux états vides/erreurs ; les textes éditoriaux du portfolio ne sont pas réécrits sans nécessité.
+
+### Game over : validation et classement réel
+« Valider » est l’action principale accent, comme « Jouer ». Rejouer et Menu reprennent les boutons outline du menu, la largeur du panneau, ses espacements et ses cibles tactiles. Après validation, le serveur cherche le record du propriétaire dans les vingt entrées réellement affichées (ordre et ex æquo identiques au classement). Affichage « 1er », « 2e », etc., ou « Hors du top 20 ». Un ancien meilleur record conservé reste la référence. Aucun pseudonyme n’est utilisé comme identifiant. Une panne de lecture du rang n’annule pas un score déjà enregistré : « Indisponible ». La lecture Supabase utilise les permissions serveur existantes sur tetris_scores, sans migration supplémentaire.

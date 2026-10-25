@@ -73,12 +73,10 @@ for (const theme of ["light", "dark"])
     await page
       .getByLabel("Votre pseudonyme public")
       .fill(`Lava ${info.project.name === "chromium" ? "Chrome" : "Safari"}`);
-    await page
-      .getByRole("button", { name: "Envoyer mon score", exact: true })
-      .click();
+    await page.getByRole("button", { name: "Valider", exact: true }).click();
     await expect(
-      page.getByRole("button", { name: "Score envoyé", exact: true }),
-    ).toBeDisabled();
+      page.getByRole("status").filter({ hasText: "Score enregistré" }),
+    ).toHaveCount(1);
     await page.screenshot({
       path: `docs/tetris/v2/${info.project.name}-${theme}-score.png`,
     });

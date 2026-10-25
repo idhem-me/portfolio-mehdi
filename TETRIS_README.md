@@ -95,3 +95,9 @@ Le backend persistant du classement est maintenant intégré via Turso/libSQL. C
 ## Supabase (backend recommandé avec votre compte existant)
 
 L’adaptateur Supabase est intégré. Appliquer la migration SQL de `supabase/migrations/`, configurer `SUPABASE_URL` et `SUPABASE_SECRET_KEY` exclusivement côté serveur dans Vercel, puis activer le flag du classement et reconstruire. Le backend Supabase est prioritaire sur Turso si ses variables sont présentes. Le mode local SQLite reste disponible sans configuration distante. Voir [le guide Supabase](docs/tetris/LEADERBOARD_SETUP.md) pour les étapes exactes. Aucun accès à votre projet Supabase n’a encore été fourni : la préparation du code ne signifie pas que la base est connectée.
+
+## Game over, choix d’identité et rendu verre
+
+L’écran Game over est plein écran et dispose du récapitulatif, de Rejouer, du retour Menu et de l’envoi volontaire sous pseudo ou compte Google. Le parcours Google conserve la partie pendant la redirection ; l’activation réelle du fournisseur est détaillée dans [GOOGLE_AUTH_SETUP.md](docs/tetris/GOOGLE_AUTH_SETUP.md).
+
+Le halo extérieur du plateau a été supprimé. Le titre et les actions occupent le haut des colonnes sur desktop/tablette, tandis que les petits écrans conservent des cibles tactiles utilisables. Le néon intérieur, les reflets de verre et leur intensité se règlent dans `src/features/tetris/render/material.ts`. WebGL et fallback SVG partagent cette intention de matière ; les menus et Game over restent dans la DA neutre du portfolio. Captures de la version courante : `docs/tetris/v5/`.
