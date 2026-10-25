@@ -1,8 +1,21 @@
 export function safeGamePath(value: string | null | undefined) {
   return value &&
-    /^\/(?:fr\/|en\/|zh\/|ar\/|es\/|it\/|de\/)?jeux\/tetris\/?$/.test(value)
+    /^\/(?:fr\/|en\/|zh\/|ar\/|es\/|it\/|de\/)?jeux(?:\/tetris)?\/?$/.test(
+      value,
+    )
     ? value
     : "/jeux/tetris";
+}
+export function googleDisplayName(metadata: Record<string, unknown>) {
+  const raw = metadata.name ?? metadata.full_name ?? metadata.given_name;
+  if (typeof raw !== "string" || raw.includes("@")) return "Joueur Google";
+  return (
+    raw
+      .normalize("NFKC")
+      .replace(/[^\p{L}\p{N} ._-]/gu, "")
+      .trim()
+      .slice(0, 20) || "Joueur Google"
+  );
 }
 export function googleIdentity(
   user: {

@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { createHash } from "node:crypto";
 import { verifiedGoogleUser } from "./auth";
-import { googleIdentity, suggestedNickname } from "../auth/identity";
+import { googleIdentity, googleDisplayName } from "../auth/identity";
 import { store } from "./store";
 export function googlePhoto(metadata: Record<string, unknown>) {
   try {
@@ -19,16 +19,18 @@ export async function activePlayer(request: NextRequest) {
   const auth = await verifiedGoogleUser(request);
   const account = auth.user ? googleIdentity(auth.user) : null;
   const owner = account ?? request.cookies.get("lava-player")?.value ?? "";
-  const custom = (owner ? await (await store()).profile(owner) : null) as {
+  const custom = (
+    !account && owner ? await (await store()).profile(owner) : null
+  ) as {
     name: string;
     avatar: string | null;
   } | null;
   const profile =
     account && auth.user
-      ? (custom ?? {
-          name: suggestedNickname(auth.user.user_metadata),
+      ? {
+          name: googleDisplayName(auth.user.user_metadata),
           avatar: googlePhoto(auth.user.user_metadata),
-        })
+        }
       : custom;
   return {
     auth,

@@ -48,7 +48,7 @@ for (const theme of ["light", "dark"])
     ).toBeVisible();
     await expect(
       page.getByRole("button", {
-        name: "Enregistrer avec un pseudo",
+        name: "Enregistrer avec un pseudo anonyme",
         exact: true,
       }),
     ).toBeVisible();
@@ -56,15 +56,24 @@ for (const theme of ["light", "dark"])
     expect(
       await panel.evaluate((e) => e.scrollWidth - e.clientWidth),
     ).toBeLessThanOrEqual(1);
-    await page.getByLabel("Pseudo", { exact: true }).fill("Lava V5");
     await page
-      .getByRole("button", { name: "Enregistrer avec un pseudo", exact: true })
+      .getByRole("button", {
+        name: "Enregistrer avec un pseudo anonyme",
+        exact: true,
+      })
+      .click();
+    await page.getByLabel("Pseudo anonyme", { exact: true }).fill("Lava V5");
+    await page
+      .getByRole("button", {
+        name: "Enregistrer avec un pseudo anonyme",
+        exact: true,
+      })
       .click();
     await expect(
       page.getByRole("status").filter({ hasText: "Score enregistré" }),
     ).toHaveCount(1);
-    await expect(panel.locator(".lava-end-stats dd").nth(1)).toHaveText(
-      "Score enregistré",
+    await expect(panel.locator(".lava-end-stats dd").nth(1)).not.toHaveText(
+      "En attente",
     );
     await page.screenshot({
       path: `docs/tetris/v5/${info.project.name}-${theme}-gameover.png`,

@@ -23,6 +23,7 @@ for (const theme of ["light", "dark"])
     await page.addInitScript((t) => {
       localStorage.setItem("analytics_consent", "denied");
       localStorage.setItem("theme", t);
+      localStorage.setItem("lava-settings", JSON.stringify({ sound: false }));
       localStorage.setItem("tetris.onboardingDone", "true");
       const Original = window.AudioContext;
       const contexts: AudioContext[] = [];
@@ -39,7 +40,7 @@ for (const theme of ["light", "dark"])
     await page.getByRole("button", { name: "Réglages", exact: true }).click();
     const sound = page.getByRole("switch", { name: "Son", exact: true });
     await expect(sound).toHaveAttribute("aria-checked", "false");
-    await expect(sound).toHaveText("Son Off");
+    await expect(sound).toHaveText("Son Non");
     expect(
       await page.evaluate(
         () =>
@@ -48,7 +49,7 @@ for (const theme of ["light", "dark"])
     ).toBe(0);
     await sound.click();
     await expect(sound).toHaveAttribute("aria-checked", "true");
-    await expect(page.getByRole("slider")).toHaveCount(0);
+    await expect(page.getByRole("slider")).toHaveCount(3);
     await page.screenshot({
       path: `docs/tetris/v2/${info.project.name}-${theme}-son.png`,
     });
@@ -71,10 +72,16 @@ for (const theme of ["light", "dark"])
       await page.getByRole("button", { name: "Lâcher", exact: false }).click();
     await expect(title).toHaveAttribute("data-state", "over");
     await page
-      .getByLabel("Pseudo", { exact: true })
+      .getByRole("button", {
+        name: "Enregistrer avec un pseudo anonyme",
+        exact: true,
+      })
+      .click();
+    await page
+      .getByLabel("Pseudo anonyme", { exact: true })
       .fill(`Lava ${info.project.name === "chromium" ? "Chrome" : "Safari"}`);
     await page
-      .getByRole("button", { name: "Enregistrer avec un pseudo", exact: true })
+      .getByRole("button", { name: "Enregistrer le score", exact: true })
       .click();
     await expect(
       page.getByRole("status").filter({ hasText: "Score enregistré" }),

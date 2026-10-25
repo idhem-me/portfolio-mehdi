@@ -4,6 +4,7 @@ export type RankedRun = {
   seed: number;
   steps: Step[];
   opening?: boolean;
+  localOnly?: boolean;
 };
 export type GameSummary = {
   score: number;
@@ -80,6 +81,7 @@ export function recoverDraft(storage?: StoragePort): ScoreDraft | null {
       d.run.seed < 0 ||
       d.run.seed >= 2147483647 ||
       !Array.isArray(d.run.steps) ||
+      (d.run.localOnly !== undefined && typeof d.run.localOnly !== "boolean") ||
       d.run.steps.length > replayLimit
     )
       return null;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { gate } from "@/features/tetris/server/http";
 import { authClient, googleConfigured } from "@/features/tetris/server/auth";
 import { safeGamePath } from "@/features/tetris/auth/identity";
+import { popupResult } from "@/features/tetris/server/oauth-popup";
 export async function GET(request: NextRequest) {
   const denied = gate(request);
   if (denied) return denied;
@@ -16,10 +17,19 @@ export async function GET(request: NextRequest) {
       success = !error;
     } catch {}
   }
-  const response = NextResponse.redirect(
-    new URL(path + (success ? "?auth=success" : "?auth=error"), origin),
-    303,
-  );
+  const response =
+    request.cookies.get("lava-auth-popup")?.value === "1"
+      ? popupResult(success)
+      : NextResponse.redirect(
+          new URL(path + (success ? "?auth=success" : "?auth=error"), origin),
+          303,
+        );
+  response.cookies.set("lava-auth-popup", "", {
+    path: "/api/tetris",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 0,
+  });
   response.cookies.set("lava-auth-return", "", {
     path: "/api/tetris",
     httpOnly: true,

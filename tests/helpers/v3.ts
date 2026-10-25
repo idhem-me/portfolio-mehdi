@@ -63,7 +63,7 @@ export async function captureFlow(page: Page, theme: string, device: string) {
         .evaluateAll((buttons) =>
           buttons.map((button) => button.getAttribute("aria-label")),
         ),
-    ).toEqual(["Créer mon profil joueur", "Réglages", "Mettre en pause"]);
+    ).toEqual(["Choisir mon identité", "Réglages", "Mettre en pause"]);
     await expect(page.locator(".lava-side-right svg").first()).toHaveAttribute(
       "aria-label",
       "O",

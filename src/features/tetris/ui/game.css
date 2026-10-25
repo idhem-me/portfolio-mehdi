@@ -404,13 +404,14 @@
 }
 .tetris-cover > span {
   position: absolute;
-  width: clamp(3rem, 9vw, 6.5rem);
+  width: clamp(10rem, 34vw, 24rem);
   filter: drop-shadow(
     0 8px 18px color-mix(in oklch, var(--tetris-piece-t) 25%, transparent)
   );
 }
 .tetris-cover .lava-mini {
   width: 100%;
+  max-width: none;
   height: auto;
 }
 .lava-lobby-panel .lava-wordmark {
@@ -430,7 +431,7 @@
   inset: 0;
   z-index: -1;
   opacity: 0.4;
-  filter: blur(4px);
+  filter: none;
   pointer-events: none;
   background: radial-gradient(
     ellipse at 30% 40%,
@@ -441,13 +442,15 @@
 .lava-background > div {
   position: absolute;
   top: -20%;
-  width: 8rem;
+  width: 12rem;
+  will-change: transform;
+  contain: layout paint;
   animation: lava-drift 23s linear infinite;
 }
 .lava-background .lava-mini {
   width: 100%;
   max-width: none;
-  height: 8rem;
+  height: 12rem;
 }
 .lava-background[data-hidden="true"] > div {
   animation-play-state: paused;
@@ -1178,4 +1181,24 @@
 .lava-end-content,
 .lava-end-content > * {
   min-width: 0;
+}
+
+/* Identity selectors share the site controls; the lobby grows rather than clipping. */
+.lava-lobby-panel {
+  width: min(90vw, 25rem);
+  margin-block: 5rem 2rem;
+}
+.tetris-cover {
+  background: var(--muted);
+}
+.tetris-cover .lava-mini {
+  filter: saturate(1.25);
+}
+.lava-background > div .lava-mini {
+  contain: layout paint;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lava-background > div {
+    will-change: auto;
+  }
 }

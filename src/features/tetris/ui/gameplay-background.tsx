@@ -1,8 +1,23 @@
 "use client";
 import { useEffect, useState } from "react";
 import { PieceShape } from "./piece-shape";
-const pieces = ["T", "I", "S", "L", "O", "J", "Z"] as const;
-/** Decorative placeholder. Replace this component with a replay renderer later. */
+const pieces = [
+  "T",
+  "I",
+  "S",
+  "L",
+  "O",
+  "J",
+  "Z",
+  "T",
+  "I",
+  "S",
+  "L",
+  "O",
+  "J",
+  "Z",
+] as const;
+/** Fixed pool of fourteen pieces: only transform is animated, no nodes are added. */
 export function GameplayBackground() {
   const [hidden, setHidden] = useState(false);
   useEffect(() => {
@@ -14,10 +29,10 @@ export function GameplayBackground() {
     <div className="lava-background" aria-hidden="true" data-hidden={hidden}>
       {pieces.map((name, i) => (
         <div
-          key={name}
+          key={i}
           style={{
-            left: `${i * 15}%`,
-            animationDelay: `${-i * 2.7}s`,
+            left: `${((i * 23) % 110) - 8}%`,
+            animationDelay: `${-i * 3.1}s`,
             animationDuration: `${20 + i}s`,
           }}
         >

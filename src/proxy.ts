@@ -1,9 +1,6 @@
 import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
-import {
-  DASHBOARD_COOKIE,
-  isValidDashboardToken,
-} from "@/lib/dashboard-auth";
+import { DASHBOARD_COOKIE, isValidDashboardToken } from "@/lib/dashboard-auth";
 import { routing } from "@/i18n/routing";
 
 import { tetrisEnabled } from "@/features/tetris/flags";
@@ -63,8 +60,16 @@ export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Early response guarantees HTTP 404 before any App Router streaming.
-  if (!tetrisEnabled && /^\/(?:[a-z]{2}\/)?(?:realisations\/tetris\/?|jeux(?:\/.*)?)$/.test(pathname)) {
-    return new NextResponse("Not Found", { status: 404, headers: { "X-Robots-Tag": "noindex" } });
+  if (
+    !tetrisEnabled &&
+    /^\/(?:[a-z]{2}\/)?(?:realisations\/tetris\/?|jeux(?:\/.*)?)$/.test(
+      pathname,
+    )
+  ) {
+    return new NextResponse("Not Found", {
+      status: 404,
+      headers: { "X-Robots-Tag": "noindex" },
+    });
   }
 
   if (isDashboardAuthPath(pathname)) {
@@ -75,11 +80,21 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // A rewrite may re-enter the Node proxy. Do not canonicalize an internal
+  // /fr/... rewrite back to its public URL and create a redirect loop.
+  const internalLocale = request.headers.get("x-next-intl-locale");
+  if (
+    internalLocale &&
+    routing.locales.some((locale) => locale === internalLocale) &&
+    (pathname === `/${internalLocale}` ||
+      pathname.startsWith(`/${internalLocale}/`))
+  ) {
+    return NextResponse.next();
+  }
+
   return handleI18nRouting(request);
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next|_vercel|.*\\..*).*)",
-  ],
+  matcher: ["/((?!_next|_vercel|.*\\..*).*)"],
 };

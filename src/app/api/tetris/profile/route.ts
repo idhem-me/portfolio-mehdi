@@ -33,6 +33,11 @@ export async function POST(request: NextRequest) {
     )
       throw Error("Profil invalide.");
     const active = await activePlayer(request);
+    if (active.profile?.kind === "google")
+      return NextResponse.json(
+        { error: "Ton profil est géré par ton compte Google." },
+        { status: 403 },
+      );
     if (
       body.recipient !== undefined &&
       body.recipient !== (active.profile?.key ?? null)

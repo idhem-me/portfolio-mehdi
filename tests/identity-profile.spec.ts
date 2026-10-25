@@ -1,311 +1,388 @@
-import { test, expect, type Page } from "@playwright/test";
-type Profile = {
-  name: string;
-  avatar: string | null;
-  kind: "local" | "google";
-  key: string;
-};
-async function environment(page: Page, initial: Profile | null = null) {
-  let profile = initial;
-  let google = initial?.kind === "google";
-  let failSave = false,
-    failGoogle = false;
-  const saved: Array<Record<string, unknown>> = [];
-  await page.addInitScript(() => {
-    localStorage.setItem("analytics_consent", "denied");
-    localStorage.setItem("tetris.onboardingDone", "true");
-  });
-  await page.route("**/api/tetris/profile", async (route) => {
-    if (route.request().method() === "POST")
-      profile = {
-        ...route.request().postDataJSON(),
-        kind: google ? "google" : "local",
-        key: (google ? "b" : "a").repeat(64),
-      };
-    await route.fulfill({ json: profile });
-  });
-  await page.route("**/api/tetris/auth", (route) =>
-    route.fulfill({
-      json: {
-        googleAvailable: true,
-        user: google ? { displayName: "Google Alice" } : null,
-      },
-    }),
-  );
-  await page.route("**/api/tetris/auth/credential", async (route) => {
-    if (route.request().method() === "GET")
-      return route.fulfill({
-        json: {
-          available: true,
-          clientId: "existing-client.apps.googleusercontent.com",
-          nonce: "c".repeat(64),
-        },
+import { test, expect } from "@playwright/test";
+import { identityEnvironment, endGame, profiles } from "./helpers/identity";
+import { recoverDraft } from "../src/features/tetris/auth/draft";
+for (const kind of ["anonymous", "local", "google"] as const)
+  for (const screen of ["games", "lobby", "gameover"] as const) {
+    test(`${kind} identity uses the same selector on ${screen}`, async ({
+      page,
+    }, info) => {
+      if (info.project.name.includes("iphone"))
+        await page.setViewportSize({ width: 375, height: 812 });
+      const env = await identityEnvironment(
+        page,
+        kind === "anonymous" ? null : profiles[kind],
+      );
+      await page.goto(screen === "games" ? "/en/jeux" : "/en/jeux/tetris");
+      if (screen === "gameover") await endGame(page);
+      const selector = page
+        .locator(`.identity-selector[data-identity="${kind}"]`)
+        .filter({ visible: true })
+        .first();
+      await expect(selector).toBeVisible();
+      await expect(
+        selector.getByRole("status").filter({ hasText: "Chargement" }),
+      ).toHaveCount(0);
+      if (kind === "google") {
+        await expect(selector).toContainText("Alice Google");
+        await expect(
+          selector.getByRole("button", { name: "Se déconnecter", exact: true }),
+        ).toBeVisible();
+        await expect(
+          selector.getByRole("button", { name: /Créer|Modifier|Se connecter/ }),
+        ).toHaveCount(0);
+        await expect(
+          selector.locator('[data-slot="avatar-fallback"]'),
+        ).toContainText("AG");
+      } else {
+        await expect(
+          selector.getByRole("button", {
+            name: "Se connecter avec Google",
+            exact: true,
+          }),
+        ).toBeVisible();
+        await expect(
+          selector.getByRole("button", {
+            name: kind === "local" ? "Modifier" : "Créer un profil local",
+            exact: true,
+          }),
+        ).toBeVisible();
+        if (kind === "anonymous")
+          await expect(
+            selector.getByRole("button", {
+              name: "Continuer sans enregistrer",
+              exact: true,
+            }),
+          ).toBeVisible();
+        else
+          await expect(
+            selector.getByRole("button", {
+              name: "Créer un profil local",
+              exact: true,
+            }),
+          ).toHaveCount(0);
+      }
+      if (screen === "gameover") {
+        await expect(
+          page.getByRole("button", { name: "Rejouer", exact: true }),
+        ).toHaveAttribute("data-variant", "accent");
+        if (kind !== "anonymous")
+          await expect.poll(() => env.saved.length).toBe(1);
+      }
+      const actions = await selector.locator("button").evaluateAll((buttons) =>
+        buttons.map((b) => ({
+          height: b.getBoundingClientRect().height,
+          width: b.getBoundingClientRect().width,
+        })),
+      );
+      expect(actions.every((b) => b.height >= 44 && b.width >= 44)).toBe(true);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.screenshot({
+        path: `/private/tmp/tetris-release/${info.project.name}-${kind}-${screen}.png`,
       });
-    if (failGoogle)
-      return route.fulfill({
-        status: 401,
-        json: { error: "Connexion Google annulée ou impossible." },
-      });
-    google = true;
-    profile = {
-      name: "Google Alice",
-      avatar: "https://lh3.googleusercontent.com/test",
-      kind: "google",
-      key: "b".repeat(64),
-    };
-    await route.fulfill({ json: { ok: true } });
-  });
-  // Emulate only the third-party SDK boundary; app credential exchange remains exercised.
-  await page.route("https://accounts.google.com/gsi/client", (route) =>
-    route.fulfill({
-      contentType: "text/javascript",
-      body: `window.google={accounts:{id:{initialize(o){this.options=o},renderButton(el,o){const b=document.createElement('button');b.type='button';b.textContent='Continuer avec Google';b.onclick=()=>{o.click_listener();if(!window.cancelGoogle)this.options.callback({credential:'signed-google-test-token'})};el.appendChild(b)}}}};`,
-    }),
-  );
-  for (const endpoint of ["local-scores", "leaderboard"])
-    await page.route(`**/api/tetris/${endpoint}`, async (route) => {
-      if (route.request().method() !== "POST")
-        return route.fulfill({ json: [] });
-      const run = route.request().postDataJSON();
-      if (failSave)
-        return route.fulfill({ status: 503, json: { error: "Indisponible" } });
-      if (!saved.some((item) => item.id === run.id)) saved.push(run);
-      return route.fulfill({ json: { score: 10, lines: 0, rank: 1 } });
     });
-  return {
-    saved,
-    profile: () => profile,
-    setProfile: (value: Profile | null) => {
-      profile = value;
-      google = value?.kind === "google";
-    },
-    failSave: (value: boolean) => {
-      failSave = value;
-    },
-    failGoogle: (value: boolean) => {
-      failGoogle = value;
-    },
-  };
-}
-async function end(page: Page, replay = false) {
-  await page
-    .getByRole("button", { name: replay ? "Rejouer" : "Jouer", exact: true })
-    .click();
-  await expect(page.locator(".lava-game")).toHaveAttribute(
-    "data-state",
-    "playing",
-  );
-  for (
-    let i = 0;
-    i < 35 &&
-    (await page.locator(".lava-game").getAttribute("data-state")) === "playing";
-    i++
-  )
-    await page.getByRole("button", { name: "Lâcher", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Game over", exact: true }),
-  ).toBeVisible();
-}
-test("anonymous local profile saves this and next run automatically, synchronizes sidebar", async ({
+  }
+
+test("creating a local profile at game over attaches the current score, photo and later runs", async ({
   page,
 }) => {
-  const env = await environment(page);
-  await page.goto("/jeux/tetris");
-  await end(page);
-  await expect(
-    page.getByRole("button", { name: "Continuer avec Google", exact: true }),
-  ).toBeVisible();
-  await page.getByLabel("Pseudo", { exact: true }).fill("Alice Locale");
-  await page
-    .getByRole("button", { name: "Enregistrer avec un pseudo" })
-    .click();
-  await expect.poll(() => env.saved.length).toBe(1);
-  await expect(page.getByLabel("Pseudo", { exact: true })).toHaveCount(0);
-  await end(page, true);
-  await expect.poll(() => env.saved.length).toBe(2);
-  await expect(
-    page.getByRole("button", { name: "Continuer avec Google", exact: true }),
-  ).toHaveCount(0);
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
-  await page.goto("/jeux");
-  await page
-    .getByRole("button", { name: "Profil joueur : Alice Locale" })
-    .click();
-  await expect(page.getByLabel("Pseudo", { exact: true })).toHaveValue(
-    "Alice Locale",
-  );
-});
-test("Google after game over preserves score on cancellation and failure, then saves without confirmation", async ({
-  page,
-}) => {
-  const env = await environment(page);
-  await page.goto("/jeux/tetris");
-  await end(page);
+  const env = await identityEnvironment(page);
+  await page.goto("/en/jeux/tetris");
+  await endGame(page);
   const score = await page.locator(".lava-end-stats dd").nth(2).innerText();
-  await page.evaluate(() => Object.assign(window, { cancelGoogle: true }));
   await page
-    .getByRole("button", { name: "Continuer avec Google", exact: true })
+    .getByRole("button", { name: "Créer un profil local", exact: true })
     .click();
-  await expect(page.locator(".lava-end-stats dd").nth(2)).toHaveText(score);
-  expect(env.saved).toHaveLength(0);
-  await page.evaluate(() => Object.assign(window, { cancelGoogle: false }));
-  env.failGoogle(true);
+  await page.getByLabel("Pseudo", { exact: true }).fill("Nouvelle Alice");
+  const png = await page.evaluate(() => {
+    const c = document.createElement("canvas");
+    c.width = 800;
+    c.height = 800;
+    const ctx = c.getContext("2d")!;
+    ctx.fillStyle = "red";
+    ctx.fillRect(0, 0, 800, 800);
+    return c.toDataURL("image/png").split(",")[1];
+  });
+  await page.getByLabel("Photo du profil").setInputFiles({
+    name: "photo.png",
+    mimeType: "image/png",
+    buffer: Buffer.from(png, "base64"),
+  });
   await page
-    .getByRole("button", { name: "Continuer avec Google", exact: true })
-    .click();
-  await expect(
-    page.getByRole("alert").filter({ hasText: "impossible" }),
-  ).toContainText("impossible");
-  await expect(page.getByLabel("Pseudo", { exact: true })).toBeEnabled();
-  env.failGoogle(false);
-  await page.getByRole("button", { name: "Réessayer Google" }).click();
-  await page
-    .getByRole("button", { name: "Continuer avec Google", exact: true })
+    .getByRole("button", { name: "Enregistrer le profil", exact: true })
     .click();
   await expect.poll(() => env.saved.length).toBe(1);
-  expect(env.saved[0].identity).toBe("google");
   await expect(page.locator(".lava-end-stats dd").nth(2)).toHaveText(score);
-  await expect(page.getByLabel("Pseudo", { exact: true })).toHaveCount(0);
+  expect(env.profile()?.avatar).toMatch(/^data:image\/(webp|png|jpeg)/);
+  const size = await page.evaluate(async (avatar) => {
+    const image = await createImageBitmap(await (await fetch(avatar!)).blob());
+    const size = [image.width, image.height];
+    image.close();
+    return size;
+  }, env.profile()?.avatar);
+  expect(Math.max(...size)).toBeLessThanOrEqual(256);
+  expect(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("tetris.local-scores.v2")!).length,
+    ),
+  ).toBe(1);
   expect(
     await page.evaluate(() => sessionStorage.getItem("lava-pending-score-v1")),
   ).toBeNull();
-});
-for (const kind of ["local", "google"] as const)
-  test(`${kind} profile auto saves, retains failed run and retries once`, async ({
-    page,
-  }) => {
-    const env = await environment(page, {
-      name: "Alice",
-      avatar: null,
-      kind,
-      key: "a".repeat(64),
-    });
-    env.failSave(true);
-    await page.goto("/jeux/tetris");
-    await end(page);
-    await expect(
-      page.getByRole("status").filter({ hasText: "Sauvegarde en attente" }),
-    ).toBeVisible();
-    await expect(page.getByLabel("Pseudo", { exact: true })).toHaveCount(0);
-    expect(
-      await page.evaluate(() =>
-        sessionStorage.getItem("lava-pending-score-v1"),
-      ),
-    ).not.toBeNull();
-    env.failSave(false);
-    await page.getByRole("button", { name: "Réessayer la sauvegarde" }).click();
-    await expect.poll(() => env.saved.length).toBe(1);
-    await expect(
-      page.getByRole("status").filter({ hasText: "Score enregistré" }),
-    ).toBeVisible();
-  });
-test("sidebar creates Google profile, supports application customization and compact primary controls", async ({
-  page,
-}, info) => {
-  const env = await environment(page);
-  await page.goto("/jeux");
-  await page.getByRole("button", { name: "Créer mon profil joueur" }).click();
-  await page
-    .getByRole("button", { name: "Continuer avec Google", exact: true })
-    .click();
-  await expect(page.getByLabel("Pseudo", { exact: true })).toHaveValue(
-    "Google Alice",
+  await page.goto("/en/jeux");
+  await expect(page.locator(".identity-profile")).toContainText(
+    "Nouvelle Alice",
   );
-  await expect(
-    page.getByRole("button", { name: "Continuer avec Google", exact: true }),
-  ).toHaveCount(0);
-  const photo = page.getByRole("button", {
-    name: "Modifier ma photo de profil",
-  });
-  const box = await photo.boundingBox();
-  expect(box!.height).toBeLessThan(64);
-  await page.getByLabel("Pseudo", { exact: true }).fill("Alice App");
-  const save = page.getByRole("button", { name: "Enregistrer", exact: true });
-  await expect(save).toHaveAttribute("data-variant", "primary");
-  await save.click();
-  expect(env.profile()?.name).toBe("Alice App");
-  await page.getByRole("button", { name: "Profil joueur : Alice App" }).click();
-  await page.getByRole("button", { name: "Supprimer la photo" }).click();
-  await expect(
-    page.getByRole("button", { name: "Ajouter une photo de profil" }),
-  ).toBeVisible();
-  await page.screenshot({
-    path: `/tmp/tetris-profile-${info.project.name}.png`,
-  });
-  await expect(page.locator('[role="dialog"]')).toBeVisible();
-  expect(
-    await page
-      .locator('[role="dialog"]')
-      .evaluate((el) => el.scrollWidth - el.clientWidth),
-  ).toBeLessThanOrEqual(1);
+  await page.reload();
+  await expect(page.locator(".identity-profile")).toContainText(
+    "Nouvelle Alice",
+  );
 });
 
-test("pending score cannot move to a different identity after reload", async ({
+for (const outcome of ["success", "cancel", "failure"] as const)
+  test(`Google popup ${outcome} preserves the pending score`, async ({
+    page,
+  }) => {
+    const env = await identityEnvironment(page);
+    env.popup(outcome);
+    await page.goto("/en/jeux/tetris");
+    await endGame(page);
+    const score = await page.locator(".lava-end-stats dd").nth(2).innerText();
+    await page
+      .getByRole("button", { name: "Se connecter avec Google", exact: true })
+      .click();
+    if (outcome === "success") {
+      await expect.poll(() => env.saved.length).toBe(1);
+      expect(env.saved[0].identity).toBe("google");
+      await expect(
+        page.getByRole("button", {
+          name: "Créer un profil local",
+          exact: true,
+        }),
+      ).toHaveCount(0);
+    } else {
+      await expect(page.locator(".identity-error")).toContainText(
+        "Connexion Google impossible ou annulée",
+      );
+      expect(env.saved).toHaveLength(0);
+      expect(
+        await page.evaluate(() =>
+          sessionStorage.getItem("lava-pending-score-v1"),
+        ),
+      ).not.toBeNull();
+      env.popup("success");
+      await page
+        .getByRole("button", { name: "Réessayer", exact: true })
+        .click();
+      await expect.poll(() => env.saved.length).toBe(1);
+    }
+    await expect(page.locator(".lava-end-stats dd").nth(2)).toHaveText(score);
+  });
+
+test("blocked Google popup has a readable retry action", async ({ page }) => {
+  await identityEnvironment(page);
+  await page.addInitScript(() => {
+    window.open = () => null;
+  });
+  await page.goto("/en/jeux");
+  await page
+    .getByRole("button", { name: "Se connecter avec Google", exact: true })
+    .click();
+  await expect(page.locator(".identity-error")).toContainText("bloquée");
+  await expect(
+    page.getByRole("button", { name: "Réessayer", exact: true }),
+  ).toBeVisible();
+});
+
+test("profile validation handles empty/invalid/duplicate names and invalid/heavy photos", async ({
   page,
 }) => {
-  const original: Profile = {
-    name: "Alice",
-    avatar: null,
-    kind: "local",
-    key: "a".repeat(64),
-  };
-  const env = await environment(page, original);
-  env.failSave(true);
-  await page.goto("/jeux/tetris");
-  await end(page);
-  await expect(
-    page.getByRole("status").filter({ hasText: "Sauvegarde en attente" }),
-  ).toBeVisible();
-  env.setProfile({
-    name: "Autre compte",
-    avatar: null,
-    kind: "google",
-    key: "b".repeat(64),
+  const env = await identityEnvironment(page);
+  await page.goto("/en/jeux");
+  await page
+    .getByRole("button", { name: "Créer un profil local", exact: true })
+    .click();
+  const save = page.getByRole("button", {
+      name: "Enregistrer le profil",
+      exact: true,
+    }),
+    name = page.getByLabel("Pseudo", { exact: true });
+  await save.click();
+  await expect(page.locator(".identity-error")).toContainText(
+    "Choisis un pseudo",
+  );
+  await name.fill("!");
+  await save.click();
+  await expect(page.locator(".identity-error")).toContainText("2 à 20");
+  await name.fill("Alice");
+  env.duplicate(true);
+  await save.click();
+  await expect(page.locator(".identity-error")).toContainText("déjà utilisé");
+  await page.getByLabel("Photo du profil").setInputFiles({
+    name: "bad.svg",
+    mimeType: "image/svg+xml",
+    buffer: Buffer.from("<svg/>"),
   });
-  env.failSave(false);
+  await expect(page.locator(".identity-error")).toContainText(
+    "JPEG, PNG ou WebP",
+  );
+  await page.getByLabel("Photo du profil").setInputFiles({
+    name: "heavy.png",
+    mimeType: "image/png",
+    buffer: Buffer.alloc(5_000_001),
+  });
+  await expect(page.locator(".identity-error")).toContainText("trop lourde");
+});
+
+test("network failure keeps local identity and scores available in this browser", async ({
+  page,
+}) => {
+  const env = await identityEnvironment(page, profiles.local);
+  await page.goto("/en/jeux");
+  await expect(page.locator(".identity-profile")).toContainText("Alice Locale");
+  env.failProfile(true);
+  env.failSave(true);
   await page.reload();
+  await expect(page.locator(".identity-profile")).toContainText("Alice Locale");
+  await expect(page.locator(".identity-error")).toContainText(
+    "Connexion indisponible",
+  );
+  await page.goto("/en/jeux/tetris");
+  await endGame(page);
   await expect(
-    page.getByRole("status").filter({ hasText: "identité d’origine" }),
+    page
+      .getByRole("status")
+      .filter({ hasText: "Score enregistré sur cet appareil" }),
   ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("tetris.local-scores.v2")!).length,
+    ),
+  ).toBe(1);
+});
+
+test("failed Google score is retained, retried once and cannot move to a different account", async ({
+  page,
+}) => {
+  const env = await identityEnvironment(page, profiles.google);
+  env.failSave(true);
+  await page.goto("/en/jeux/tetris");
+  await endGame(page);
+  await expect(page.locator(".identity-error")).toContainText(
+    "n’a pas pu être envoyé",
+  );
+  expect(
+    await page.evaluate(() => sessionStorage.getItem("lava-pending-score-v1")),
+  ).not.toBeNull();
+  env.setProfile({
+    ...profiles.google,
+    key: "c".repeat(64),
+    name: "Autre compte",
+  });
+  const pending = await page.evaluate(() =>
+    sessionStorage.getItem("lava-pending-score-v1"),
+  );
+  expect(
+    recoverDraft({
+      getItem: () => pending,
+      setItem: () => {},
+      removeItem: () => {},
+    }),
+  ).not.toBeNull();
+  await page.reload();
+  await expect(page.locator(".identity-error")).toContainText(
+    "identité d’origine",
+  );
   expect(env.saved).toHaveLength(0);
-  env.setProfile(original);
+  env.failSave(false);
+  env.setProfile(profiles.google);
   await page.reload();
   await expect.poll(() => env.saved.length).toBe(1);
-  expect(env.saved[0].recipient).toBe(original.key);
 });
-test("local sidebar photo upload persists with nickname and primary save", async ({
+
+test("anonymous nickname saves a score without creating a local profile", async ({
   page,
 }) => {
-  const env = await environment(page);
-  await page.goto("/jeux");
-  await page.getByRole("button", { name: "Créer mon profil joueur" }).click();
-  await page.getByLabel("Pseudo", { exact: true }).fill("Photo Alice");
-  const data = await page.evaluate(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 16;
-    canvas.height = 16;
-    const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "red";
-    ctx.fillRect(0, 0, 16, 16);
-    return canvas.toDataURL("image/png").split(",")[1];
-  });
+  const env = await identityEnvironment(page);
+  await page.goto("/en/jeux/tetris");
+  await endGame(page);
   await page
-    .locator('input[type="file"]')
-    .setInputFiles({
-      name: "avatar.png",
-      mimeType: "image/png",
-      buffer: Buffer.from(data, "base64"),
-    });
-  await expect(
-    page.getByRole("button", { name: "Modifier ma photo de profil" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  expect(env.profile()?.avatar).toMatch(/^data:image\/webp;base64,/);
-  await page.reload();
-  await page
-    .getByRole("button", { name: "Profil joueur : Photo Alice" })
+    .getByRole("button", {
+      name: "Enregistrer avec un pseudo anonyme",
+      exact: true,
+    })
     .click();
+  await page.getByLabel("Pseudo anonyme").fill("Mystère");
+  await page
+    .getByRole("button", { name: "Enregistrer le score", exact: true })
+    .click();
+  await expect.poll(() => env.saved.length).toBe(1);
+  expect(env.saved[0].identity).toBe("guest");
+  expect(env.profile()).toBeNull();
+  expect(
+    await page.evaluate(() => localStorage.getItem("tetris.local-profile.v2")),
+  ).toBeNull();
+});
+
+test("a local score survives a game started with no network session", async ({
+  page,
+}) => {
+  await identityEnvironment(page, profiles.local);
+  await page.route("**/api/tetris/sessions", (route) => route.abort());
+  await page.goto("/en/jeux/tetris");
+  await endGame(page);
   await expect(
-    page.getByRole("button", { name: "Modifier ma photo de profil" }),
+    page
+      .getByRole("status")
+      .filter({ hasText: "Score enregistré sur cet appareil" }),
   ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("tetris.local-scores.v2")!).length,
+    ),
+  ).toBe(1);
+});
+
+test("logout restores the saved local profile and errors have AA contrast", async ({
+  page,
+}) => {
+  const env = await identityEnvironment(page, profiles.local);
+  await page.goto("/en/jeux");
+  await expect(page.locator(".identity-profile")).toContainText("Alice Locale");
+  await page
+    .getByRole("button", { name: "Se connecter avec Google", exact: true })
+    .click();
+  await expect(page.locator(".identity-profile")).toContainText("Alice Google");
+  await page
+    .getByRole("button", { name: "Se déconnecter", exact: true })
+    .click();
+  await expect(page.locator(".identity-profile")).toContainText("Alice Locale");
+  env.failProfile(true);
+  await page.reload();
+  await expect(page.locator(".identity-error")).toBeVisible();
+  const contrast = await page.locator(".identity-error").evaluate((element) => {
+    const style = getComputedStyle(element),
+      canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 1;
+    const c = canvas.getContext("2d")!;
+    const luminance = (color: string) => {
+      c.clearRect(0, 0, 1, 1);
+      c.fillStyle = color;
+      c.fillRect(0, 0, 1, 1);
+      const p = c.getImageData(0, 0, 1, 1).data;
+      const v = [p[0], p[1], p[2]].map((n) => {
+        const s = n / 255;
+        return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      });
+      return v[0] * 0.2126 + v[1] * 0.7152 + v[2] * 0.0722;
+    };
+    const a = luminance(style.color),
+      b = luminance(style.backgroundColor);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  });
+  expect(contrast).toBeGreaterThanOrEqual(4.5);
 });

@@ -4,6 +4,7 @@ import {
   safeGamePath,
   googleIdentity,
   suggestedNickname,
+  googleDisplayName,
 } from "../auth/identity";
 import {
   saveDraft,
@@ -45,6 +46,14 @@ test("only verified Google identities choose account records; public suggestions
   );
   assert.equal(suggestedNickname({ full_name: "Mehdi Designer" }), "Mehdi");
   assert.equal(suggestedNickname({}), "Joueur");
+  assert.equal(
+    googleDisplayName({ name: "Alice Dupont", given_name: "Autre" }),
+    "Alice Dupont",
+  );
+  assert.equal(
+    googleDisplayName({ name: "secret@example.com" }),
+    "Joueur Google",
+  );
 });
 test("an ended game survives retries until acknowledged, with no trusted score data", () => {
   const port = storage(),
@@ -109,4 +118,23 @@ test("a late acknowledgement cannot delete a newer pending game", () => {
   assert.deepEqual(recoverDraft(port), draft);
   clearDraft(port, draft.run.id);
   assert.equal(recoverDraft(port), null);
+});
+
+test("offline draft metadata is preserved without changing replay validation", () => {
+  const port = storage();
+  const draft: ScoreDraft = {
+    run: { id: "d".repeat(64), seed: 0, steps: [], localOnly: true },
+    name: "",
+    summary: {
+      score: 10,
+      lines: 0,
+      level: 1,
+      pieces: 2,
+      elapsed: 500,
+      best: 10,
+    },
+  };
+  assert.equal(saveDraft(draft, port), true);
+  assert.deepEqual(recoverDraft(port), draft);
+  assert.equal(safeGamePath("/en/jeux"), "/en/jeux");
 });

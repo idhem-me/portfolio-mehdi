@@ -9,8 +9,8 @@ export function TetrisCover() {
         <span
           key={piece}
           style={{
-            left: 8 + i * 13 + "%",
-            top: (i % 2 ? 56 : 14) + "%",
+            left: -8 + i * 14 + "%",
+            top: (i % 2 ? 42 : -12) + "%",
             transform: "rotate(" + ((i % 3) - 1) * 9 + "deg)",
           }}
         >

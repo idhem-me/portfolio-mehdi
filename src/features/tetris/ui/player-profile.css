@@ -27,3 +27,68 @@
 .player-profile-form > button {
   width: 100%;
 }
+
+.identity-sheet-content {
+  padding: 0 calc(var(--spacing) * 6) calc(var(--spacing) * 6);
+}
+.identity-selector,
+.identity-form {
+  display: grid;
+  gap: calc(var(--spacing) * 3);
+  min-width: 0;
+  text-align: start;
+}
+.identity-selector button {
+  width: 100%;
+  min-height: 44px;
+  white-space: normal;
+  height: auto;
+  padding-block: calc(var(--spacing) * 3);
+}
+.identity-selector input {
+  min-height: 44px;
+  width: 100%;
+}
+.identity-profile,
+.identity-photo {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 3);
+  min-width: 0;
+}
+.identity-profile > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.identity-profile p {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  margin: 0;
+}
+.identity-photo button {
+  min-width: 44px;
+  width: auto;
+  flex-shrink: 1;
+}
+.identity-form {
+  padding-block: calc(var(--spacing) * 3);
+}
+.identity-form label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.identity-error {
+  display: grid;
+  gap: calc(var(--spacing) * 2);
+  padding: calc(var(--spacing) * 3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--muted);
+  color: var(--foreground);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.identity-error p {
+  margin: 0;
+}

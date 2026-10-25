@@ -1,6 +1,12 @@
 /* eslint-disable react-hooks/refs -- Imperative game engine: React HUD is explicitly refreshed at 25 Hz; canvas reads the same engine at frame rate. */
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   motion,
   useAnimationControls,
@@ -56,6 +62,7 @@ import { Leaderboard, type RankedRun } from "./leaderboard";
 import { PlayerIdentityProvider } from "./player-identity";
 import { GameOver } from "./game-over";
 import { PlayerProfileButton } from "./player-profile";
+import { IdentitySelector } from "./identity-selector";
 import { recoverDraft, type ScoreDraft } from "../auth/draft";
 import "./game.css";
 const controls = [
@@ -88,11 +95,17 @@ function Score({ value, reduced }: { value: number; reduced: boolean }) {
     </motion.div>
   );
 }
+const subscribeHydration = () => () => {};
 function TetrisGame({
   information = [],
 }: {
   information?: CaseStudySection[];
 }) {
+  const hydrated = useSyncExternalStore(
+    subscribeHydration,
+    () => true,
+    () => false,
+  );
   const [recovered, setRecovered] = useState<ScoreDraft | null>(null);
   const audio = useRef<GameAudio | null>(null);
   const ranked = useRef<RankedRun | null>(null);
@@ -419,16 +432,17 @@ function TetrisGame({
             <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
             <span>Jeux</span>
           </Link>
-          <PlayerProfileButton className="lava-lobby-profile" />
+
           <Card className="lava-lobby-panel">
             <span className="lava-wordmark" aria-hidden="true">
               Tetris
             </span>
+            <IdentitySelector onContinue={() => void start()} />
             <Button
               variant="accent"
               size="lg"
               onClick={start}
-              disabled={preparing}
+              disabled={preparing || !hydrated}
             >
               {preparing ? "Préparation…" : "Jouer"}
             </Button>
@@ -454,8 +468,8 @@ function TetrisGame({
         <>
           <div className="lava-top">
             <span className="lava-wordmark">Tetris</span>
-            <PlayerProfileButton />
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <PlayerProfileButton />
               <Button
                 variant="ghost"
                 aria-label="Réglages"

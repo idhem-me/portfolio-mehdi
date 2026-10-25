@@ -8,7 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { PlayerIdentityProvider } from "@/features/tetris/ui/player-identity";
-import { PlayerProfileButton } from "@/features/tetris/ui/player-profile";
+import { IdentitySelector } from "@/features/tetris/ui/identity-selector";
 import { TetrisCover } from "@/features/tetris/ui/tetris-cover";
 
 export const instant = false;
@@ -49,11 +49,13 @@ export default async function GamesPage({ params }: Props) {
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {page.title}
         </h1>
-        <PlayerIdentityProvider>
-          <PlayerProfileButton />
-        </PlayerIdentityProvider>
       </header>
 
+      <PlayerIdentityProvider>
+        <div className="rounded-xl border border-border p-5">
+          <IdentitySelector />
+        </div>
+      </PlayerIdentityProvider>
       <div className="flex flex-col gap-4">
         {page.caseStudies.map((study) => {
           const cardClass = cn(

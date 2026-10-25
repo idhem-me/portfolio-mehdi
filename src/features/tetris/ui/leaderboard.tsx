@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -9,9 +8,9 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { clearDraft, type RankedRun, type ScoreDraft } from "../auth/draft";
-import { IdentityChoices, usePlayerIdentity } from "./player-identity";
-import { writeStore } from "../feel/config";
+import type { ScoreDraft } from "../auth/draft";
+import { IdentityChoices } from "./player-identity";
+import { useIdentityState } from "../profile/client-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export type { RankedRun } from "../auth/draft";
 export function Leaderboard({
@@ -23,6 +22,7 @@ export function Leaderboard({
   onOpenChange: (open: boolean) => void;
   draft?: ScoreDraft;
 }) {
+  const identity = useIdentityState();
   const [rows, setRows] = useState<
       | {
           name: string;
@@ -102,120 +102,48 @@ export function Leaderboard({
               ))}
             </ol>
           )}
+          {identity.scores.length > 0 && (
+            <section aria-label="Scores sur cet appareil">
+              <h3 className="font-medium">Sur cet appareil</h3>
+              <ol className="space-y-3">
+                {[...identity.scores]
+                  .filter(
+                    (row) =>
+                      row.kind !== "google" ||
+                      row.identityKey === identity.profile?.key,
+                  )
+                  .sort((a, b) => b.score - a.score)
+                  .slice(0, 20)
+                  .map((row) => (
+                    <li key={row.id} className="flex items-center gap-3">
+                      <Avatar className="size-9">
+                        {row.identityKey === identity.profile?.key &&
+                          identity.profile.avatar && (
+                            <AvatarImage src={identity.profile.avatar} alt="" />
+                          )}
+                        <AvatarFallback>
+                          {row.name.slice(0, 1).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="min-w-0 flex-1 truncate">
+                        {row.identityKey === identity.profile?.key
+                          ? identity.profile.name
+                          : row.name}
+                      </span>
+                      <span className="font-mono">
+                        {row.score.toLocaleString("fr")}
+                      </span>
+                    </li>
+                  ))}
+              </ol>
+            </section>
+          )}
           <p className="text-xs text-muted-foreground">
-            Google et envois publics au pseudo. Les profils locaux restent
-            privés.
+            Google et pseudos anonymes figurent au classement général. Les
+            profils locaux restent sur cet appareil.
           </p>
         </div>
       </SheetContent>
     </Sheet>
-  );
-}
-export function SubmitScore({
-  run,
-  onOpen,
-  draft,
-  initialName,
-  onSubmitted,
-}: {
-  run: RankedRun | null;
-  onOpen: () => void;
-  draft?: ScoreDraft;
-  initialName?: string;
-  onSubmitted?: (rank: number | null | undefined) => void;
-}) {
-  const identity = usePlayerIdentity();
-  const [name, setName] = useState<string | undefined>(
-      initialName || undefined,
-    ),
-    [state, setState] = useState(""),
-    [pending, setPending] = useState(false),
-    [done, setDone] = useState(false);
-  const publicName =
-    name ??
-    (identity.mode === "google" ? identity.auth.user?.displayName || "" : "");
-  if (!run)
-    return <p className="text-xs text-muted-foreground">Partie non classée.</p>;
-  if (done)
-    return (
-      <div className="lava-score-saved">
-        <span className="sr-only" role="status">
-          Score enregistré
-        </span>
-        <Button type="button" variant="outline" onClick={onOpen}>
-          Voir le classement
-        </Button>
-      </div>
-    );
-  return (
-    <form
-      className="lava-score-form w-full space-y-3"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        if (pending || done) return;
-        setPending(true);
-        setState("");
-        try {
-          const r = await fetch("/api/tetris/leaderboard", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...run,
-              name: publicName,
-              identity: identity.mode,
-            }),
-            signal: AbortSignal.timeout(15000),
-          });
-          const data = await r.json();
-          if (!r.ok) throw Error(data.error);
-          clearDraft();
-          writeStore("lava-nickname", publicName);
-          setDone(true);
-          onSubmitted?.(data.rank);
-        } catch (error) {
-          setState(
-            error instanceof Error ? error.message : "Envoi impossible.",
-          );
-        } finally {
-          setPending(false);
-        }
-      }}
-    >
-      <IdentityChoices
-        disabled={pending || done}
-        draft={draft ? { ...draft, name: publicName } : undefined}
-      />
-      <label htmlFor="lava-pseudo" className="text-sm">
-        {identity.mode === "google"
-          ? "Nom affiché au classement"
-          : "Votre pseudonyme public"}
-      </label>
-      <Input
-        id="lava-pseudo"
-        minLength={2}
-        maxLength={20}
-        required
-        value={publicName}
-        onChange={(e) => setName(e.target.value)}
-        disabled={pending || done}
-        autoComplete="nickname"
-      />
-      <Button
-        type="submit"
-        variant="accent"
-        size="lg"
-        disabled={pending || done}
-      >
-        {pending ? "Vérification…" : done ? "Score envoyé" : "Valider"}
-      </Button>
-      <p role="status" className="text-xs">
-        {state}
-      </p>
-      {done && (
-        <Button type="button" variant="ghost" onClick={onOpen}>
-          Voir le classement
-        </Button>
-      )}
-    </form>
   );
 }

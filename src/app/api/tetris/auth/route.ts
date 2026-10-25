@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { gate, json } from "@/features/tetris/server/http";
 import {
   authClient,
@@ -25,6 +25,13 @@ export async function POST(request: NextRequest) {
   if (denied) return denied;
   if (!googleConfigured()) return json({ user: null });
   const context = authClient(request);
-  await context.client.auth.signOut({ scope: "local" });
+  const { error } = await context.client.auth.signOut({ scope: "local" });
+  if (error)
+    return context.apply(
+      NextResponse.json(
+        { error: "Déconnexion impossible. Réessaie." },
+        { status: 503 },
+      ),
+    );
   return context.apply(json({ user: null }));
 }
