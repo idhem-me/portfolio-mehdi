@@ -1,58 +1,61 @@
-# Activer le classement général sur Vercel
+# Activer le classement avec votre compte Supabase
 
-Le code de connexion persistante est prêt. Le classement public reste désactivé tant que la base Turso et son token ne sont pas configurés : aucune base ni souscription n’a été créée à votre place.
+L’adaptateur Supabase est prêt ; l’interface, les pseudonymes et la vérification des scores restent identiques. Il n’est pas nécessaire de créer un compte Turso ni d’ajouter Supabase Auth aux joueurs.
 
-## 1. Créer la base dédiée
+## 1. Installer les tables dans le projet Supabase
 
-Dans [Turso](https://turso.tech/), se connecter puis créer une base libSQL dédiée, par exemple `lava-leaderboard`. Choisir le plan souhaité dans le compte ; ne pas utiliser une base contenant d’autres tables `sessions` ou `scores`.
+Dans votre projet Supabase existant, ouvrir **SQL Editor → New query**, coller le contenu complet de :
 
-Récupérer l’URL `libsql://…turso.io` et générer un **Database Auth Token** autorisant la lecture et l’écriture. Il s’agit du token de cette base, pas d’une clé d’administration du compte. Les tables et index sont créés automatiquement au premier accès : aucun script SQL manuel nécessaire.
+[`supabase/migrations/202610250001_tetris_leaderboard.sql`](../../supabase/migrations/202610250001_tetris_leaderboard.sql)
 
-Documentation : [connexion TypeScript](https://docs.turso.tech/sdk/ts/quickstart), [création du token](https://docs.turso.tech/cli/db/tokens/create).
+Puis cliquer **Run**. La migration peut être réexécutée. Elle crée uniquement les tables préfixées `tetris_` et les quatre fonctions du classement ; elle ne modifie pas les tables d’une autre application.
 
-## 2. Ajouter les variables sur Vercel
+Les tables ont RLS activé. Les rôles navigateur `anon` et `authenticated` ne peuvent ni les lire ni appeler les fonctions. Seul le serveur Next.js, avec la clé secrète du projet, y accède. Le serveur rejoue une partie avant de soumettre un résultat ; PostgreSQL assure l’enregistrement atomique et empêche un double envoi. La première partie guidée reste hors classement.
 
-Ouvrir le projet **portfolio-mehdi**, puis **Settings → Environment Variables**. Pour l’environnement **Production** :
+## 2. Configurer Vercel
 
-| Nom | Valeur |
+Récupérer **Project URL** et une **Secret API key** (`sb_secret_…`) dans le panneau **Connect** ou **Settings → API Keys** de Supabase. Pour un ancien projet, une clé `service_role` reste prise en charge ; la clé `anon` ou `sb_publishable_…` ne convient pas.
+
+Dans Vercel → projet **portfolio-mehdi** → **Settings → Environment Variables**, pour **Production** :
+
+| Variable | Valeur |
 | --- | --- |
-| `TURSO_DATABASE_URL` | L’URL de la base dédiée |
-| `TURSO_AUTH_TOKEN` | Le Database Auth Token, enregistré comme secret |
-| `NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD` | Modifier la valeur existante `false` en `true` |
+| `SUPABASE_URL` | `https://votre-projet.supabase.co` |
+| `SUPABASE_SECRET_KEY` | La clé secrète Supabase, enregistrée comme secret |
+| `NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD` | Modifier `false` en `true` |
 
-Conserver `NEXT_PUBLIC_ENABLE_TETRIS=true` et `NEXT_PUBLIC_ENABLE_TETRIS_SOUND=true`. Le son utilisateur reste Off par défaut. Les variables `TURSO_…` sont exclusivement serveur : ne jamais les préfixer par `NEXT_PUBLIC_`, les commiter ou les envoyer dans le chat.
+Alternative ancienne clé : utiliser `SUPABASE_SERVICE_ROLE_KEY` au lieu de `SUPABASE_SECRET_KEY`.
 
-Pour un test Preview séparé, ajouter ces variables à Preview en ciblant `feature/tetris-v2` et utiliser idéalement une base distincte. Les secrets de Production ne sont pas recopiés automatiquement vers Preview.
+Les deux variables Supabase sont exclusivement serveur : aucun préfixe `NEXT_PUBLIC_`, aucune clé dans le code, Git ou le chat. Si des variables Turso existent déjà, Supabase est prioritaire ; vous pouvez retirer celles de Turso de ce projet Vercel. Conserver les flags du jeu et du son tels quels.
 
-## 3. Reconstruire et déployer
+## 3. Redéployer puis vérifier
 
-Depuis la branche `feature/tetris-v2` à jour, lancer :
+Redéployer le dernier déploiement de production contenant cette adaptation, ou lancer depuis `feature/tetris-v2` à jour :
 
 ```sh
 npx vercel deploy --prod --yes --archive=tgz
 ```
 
-Cette commande publie le code local courant, sans fusionner ni modifier `main`. Ne pas relancer un ancien déploiement de `main`, qui ne contient pas le jeu. Le flag public est figé au build : ajouter les variables sans reconstruire ne suffit pas.
+Ne pas redéployer une ancienne version de `main` sans le jeu. Le flag public nécessite un nouveau build.
 
-Documentation : [variables Vercel](https://vercel.com/docs/environment-variables/managing-environment-variables).
+Vérifier ensuite :
 
-## 4. Vérifier le résultat
+1. `/api/tetris/leaderboard` répond HTTP 200 avec `[]` au départ, et le bouton Classement devient actif.
+2. Terminer une partie classique après la première partie guidée, puis envoyer un score avec un pseudonyme.
+3. Vérifier depuis un autre téléphone que le score apparaît, puis qu’il reste présent après redéploiement.
 
-1. Ouvrir `/api/tetris/leaderboard` : réponse HTTP 200 avec `[]` au départ.
-2. Ouvrir `/jeux/tetris` : le bouton Classement doit être actif, avec un état vide clair.
-3. La toute première partie guidée ne compte pas. Jouer une partie classique suivante, aller au game over, saisir un pseudonyme et choisir Envoyer mon score.
-4. Depuis un second navigateur ou téléphone, vérifier que ce pseudonyme et son score apparaissent ; après un nouveau déploiement, ils doivent toujours être présents.
-5. Vérifier qu’une nouvelle soumission de la même session est refusée et qu’une partie moins bonne n’écrase pas le record personnel.
+Le classement affiche les 20 premiers records de moins de 90 jours, avec un seul record par navigateur. Les pauses sont permises. Aucun compte joueur requis. Le cookie distingue les navigateurs, pas les personnes ; la validation des replays ne détecte pas tous les bots.
 
-Le classement conserve un meilleur score par navigateur, affiche les 20 premiers des 90 derniers jours et calcule le score à partir de la relecture serveur. Le cookie anonyme n’identifie pas une personne : effacer ses cookies crée une nouvelle identité. Le serveur ne détecte pas tous les bots.
+## Dépannage
 
-## En cas d’erreur
+- HTTP 404 : le flag était désactivé lors du build ; modifier la valeur puis reconstruire.
+- HTTP 503 : vérifier Project URL, Secret API key, disponibilité du projet Supabase et exécution complète de la migration. Laisser le Data API Supabase actif pour ce backend REST/RPC.
+- Une clé publique est refusée par l’adaptateur ; utiliser une clé serveur secrète.
+- Si le classement est indisponible, la partie et son record local restent disponibles.
+- Pour désactiver le classement, remettre son flag à false et redéployer, sans supprimer les tables.
 
-- HTTP 404 : flag désactivé lors du build ; reconstruire avec le flag actif.
-- HTTP 503 : vérifier URL, token, droits d’écriture, validité du token et état de Turso. Aucun détail de connexion ni secret n’est renvoyé au joueur.
-- Le jeu solo reste jouable si la connexion au classement échoue.
-- Pour désactiver le classement, remettre son flag à false puis redéployer. Ne pas supprimer la base : les records peuvent être conservés.
+Sans connexion à votre compte, la migration et les permissions sont testées localement avec PostgreSQL (PGlite), et l’adaptateur via le contrat REST/RPC, y compris les réponses sans contenu HTTP 204. La connexion à votre projet réel reste à vérifier après ces étapes.
 
-## Vérification effectuée sans compte Turso
+Sources officielles : [clés Supabase](https://supabase.com/docs/guides/getting-started/api-keys), [fonctions PostgreSQL](https://supabase.com/docs/guides/database/functions), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
 
-L’adaptateur est testé avec libSQL sur disque temporaire, via deux connexions indépendantes : persistance, relecture, propriété de session, anti-double envoi, expiration, limitation des démarrages et record unique. Cela ne remplace pas le test de connexion à votre future base Turso. Aucune disponibilité distante n’est revendiquée avant l’étape 4.
+L’ancien adaptateur Turso reste disponible ; son [guide séparé](LEADERBOARD_TURSO_SETUP.md) est conservé pour les environnements qui l’utilisent déjà.

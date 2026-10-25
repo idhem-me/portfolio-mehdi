@@ -15,3 +15,7 @@ SQLite persistant sur serveur Node avec disque durable, localement dans `.local/
 ## Publication
 
 Conserver `main` intacte et pousser `feature/tetris-v2`. Activer `NEXT_PUBLIC_ENABLE_TETRIS=true` et `NEXT_PUBLIC_ENABLE_TETRIS_SOUND=true` au build et à l’exécution Vercel. Garder `NEXT_PUBLIC_ENABLE_TETRIS_LEADERBOARD=false`. Le son utilisateur reste Off par défaut même avec son flag actif. Le noindex est conservé tant que la publication SEO n’est pas explicitement décidée.
+
+## Backend Supabase
+
+Le compte Supabase existant est désormais privilégié : adaptateur REST/RPC côté serveur, migration PostgreSQL dédiée et tests réels des permissions et transactions. Le classement attend SUPABASE_URL et SUPABASE_SECRET_KEY, l’application de la migration et un build avec son flag actif. Guide : docs/tetris/LEADERBOARD_SETUP.md. Turso reste un backend alternatif ; il n’est plus nécessaire d’y créer un compte.
