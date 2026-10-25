@@ -773,3 +773,31 @@
 .lava-flash {
   background: var(--foreground);
 }
+
+.lava-side [data-slot="badge"] {
+  border-color: var(--border);
+  background: var(--background);
+}
+.lava-pause {
+  animation: none !important;
+  background: var(--background);
+  backdrop-filter: none;
+}
+.lava-game[data-state="paused"] .lava-top,
+.lava-game[data-state="paused"] .lava-side,
+.lava-game[data-state="paused"] .lava-controls {
+  visibility: hidden;
+}
+
+/* Reserve a small camera inset so the strongest line zoom cannot cover controls. */
+.lava-game[data-expanded="true"] {
+  --tetris-board-height: min(
+    calc(100dvh - var(--tetris-control-space) - 6.5rem),
+    calc((100vw - 2 * var(--tetris-hud-width) - 4 * var(--tetris-gap)) * 2)
+  );
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .lava-game[data-expanded="true"] {
+    --tetris-board-height: calc(100dvh - 4.5rem);
+  }
+}

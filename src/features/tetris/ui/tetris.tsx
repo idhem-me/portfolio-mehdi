@@ -421,32 +421,7 @@ export function Tetris({
                     transition={{ duration: 0.45 }}
                   />
                 )}
-              {status === "paused" ? (
-                <Card className="lava-cover lava-pause">
-                  <Button
-                    className="lava-pause-quit"
-                    variant="ghost"
-                    aria-label="Quitter la partie"
-                    onClick={() => {
-                      stopRepeat();
-                      setExpanded(false);
-                      setStatus("ready");
-                    }}
-                  >
-                    <X />
-                  </Button>
-                  <h2>Pause</h2>
-                  <Button
-                    variant="accent"
-                    onClick={() => {
-                      setStatus("playing");
-                      root.current?.focus({ preventScroll: true });
-                    }}
-                  >
-                    Reprendre
-                  </Button>
-                </Card>
-              ) : status === "over" ? (
+              {status === "over" ? (
                 <Card className="lava-cover">
                   <h2>Encore une ?</h2>
                   <p>
@@ -517,6 +492,32 @@ export function Tetris({
             </div>
           )}
         </>
+      )}
+      {status === "paused" && (
+        <Card className="lava-cover lava-pause">
+          <Button
+            className="lava-pause-quit"
+            variant="ghost"
+            aria-label="Quitter la partie"
+            onClick={() => {
+              stopRepeat();
+              setExpanded(false);
+              setStatus("ready");
+            }}
+          >
+            <X />
+          </Button>
+          <h2>Pause</h2>
+          <Button
+            variant="accent"
+            onClick={() => {
+              setStatus("playing");
+              root.current?.focus({ preventScroll: true });
+            }}
+          >
+            Reprendre
+          </Button>
+        </Card>
       )}
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         {" "}
