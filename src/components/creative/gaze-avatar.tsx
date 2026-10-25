@@ -9,20 +9,10 @@ import { cn } from "@/lib/utils";
 type Head = "AG" | "AD";
 
 type AgGaze =
-  | "centre"
-  | "haut"
-  | "haut-gauche"
-  | "gauche"
-  | "bas"
-  | "bas-gauche";
+  "centre" | "haut" | "haut-gauche" | "gauche" | "bas" | "bas-gauche";
 
 type AdGaze =
-  | "centre"
-  | "haut"
-  | "haut-droite"
-  | "droite"
-  | "bas"
-  | "bas-droite";
+  "centre" | "haut" | "haut-droite" | "droite" | "bas" | "bas-droite";
 
 type Gaze = AgGaze | AdGaze;
 
@@ -45,12 +35,13 @@ const AD_GAZES: AdGaze[] = [
   "bas-droite",
 ];
 
+const AVATAR_VERSION = "?v=original-colors-1";
 const AVATAR_SRCS = [
   ...AG_GAZES.map((g) => `/img/avatar/AG-${g}.svg`),
   ...AD_GAZES.map((g) => `/img/avatar/AD-${g}.svg`),
   "/img/avatar/AG-clin.svg",
   "/img/avatar/AD-clin.svg",
-];
+].map((src) => src + AVATAR_VERSION);
 
 /**
  * Angles via Math.atan2(dy, dx) en degrés :
@@ -71,11 +62,11 @@ export function setAvatarWink(wink: Wink | null) {
 }
 
 function avatarSrc(head: Head, gaze: Gaze) {
-  return `/img/avatar/${head}-${gaze}.svg`;
+  return `/img/avatar/${head}-${gaze}.svg${AVATAR_VERSION}`;
 }
 
 function winkSrc(wink: Wink) {
-  return `/img/avatar/${wink}.svg`;
+  return `/img/avatar/${wink}.svg${AVATAR_VERSION}`;
 }
 
 function headFromSrc(src: string): Head | null {
@@ -289,7 +280,8 @@ export function GazeAvatar() {
     };
 
     const tryRequestPermission = async () => {
-      const DOE = DeviceOrientationEvent as unknown as DeviceOrientationPermission;
+      const DOE =
+        DeviceOrientationEvent as unknown as DeviceOrientationPermission;
       if (typeof DOE.requestPermission === "function") {
         try {
           const result = await DOE.requestPermission();
@@ -336,6 +328,8 @@ export function GazeAvatar() {
   return (
     <span
       ref={wrapRef}
+      data-avatar
+      style={{ colorScheme: "only light" }}
       data-physics-item
       data-physics-exact
       aria-hidden
