@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   if (denied) return denied;
   try {
     const owner = player(request),
-      response = json(store().session(owner));
+      response = json(await (await store()).session(owner));
     response.cookies.set("lava-player", owner, {
       httpOnly: true,
       sameSite: "lax",

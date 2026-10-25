@@ -77,11 +77,33 @@ export class LeaderboardStore {
       .all(Date.now() - 90 * 86400000);
   }
 }
+type Backend =
+  LeaderboardStore | import("./remote-store").RemoteLeaderboardStore;
 const globalStore = globalThis as typeof globalThis & {
-  lavaStore?: LeaderboardStore;
+  lavaStore?: Promise<Backend>;
 };
-export function store() {
-  return (globalStore.lavaStore ??= new LeaderboardStore(
-    process.env.TETRIS_DB_PATH || resolve(".local/tetris/leaderboard.sqlite"),
-  ));
+export async function store(): Promise<Backend> {
+  return (globalStore.lavaStore ??= (async () => {
+    const url = process.env.TURSO_DATABASE_URL;
+    const token = process.env.TURSO_AUTH_TOKEN;
+    if (url || token) {
+      if (!url || !token || !/^(libsql|https):\/\//.test(url))
+        throw Error("Configuration du classement incomplète.");
+      const [{ createClient }, { RemoteLeaderboardStore }] = await Promise.all([
+        import("@libsql/client/web"),
+        import("./remote-store"),
+      ]);
+      return new RemoteLeaderboardStore(
+        createClient({ url, authToken: token }),
+      );
+    }
+    if (process.env.VERCEL)
+      throw Error("Le classement nécessite une base distante persistante.");
+    return new LeaderboardStore(
+      process.env.TETRIS_DB_PATH || resolve(".local/tetris/leaderboard.sqlite"),
+    );
+  })().catch((error) => {
+    globalStore.lavaStore = undefined;
+    throw error;
+  }));
 }

@@ -22,12 +22,32 @@ export function json(data: unknown) {
     headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" },
   });
 }
+// Only domain messages may reach the client; SDK errors can contain connection details.
+const publicErrors = new Set([
+  "Patientez une minute avant de rejouer en classement.",
+  "Pseudonyme : 2 à 20 lettres, chiffres, espaces, points ou tirets.",
+  "Session expirée ou déjà envoyée.",
+  "Durée de partie invalide.",
+  "Score déjà envoyé.",
+  "Partie trop longue ou invalide.",
+  "Actions après la fin.",
+  "Action invalide.",
+  "Partie inachevée ou trop longue.",
+  "Partie trop longue.",
+  "Envoi invalide.",
+]);
 export function failure(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  const isPublic = publicErrors.has(message);
   return NextResponse.json(
     {
-      error:
-        error instanceof Error ? error.message : "Classement indisponible.",
+      error: isPublic
+        ? message
+        : "Classement indisponible. Votre record reste enregistré sur cet appareil.",
     },
-    { status: 400, headers: { "Cache-Control": "no-store" } },
+    {
+      status: isPublic ? 400 : 503,
+      headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" },
+    },
   );
 }

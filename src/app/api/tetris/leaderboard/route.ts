@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   if (denied) return denied;
   try {
     await connection();
-    return json(store().list());
+    return json(await (await store()).list());
   } catch {
     return new Response("Classement indisponible", { status: 503 });
   }
@@ -21,7 +21,9 @@ export async function POST(request: NextRequest) {
     if (typeof body.id !== "string" || typeof body.name !== "string")
       throw Error("Envoi invalide.");
     return json(
-      store().submit(player(request), body.id, body.name, body.steps),
+      await (
+        await store()
+      ).submit(player(request), body.id, body.name, body.steps),
     );
   } catch (error) {
     return failure(error);
