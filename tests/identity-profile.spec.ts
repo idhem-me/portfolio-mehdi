@@ -1,5 +1,12 @@
 import { test, expect } from "@playwright/test";
-import { identityEnvironment, endGame, profiles } from "./helpers/identity";
+import {
+  identityEnvironment,
+  endGame,
+  profiles,
+  connectGoogle,
+  openIdentityMenu,
+  openPseudo,
+} from "./helpers/identity";
 import { recoverDraft } from "../src/features/tetris/auth/draft";
 for (const kind of ["anonymous", "local", "google"] as const)
   for (const screen of ["games", "lobby", "gameover"] as const) {
@@ -14,52 +21,50 @@ for (const kind of ["anonymous", "local", "google"] as const)
       );
       await page.goto(screen === "games" ? "/en/jeux" : "/en/jeux/tetris");
       if (screen === "gameover") await endGame(page);
-      const selector = page
-        .locator(`.identity-selector[data-identity="${kind}"]`)
-        .filter({ visible: true })
-        .first();
-      await expect(selector).toBeVisible();
-      await expect(
-        selector.getByRole("status").filter({ hasText: "Chargement" }),
-      ).toHaveCount(0);
-      if (kind === "google") {
-        await expect(selector).toContainText("Alice Google");
+      if (screen === "gameover" && kind === "anonymous") {
         await expect(
-          selector.getByRole("button", { name: "Se déconnecter", exact: true }),
+          page.getByRole("textbox", { name: "Pseudo", exact: true }),
         ).toBeVisible();
         await expect(
-          selector.getByRole("button", { name: /Créer|Modifier|Se connecter/ }),
-        ).toHaveCount(0);
-        await expect(
-          selector.locator('[data-slot="avatar-fallback"]'),
-        ).toContainText("AG");
+          page.getByRole("button", { name: "Valider", exact: true }),
+        ).toHaveAttribute("data-variant", "primary");
       } else {
+        const avatar = page
+          .getByRole("button", {
+            name:
+              kind === "anonymous"
+                ? "Choisir mon identité"
+                : `Profil joueur : ${profiles[kind].name}`,
+            exact: true,
+          })
+          .filter({ visible: true })
+          .last();
+        await expect(avatar).toBeVisible();
+        await openIdentityMenu(page);
         await expect(
-          selector.getByRole("button", {
-            name: "Se connecter avec Google",
+          page.getByRole("menuitem", {
+            name:
+              kind === "anonymous"
+                ? "Ajouter un pseudo"
+                : "Modifier mon pseudo",
             exact: true,
           }),
         ).toBeVisible();
         await expect(
-          selector.getByRole("button", {
-            name: kind === "local" ? "Modifier" : "Créer un profil local",
+          page.getByRole("menuitem", {
+            name:
+              kind === "google" ? "Se déconnecter" : "Se connecter avec Google",
             exact: true,
           }),
         ).toBeVisible();
-        if (kind === "anonymous")
+        if (kind === "google")
           await expect(
-            selector.getByRole("button", {
-              name: "Continuer sans enregistrer",
+            page.getByRole("menuitem", {
+              name: "Modifier mon pseudo",
               exact: true,
             }),
-          ).toBeVisible();
-        else
-          await expect(
-            selector.getByRole("button", {
-              name: "Créer un profil local",
-              exact: true,
-            }),
-          ).toHaveCount(0);
+          ).toBeDisabled();
+        await page.keyboard.press("Escape");
       }
       if (screen === "gameover") {
         await expect(
@@ -68,13 +73,6 @@ for (const kind of ["anonymous", "local", "google"] as const)
         if (kind !== "anonymous")
           await expect.poll(() => env.saved.length).toBe(1);
       }
-      const actions = await selector.locator("button").evaluateAll((buttons) =>
-        buttons.map((b) => ({
-          height: b.getBoundingClientRect().height,
-          width: b.getBoundingClientRect().width,
-        })),
-      );
-      expect(actions.every((b) => b.height >= 44 && b.width >= 44)).toBe(true);
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
@@ -92,11 +90,13 @@ test("creating a local profile at game over attaches the current score, photo an
   const env = await identityEnvironment(page);
   await page.goto("/en/jeux/tetris");
   await endGame(page);
-  const score = await page.locator(".lava-end-stats dd").nth(2).innerText();
+  const score = await page.locator(".lava-end-score").innerText();
   await page
-    .getByRole("button", { name: "Créer un profil local", exact: true })
-    .click();
-  await page.getByLabel("Pseudo", { exact: true }).fill("Nouvelle Alice");
+    .getByRole("textbox", { name: "Pseudo", exact: true })
+    .fill("Nouvelle Alice");
+  await page.getByRole("button", { name: "Valider", exact: true }).click();
+  await expect.poll(() => env.saved.length).toBe(1);
+  await openPseudo(page);
   const png = await page.evaluate(() => {
     const c = document.createElement("canvas");
     c.width = 800;
@@ -111,11 +111,9 @@ test("creating a local profile at game over attaches the current score, photo an
     mimeType: "image/png",
     buffer: Buffer.from(png, "base64"),
   });
-  await page
-    .getByRole("button", { name: "Enregistrer le profil", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect.poll(() => env.saved.length).toBe(1);
-  await expect(page.locator(".lava-end-stats dd").nth(2)).toHaveText(score);
+  await expect(page.locator(".lava-end-score")).toHaveText(score);
   expect(env.profile()?.avatar).toMatch(/^data:image\/(webp|png|jpeg)/);
   const size = await page.evaluate(async (avatar) => {
     const image = await createImageBitmap(await (await fetch(avatar!)).blob());
@@ -133,13 +131,19 @@ test("creating a local profile at game over attaches the current score, photo an
     await page.evaluate(() => sessionStorage.getItem("lava-pending-score-v1")),
   ).toBeNull();
   await page.goto("/en/jeux");
-  await expect(page.locator(".identity-profile")).toContainText(
-    "Nouvelle Alice",
-  );
+  await expect(
+    page.getByRole("button", {
+      name: "Profil joueur : Nouvelle Alice",
+      exact: true,
+    }),
+  ).toBeVisible();
   await page.reload();
-  await expect(page.locator(".identity-profile")).toContainText(
-    "Nouvelle Alice",
-  );
+  await expect(
+    page.getByRole("button", {
+      name: "Profil joueur : Nouvelle Alice",
+      exact: true,
+    }),
+  ).toBeVisible();
 });
 
 for (const outcome of ["success", "cancel", "failure"] as const)
@@ -150,16 +154,14 @@ for (const outcome of ["success", "cancel", "failure"] as const)
     env.popup(outcome);
     await page.goto("/en/jeux/tetris");
     await endGame(page);
-    const score = await page.locator(".lava-end-stats dd").nth(2).innerText();
-    await page
-      .getByRole("button", { name: "Se connecter avec Google", exact: true })
-      .click();
+    const score = await page.locator(".lava-end-score").innerText();
+    await connectGoogle(page);
     if (outcome === "success") {
       await expect.poll(() => env.saved.length).toBe(1);
       expect(env.saved[0].identity).toBe("google");
       await expect(
         page.getByRole("button", {
-          name: "Créer un profil local",
+          name: "Pseudo",
           exact: true,
         }),
       ).toHaveCount(0);
@@ -179,7 +181,7 @@ for (const outcome of ["success", "cancel", "failure"] as const)
         .click();
       await expect.poll(() => env.saved.length).toBe(1);
     }
-    await expect(page.locator(".lava-end-stats dd").nth(2)).toHaveText(score);
+    await expect(page.locator(".lava-end-score")).toHaveText(score);
   });
 
 test("blocked Google popup has a readable retry action", async ({ page }) => {
@@ -188,9 +190,7 @@ test("blocked Google popup has a readable retry action", async ({ page }) => {
     window.open = () => null;
   });
   await page.goto("/en/jeux");
-  await page
-    .getByRole("button", { name: "Se connecter avec Google", exact: true })
-    .click();
+  await connectGoogle(page);
   await expect(page.locator(".identity-error")).toContainText("bloquée");
   await expect(
     page.getByRole("button", { name: "Réessayer", exact: true }),
@@ -202,14 +202,12 @@ test("profile validation handles empty/invalid/duplicate names and invalid/heavy
 }) => {
   const env = await identityEnvironment(page);
   await page.goto("/en/jeux");
-  await page
-    .getByRole("button", { name: "Créer un profil local", exact: true })
-    .click();
+  await openPseudo(page);
   const save = page.getByRole("button", {
-      name: "Enregistrer le profil",
+      name: "Enregistrer",
       exact: true,
     }),
-    name = page.getByLabel("Pseudo", { exact: true });
+    name = page.getByRole("textbox", { name: "Pseudo", exact: true });
   await save.click();
   await expect(page.locator(".identity-error")).toContainText(
     "Choisis un pseudo",
@@ -242,11 +240,22 @@ test("network failure keeps local identity and scores available in this browser"
 }) => {
   const env = await identityEnvironment(page, profiles.local);
   await page.goto("/en/jeux");
-  await expect(page.locator(".identity-profile")).toContainText("Alice Locale");
+  await expect(
+    page.getByRole("button", {
+      name: "Profil joueur : Alice Locale",
+      exact: true,
+    }),
+  ).toBeVisible();
   env.failProfile(true);
   env.failSave(true);
   await page.reload();
-  await expect(page.locator(".identity-profile")).toContainText("Alice Locale");
+  await expect(
+    page.getByRole("button", {
+      name: "Profil joueur : Alice Locale",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await openIdentityMenu(page);
   await expect(page.locator(".identity-error")).toContainText(
     "Connexion indisponible",
   );
@@ -303,28 +312,27 @@ test("failed Google score is retained, retried once and cannot move to a differe
   await expect.poll(() => env.saved.length).toBe(1);
 });
 
-test("anonymous nickname saves a score without creating a local profile", async ({
+test("the single pseudo flow saves the current score and remembers the identity", async ({
   page,
 }) => {
   const env = await identityEnvironment(page);
   await page.goto("/en/jeux/tetris");
   await endGame(page);
   await page
-    .getByRole("button", {
-      name: "Enregistrer avec un pseudo anonyme",
-      exact: true,
-    })
-    .click();
-  await page.getByLabel("Pseudo anonyme").fill("Mystère");
-  await page
-    .getByRole("button", { name: "Enregistrer le score", exact: true })
-    .click();
+    .getByRole("textbox", { name: "Pseudo", exact: true })
+    .fill("Mystère");
+  await page.getByRole("button", { name: "Valider", exact: true }).click();
   await expect.poll(() => env.saved.length).toBe(1);
-  expect(env.saved[0].identity).toBe("guest");
-  expect(env.profile()).toBeNull();
+  expect(env.saved[0].identity).toBeUndefined();
+  expect(env.profile()?.kind).toBe("local");
   expect(
-    await page.evaluate(() => localStorage.getItem("tetris.local-profile.v2")),
-  ).toBeNull();
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("tetris.local-profile.v2")!).name,
+    ),
+  ).toBe("Mystère");
+  await expect(
+    page.getByRole("button", { name: /anonyme|Créer un profil local/ }),
+  ).toHaveCount(0);
 });
 
 test("a local score survives a game started with no network session", async ({
@@ -351,17 +359,33 @@ test("logout restores the saved local profile and errors have AA contrast", asyn
 }) => {
   const env = await identityEnvironment(page, profiles.local);
   await page.goto("/en/jeux");
-  await expect(page.locator(".identity-profile")).toContainText("Alice Locale");
+  await expect(
+    page.getByRole("button", {
+      name: "Profil joueur : Alice Locale",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await connectGoogle(page);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", {
+      name: "Profil joueur : Alice Google",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await openIdentityMenu(page);
   await page
-    .getByRole("button", { name: "Se connecter avec Google", exact: true })
+    .getByRole("menuitem", { name: "Se déconnecter", exact: true })
     .click();
-  await expect(page.locator(".identity-profile")).toContainText("Alice Google");
-  await page
-    .getByRole("button", { name: "Se déconnecter", exact: true })
-    .click();
-  await expect(page.locator(".identity-profile")).toContainText("Alice Locale");
+  await expect(
+    page.getByRole("button", {
+      name: "Profil joueur : Alice Locale",
+      exact: true,
+    }),
+  ).toBeVisible();
   env.failProfile(true);
   await page.reload();
+  await openIdentityMenu(page);
   await expect(page.locator(".identity-error")).toBeVisible();
   const contrast = await page.locator(".identity-error").evaluate((element) => {
     const style = getComputedStyle(element),

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,7 +7,6 @@ import {
   CardTitle,
   CardContent,
   CardFooter,
-  CardDescription,
 } from "@/components/ui/card";
 import {
   saveDraft,
@@ -16,25 +15,36 @@ import {
   type RankedRun,
   type ScoreDraft,
 } from "../auth/draft";
-import { submitLocalScore, useIdentityState } from "../profile/client-store";
+import {
+  saveDeviceScore,
+  saveProfile,
+  submitLocalScore,
+  useIdentityState,
+} from "../profile/client-store";
 import { IdentitySelector, IdentityError } from "./identity-selector";
+import { PlayerProfileButton } from "./player-profile";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { validateNickname } from "../profile/fields";
 export function GameOver({
   summary,
-  run,
   localRun,
   initialName,
   expectedRecipient,
   onReplay,
   onMenu,
+  onLeaderboard,
+  leaderboardAvailable,
   preparing,
 }: {
   summary: GameSummary;
-  run: RankedRun | null;
   localRun: (RankedRun & { opening: boolean }) | null;
   initialName?: string;
   expectedRecipient?: string;
   onReplay: () => void;
   onMenu: () => void;
+  onLeaderboard: () => void;
+  leaderboardAvailable: boolean;
   preparing: boolean;
 }) {
   const identity = useIdentityState();
@@ -49,11 +59,15 @@ export function GameOver({
   }));
   const scoreRun = localRun ?? offlineRun;
   const [sent, setSent] = useState(false),
-    [skipped, setSkipped] = useState(false),
-    [rank, setRank] = useState<number | null | undefined>(),
     [message, setMessage] = useState(""),
     [retry, setRetry] = useState(0),
     [busy, setBusy] = useState(false);
+  const nameId = useId();
+  const [name, setName] = useState(initialName ?? "");
+  const [profileError, setProfileError] = useState("");
+  const [profileBusy, setProfileBusy] = useState(false);
+  const [deviceSaved, setDeviceSaved] = useState(false);
+  const [deviceError, setDeviceError] = useState("");
   const saving = useRef(false),
     recipient = useRef(expectedRecipient);
   const draft: ScoreDraft | undefined = scoreRun
@@ -69,9 +83,45 @@ export function GameOver({
     currentDraft.current = draft;
   });
   useEffect(() => {
-    if (currentDraft.current && !sent && !skipped)
-      saveDraft(currentDraft.current);
-  }, [scoreRun.id, sent, skipped]);
+    if (currentDraft.current && !sent) saveDraft(currentDraft.current);
+  }, [scoreRun.id, sent]);
+  useEffect(() => {
+    if (!identity.loaded || identity.loading || identity.kind === "google")
+      return;
+    let active = true;
+    void saveDeviceScore({
+      ...scoreRun,
+      summary,
+      name: identity.profile?.name ?? (initialName || "Anonyme"),
+      recipient: recipient.current ?? identity.profile?.key,
+    })
+      .then(() => {
+        if (active) {
+          setDeviceSaved(true);
+          setDeviceError("");
+        }
+      })
+      .catch((error) => {
+        if (active)
+          setDeviceError(
+            error instanceof Error
+              ? error.message
+              : "Le score n’a pas pu être enregistré sur cet appareil.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    identity.loaded,
+    identity.loading,
+    identity.kind,
+    identity.profile,
+    initialName,
+    scoreRun,
+    summary,
+    retry,
+  ]);
   useEffect(() => {
     const profile = identity.profile;
     if (
@@ -79,7 +129,6 @@ export function GameOver({
       identity.loading ||
       !profile ||
       sent ||
-      skipped ||
       saving.current
     )
       return;
@@ -95,20 +144,17 @@ export function GameOver({
     saving.current = true;
     setBusy(true);
     setMessage("");
-    void submitLocalScore(
-      {
-        id: scoreRun.id,
-        steps: scoreRun.steps,
-        opening: scoreRun.opening,
-        localOnly: scoreRun.localOnly,
-        recipient: profile.key,
-        summary,
-        ...(profile.kind === "google"
-          ? { identity: "google" as const, name: profile.name }
-          : {}),
-      },
-      (result) => setRank(result.rank),
-    )
+    void submitLocalScore({
+      id: scoreRun.id,
+      steps: scoreRun.steps,
+      opening: scoreRun.opening,
+      localOnly: scoreRun.localOnly,
+      recipient: profile.key,
+      summary,
+      ...(profile.kind === "google"
+        ? { identity: "google" as const, name: profile.name }
+        : {}),
+    })
       .then((ok) => {
         if (ok) {
           setSent(true);
@@ -135,31 +181,9 @@ export function GameOver({
     identity.loading,
     scoreRun,
     sent,
-    skipped,
     retry,
     summary,
   ]);
-  async function anonymous(name: string) {
-    const ok = await submitLocalScore(
-      {
-        id: scoreRun.id,
-        steps: scoreRun.steps,
-        opening: scoreRun.opening,
-        localOnly: scoreRun.localOnly,
-        identity: "guest",
-        name,
-        summary,
-      },
-      (result) => setRank(result.rank),
-    );
-    if (!ok)
-      throw Error(
-        "Le score n’a pas pu être envoyé. Il est conservé ici ; vérifie ta connexion et réessaie.",
-      );
-    setSent(true);
-    clearDraft(undefined, scoreRun.id);
-    setMessage("Score enregistré avec ton pseudo anonyme");
-  }
   return (
     <div
       className="lava-cover lava-gameover"
@@ -175,80 +199,83 @@ export function GameOver({
           </CardTitle>
         </CardHeader>
         <CardContent className="lava-end-content">
-          <dl className="lava-end-stats">
-            <div>
-              <dt>
-                <CardDescription>Record</CardDescription>
-              </dt>
-              <dd className="lava-end-number">
-                {summary.best.toLocaleString("fr")}
-              </dd>
+          <div>
+            <p className="text-sm text-muted-foreground">Score</p>
+            <p className="lava-end-score lava-end-number">
+              {summary.score.toLocaleString("fr")}
+            </p>
+            {identity.kind !== "google" && deviceSaved && (
+              <p className="mt-2 text-sm" role="status">
+                Score enregistré sur cet appareil
+              </p>
+            )}
+          </div>
+          {identity.profile ? (
+            <div className="lava-end-identity">
+              <PlayerProfileButton draft={draft} />
+              <span>{identity.profile.name}</span>
             </div>
-            <div>
-              <dt>
-                <CardDescription>Classement</CardDescription>
-              </dt>
-              <dd className="lava-end-state">
-                {localRun?.opening
-                  ? "Partie guidée"
-                  : identity.kind === "local"
-                    ? "Sur cet appareil"
-                    : !run
-                      ? "Non classé"
-                      : !sent
-                        ? "En attente"
-                        : rank == null
-                          ? "Hors du top 20"
-                          : rank === 1
-                            ? "1er"
-                            : `${rank}e`}
-              </dd>
-            </div>
-            <div>
-              <dt>
-                <CardDescription>Score</CardDescription>
-              </dt>
-              <dd className="lava-end-number">
-                {summary.score.toLocaleString("fr")}
-              </dd>
-            </div>
-            <div>
-              <dt>
-                <CardDescription>Lignes</CardDescription>
-              </dt>
-              <dd className="lava-end-state">
-                {summary.lines.toLocaleString("fr")}
-              </dd>
-            </div>
-          </dl>
-          {((!sent && !skipped) || identity.kind !== "anonymous") && (
-            <IdentitySelector
-              context="gameover"
-              draft={draft}
-              disabled={busy}
-              onAnonymous={anonymous}
-              onContinue={() => {
-                setSkipped(true);
-                clearDraft(undefined, scoreRun.id);
+          ) : (
+            <form
+              className="lava-end-pseudo"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                setProfileError("");
+                setProfileBusy(true);
+                try {
+                  await saveProfile(validateNickname(name), null);
+                } catch (error) {
+                  setProfileError(
+                    error instanceof Error
+                      ? error.message
+                      : "Le pseudo n’a pas pu être enregistré. Réessaie.",
+                  );
+                } finally {
+                  setProfileBusy(false);
+                }
               }}
-            />
+            >
+              <label htmlFor={nameId}>Pseudo</label>
+              <div className="lava-end-pseudo-controls">
+                <Input
+                  id={nameId}
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Ton pseudo"
+                  autoComplete="nickname"
+                  maxLength={20}
+                  disabled={profileBusy}
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={profileBusy || !identity.loaded || identity.loading}
+                >
+                  {profileBusy ? "Enregistrement…" : "Valider"}
+                </Button>
+              </div>
+              {profileError && <IdentityError>{profileError}</IdentityError>}
+            </form>
           )}
-          {busy && <p role="status">Enregistrement du score…</p>}
-          {message &&
-            (sent ? (
-              <p role="status">{message}</p>
-            ) : (
-              <IdentityError retry={() => setRetry((v) => v + 1)}>
-                {message}
-              </IdentityError>
-            ))}
-          {skipped && <p role="status">Partie terminée sans enregistrement.</p>}
-          {!localRun && (
-            <p role="status">
-              Ton record reste sur cet appareil. La connexion n’a pas permis de
-              préparer l’envoi de cette partie.
+          {busy && (
+            <p className="text-sm" role="status">
+              Enregistrement du score…
             </p>
           )}
+          {message && !sent && (
+            <IdentityError retry={() => setRetry((v) => v + 1)}>
+              {message}
+            </IdentityError>
+          )}
+          {deviceError && (
+            <IdentityError retry={() => setRetry((v) => v + 1)}>
+              {deviceError}
+            </IdentityError>
+          )}
+          <p className="text-sm text-muted-foreground">
+            Record : {summary.best.toLocaleString("fr")}
+          </p>
+          <Separator />
         </CardContent>
         <CardFooter className="lava-end-actions">
           <Button
@@ -259,9 +286,23 @@ export function GameOver({
           >
             {preparing ? "Préparation…" : "Rejouer"}
           </Button>
+          <Button
+            variant="outline"
+            onClick={onLeaderboard}
+            disabled={!leaderboardAvailable}
+          >
+            Classement
+          </Button>
           <Button variant="outline" onClick={onMenu}>
             Menu
           </Button>
+          <Separator className="my-2" />
+          <IdentitySelector
+            draft={draft}
+            disabled={busy}
+            editOnly={!!identity.profile}
+            connectOnly={!identity.profile}
+          />
         </CardFooter>
       </Card>
     </div>

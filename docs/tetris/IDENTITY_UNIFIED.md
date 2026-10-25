@@ -70,3 +70,21 @@ Les 5 tests audio passent, ainsi que les contrôles des routes, de la redirectio
 ## Déploiement
 
 La reprise initiale a confirmé le commit `c27552c` en état READY via l'intégration GitHub de Vercel ; jeu et sons répondaient en HTTP 200. Une tentative CLI séparée était bloquée par la politique d'auteur du projet et n'avait pas remplacé la production. La voie de publication reste donc le push autorisé sur main puis le déploiement automatique GitHub/Vercel. Le contrôle final porte sur le SHA exact de la refonte, l'état READY et les routes publiques.
+
+## Ajustement du parcours : Pseudo / Se connecter
+
+Le sélecteur présente désormais seulement deux méthodes avant identification : **Pseudo** et **Se connecter**. Chaque méthode ouvre la même bottom sheet réutilisable, y compris depuis le bouton d'avatar. Modifier un pseudo réutilise cette feuille sans ouvrir de dialogue imbriqué. Le parcours Pseudo comprend le pseudo et la photo optionnelle et conserve les scores sur l'appareil ; il remplace les anciens choix distincts local/anonyme. Les anciens profils, scores anonymes publics et files d'attente restent conservés pour compatibilité. Le store garde un état sans identité pour permettre de jouer sans choisir de pseudo ou de compte.
+
+Le bouton Google emploie le variant Secondary, comme le choix Se connecter. La suppression de photo est un bouton icon-only fixe de 44 × 44 px, sans étirement. La bottom sheet a une hauteur de contenu plafonnée à 90 dvh, un scroll interne et les zones sûres mobiles.
+
+## Navigation par avatar et hiérarchie de fin de partie
+
+Sur Jeux, l’avatar partage la ligne du titre. Dans le lobby Tetris, il termine la ligne Retour aux jeux. Le même DropdownMenu propose Ajouter/Modifier mon pseudo et Google/Déconnexion, puis ouvre la bottom sheet correspondante. Le pseudo Google reste géré par Google. Le lobby présente Jouer, séparateur, Classement, Règles, Réglages.
+
+Le Game Over affiche Score, conservation locale pour les visiteurs sans Google, avatar/pseudo ou saisie rapide avec Valider (Primary), puis Record. Rejouer (Accent), Classement et Menu précèdent la connexion (Secondary), désactivée si indisponible ou hors ligne. Le store sauvegarde aussi les parties sans pseudo sur l’appareil ; la saisie d’un pseudo ou la connexion conserve le même identifiant de partie et remplace son attribution sans doublon. Les protections contre le transfert d’une partie déjà liée à un autre compte restent appliquées.
+
+Validation de cette itération : build de production et typecheck réussis, 111 tests unitaires et 52 tests navigateur réussis (Chromium et WebKit, dont les formats 375 et 1280 px). Les contrôles couvrent les trois identités sur les trois écrans, les popups Google, la validation pseudo/photo, la conservation du score, les échecs réseau/envoi, le contraste des erreurs, l’alignement des avatars et le nouvel ordre des menus. Vérification visuelle des menus et du Game Over aux deux largeurs. Le lint ne signale aucune erreur ; un avertissement préexistant subsiste dans gaze-avatar.tsx.
+
+## Ajustement du classement, du pseudo et des polices
+
+Le classement général ne contient plus de sélecteur d’identité. Sur Game Over, un profil existant affiche son pseudo en texte et propose Modifier le pseudo en pied de carte, via la bottom sheet commune. Sans pseudo, Valider et le champ ont la même hauteur (au moins 44 px). Google Sans s’applique aux scores, raccourcis clavier, récompenses et fenêtres Tetris, y compris les contenus rendus dans des portails. Les scores gardent des chiffres tabulaires sans police monospace.

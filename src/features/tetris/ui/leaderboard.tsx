@@ -8,19 +8,15 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import type { ScoreDraft } from "../auth/draft";
-import { IdentityChoices } from "./player-identity";
 import { useIdentityState } from "../profile/client-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export type { RankedRun } from "../auth/draft";
 export function Leaderboard({
   open,
   onOpenChange,
-  draft,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  draft?: ScoreDraft;
 }) {
   const identity = useIdentityState();
   const [rows, setRows] = useState<
@@ -63,7 +59,6 @@ export function Leaderboard({
           <SheetDescription>Les 20 meilleurs scores.</SheetDescription>
         </SheetHeader>
         <div className="lava-settings">
-          <IdentityChoices draft={draft} />
           {error ? (
             <>
               <p role="alert">Classement indisponible.</p>
@@ -95,7 +90,7 @@ export function Leaderboard({
                   <span className="min-w-0 flex-1 truncate" title={row.name}>
                     {row.rank}. {row.name}
                   </span>
-                  <span className="shrink-0 text-right font-mono">
+                  <span className="shrink-0 text-right tabular-nums">
                     {row.score.toLocaleString("fr")}
                   </span>
                 </li>
@@ -130,7 +125,7 @@ export function Leaderboard({
                           ? identity.profile.name
                           : row.name}
                       </span>
-                      <span className="font-mono">
+                      <span className="tabular-nums">
                         {row.score.toLocaleString("fr")}
                       </span>
                     </li>

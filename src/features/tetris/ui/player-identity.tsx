@@ -6,6 +6,7 @@ import {
   login,
   logout,
   syncLocalScores,
+  setNetworkOnline,
 } from "../profile/client-store";
 export function PlayerIdentityProvider({
   children,
@@ -15,14 +16,17 @@ export function PlayerIdentityProvider({
   useEffect(() => {
     void loadProfile();
     const reload = () => void loadProfile(true).then(syncLocalScores);
+    const offline = () => setNetworkOnline(false);
     const sync = (event: StorageEvent) => {
       if (event.key?.startsWith("tetris.")) reload();
     };
     window.addEventListener("online", reload);
+    window.addEventListener("offline", offline);
     window.addEventListener("focus", reload);
     window.addEventListener("storage", sync);
     return () => {
       window.removeEventListener("online", reload);
+      window.removeEventListener("offline", offline);
       window.removeEventListener("focus", reload);
       window.removeEventListener("storage", sync);
     };

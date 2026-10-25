@@ -72,17 +72,9 @@ for (const theme of ["light", "dark"])
       await page.getByRole("button", { name: "Lâcher", exact: false }).click();
     await expect(title).toHaveAttribute("data-state", "over");
     await page
-      .getByRole("button", {
-        name: "Enregistrer avec un pseudo anonyme",
-        exact: true,
-      })
-      .click();
-    await page
-      .getByLabel("Pseudo anonyme", { exact: true })
+      .getByRole("textbox", { name: "Pseudo", exact: true })
       .fill(`Lava ${info.project.name === "chromium" ? "Chrome" : "Safari"}`);
-    await page
-      .getByRole("button", { name: "Enregistrer le score", exact: true })
-      .click();
+    await page.getByRole("button", { name: "Valider", exact: true }).click();
     await expect(
       page.getByRole("status").filter({ hasText: "Score enregistré" }),
     ).toHaveCount(1);

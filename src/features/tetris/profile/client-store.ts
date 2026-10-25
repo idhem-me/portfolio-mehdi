@@ -25,6 +25,7 @@ type State = Selection & {
   loaded: boolean;
   loading: boolean;
   googleAvailable: boolean;
+  online: boolean;
   error: string;
   busy: "login" | "logout" | "profile" | null;
   scores: LocalScore[];
@@ -38,6 +39,7 @@ const initial: State = {
   loaded: false,
   loading: false,
   googleAvailable: false,
+  online: true,
   error: "",
   busy: null,
   scores: [],
@@ -50,6 +52,9 @@ const listeners = new Set<() => void>();
 function emit(patch: Partial<State>) {
   state = { ...state, ...patch } as State;
   listeners.forEach((listener) => listener());
+}
+export function setNetworkOnline(online: boolean) {
+  emit({ online });
 }
 function select(profile: PlayerProfile | null) {
   return profile
@@ -121,7 +126,7 @@ export async function loadProfile(force = false): Promise<void> {
       scores: read<LocalScore[]>(scoresKey, []),
       loaded: true,
     });
-  emit({ loading: true });
+  emit({ loading: true, online: navigator.onLine });
   loading = (async () => {
     try {
       const [p, a] = await Promise.all([
@@ -229,7 +234,10 @@ export function login(draft?: ScoreDraft): Promise<void> {
   if (popupJob) return popupJob;
   if (state.busy) return Promise.resolve();
   if (!navigator.onLine) {
-    emit({ error: "Connexion Google impossible hors connexion. Vérifie ton réseau, puis réessaie." });
+    emit({
+      error:
+        "Connexion Google impossible hors connexion. Vérifie ton réseau, puis réessaie.",
+    });
     return Promise.resolve();
   }
   if (draft && !saveDraft(draft)) {
@@ -302,11 +310,13 @@ export async function logout() {
     if (!r.ok) throw Error();
     ++generation;
     emit({ ...select(local), busy: null, error: "" });
+    return true;
   } catch {
     emit({
       busy: null,
       error: "Déconnexion impossible. Vérifie ta connexion et réessaie.",
     });
+    return false;
   }
 }
 export type QueuedScore = {
@@ -350,9 +360,17 @@ function rememberScore(run: QueuedScore) {
     identityKey: run.recipient ?? null,
     kind: run.identity === "guest" ? "anonymous" : state.kind,
   };
+  if (existing && JSON.stringify(existing) === JSON.stringify(score)) return;
   const scores = [...state.scores.filter((s) => s.id !== run.id), score];
   write(scoresKey, scores);
   emit({ scores });
+}
+export async function saveDeviceScore(run: QueuedScore) {
+  if (run.recipient && run.recipient !== state.profile?.key)
+    throw Error(
+      "Cette partie attend son identité d’origine. Reconnecte-toi pour la sauvegarder.",
+    );
+  rememberScore(run);
 }
 function queue(run: QueuedScore) {
   write(queueKey, [

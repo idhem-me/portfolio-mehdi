@@ -62,7 +62,7 @@ import { Leaderboard, type RankedRun } from "./leaderboard";
 import { PlayerIdentityProvider } from "./player-identity";
 import { GameOver } from "./game-over";
 import { PlayerProfileButton } from "./player-profile";
-import { IdentitySelector } from "./identity-selector";
+import { Separator } from "@/components/ui/separator";
 import { recoverDraft, type ScoreDraft } from "../auth/draft";
 import "./game.css";
 const controls = [
@@ -424,20 +424,21 @@ function TetrisGame({
       {status === "ready" ? (
         <div className="lava-lobby">
           <GameplayBackground />
-          <Link
-            href="/jeux"
-            className="lava-back inline-flex items-center gap-2 text-sm text-muted-foreground"
-            aria-label="Retour aux jeux"
-          >
-            <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-            <span>Jeux</span>
-          </Link>
-
+          <div className="lava-lobby-header">
+            <Link
+              href="/jeux"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground"
+              aria-label="Retour aux jeux"
+            >
+              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
+              <span>Jeux</span>
+            </Link>
+            <PlayerProfileButton />
+          </div>
           <Card className="lava-lobby-panel">
             <span className="lava-wordmark" aria-hidden="true">
               Tetris
             </span>
-            <IdentitySelector onContinue={() => void start()} />
             <Button
               variant="accent"
               size="lg"
@@ -446,6 +447,7 @@ function TetrisGame({
             >
               {preparing ? "Préparation…" : "Jouer"}
             </Button>
+            <Separator className="my-1" />
             <Button
               variant="outline"
               disabled={!leaderboardEnabled}
@@ -456,11 +458,11 @@ function TetrisGame({
                 <Badge variant="secondary">Bientôt</Badge>
               )}
             </Button>
-            <Button variant="outline" onClick={() => setSettingsOpen(true)}>
-              Réglages
-            </Button>
             <Button variant="outline" onClick={() => setRulesOpen(true)}>
               Règles
+            </Button>
+            <Button variant="outline" onClick={() => setSettingsOpen(true)}>
+              Réglages
             </Button>
           </Card>
         </div>
@@ -638,7 +640,6 @@ function TetrisGame({
               best: Math.max(best, g.score),
             }
           }
-          run={recovered?.run ?? ranked.current}
           localRun={
             localRun.current ??
             (recovered
@@ -648,6 +649,8 @@ function TetrisGame({
           initialName={recovered?.name}
           expectedRecipient={recovered?.recipient}
           preparing={preparing}
+          leaderboardAvailable={leaderboardEnabled}
+          onLeaderboard={() => setLeaderboardOpen(true)}
           onReplay={start}
           onMenu={() => {
             setRecovered(null);
@@ -774,29 +777,7 @@ function TetrisGame({
         </SheetContent>
       </Sheet>
       {leaderboardEnabled && (
-        <Leaderboard
-          open={leaderboardOpen}
-          onOpenChange={setLeaderboardOpen}
-          draft={
-            status === "over"
-              ? (recovered ??
-                (ranked.current
-                  ? {
-                      run: ranked.current,
-                      summary: {
-                        score: g.score,
-                        lines: g.lines,
-                        level: g.level,
-                        pieces: g.pieces,
-                        elapsed: g.elapsed,
-                        best: Math.max(best, g.score),
-                      },
-                      name: "",
-                    }
-                  : undefined))
-              : undefined
-          }
-        />
+        <Leaderboard open={leaderboardOpen} onOpenChange={setLeaderboardOpen} />
       )}
       <Sheet open={rulesOpen} onOpenChange={setRulesOpen}>
         <SheetContent className="lava-sheet z-[80]">

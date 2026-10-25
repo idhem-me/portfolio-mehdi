@@ -141,3 +141,34 @@ export async function endGame(page: Page) {
     page.getByRole("heading", { name: "Game over", exact: true }),
   ).toBeVisible();
 }
+
+export async function openIdentityMenu(page: Page) {
+  await page
+    .getByRole("button", { name: /Choisir mon identité|Profil joueur :/ })
+    .filter({ visible: true })
+    .last()
+    .click();
+}
+export async function openPseudo(page: Page) {
+  await openIdentityMenu(page);
+  await page
+    .getByRole("menuitem", { name: /Ajouter un pseudo|Modifier mon pseudo/ })
+    .click();
+}
+export async function connectGoogle(page: Page) {
+  const connect = page.getByRole("button", {
+    name: "Se connecter",
+    exact: true,
+  });
+  if (await connect.isVisible()) await connect.click();
+  else {
+    await openIdentityMenu(page);
+    await page
+      .getByRole("menuitem", { name: "Se connecter avec Google", exact: true })
+      .click();
+  }
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Se connecter avec Google", exact: true })
+    .click();
+}

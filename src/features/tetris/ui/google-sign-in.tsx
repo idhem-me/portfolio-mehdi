@@ -14,9 +14,16 @@ export function GoogleSignIn({
   return (
     <Button
       type="button"
-      variant="accent"
+      variant="secondary"
       className="identity-action"
-      disabled={disabled || !state.loaded || !!state.busy || state.loading}
+      disabled={
+        disabled ||
+        !state.loaded ||
+        !!state.busy ||
+        state.loading ||
+        !state.online ||
+        !state.googleAvailable
+      }
       aria-busy={state.busy === "login"}
       onClick={() => void login(draft)}
     >

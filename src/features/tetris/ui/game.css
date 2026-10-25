@@ -117,7 +117,7 @@
   color: var(--muted-foreground);
 }
 .lava-score {
-  font-family: var(--font-geist-mono);
+  font-family: var(--font-sans);
   font-weight: 500;
   font-size: clamp(1rem, 3vw, 1.6rem);
   color: var(--foreground);
@@ -169,7 +169,7 @@
   font-size: 0.75rem;
 }
 .lava-controls kbd {
-  font-family: var(--font-geist-mono);
+  font-family: var(--font-sans);
   font-size: 0.6rem;
   color: var(--muted-foreground);
   border: 1px solid var(--border);
@@ -676,7 +676,7 @@
 .lava-reward-type {
   position: relative;
   z-index: 2;
-  font-family: var(--font-lava-display), var(--font-sans);
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: calc(clamp(2rem, 7vw, 4rem) * var(--reward-scale));
   line-height: 1.1;
@@ -1201,4 +1201,59 @@
   .lava-background > div {
     will-change: auto;
   }
+}
+
+.lava-lobby-header {
+  position: absolute;
+  inset: calc(var(--tetris-gap) * 3) calc(var(--tetris-gap) * 3) auto;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tetris-gap);
+}
+.lava-end-identity,
+.lava-end-pseudo-controls {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 3);
+}
+.lava-end-panel .lava-end-identity button {
+  width: 44px;
+  flex: 0 0 44px;
+}
+.lava-end-pseudo {
+  display: grid;
+  gap: calc(var(--spacing) * 2);
+}
+.lava-end-pseudo-controls input {
+  min-width: 0;
+  flex: 1;
+}
+.lava-end-panel .lava-end-pseudo-controls button {
+  width: auto;
+  flex: 0 0 auto;
+}
+.lava-end-panel .lava-end-score {
+  color: var(--foreground);
+  font-size: calc(var(--spacing) * 10);
+  line-height: 1.15;
+  margin-top: var(--spacing);
+}
+
+/* Keep the compact pseudo controls aligned, including their touch targets. */
+.lava-end-pseudo-controls input,
+.lava-end-panel .lava-end-pseudo-controls button {
+  height: max(44px, var(--control-height));
+  min-height: max(44px, var(--control-height));
+  padding-block: 0;
+}
+.lava-sheet,
+.lava-sheet *,
+.lava-game *,
+.identity-bottom-sheet,
+.identity-bottom-sheet *,
+.identity-dropdown,
+.identity-dropdown * {
+  font-family: var(--font-sans), sans-serif;
 }

@@ -92,3 +92,45 @@
 .identity-error p {
   margin: 0;
 }
+
+.identity-bottom-sheet[data-slot="sheet-content"] {
+  width: min(100%, 32rem);
+  margin-inline: auto;
+  max-height: 90dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.identity-bottom-sheet [data-slot="sheet-header"] {
+  padding: calc(var(--spacing) * 6);
+  padding-inline-end: calc(var(--spacing) * 16);
+}
+.identity-bottom-sheet [data-slot="sheet-description"] {
+  line-height: 1.5;
+}
+.identity-selector .identity-photo > .identity-photo-select {
+  flex: 1;
+  min-width: 0;
+}
+.identity-selector .identity-photo > .identity-photo-remove {
+  flex: 0 0 44px;
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  padding: 0;
+  border-radius: var(--radius);
+}
+
+.identity-bottom-sheet [data-slot="sheet-close"] {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+}
+
+.identity-dropdown [data-slot="dropdown-menu-item"] {
+  min-height: 44px;
+}

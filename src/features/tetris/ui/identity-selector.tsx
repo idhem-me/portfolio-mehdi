@@ -1,8 +1,24 @@
 "use client";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { UserRound, ImagePlus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GoogleSignIn } from "./google-sign-in";
 import {
@@ -57,11 +73,17 @@ export function IdentityError({
     </div>
   );
 }
-function LocalProfileForm({ onDone }: { onDone: () => void }) {
+function LocalProfileForm({
+  onDone,
+  initialName = "",
+}: {
+  onDone: () => void;
+  initialName?: string;
+}) {
   const state = useIdentityState(),
     id = useId(),
     file = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState(state.profile?.name ?? ""),
+  const [name, setName] = useState(state.profile?.name ?? initialName),
     [avatar, setAvatar] = useState<string | null>(
       state.profile?.avatar ?? null,
     );
@@ -98,6 +120,7 @@ function LocalProfileForm({ onDone }: { onDone: () => void }) {
         <Button
           type="button"
           variant="secondary"
+          className="identity-photo-select"
           disabled={busy || photoBusy}
           onClick={() => file.current?.click()}
         >
@@ -113,6 +136,8 @@ function LocalProfileForm({ onDone }: { onDone: () => void }) {
             type="button"
             variant="ghost"
             size="icon"
+            className="identity-photo-remove"
+            disabled={busy || photoBusy}
             aria-label="Supprimer la photo"
             onClick={() => setAvatar(null)}
           >
@@ -170,7 +195,7 @@ function LocalProfileForm({ onDone }: { onDone: () => void }) {
         disabled={busy || photoBusy}
         aria-busy={busy}
       >
-        {busy ? "Enregistrement…" : "Enregistrer le profil"}
+        {busy ? "Enregistrement…" : "Enregistrer"}
       </Button>
       <Button type="button" variant="ghost" disabled={busy} onClick={onDone}>
         Annuler
@@ -181,25 +206,51 @@ function LocalProfileForm({ onDone }: { onDone: () => void }) {
 export function IdentitySelector({
   draft,
   disabled = false,
-  context = "entry",
-  onContinue,
-  onAnonymous,
+  trigger,
+  dropdown = false,
+  connectOnly = false,
+  editOnly = false,
 }: {
   draft?: ScoreDraft;
   disabled?: boolean;
-  context?: "entry" | "gameover";
-  onContinue?: () => void;
-  onAnonymous?: (name: string) => Promise<void>;
+  trigger?: React.ReactNode;
+  dropdown?: boolean;
+  connectOnly?: boolean;
+  editOnly?: boolean;
 }) {
-  const state = useIdentityState(),
-    id = useId();
-  const [form, setForm] = useState<"local" | "anonymous" | null>(null),
-    [name, setName] = useState(draft?.name ?? ""),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
-  const [continued, setContinued] = useState(false);
+  const state = useIdentityState();
+  const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [panel, setPanel] = useState<"choices" | "pseudo" | "connect">(
+    "choices",
+  );
   const profile = state.profile;
-  return (
+  const unavailable =
+    disabled || !state.loaded || state.loading || !!state.busy;
+  useEffect(() => {
+    if (open && panel === "connect" && state.kind === "google") {
+      const frame = requestAnimationFrame(() => setOpen(false));
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [open, panel, state.kind]);
+  const show = (next: "pseudo" | "connect") => {
+    setPanel(next);
+    setOpen(true);
+  };
+  const error = state.error && (
+    <IdentityError
+      retry={() => {
+        if (state.error.includes("Google") || state.error.includes("fenêtre"))
+          void import("../profile/client-store").then(({ login }) =>
+            login(draft),
+          );
+        else void loadProfile(true);
+      }}
+    >
+      {state.error}
+    </IdentityError>
+  );
+  const choices = (
     <section
       className="identity-selector"
       data-identity={state.kind}
@@ -211,17 +262,14 @@ export function IdentitySelector({
           <PlayerAvatar name={profile.name} avatar={profile.avatar} />
           <div>
             <strong>{profile.name}</strong>
-            <p>
-              {state.kind === "google"
-                ? "Compte Google"
-                : "Profil sur cet appareil"}
-            </p>
+            <p>{state.kind === "google" ? "Compte Google" : "Pseudo"}</p>
           </div>
         </div>
       )}
       {state.loading && <p role="status">Chargement du profil…</p>}
       {state.kind === "google" ? (
         <Button
+          type="button"
           className="identity-action"
           variant="outline"
           disabled={disabled || !!state.busy}
@@ -231,119 +279,171 @@ export function IdentitySelector({
         </Button>
       ) : (
         <>
-          <GoogleSignIn
-            draft={draft}
-            disabled={disabled || busy || !!state.busy}
-          />
-          {form !== "local" && (
-            <Button
-              className="identity-action"
-              variant="outline"
-              disabled={
-                disabled ||
-                busy ||
-                !!state.busy ||
-                !state.loaded ||
-                state.loading
-              }
-              onClick={() => {
-                setForm("local");
-                setError("");
-              }}
-            >
-              {state.kind === "local" ? "Modifier" : "Créer un profil local"}
-            </Button>
-          )}
-          {form === "local" && (
-            <LocalProfileForm onDone={() => setForm(null)} />
-          )}
-          {state.kind === "anonymous" &&
-            context === "gameover" &&
-            onAnonymous &&
-            form !== "anonymous" && (
-              <Button
-                className="identity-action"
-                variant="outline"
-                disabled={disabled || busy || !!state.busy}
-                onClick={() => setForm("anonymous")}
-              >
-                Enregistrer avec un pseudo anonyme
-              </Button>
-            )}
-          {state.kind === "anonymous" &&
-            form === "anonymous" &&
-            onAnonymous && (
-              <form
-                className="identity-form"
-                noValidate
-                onSubmit={async (event) => {
-                  event.preventDefault();
-                  setBusy(true);
-                  setError("");
-                  try {
-                    await onAnonymous(validateNickname(name));
-                  } catch (error) {
-                    setError(
-                      error instanceof Error
-                        ? error.message
-                        : "Le score n’a pas pu être enregistré. Réessaie.",
-                    );
-                  } finally {
-                    setBusy(false);
-                  }
-                }}
-              >
-                <label htmlFor={id}>Pseudo anonyme</label>
-                <Input
-                  id={id}
-                  value={name}
-                  maxLength={20}
-                  onChange={(event) => setName(event.target.value)}
-                  disabled={busy}
-                  autoComplete="nickname"
-                />
-                {error && <IdentityError>{error}</IdentityError>}
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={busy || disabled}
-                  aria-busy={busy}
-                >
-                  {busy ? "Enregistrement…" : "Enregistrer le score"}
-                </Button>
-              </form>
-            )}
-          {state.kind === "anonymous" && !continued && (
-            <Button
-              className="identity-action"
-              variant="ghost"
-              disabled={disabled || busy || !!state.busy}
-              onClick={() => (onContinue ? onContinue() : setContinued(true))}
-            >
-              Continuer sans enregistrer
-            </Button>
-          )}
+          <Button
+            type="button"
+            className="identity-action"
+            variant="outline"
+            disabled={unavailable}
+            onClick={() => show("pseudo")}
+          >
+            {state.kind === "local" ? "Modifier" : "Pseudo"}
+          </Button>
+          <Button
+            type="button"
+            className="identity-action"
+            variant="secondary"
+            disabled={unavailable}
+            onClick={() => show("connect")}
+          >
+            Se connecter
+          </Button>
         </>
       )}
-      {continued && (
-        <p role="status">Tu peux choisir un jeu et jouer sans enregistrer.</p>
-      )}
-      {state.error && (
-        <IdentityError
-          retry={() => {
-            if (
-              state.error.includes("Google") ||
-              state.error.includes("fenêtre")
-            )
-              void import("../profile/client-store").then(({ login }) =>
-                login(draft),
-              );
-            else void loadProfile(true);
-          }}
-        >
-          {state.error}
-        </IdentityError>
-      )}
+      {!open && error}
     </section>
+  );
+  const activePanel = state.kind === "google" ? "choices" : panel;
+  return (
+    <Sheet
+      open={open}
+      onOpenChange={(value) => {
+        setOpen(value);
+        if (value && trigger) setPanel("choices");
+      }}
+    >
+      {trigger && dropdown ? (
+        <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+          <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="identity-dropdown z-[95] min-w-56"
+            onCloseAutoFocus={(event) => {
+              if (open) event.preventDefault();
+            }}
+          >
+            {profile && (
+              <>
+                <DropdownMenuLabel>{profile.name}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem
+              disabled={unavailable || state.kind === "google"}
+              title={
+                state.kind === "google"
+                  ? "Le pseudo vient de ton compte Google"
+                  : undefined
+              }
+              onSelect={() => show("pseudo")}
+            >
+              {profile ? "Modifier mon pseudo" : "Ajouter un pseudo"}
+            </DropdownMenuItem>
+            {state.kind === "google" ? (
+              <DropdownMenuItem
+                disabled={!!state.busy}
+                onSelect={(event) => {
+                  event.preventDefault();
+                  void logout().then((ok) => {
+                    if (ok) setMenuOpen(false);
+                  });
+                }}
+              >
+                {state.busy === "logout" ? "Déconnexion…" : "Se déconnecter"}
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem
+                disabled={
+                  unavailable || !state.googleAvailable || !state.online
+                }
+                onSelect={() => show("connect")}
+              >
+                Se connecter avec Google
+              </DropdownMenuItem>
+            )}
+            {state.error && <div className="p-2">{error}</div>}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : trigger ? (
+        <SheetTrigger asChild>{trigger}</SheetTrigger>
+      ) : editOnly ? (
+        <div className="identity-selector">
+          <Button
+            type="button"
+            variant="secondary"
+            className="identity-action"
+            disabled={unavailable || state.kind === "google"}
+            title={
+              state.kind === "google"
+                ? "Le pseudo vient de ton compte Google"
+                : undefined
+            }
+            onClick={() => show("pseudo")}
+          >
+            Modifier le pseudo
+          </Button>
+        </div>
+      ) : connectOnly ? (
+        <div className="identity-selector">
+          <Button
+            type="button"
+            variant="secondary"
+            className="identity-action"
+            disabled={
+              unavailable ||
+              !state.googleAvailable ||
+              !state.online ||
+              state.kind === "google"
+            }
+            onClick={() => show("connect")}
+          >
+            Se connecter
+          </Button>
+        </div>
+      ) : (
+        choices
+      )}
+      <SheetContent
+        side="bottom"
+        className="identity-bottom-sheet z-[90]"
+        overlayClassName="z-[85]"
+      >
+        <SheetHeader>
+          <SheetTitle>
+            {activePanel === "pseudo"
+              ? profile
+                ? "Modifier mon pseudo"
+                : "Pseudo"
+              : activePanel === "connect"
+                ? "Se connecter"
+                : "Ton profil"}
+          </SheetTitle>
+          <SheetDescription>
+            {activePanel === "pseudo"
+              ? "Choisis un pseudo et, si tu veux, une photo. Tes scores sont conservés sur cet appareil."
+              : activePanel === "connect"
+                ? "Connecte ton compte Google pour retrouver tes scores au classement."
+                : "Choisis un pseudo ou connecte ton compte."}
+          </SheetDescription>
+        </SheetHeader>
+        <div className="identity-sheet-content identity-selector">
+          {activePanel === "pseudo" ? (
+            <LocalProfileForm
+              initialName={draft?.name}
+              onDone={() => setOpen(false)}
+            />
+          ) : activePanel === "connect" ? (
+            <>
+              <GoogleSignIn draft={draft} disabled={disabled} />
+              {error}
+            </>
+          ) : (
+            <>
+              {choices}
+              {open && error}
+            </>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
