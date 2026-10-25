@@ -36,8 +36,10 @@ import {
   defaults,
   feel,
   readStore,
+  loadSettings,
   writeStore,
   type Settings,
+  type AudioVolumes,
 } from "../feel/config";
 import { PieceShape as Mini } from "./piece-shape";
 import { GameplayBackground } from "./gameplay-background";
@@ -108,6 +110,7 @@ function TetrisGame({
   const unlockAudio = () => {
     if (soundEnabled && settingsRef.current.sound) {
       audio.current ??= new GameAudio();
+      audio.current.setVolumes(settingsRef.current);
       audio.current.unlock();
     }
   };
@@ -161,10 +164,7 @@ function TetrisGame({
   const repeat = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
-      setSettings({
-        ...defaults,
-        ...readStore<Settings>("lava-settings", defaults),
-      });
+      setSettings(loadSettings());
       setBest(readStore<number>("lava-best", 0));
       const draft = recoverDraft();
       if (draft) {
@@ -251,8 +251,20 @@ function TetrisGame({
     root.current?.focus({ preventScroll: true });
   };
   useEffect(() => {
-    if (status !== "playing") audio.current?.mute();
-  }, [status]);
+    if (status === "playing" && soundEnabled && settings.sound) {
+      audio.current ??= new GameAudio();
+      audio.current.setVolumes(settingsRef.current);
+      audio.current.unlock();
+      audio.current.startMusic();
+    } else audio.current?.mute();
+  }, [status, settings.sound]);
+  useEffect(() => {
+    audio.current?.setVolumes({
+      effectsVolume: settings.effectsVolume,
+      musicVolume: settings.musicVolume,
+      voiceVolume: settings.voiceVolume,
+    });
+  }, [settings.effectsVolume, settings.musicVolume, settings.voiceVolume]);
   useEffect(() => {
     const g = game.current;
     return g.on((e) => {
@@ -345,10 +357,20 @@ function TetrisGame({
       cancelAnimationFrame(raf);
     };
   }, [status, expanded]);
-  const toggle = (key: keyof Settings) => {
+  const setVolume = (key: keyof AudioVolumes, value: number) => {
+    setSettings((s) => {
+      const next = { ...s, [key]: value };
+      writeStore("lava-settings", next);
+      return next;
+    });
+  };
+  const toggle = (
+    key: Exclude<keyof Settings, keyof AudioVolumes | "audioScaleVersion">,
+  ) => {
     if (key === "sound") {
       if (!settings.sound) {
         audio.current ??= new GameAudio();
+        audio.current.setVolumes(settingsRef.current);
         audio.current.unlock();
       } else audio.current?.mute();
     }
@@ -667,9 +689,46 @@ function TetrisGame({
               >
                 Son{" "}
                 <Badge variant={settings.sound ? "default" : "secondary"}>
-                  {settings.sound ? "On" : "Off"}
+                  {settings.sound ? "Oui" : "Non"}
                 </Badge>
               </Button>
+            )}
+            {soundEnabled && settings.sound && (
+              <fieldset className="lava-audio-mixer">
+                <legend className="sr-only">Volumes du son</legend>
+                {(
+                  [
+                    [
+                      "effectsVolume",
+                      "Effets sonores",
+                      "Rotation et chute des briques",
+                    ],
+                    ["musicVolume", "Musique", "Fond musical"],
+                    ["voiceVolume", "Voix", "Nice et wow"],
+                  ] as const
+                ).map(([key, label, description]) => (
+                  <div className="lava-audio-volume" key={key}>
+                    <div className="lava-audio-volume-heading">
+                      <label htmlFor={`tetris-${key}`}>{label}</label>
+                      <span aria-hidden="true">{settings[key]} %</span>
+                    </div>
+                    <p id={`tetris-${key}-description`}>{description}</p>
+                    <input
+                      id={`tetris-${key}`}
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={settings[key]}
+                      aria-valuetext={`${settings[key]} %`}
+                      aria-describedby={`tetris-${key}-description`}
+                      onChange={(event) =>
+                        setVolume(key, Number(event.target.value))
+                      }
+                    />
+                  </div>
+                ))}
+              </fieldset>
             )}
             {(
               [
