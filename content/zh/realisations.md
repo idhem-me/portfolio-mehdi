@@ -16,6 +16,16 @@
     {
       "title": "Trusted Interactions",
       "status": "即将推出"
+    },
+    {
+      "title": "Lava — Tetris",
+      "status": "Expérience interactive",
+      "slug": "tetris",
+      "cover": {
+        "light": "/img/tetris/cover-light.png",
+        "dark": "/img/tetris/cover-dark.png",
+        "alt": "Lava — une exploration liquide du Tetris"
+      }
     }
   ]
 }

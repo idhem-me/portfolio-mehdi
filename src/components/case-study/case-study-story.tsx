@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 
 type CaseStudyStoryProps = {
   study: CaseStudyContent;
+  children?: React.ReactNode;
 };
 
 function splitIndustrializeImages(images: CaseStudyImage[]) {
@@ -31,7 +32,7 @@ function splitIndustrializeImages(images: CaseStudyImage[]) {
   return { board, slider };
 }
 
-export function CaseStudyStory({ study }: CaseStudyStoryProps) {
+export function CaseStudyStory({ study, children }: CaseStudyStoryProps) {
   const pairLabels = study.themeToggle;
 
   return (
@@ -75,6 +76,8 @@ export function CaseStudyStory({ study }: CaseStudyStoryProps) {
           </dl>
         </ScrollReveal>
       </header>
+
+      {children}
 
       {study.sections.map((section, index) => (
         <section key={section.id} className="space-y-6">

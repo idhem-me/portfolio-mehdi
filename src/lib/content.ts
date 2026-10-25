@@ -3,6 +3,8 @@ import path from "node:path";
 import matter from "gray-matter";
 import { routing, type Locale } from "@/i18n/routing";
 
+import { tetrisEnabled } from "@/features/tetris/flags";
+
 const contentRoot = path.join(process.cwd(), "content");
 
 export type ExperienceLogo = {
@@ -187,7 +189,8 @@ export function getProductDesigner(locale: string): ProductDesignerContent {
 
 export function getRealisations(locale: string): RealisationsContent {
   const { data } = readMarkdown(locale, "realisations.md");
-  return data as RealisationsContent;
+  const page = data as RealisationsContent;
+  return { ...page, caseStudies: page.caseStudies.filter(study => study.slug !== "tetris" || tetrisEnabled) };
 }
 
 export function getAbout(locale: string): AboutContent {

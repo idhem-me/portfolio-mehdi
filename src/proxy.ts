@@ -6,6 +6,8 @@ import {
 } from "@/lib/dashboard-auth";
 import { routing } from "@/i18n/routing";
 
+import { tetrisEnabled } from "@/features/tetris/flags";
+
 const handleI18nRouting = createMiddleware(routing);
 
 function isDashboardAuthPath(pathname: string) {
@@ -59,6 +61,11 @@ async function handleDashboardAuth(request: NextRequest) {
 
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Early response guarantees HTTP 404 before any App Router streaming.
+  if (!tetrisEnabled && /^\/(?:[a-z]{2}\/)?realisations\/tetris\/?$/.test(pathname)) {
+    return new NextResponse("Not Found", { status: 404, headers: { "X-Robots-Tag": "noindex" } });
+  }
 
   if (isDashboardAuthPath(pathname)) {
     return handleDashboardAuth(request);
