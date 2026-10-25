@@ -23,3 +23,6 @@ Comparaison main effectuée sur tous les fichiers partagés. Défaut exact trouv
 
 ## 1 — Jeux
 Liste /jeux dupliquée depuis le template réalisations, même frontmatter JSON et cartes. Nouveau content/fr/jeux.md avec fallback éditorial existant. Lava retiré des sept fichiers réalisations. Navigation Jeux traduite et présente uniquement sous flag. Ancienne URL : 308 vers la nouvelle URL localisée quand activé, 404 sinon. Liste et jeu noindex, aucun ajout au sitemap. Proxy bloque toute la branche /jeux avant streaming lorsque désactivée.
+
+## 2 — Menu du jeu
+Le h1, la tagline et les métadonnées restent accessibles/présents ; aucun récit visuel sous le jeu. Process et licence MIT complète consultables dans une Sheet Radix « Règles et informations ». Menu principal centré utilisant Card/Button/Badge du portfolio ; Classement est seulement un bouton désactivé Bientôt, sans fonctionnalité V2. GameplayBackground est un composant décoratif autonome remplaçable, respectant reduced motion et la visibilité.

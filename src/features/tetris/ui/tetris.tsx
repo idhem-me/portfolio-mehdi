@@ -24,7 +24,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
-  SheetTrigger,
   SheetContent,
   SheetHeader,
   SheetTitle,
@@ -47,7 +46,11 @@ import {
   writeStore,
   type Settings,
 } from "../feel/config";
+import { GameplayBackground } from "./gameplay-background";
+import { Link } from "@/i18n/navigation";
+import type { CaseStudySection } from "@/lib/content";
 import { haptic } from "../feel/haptics";
+import { sourceLicense } from "../engine/source-license";
 import "./game.css";
 const controls = [
   ["left", "Gauche", "←", ArrowLeft],
@@ -102,7 +105,13 @@ function Score({ value, reduced }: { value: number; reduced: boolean }) {
     </motion.div>
   );
 }
-export function Tetris() {
+export function Tetris({
+  information = [],
+}: {
+  information?: CaseStudySection[];
+}) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const game = useRef(new Game(() => 0.5));
   const root = useRef<HTMLDivElement>(null);
   const iosSwitch = useRef<HTMLInputElement>(null);
@@ -315,322 +324,355 @@ export function Tetris() {
       className="lava-game"
       data-expanded={expanded}
       data-playing={status === "playing"}
+      data-state={status}
       data-reduced={reduced}
-      aria-label="Tetris Lava, zone de jeu. Les raccourcis clavier fonctionnent quand cette zone a le focus."
+      aria-label="Tetris Lava, zone de jeu"
     >
-      <div className="lava-top">
-        <div className="flex items-end gap-2">
-          <span className="lava-wordmark">
-            lava<span className="text-muted-foreground">.</span>
-          </span>
-          <Badge variant="outline">Tetris</Badge>
-        </div>
-        <div className="flex gap-2">
-          {expanded && (
-            <Button
-              variant="ghost"
-              aria-label="Quitter le jeu"
-              onClick={() => {
-                stopRepeat();
-                setExpanded(false);
-                setStatus("ready");
-              }}
-            >
-              <X />
+      {status === "ready" ? (
+        <div className="lava-lobby">
+          <GameplayBackground />
+          <Link
+            href="/jeux"
+            className="lava-back text-sm text-muted-foreground"
+          >
+            ← Jeux
+          </Link>
+          <Card className="lava-lobby-panel">
+            <span className="lava-wordmark" aria-hidden="true">
+              lava.
+            </span>
+            <Button variant="accent" size="lg" onClick={start}>
+              Jouer
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            onClick={pause}
-            disabled={status === "ready" || status === "over"}
-            aria-label="Pause"
-          >
-            <Pause />
-            <span className="hidden sm:inline">Pause · P</span>
-          </Button>
-          <Sheet
-            onOpenChange={(open) => {
-              if (open && statusRef.current === "playing") setStatus("paused");
-            }}
-          >
-            <SheetTrigger asChild>
-              <Button variant="ghost" aria-label="Réglages">
+            <Button variant="outline" disabled>
+              Classement <Badge variant="secondary">Bientôt</Badge>
+            </Button>
+            <Button variant="outline" onClick={() => setSettingsOpen(true)}>
+              Réglages
+            </Button>
+            <Button variant="ghost" onClick={() => setRulesOpen(true)}>
+              Règles
+            </Button>
+          </Card>
+        </div>
+      ) : (
+        <>
+          <div className="lava-top">
+            <span className="lava-wordmark">lava.</span>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                aria-label="Quitter la partie"
+                onClick={() => {
+                  stopRepeat();
+                  setExpanded(false);
+                  setStatus("ready");
+                }}
+              >
+                <X />
+              </Button>
+              <Button variant="ghost" aria-label="Pause" onClick={pause}>
+                <Pause />
+              </Button>
+              <Button
+                variant="ghost"
+                aria-label="Réglages"
+                onClick={() => {
+                  setStatus("paused");
+                  setSettingsOpen(true);
+                }}
+              >
                 <Settings2 />
               </Button>
-            </SheetTrigger>
-            <SheetContent className="z-[80]">
-              <SheetHeader>
-                <SheetTitle>À votre rythme.</SheetTitle>
-                <SheetDescription>
-                  Le plaisir de jouer, avec juste les effets qu’il vous faut.
-                </SheetDescription>
-              </SheetHeader>
-              <div className="lava-settings">
-                {(
-                  [
-                    ["haptics", "Haptiques"],
-                    ["ios", "Haptiques iOS expérimentales"],
-                    ["reduced", "Effets réduits"],
-                    ["overlay", "Contrôles visibles"],
-                  ] as const
-                ).map(([key, label]) => (
-                  <Button
-                    key={key}
-                    variant="outline"
-                    role="switch"
-                    aria-checked={settings[key]}
-                    onClick={() => toggle(key)}
-                  >
-                    {label}
-                    <Badge variant={settings[key] ? "default" : "secondary"}>
-                      {settings[key] ? "Oui" : "Non"}
-                    </Badge>
-                  </Button>
-                ))}
-                <p className="text-xs text-muted-foreground">
-                  L’option iOS utilise une astuce non officielle de Safari 18+,
-                  uniquement sur les impacts forts. Elle peut ne produire aucune
-                  vibration.
-                </p>
+            </div>
+          </div>
+          <div className="lava-stage">
+            <aside className="lava-side">
+              <div>
+                <div className="lava-label">Score</div>
+                <Score value={g.score} reduced={reduced} />
               </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
-      <div className="lava-stage">
-        <aside className="lava-side">
-          <div>
-            <div className="lava-label">Score</div>
-            <Score value={g.score} reduced={reduced} />
-          </div>
-          <div>
-            <div className="lava-label">Record</div>
-            <span>{best.toLocaleString("fr")}</span>
-          </div>
-          <div>
-            <div className="lava-label">Réserve</div>
-            <Mini name={g.held} />
-          </div>
-          <p className="lava-legend">
-            ← → déplacer
-            <br />↓ descendre
-            <br />X / ↑ pivoter
-            <br />Z rotation ↶<br />
-            Espace lâcher
-            <br />C / ⇧ réserve
-            <br />P / Échap pause
-          </p>
-        </aside>
-        <motion.div
-          className="lava-board"
-          animate={camera}
-          onPointerDown={(e) => {
-            if (status !== "playing") return;
-            e.currentTarget.setPointerCapture(e.pointerId);
-            touch.current = {
-              x: e.clientX,
-              y: e.clientY,
-              time: performance.now(),
-              moved: false,
-            };
-          }}
-          onPointerMove={(e) => {
-            const t = touch.current;
-            if (!t) return;
-            const dx = e.clientX - t.x,
-              dy = e.clientY - t.y;
-            if (Math.abs(dx) > feel.swipe) {
-              act(dx > 0 ? "right" : "left");
-              t.x = e.clientX;
-              t.moved = true;
-            }
-            if (dy > feel.swipe) {
-              act("soft");
-              t.y = e.clientY;
-              t.moved = true;
-            }
-          }}
-          onPointerUp={(e) => {
-            const t = touch.current;
-            touch.current = null;
-            if (!t) return;
-            if (
-              e.clientY - t.y < -feel.swipe &&
-              performance.now() - t.time < feel.fastSwipe
-            )
-              act("hard");
-            else if (!t.moved && Math.abs(e.clientY - t.y) < feel.swipe)
-              act("cw");
-          }}
-          onPointerCancel={() => {
-            touch.current = null;
-          }}
-        >
-          <LavaBoard
-            game={game}
-            active={status === "playing"}
-            reduced={reduced}
-          />
-          {effect &&
-            !reduced &&
-            [
-              "hardDrop",
-              "lock",
-              "lineClear",
-              "tetris",
-              "combo",
-              "levelUp",
-            ].includes(effect.type) && (
-              <motion.div
-                key={`flash-${feedback.id}`}
-                className="lava-flash"
-                style={{
-                  background: `var(--tetris-piece-${effect.color?.toLowerCase()})`,
-                }}
-                initial={{ opacity: feel.flashOpacity }}
-                animate={{ opacity: 0 }}
-                transition={{ duration: feel.pulse / 1000 }}
-              />
-            )}
-          {effect?.rows?.map((row) => (
-            <div
-              key={`${feedback?.id}-${row}`}
-              className="lava-line"
-              style={{ top: `${(row - 2) * 5}%` }}
-            />
-          ))}
-          {lineEffect &&
-            !reduced &&
-            Array.from({ length: feel.particles }, (_, i) => (
-              <motion.i
-                key={`${feedback?.id}-${i}`}
-                className="lava-droplet"
-                style={{
-                  left: `${(i * 37) % 100}%`,
-                  top: "70%",
-                  background: `var(--tetris-piece-${effect.color?.toLowerCase()})`,
-                }}
-                initial={{ opacity: 1, y: 0, scale: 1 }}
-                animate={{
-                  opacity: 0,
-                  y: -30 - (i % 5) * 15,
-                  x: (i % 2 ? 1 : -1) * (10 + i * 2),
-                  scale: 0,
-                }}
-                transition={{ duration: feel.pulse / 1000 }}
-              />
-            ))}
-          <div aria-live="polite" className="lava-feedback">
-            {announcement}
-          </div>
-          {status !== "playing" && (
-            <div className="lava-cover" data-slot="card">
-              <Badge variant="secondary">
-                {status === "ready"
-                  ? "Une expérience de matière"
-                  : status === "paused"
-                    ? "Prenez votre temps"
-                    : "Bien joué."}
-              </Badge>
-              <h2>
-                {status === "ready"
-                  ? "Let it flow."
-                  : status === "paused"
-                    ? "On respire ?"
-                    : "Encore une ?"}
-              </h2>
-              <p>
-                {status === "ready"
-                  ? "Empilez, alignez, laissez fondre. Un classique à portée de pouce."
-                  : status === "paused"
-                    ? "Votre partie vous attend."
-                    : `${g.score.toLocaleString("fr")} points · ${g.lines} lignes · niveau ${g.level}`}
+              <div>
+                <div className="lava-label">Record</div>
+                {best}
+              </div>
+              <div>
+                <div className="lava-label">Réserve</div>
+                <Mini name={g.held} />
+              </div>
+              <p className="lava-legend">
+                ← → déplacer · ↓ descendre · X / Z pivoter · Espace lâcher · C
+                réserve
               </p>
-              {status === "over" && (
-                <p>
-                  {g.pieces} pièces · {Math.floor(g.elapsed / 60000)} min{" "}
-                  {Math.floor(g.elapsed / 1000) % 60} s<br />
-                  {g.stats[1]} singles · {g.stats[2]} doubles · {g.stats[3]}{" "}
-                  triples · {g.stats[4]} tetris
-                  <br />
-                  Record : {best.toLocaleString("fr")}
-                </p>
-              )}
-              <Button
-                variant="accent"
-                onClick={
-                  status === "paused"
-                    ? () => {
-                        setStatus("playing");
-                        root.current?.focus({ preventScroll: true });
-                      }
-                    : start
+            </aside>
+            <motion.div
+              className="lava-board"
+              animate={camera}
+              onPointerDown={(e) => {
+                if (status !== "playing") return;
+                e.currentTarget.setPointerCapture(e.pointerId);
+                touch.current = {
+                  x: e.clientX,
+                  y: e.clientY,
+                  time: performance.now(),
+                  moved: false,
+                };
+              }}
+              onPointerMove={(e) => {
+                const t = touch.current;
+                if (!t) return;
+                const dx = e.clientX - t.x,
+                  dy = e.clientY - t.y;
+                if (Math.abs(dx) > feel.swipe) {
+                  act(dx > 0 ? "right" : "left");
+                  t.x = e.clientX;
+                  t.moved = true;
                 }
-              >
-                {status === "ready"
-                  ? "Jouer"
-                  : status === "paused"
-                    ? "Reprendre"
-                    : "Rejouer"}
+                if (dy > feel.swipe) {
+                  act("soft");
+                  t.y = e.clientY;
+                  t.moved = true;
+                }
+              }}
+              onPointerUp={(e) => {
+                const t = touch.current;
+                touch.current = null;
+                if (!t) return;
+                if (
+                  e.clientY - t.y < -feel.swipe &&
+                  performance.now() - t.time < feel.fastSwipe
+                )
+                  act("hard");
+                else if (!t.moved && Math.abs(e.clientY - t.y) < feel.swipe)
+                  act("cw");
+              }}
+              onPointerCancel={() => {
+                touch.current = null;
+              }}
+            >
+              <LavaBoard
+                game={game}
+                active={status === "playing"}
+                reduced={reduced}
+              />
+              {effect &&
+                !reduced &&
+                [
+                  "hardDrop",
+                  "lock",
+                  "lineClear",
+                  "tetris",
+                  "combo",
+                  "levelUp",
+                ].includes(effect.type) && (
+                  <motion.div
+                    key={`flash-${feedback.id}`}
+                    className="lava-flash"
+                    style={{
+                      background: `var(--tetris-piece-${effect.color?.toLowerCase()})`,
+                    }}
+                    initial={{ opacity: feel.flashOpacity }}
+                    animate={{ opacity: 0 }}
+                    transition={{ duration: feel.pulse / 1000 }}
+                  />
+                )}
+              {effect?.rows?.map((row) => (
+                <div
+                  key={`${feedback?.id}-${row}`}
+                  className="lava-line"
+                  style={{ top: `${(row - 2) * 5}%` }}
+                />
+              ))}
+              {lineEffect &&
+                !reduced &&
+                Array.from({ length: feel.particles }, (_, i) => (
+                  <motion.i
+                    key={`${feedback?.id}-${i}`}
+                    className="lava-droplet"
+                    style={{
+                      left: `${(i * 37) % 100}%`,
+                      top: "70%",
+                      background: `var(--tetris-piece-${effect.color?.toLowerCase()})`,
+                    }}
+                    initial={{ opacity: 1, y: 0, scale: 1 }}
+                    animate={{
+                      opacity: 0,
+                      y: -30 - (i % 5) * 15,
+                      x: (i % 2 ? 1 : -1) * (10 + i * 2),
+                      scale: 0,
+                    }}
+                    transition={{ duration: feel.pulse / 1000 }}
+                  />
+                ))}
+              <div aria-live="polite" className="lava-feedback">
+                {announcement}
+              </div>
+
+              {status !== "playing" && (
+                <div className="lava-cover">
+                  <h2>
+                    {status === "paused" ? "On respire ?" : "Encore une ?"}
+                  </h2>
+                  <p>
+                    {status === "paused"
+                      ? "Votre partie vous attend."
+                      : `${g.score} points · ${g.lines} lignes`}
+                  </p>
+                  <Button
+                    variant="accent"
+                    onClick={
+                      status === "paused"
+                        ? () => {
+                            setStatus("playing");
+                            root.current?.focus({ preventScroll: true });
+                          }
+                        : start
+                    }
+                  >
+                    {status === "paused" ? "Reprendre" : "Rejouer"}
+                  </Button>
+                </div>
+              )}
+            </motion.div>
+            <aside className="lava-side">
+              <div>
+                <div className="lava-label">Ensuite</div>
+                {g.next.map((n, i) => (
+                  <Mini key={`${i}-${n}`} name={n} />
+                ))}
+              </div>
+              <div>
+                <div className="lava-label">Niveau</div>
+                {g.level}
+              </div>
+              <div>
+                <div className="lava-label">Lignes</div>
+                {g.lines}
+              </div>
+            </aside>
+          </div>
+          {settings.overlay && (
+            <div className="lava-controls" aria-label="Contrôles tactiles">
+              {controls.map(([action, label, key, Icon]) => (
+                <Button
+                  key={action}
+                  variant="outline"
+                  disabled={status !== "playing"}
+                  aria-label={label}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    e.currentTarget.setPointerCapture(e.pointerId);
+                    press(action);
+                  }}
+                  onPointerUp={stopRepeat}
+                  onPointerCancel={stopRepeat}
+                  onLostPointerCapture={stopRepeat}
+                  onClick={(e) => {
+                    if (e.detail === 0) act(action);
+                  }}
+                >
+                  <Icon />
+                  <span>{label}</span>
+                  <kbd>{key}</kbd>
+                </Button>
+              ))}
+              <Button variant="outline" onClick={pause}>
+                <Pause />
+                <span>Pause</span>
+                <kbd>P / Échap</kbd>
               </Button>
             </div>
           )}
-        </motion.div>
-        <aside className="lava-side">
-          <div>
-            <div className="lava-label">Ensuite</div>
-            {g.next.map((name, i) => (
-              <Mini key={`${i}-${name}`} name={name} />
-            ))}
-          </div>
-          <div>
-            <div className="lava-label">Niveau</div>
-            <span className="lava-score">
-              {String(g.level).padStart(2, "0")}
-            </span>
-          </div>
-          <div>
-            <div className="lava-label">Lignes</div>
-            <span>{g.lines}</span>
-          </div>
-        </aside>
-      </div>
-      {settings.overlay && (
-        <div className="lava-controls" aria-label="Contrôles tactiles">
-          {controls.map(([action, label, key, Icon]) => (
-            <Button
-              key={action}
-              variant="outline"
-              disabled={status !== "playing"}
-              aria-label={label}
-              onPointerDown={(e) => {
-                e.preventDefault();
-                e.currentTarget.setPointerCapture(e.pointerId);
-                press(action);
-              }}
-              onPointerUp={stopRepeat}
-              onPointerCancel={stopRepeat}
-              onLostPointerCapture={stopRepeat}
-              onClick={(e) => {
-                if (e.detail === 0) act(action);
-              }}
-            >
-              <Icon />
-              <span>{label}</span>
-              <kbd>{key}</kbd>
-            </Button>
-          ))}
-          <Button
-            variant="outline"
-            onClick={pause}
-            disabled={status === "ready" || status === "over"}
-          >
-            <Pause />
-            <span>Pause</span>
-            <kbd>P / Échap</kbd>
-          </Button>
-        </div>
+        </>
       )}
+      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+        {" "}
+        <SheetContent className="z-[80]">
+          <SheetHeader>
+            <SheetTitle>À votre rythme.</SheetTitle>
+            <SheetDescription>
+              Le plaisir de jouer, avec juste les effets qu’il vous faut.
+            </SheetDescription>
+          </SheetHeader>
+          <div className="lava-settings">
+            {(
+              [
+                ["haptics", "Haptiques"],
+                ["ios", "Haptiques iOS expérimentales"],
+                ["reduced", "Effets réduits"],
+                ["overlay", "Contrôles visibles"],
+              ] as const
+            ).map(([key, label]) => (
+              <Button
+                key={key}
+                variant="outline"
+                role="switch"
+                aria-checked={settings[key]}
+                onClick={() => toggle(key)}
+              >
+                {label}
+                <Badge variant={settings[key] ? "default" : "secondary"}>
+                  {settings[key] ? "Oui" : "Non"}
+                </Badge>
+              </Button>
+            ))}
+            <p className="text-xs text-muted-foreground">
+              L’option iOS utilise une astuce non officielle de Safari 18+,
+              uniquement sur les impacts forts. Elle peut ne produire aucune
+              vibration.
+            </p>
+          </div>
+        </SheetContent>
+      </Sheet>
+      <Sheet open={rulesOpen} onOpenChange={setRulesOpen}>
+        <SheetContent className="z-[80] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Règles et informations</SheetTitle>
+            <SheetDescription>Les repères pour jouer à Lava.</SheetDescription>
+          </SheetHeader>
+          <div className="lava-settings text-sm">
+            <h2 className="font-semibold">Contrôles</h2>
+            <p>
+              Glissez à gauche ou à droite pour déplacer, vers le bas pour
+              descendre, vers le haut rapidement pour lâcher. Touchez le plateau
+              pour pivoter. Les boutons fonctionnent aussi en maintien.
+            </p>
+            <p>
+              Clavier : ← → ↓, X / ↑ et Z pour tourner, Espace pour lâcher, C ou
+              Shift pour réserver, P / Échap pour la pause.
+            </p>
+            <h2 className="font-semibold">Score</h2>
+            <p>
+              1 / 2 / 3 / 4 lignes : 100 / 300 / 500 / 800 points × niveau.
+              Tetris consécutifs : ×1,5. Combo : +50 par rang × niveau. Chute
+              douce : +1 par cellule ; chute rapide : +2. Un niveau tous les 10
+              lignes.
+            </p>
+            {information.map((section) => (
+              <section key={section.id}>
+                <h2 className="font-semibold">{section.title}</h2>
+                {section.body.map((text) => (
+                  <p key={text} className="mt-2 text-muted-foreground">
+                    {text}
+                  </p>
+                ))}
+              </section>
+            ))}
+            <h2 className="font-semibold">Crédits et licence</h2>
+            <p>
+              Logique adaptée de{" "}
+              <a href="https://github.com/sen-ltd/tetris" className="underline">
+                sen-ltd/tetris
+              </a>
+              , © 2026 SEN LLC, sous licence MIT. Aucun rendu source repris.
+            </p>
+            <details>
+              <summary>Licence MIT complète</summary>
+              <pre className="whitespace-pre-wrap text-xs">{sourceLicense}</pre>
+            </details>
+          </div>
+        </SheetContent>
+      </Sheet>
       <input
         ref={iosSwitch}
         type="checkbox"

@@ -363,3 +363,79 @@
   touch-action: none;
   overscroll-behavior: none;
 }
+
+.lava-lobby {
+  position: relative;
+  min-height: calc(100dvh - 4rem);
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  overflow: hidden;
+}
+.lava-lobby-panel {
+  z-index: 1;
+  width: min(85vw, 20rem);
+  padding: calc(var(--tetris-gap) * 3);
+  gap: var(--tetris-gap);
+  text-align: center;
+  box-shadow: var(--tetris-shadow);
+  background: color-mix(in oklch, var(--card), transparent 12%);
+  backdrop-filter: blur(24px);
+}
+.lava-lobby-panel .lava-wordmark {
+  margin-bottom: var(--tetris-gap);
+}
+.lava-lobby-panel button {
+  min-height: var(--tetris-touch);
+}
+.lava-back {
+  position: absolute;
+  top: var(--tetris-gap);
+  left: var(--tetris-gap);
+  z-index: 2;
+}
+.lava-background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.4;
+  filter: blur(4px);
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 30% 40%,
+    color-mix(in oklch, var(--tetris-piece-i), transparent 90%),
+    transparent 70%
+  );
+}
+.lava-background > div {
+  position: absolute;
+  top: -20%;
+  width: 8rem;
+  animation: lava-drift 23s linear infinite;
+}
+.lava-background .lava-mini {
+  width: 100%;
+  max-width: none;
+  height: 8rem;
+}
+.lava-background[data-hidden="true"] > div {
+  animation-play-state: paused;
+}
+@keyframes lava-drift {
+  from {
+    transform: translateY(-10dvh) rotate(-15deg);
+  }
+  to {
+    transform: translateY(130dvh) rotate(25deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lava-background > div {
+    animation: none;
+    top: 35%;
+  }
+}
+.lava-game[data-reduced="true"] .lava-background > div {
+  animation: none;
+  top: 35%;
+}

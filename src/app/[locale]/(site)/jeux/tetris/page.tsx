@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { CaseStudyStory } from "@/components/case-study/case-study-story";
 import { getCaseStudy } from "@/lib/content";
 import { tetrisEnabled, tetrisPublic } from "@/features/tetris/flags";
 import { routing } from "@/i18n/routing";
@@ -30,9 +29,14 @@ export default async function TetrisPage({ params }: Props) {
   if (!tetrisEnabled) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
+  const study = getCaseStudy(locale, "tetris");
   return (
-    <CaseStudyStory study={getCaseStudy(locale, "tetris")}>
-      <Tetris />
-    </CaseStudyStory>
+    <main>
+      <header className="sr-only">
+        <h1>{study.title}</h1>
+        <p>{study.tagline}</p>
+      </header>
+      <Tetris information={study.sections} />
+    </main>
   );
 }
