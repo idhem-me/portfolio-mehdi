@@ -1,0 +1,360 @@
+/* Additive game tokens. Theme, font, spacing, radii and controls inherit the portfolio. */
+:root {
+  --tetris-piece-t: #a32eff;
+  --tetris-piece-j: #2554ff;
+  --tetris-piece-l: #ef6500;
+  --tetris-piece-s: #00a75b;
+  --tetris-piece-z: #f32064;
+  --tetris-piece-i: #009dbb;
+  --tetris-piece-o: #d3a000;
+  --tetris-gap: calc(var(--spacing) * 3);
+  --tetris-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --tetris-menu-duration: 450ms;
+  --tetris-board-height: min(58dvh, 34rem);
+  --tetris-touch: 3rem;
+  --tetris-grid: color-mix(in oklch, var(--foreground), transparent 93%);
+  --tetris-shadow: 0 12px 48px
+    color-mix(in oklch, var(--foreground), transparent 94%);
+  --tetris-glow: 0 0 0 transparent;
+  --tetris-line-duration: 420ms;
+}
+.dark {
+  --tetris-piece-t: #c35cff;
+  --tetris-piece-j: #5780ff;
+  --tetris-piece-l: #ff8b24;
+  --tetris-piece-s: #39f59a;
+  --tetris-piece-z: #ff427b;
+  --tetris-piece-i: #28e8ff;
+  --tetris-piece-o: #ffe34c;
+  --tetris-glow: 0 0 24px
+    color-mix(in oklch, var(--tetris-piece-i), transparent 88%);
+}
+.lava-game {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tetris-gap);
+  outline: none;
+  font-family: var(--font-sans);
+  padding: var(--tetris-gap);
+  border-radius: calc(var(--radius) * 2);
+  background: var(--muted);
+  border: 1px solid var(--border);
+}
+.lava-game[data-playing="true"] {
+  touch-action: none;
+  overscroll-behavior: none;
+}
+.lava-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--tetris-gap);
+}
+.lava-wordmark {
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1;
+}
+.lava-stage {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: var(--tetris-gap);
+  align-items: start;
+  position: relative;
+  direction: ltr;
+}
+.lava-board {
+  height: var(--tetris-board-height);
+  aspect-ratio: 1/2;
+  position: relative;
+  isolation: isolate;
+  background-color: var(--background);
+  background-image:
+    linear-gradient(to right, var(--tetris-grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--tetris-grid) 1px, transparent 1px);
+  background-size: 10% 5%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--tetris-shadow), var(--tetris-glow);
+  overflow: hidden;
+  touch-action: none;
+}
+.lava-canvas,
+.lava-vector {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.lava-ghost {
+  fill: color-mix(in oklch, var(--foreground), transparent 95%);
+  stroke: var(--muted-foreground);
+  stroke-width: 0.035;
+  stroke-dasharray: 0.1 0.08;
+}
+.lava-side {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--tetris-gap);
+  font-size: var(--control-text-xs);
+  color: var(--muted-foreground);
+}
+.lava-mini {
+  width: 100%;
+  max-width: 4rem;
+  height: 2.5rem;
+  overflow: visible;
+}
+.lava-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.lava-score {
+  font-family: var(--font-geist-mono);
+  font-weight: 500;
+  font-size: clamp(1rem, 3vw, 1.6rem);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+}
+.lava-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tetris-gap);
+  padding: var(--tetris-gap);
+  text-align: center;
+  background: color-mix(in oklch, var(--background), transparent 8%);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius);
+  animation: lava-menu var(--tetris-menu-duration) var(--tetris-ease);
+}
+.lava-cover h2 {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+}
+.lava-cover p {
+  color: var(--muted-foreground);
+  font-size: var(--control-text-xs);
+  max-width: 24rem;
+}
+.lava-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: calc(var(--tetris-gap) * 0.65);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.lava-controls button {
+  min-height: var(--tetris-touch);
+  height: auto;
+  opacity: 0.86;
+  gap: calc(var(--spacing));
+  touch-action: none;
+  flex-direction: column;
+  padding: calc(var(--spacing) * 1.5);
+  font-size: 0.75rem;
+}
+.lava-controls kbd {
+  font-family: var(--font-geist-mono);
+  font-size: 0.6rem;
+  color: var(--muted-foreground);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) * 0.4);
+  padding: 0 calc(var(--spacing));
+}
+.lava-feedback {
+  position: absolute;
+  z-index: 2;
+  inset: 35% 0 auto;
+  text-align: center;
+  font-weight: 700;
+  font-size: clamp(1rem, 4vw, 2rem);
+  letter-spacing: -0.04em;
+  pointer-events: none;
+  text-shadow: 0 2px 12px var(--background);
+}
+.lava-droplet {
+  position: absolute;
+  width: calc(var(--spacing) * 1.3);
+  aspect-ratio: 1;
+  border-radius: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+.lava-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 5%;
+  background: var(--foreground);
+  pointer-events: none;
+  z-index: 2;
+  animation: lava-melt var(--tetris-line-duration) var(--tetris-ease) forwards;
+}
+.lava-legend {
+  font-size: 0.7rem;
+  color: var(--muted-foreground);
+  line-height: 1.8;
+}
+.lava-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tetris-gap);
+  padding: calc(var(--tetris-gap) * 2);
+}
+.lava-settings button {
+  justify-content: space-between;
+  min-height: var(--control-height-lg);
+  white-space: normal;
+  text-align: start;
+}
+.lava-switch {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+@keyframes lava-menu {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lava-melt {
+  0% {
+    opacity: 0.5;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scaleY(0.05) translateY(100%);
+  }
+}
+@media (max-width: 767px) {
+  :root {
+    --tetris-board-height: min(49dvh, 28rem);
+    --tetris-gap: calc(var(--spacing) * 2);
+    --tetris-touch: 3rem;
+  }
+  .lava-legend {
+    display: none;
+  }
+  .lava-controls kbd {
+    display: none;
+  }
+  .lava-stage {
+    grid-template-columns: minmax(2.5rem, 1fr) auto minmax(2.5rem, 1fr);
+  }
+  .lava-side {
+    font-size: 0.65rem;
+  }
+  .lava-top button {
+    font-size: 0.75rem;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  :root {
+    --tetris-board-height: 65dvh;
+  }
+  .lava-game {
+    position: relative;
+    padding-right: 32%;
+  }
+  .lava-controls {
+    position: absolute;
+    right: var(--tetris-gap);
+    top: 25%;
+    width: 29%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lava-top {
+    flex-wrap: wrap;
+  }
+  .lava-controls button {
+    min-height: 2.75rem;
+  }
+  .lava-wordmark {
+    font-size: 1.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lava-cover,
+  .lava-line {
+    animation: none;
+  }
+}
+.lava-game[data-reduced="true"] .lava-cover,
+.lava-game[data-reduced="true"] .lava-line {
+  animation: none;
+}
+
+@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) {
+  .lava-game[data-expanded="true"] {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    width: 100%;
+    height: 100dvh;
+    border-radius: 0;
+    border: 0;
+    overflow: hidden;
+    padding-top: max(var(--tetris-gap), env(safe-area-inset-top));
+    padding-bottom: max(var(--tetris-gap), env(safe-area-inset-bottom));
+    --tetris-board-height: min(65dvh, calc(100dvh - 220px));
+    justify-content: space-between;
+  }
+  .lava-game[data-expanded="true"] .lava-stage {
+    margin-block: auto;
+  }
+  .lava-game[data-expanded="true"] .lava-controls {
+    padding-bottom: 0;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .lava-game[data-expanded="true"] {
+    padding-right: 32%;
+    --tetris-board-height: 75dvh;
+  }
+  .lava-game[data-expanded="true"] .lava-stage {
+    margin-block: 0;
+  }
+  .lava-game[data-expanded="true"] .lava-controls {
+    top: 20%;
+  }
+}
+
+.lava-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: var(--tetris-flash-color, var(--foreground));
+}
+@media (max-width: 767px), (max-height: 500px) and (orientation: landscape) {
+  .lava-game[data-expanded="true"] {
+    padding-left: max(var(--tetris-gap), env(safe-area-inset-left));
+    padding-right: max(var(--tetris-gap), env(safe-area-inset-right));
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .lava-game[data-expanded="true"] {
+    padding-right: calc(32% + env(safe-area-inset-right));
+  }
+}

@@ -1,18 +1,163 @@
-import {test} from 'node:test';
-import assert from 'node:assert/strict';
-import {Game,emptyBoard,spawn,blocks,fits,rotate,ghost,clear,lineScore,type Piece} from './game';
-import {createBag,PIECE_NAMES,getKicks} from './pieces';
-test('7-bag: every seven consecutive bag entries contain every piece',()=>{const bag=createBag(()=>.31);for(let i=0;i<100;i++)assert.deepEqual(Array.from({length:7},()=>bag.next()).sort(),[...PIECE_NAMES].sort());});
-for(const name of PIECE_NAMES){test(`${name}: four rotations return to initial position`,()=>{const board=emptyBoard();let p=spawn(name);for(let i=0;i<4;i++)p=rotate(board,p,1)!;assert.deepEqual(p,spawn(name));assert.equal(blocks(p).length,4);});for(const dir of [-1,1])for(let rot=0;rot<4;rot++)test(`${name}: SRS ${rot} direction ${dir}`,()=>{const board=emptyBoard();const p={...spawn(name),rot,y:8};const q=rotate(board,p,dir)!;assert.equal(q.rot,(rot+dir+4)%4);assert.ok(fits(board,q));assert.equal(getKicks(name,rot,q.rot).length,name==='O'?1:5);});}
-test('wall kick recovers T at left wall',()=>{const b=emptyBoard();const p:Piece={piece:'T',rot:1,x:-1,y:5};assert.ok(fits(b,p));const q=rotate(b,p,-1)!;assert.ok(q);assert.equal(q.x,0);});
-test('I floor kick moves up from the floor',()=>{const b=emptyBoard();const p:Piece={piece:'I',rot:0,x:3,y:20};assert.ok(fits(b,p));const q=rotate(b,p,1)!;assert.ok(q);assert.equal(q.y,18);});
-test('rotation fails when every kick is obstructed',()=>{const b=emptyBoard().map(r=>r.map(()=> 'Z' as const));assert.equal(rotate(b,spawn('T'),1),null);});
-test('bounds, occupied cells, ghost',()=>{const b=emptyBoard();assert.equal(fits(b,{...spawn('I'),x:-1}),false);b[1][3]='T';assert.equal(fits(b,spawn('I')),false);const q=ghost(emptyBoard(),spawn('O'));assert.equal(q.y,20);assert.equal(fits(emptyBoard(),{...q,y:21}),false);});
-for(let n=1;n<=4;n++)test(`clears ${n} adjacent rows, keeps upper cells and dimensions`,()=>{const b=emptyBoard();b[10][4]='T';for(let y=22-n;y<22;y++)b[y].fill('I');const result=clear(b);assert.equal(result.rows.length,n);assert.equal(result.board.length,22);assert.equal(result.board[10+n][4],'T');});
-test('guideline scoring, combos and B2B',()=>{assert.deepEqual([1,2,3,4].map(n=>lineScore(n,1,0,false)),[100,300,500,800]);assert.equal(lineScore(4,2,2,true),2600);assert.equal(lineScore(1,1,1,true),150);});
-function well(g:Game,n:number){g.board=emptyBoard();for(let y=22-n;y<22;y++)g.board[y].fill('T');for(let y=22-n;y<22;y++)g.board[y][5]=null;g.current={piece:'I',rot:1,x:3,y:18};}
-test('event bus, actual scoring, B2B, combo and levels',()=>{const g=new Game(()=>.2);const events:string[]=[];g.on(e=>events.push(e.type));well(g,4);g.action('hard');assert.equal(g.score,800);well(g,4);g.action('hard');assert.equal(g.score,2050);assert.equal(g.combo,1);assert.ok(events.includes('tetris'));assert.ok(events.includes('combo'));well(g,2);g.action('hard');assert.equal(g.level,2);assert.ok(events.includes('levelUp'));});
-test('hold once per piece and reset after lock',()=>{const g=new Game(()=>.2);const original=g.current.piece;g.action('hold');assert.equal(g.held,original);const current=g.current;g.action('hold');assert.equal(g.current,current);g.action('hard');assert.equal(g.heldUsed,false);});
-test('hard/soft drop points, event unsubscription',()=>{const g=new Game(()=>.3);let events=0;const off=g.on(()=>events++);g.action('soft');assert.equal(g.score,1);off();const before=events;const distance=ghost(g.board,g.current).y-g.current.y;g.action('hard');assert.equal(g.score,1+distance*2);assert.equal(events,before);});
-test('lock delay 500ms and cap at 15 resets',()=>{const g=new Game();g.current=ghost(g.board,spawn('O'));g.tick(499);assert.equal(g.pieces,0);g.action('left');assert.equal(g.lockMs,0);for(let i=0;i<20;i++){g.tick(10);g.action(i%2?'left':'right');}assert.equal(g.locks,15);g.tick(500);assert.equal(g.pieces,1);});
-test('spawn obstruction and lockout end game',()=>{const g=new Game();g.board[0].fill('Z');g.current=spawn('O');g.lock();assert.equal(g.over,true);const score=g.score;g.action('hard');g.tick(1000);assert.equal(g.score,score);});
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  Game,
+  emptyBoard,
+  spawn,
+  blocks,
+  fits,
+  rotate,
+  ghost,
+  clear,
+  lineScore,
+  type Piece,
+} from "./game";
+import { createBag, PIECE_NAMES, getKicks } from "./pieces";
+test("7-bag: every seven consecutive bag entries contain every piece", () => {
+  const bag = createBag(() => 0.31);
+  for (let i = 0; i < 100; i++)
+    assert.deepEqual(
+      Array.from({ length: 7 }, () => bag.next()).sort(),
+      [...PIECE_NAMES].sort(),
+    );
+});
+for (const name of PIECE_NAMES) {
+  test(`${name}: four rotations return to initial position`, () => {
+    const board = emptyBoard();
+    let p = spawn(name);
+    for (let i = 0; i < 4; i++) p = rotate(board, p, 1)!;
+    assert.deepEqual(p, spawn(name));
+    assert.equal(blocks(p).length, 4);
+  });
+  for (const dir of [-1, 1])
+    for (let rot = 0; rot < 4; rot++)
+      test(`${name}: SRS ${rot} direction ${dir}`, () => {
+        const board = emptyBoard();
+        const p = { ...spawn(name), rot, y: 8 };
+        const q = rotate(board, p, dir)!;
+        assert.equal(q.rot, (rot + dir + 4) % 4);
+        assert.ok(fits(board, q));
+        assert.equal(getKicks(name, rot, q.rot).length, name === "O" ? 1 : 5);
+      });
+}
+test("wall kick recovers T at left wall", () => {
+  const b = emptyBoard();
+  const p: Piece = { piece: "T", rot: 1, x: -1, y: 5 };
+  assert.ok(fits(b, p));
+  const q = rotate(b, p, -1)!;
+  assert.ok(q);
+  assert.equal(q.x, 0);
+});
+test("I floor kick moves up from the floor", () => {
+  const b = emptyBoard();
+  const p: Piece = { piece: "I", rot: 0, x: 3, y: 20 };
+  assert.ok(fits(b, p));
+  const q = rotate(b, p, 1)!;
+  assert.ok(q);
+  assert.equal(q.y, 18);
+});
+test("rotation fails when every kick is obstructed", () => {
+  const b = emptyBoard().map((r) => r.map(() => "Z" as const));
+  assert.equal(rotate(b, spawn("T"), 1), null);
+});
+test("bounds, occupied cells, ghost", () => {
+  const b = emptyBoard();
+  assert.equal(fits(b, { ...spawn("I"), x: -1 }), false);
+  b[2][3] = "T";
+  assert.equal(fits(b, spawn("I")), false);
+  const q = ghost(emptyBoard(), spawn("O"));
+  assert.equal(q.y, 20);
+  assert.equal(fits(emptyBoard(), { ...q, y: 21 }), false);
+});
+for (let n = 1; n <= 4; n++)
+  test(`clears ${n} adjacent rows, keeps upper cells and dimensions`, () => {
+    const b = emptyBoard();
+    b[10][4] = "T";
+    for (let y = 22 - n; y < 22; y++) b[y].fill("I");
+    const result = clear(b);
+    assert.equal(result.rows.length, n);
+    assert.equal(result.board.length, 22);
+    assert.equal(result.board[10 + n][4], "T");
+  });
+test("guideline scoring, combos and B2B", () => {
+  assert.deepEqual(
+    [1, 2, 3, 4].map((n) => lineScore(n, 1, 0, false)),
+    [100, 300, 500, 800],
+  );
+  assert.equal(lineScore(4, 2, 2, true), 2600);
+  assert.equal(lineScore(1, 1, 1, true), 150);
+});
+function well(g: Game, n: number) {
+  g.board = emptyBoard();
+  for (let y = 22 - n; y < 22; y++) g.board[y].fill("T");
+  for (let y = 22 - n; y < 22; y++) g.board[y][5] = null;
+  g.current = { piece: "I", rot: 1, x: 3, y: 18 };
+}
+test("event bus, actual scoring, B2B, combo and levels", () => {
+  const g = new Game(() => 0.2);
+  const events: string[] = [];
+  g.on((e) => events.push(e.type));
+  well(g, 4);
+  g.action("hard");
+  assert.equal(g.score, 800);
+  well(g, 4);
+  g.action("hard");
+  assert.equal(g.score, 2050);
+  assert.equal(g.combo, 1);
+  assert.ok(events.includes("tetris"));
+  assert.ok(events.includes("combo"));
+  well(g, 2);
+  g.action("hard");
+  assert.equal(g.level, 2);
+  assert.ok(events.includes("levelUp"));
+});
+test("hold once per piece and reset after lock", () => {
+  const g = new Game(() => 0.2);
+  const original = g.current.piece;
+  g.action("hold");
+  assert.equal(g.held, original);
+  const current = g.current;
+  g.action("hold");
+  assert.equal(g.current, current);
+  g.action("hard");
+  assert.equal(g.heldUsed, false);
+});
+test("hard/soft drop points, event unsubscription", () => {
+  const g = new Game(() => 0.3);
+  let events = 0;
+  const off = g.on(() => events++);
+  g.action("soft");
+  assert.equal(g.score, 1);
+  off();
+  const before = events;
+  const distance = ghost(g.board, g.current).y - g.current.y;
+  g.action("hard");
+  assert.equal(g.score, 1 + distance * 2);
+  assert.equal(events, before);
+});
+test("lock delay 500ms and cap at 15 resets", () => {
+  const g = new Game();
+  g.current = ghost(g.board, spawn("O"));
+  g.tick(499);
+  assert.equal(g.pieces, 0);
+  g.action("left");
+  assert.equal(g.lockMs, 0);
+  for (let i = 0; i < 20; i++) {
+    g.tick(10);
+    g.action(i % 2 ? "left" : "right");
+  }
+  assert.equal(g.locks, 15);
+  g.tick(500);
+  assert.equal(g.pieces, 1);
+});
+test("spawn obstruction and lockout end game", () => {
+  const g = new Game();
+  g.board[0].fill("Z");
+  g.current = spawn("O");
+  g.lock();
+  assert.equal(g.over, true);
+  const score = g.score;
+  g.action("hard");
+  g.tick(1000);
+  assert.equal(g.score, score);
+});

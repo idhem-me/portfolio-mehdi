@@ -6,6 +6,7 @@ const SVG_CSP =
   "default-src 'none'; script-src 'none'; sandbox; style-src 'unsafe-inline'";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

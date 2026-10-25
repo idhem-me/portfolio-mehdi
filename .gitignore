@@ -44,3 +44,7 @@ next-env.d.ts
 # Village
 tools/village-assets/raw/
 tools/village-assets/*.zip
+
+# Local browser test artifacts
+/test-results/
+/playwright-report/
