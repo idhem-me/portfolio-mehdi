@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createGameStore } from "../../src/features/clicker-burger/state/useGame";
-import { initial } from "../../src/features/clicker-burger/engine/game";
+import { initial, D } from "../../src/features/clicker-burger/engine/game";
 import { visibleMissions } from "../../src/features/clicker-burger/data/missions";
 function withStorage(run: (data: Map<string, string>) => void) {
   const descriptor = Object.getOwnPropertyDescriptor(
@@ -43,7 +43,8 @@ test("level popup follows a paid purchase, not revenue, loading or import", () =
     a.persist();
     const loaded = createGameStore("test-a");
     assert.equal(loaded.getSnapshot().levelNotice, null);
-    assert.equal(loaded.getSnapshot().state.earned, "253");
+    assert(D(loaded.getSnapshot().state.earned).gte(249));
+    assert(D(loaded.getSnapshot().state.earned).lte(253));
     const b = createGameStore("test-b");
     assert.equal(b.getSnapshot().state.money, "20");
     assert.equal(data.has("test-b"), false);

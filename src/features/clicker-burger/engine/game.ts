@@ -128,7 +128,7 @@ export function legacyBuildingLevel(s: State) {
   const gates = [
     true,
     true,
-    s.research.includes("recipe"),
+    s.research.includes("recipe") && s.counts.cook >= 8,
     s.research.includes("franchise") && s.counts.warehouse >= 1,
     s.research.includes("global") &&
       s.markets.some((id) => (EUROPE_CITIES as readonly string[]).includes(id)),
@@ -166,12 +166,25 @@ export function legacyBuildingLevel(s: State) {
 export function buildingLevel(s: State) {
   return s.level;
 }
+/**
+ * Réseau de restaurants : siège (niv. ≥ 3) + succursales + extensions +
+ * acquisitions. Sert d’emplacements pour ouvrir de nouvelles extensions.
+ */
+export function restaurantCount(s: State) {
+  if (buildingLevel(s) < 3) return 0;
+  return (
+    1 +
+    (s.counts.restaurant ?? 0) +
+    s.markets.length +
+    s.rivals.length
+  );
+}
 export function upgradeOffer(s: State) {
   if (s.level >= LEVELS.length) return null;
   const requirements = [
     true,
     true,
-    s.research.includes("recipe"),
+    s.research.includes("recipe") && s.counts.cook >= 8,
     s.research.includes("franchise") && s.counts.warehouse >= 1,
     s.research.includes("global") &&
       s.markets.some((id) => (EUROPE_CITIES as readonly string[]).includes(id)),
@@ -185,7 +198,7 @@ export function upgradeOffer(s: State) {
   const hints = [
     "",
     "Atteindre la trésorerie nécessaire.",
-    "Créer la recette signature.",
+    "Embaucher 8 commis et créer la recette signature.",
     "Créer une franchise et ouvrir un centre logistique.",
     "Ouvrir une ville européenne et rechercher le menu mondial.",
     "Programme spatial, 70 % de domination, 3 mégafactories et une colonie martienne.",
@@ -244,26 +257,27 @@ export function rates(s: State) {
       (n, g) => n + s.counts[g.id] * g.production,
       0,
     ) * bonus;
-  const distribution = s.counts.warehouse * 60 * bonus * logistics;
-  const harvest = s.counts.farm * 35 * bonus * logistics;
+  const distribution = s.counts.warehouse * 120 * bonus * logistics;
+  const harvest = s.counts.farm * 80 * bonus * logistics;
   production += Math.min(
-    (s.counts.factory * 45 + s.counts.megafactory * 15000) * bonus,
+    (s.counts.factory * 90 + s.counts.megafactory * 25000) * bonus,
     distribution,
     harvest,
   );
   production += s.plots.reduce((n, p) => n + (p.level - 1) * 0.5, 0);
   production +=
-    (s.counts.orbital * 2e5 + s.counts.quantum * 5e8) * (spaceBonus - 1);
-  let demand = 1.3 + s.counts.marketing * 1.4 + s.counts.restaurant * 5;
+    (s.counts.orbital * 3.5e5 + s.counts.quantum * 9e8) * (spaceBonus - 1);
+  let demand = 1.3 + s.counts.marketing * 4 + s.counts.restaurant * 20;
   const marketDemand = MARKETS.filter((m) => s.markets.includes(m.id)).reduce(
     (n, m) => n + m.demand * (1 - m.competition) * m.power,
     0,
   );
   demand +=
     marketDemand * (s.research.includes("menus") ? 1.15 : 1) +
-    (s.counts.orbital * 2e5 + s.counts.quantum * 5e8) * spaceBonus;
+    (s.counts.orbital * 3.5e5 + s.counts.quantum * 9e8) * spaceBonus;
+  const w = willingnessToPay(s);
   demand *=
-    Math.pow(4 / s.price, 1.5) *
+    (2 / (1 + (s.price / w) ** 2)) *
     (1 + s.capital * 0.04) *
     (s.elapsed < s.boostUntil ? s.boost : 1) *
     (1 + s.rivals.length * 0.1) *
@@ -277,6 +291,20 @@ export function rates(s: State) {
     era: e,
   };
 }
+/** Disposition à payer des clients (€) — pic de revenu près de ce prix. */
+export function willingnessToPay(s: State) {
+  let w = 4;
+  w += (buildingLevel(s) - 1) * 0.5;
+  if (s.research.includes("recipe")) w += 1;
+  if (s.research.includes("branding")) w += 1.5;
+  if (s.research.includes("franchise")) w += 1;
+  if (s.research.includes("menus")) w += 1;
+  if (s.research.includes("astrochef")) w += 2;
+  w += Math.min(4, s.counts.marketing * 0.08);
+  w += s.capital * 0.15;
+  w += Math.min(3, s.markets.length * 0.25);
+  return Math.min(18, Math.max(1, Math.round(w * 2) / 2));
+}
 /** Skill asymptote < 1 : même une armée de traders reste sous l’optimum manuel. */
 export function traderSkill(count: number) {
   if (count <= 0) return 0;
@@ -288,7 +316,7 @@ export function incomeAtPrice(s: State, price: number) {
   return Math.min(r.production, r.demand) * price;
 }
 export function optimalPrice(s: State) {
-  let best = 4,
+  let best = willingnessToPay(s),
     bestIncome = -1;
   for (let p = 1; p <= 20; p += 0.5) {
     const income = incomeAtPrice(s, p);
@@ -299,19 +327,22 @@ export function optimalPrice(s: State) {
   }
   return best;
 }
-/** Prix ciblé : se rapproche de l’optimum depuis 4 €, sans l’atteindre (skill < 1). */
+/** Prix ciblé : se rapproche de l’optimum depuis la disposition à payer, sans l’atteindre. */
 export function traderTargetPrice(s: State) {
   const n = s.counts.trader ?? 0;
   if (n <= 0) return s.price;
   const skill = traderSkill(n);
   const optimal = optimalPrice(s);
+  const anchor = willingnessToPay(s);
   let target = Math.min(
     20,
-    Math.max(1, Math.round((4 + (optimal - 4) * skill) * 2) / 2),
+    Math.max(1, Math.round((anchor + (optimal - anchor) * skill) * 2) / 2),
   );
   if (target === optimal && skill < 1) {
-    target = optimal > 4 ? target - 0.5 : optimal < 4 ? target + 0.5 : target;
-    target = Math.min(20, Math.max(1, target));
+    const lo = Math.max(1, optimal - 0.5);
+    const hi = Math.min(20, optimal + 0.5);
+    target =
+      incomeAtPrice(s, lo) <= incomeAtPrice(s, hi) ? lo : hi;
   }
   return target;
 }
@@ -360,8 +391,16 @@ export function tick(s: State, seconds: number): State {
 export function cost(s: State, id: string, quantity = 1) {
   const g = GENERATORS.find((g) => g.id === id);
   if (!g || quantity < 1) return D(0);
+  const owned = s.counts[id] ?? 0;
+  if (g.step != null) {
+    // Suite arithmétique : q * base + step * (owned*q + q*(q-1)/2)
+    return D(g.base)
+      .mul(quantity)
+      .plus(D(g.step).mul(owned * quantity + (quantity * (quantity - 1)) / 2))
+      .ceil();
+  }
   return D(g.base)
-    .mul(D(g.growth).pow(s.counts[id]))
+    .mul(D(g.growth).pow(owned))
     .mul(D(g.growth).pow(quantity).minus(1))
     .div(D(g.growth).minus(1))
     .ceil();
@@ -422,6 +461,12 @@ export function act(s: State, a: Action): State {
   if (a.type === "buy") {
     const g = GENERATORS.find((g) => g.id === a.id);
     if (!g || g.era > era(s)) return s;
+    if (
+      (a.id === "restaurant" || a.id === "trader" || a.id === "farm") &&
+      n.level < 3
+    )
+      return s;
+    if (a.id === "trader" && (n.counts.restaurant ?? 0) < 2) return s;
     const q = affordable(s, a.id, a.quantity);
     if (!q || !pay(cost(s, a.id, q))) return s;
     n.counts[a.id] += q;
@@ -475,16 +520,39 @@ export function act(s: State, a: Action): State {
   }
   if (a.type === "market") {
     const m = MARKETS.find((m) => m.id === a.id);
-    if (!m || m.era > era(n) || n.markets.includes(m.id) || !pay(m.cost))
+    if (
+      !m ||
+      restaurantCount(n) <= 0 ||
+      n.markets.length >= restaurantCount(n) ||
+      m.era > era(n) ||
+      n.markets.includes(m.id) ||
+      !pay(m.cost)
+    )
       return s;
     n.markets.push(m.id);
     note(n, `${m.name} a désormais une nouvelle raison de commander.`);
   }
   if (a.type === "acquire") {
     const r = RIVALS.find((r) => r.id === a.id);
-    if (!r || era(n) < 2 || n.rivals.includes(r.id) || !pay(r.cost)) return s;
+    if (
+      !r ||
+      n.level < 3 ||
+      era(n) < 2 ||
+      n.rivals.includes(r.id) ||
+      !pay(r.cost)
+    )
+      return s;
     n.rivals.push(r.id);
-    note(n, `${r.name} rejoint votre empire. La concurrence applaudit peu.`);
+    const crew = Math.max(0, Math.floor(r.crew));
+    const room = Math.max(0, 10000 - (n.counts.cook ?? 0));
+    const hired = Math.min(crew, room);
+    if (hired > 0) n.counts.cook = (n.counts.cook ?? 0) + hired;
+    note(
+      n,
+      hired > 0
+        ? `${r.name} rejoint votre empire · +${hired} employés.`
+        : `${r.name} rejoint votre empire. La concurrence applaudit peu.`,
+    );
   }
   if (a.type === "build") {
     const g = GENERATORS.find((g) => g.id === a.id);

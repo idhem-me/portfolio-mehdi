@@ -27,6 +27,16 @@ function franchiseBase() {
   return s;
 }
 
+test("acquisitions add restaurants to the network and hire their crew", () => {
+  const s = franchiseBase();
+  s.money = "600000";
+  s.counts.cook = 10;
+  const before = s.counts.cook;
+  const n = act(s, { type: "acquire", id: "bigbun" });
+  assert.deepEqual(n.rivals, ["bigbun"]);
+  assert.equal(n.counts.cook, before + 40);
+});
+
 test("ipo unlocks the stock market panel and fund tracking", () => {
   const s = franchiseBase();
   assert.equal(marketUnlocked(s), true);

@@ -57,8 +57,9 @@ export function LevelUp({
               {LEVEL_BLURBS[10]}
               <br />
               <br />
-              Multiplicateur ×{asset.multiplier}. La production continue ; le
-              prestige reste disponible si vous voulez recommencer plus fort.
+              Bonus de niveau ×{asset.multiplier} sur la production et les
+              clics. La production continue ; le prestige reste disponible si
+              vous voulez recommencer plus fort.
             </>
           ) : (
             <>
@@ -66,7 +67,8 @@ export function LevelUp({
               <br />
               {LEVEL_BLURBS[level] ?? `${asset.name}.`}
               <br />
-              Multiplicateur ×{asset.multiplier}.
+              Bonus de niveau ×{asset.multiplier} sur la production et les
+              clics.
             </>
           )}
         </DialogDescription>

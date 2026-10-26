@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LevelUp } from "./components/LevelUp";
+import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet } from "./components/Sheet";
@@ -51,6 +52,8 @@ import {
   eventOffer,
   traderSkill,
   marketUnlocked,
+  willingnessToPay,
+  restaurantCount,
 } from "./engine/game";
 import { discoveries } from "./systems/discovery";
 import { parseSave, resume } from "./systems/save";
@@ -65,9 +68,9 @@ type Panel =
   | "level"
   | "upgrades"
   | "research"
-  | "missions"
   | "extensions"
   | "finance"
+  | "missions-done"
   | "settings"
   | "reset"
   | "prestige"
@@ -76,9 +79,9 @@ const TITLES: Record<Exclude<Panel, null>, string> = {
   level: "Améliorer le bâtiment",
   upgrades: "Améliorer",
   research: "Recherche",
-  missions: "Missions",
   extensions: "Extensions",
   finance: "Bourse",
+  "missions-done": "Missions réussies",
   settings: "Réglages",
   reset: "Recommencer ?",
   prestige: "Faillite stratégique",
@@ -170,6 +173,11 @@ export default function App({
     if (ids) markNotices(panel, ids);
   }, [panel, groupSignature, markNotices]);
   useEffect(() => {
+    if (!game.ready) return;
+    const ids = groups.missions;
+    if (ids.length) markNotices("missions", ids);
+  }, [game.ready, groupSignature, markNotices]);
+  useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(""), 4500);
     return () => clearTimeout(timer);
@@ -197,10 +205,10 @@ export default function App({
   const noveltyCount =
     notification("upgrades") +
     notification("research") +
-    notification("missions") +
     notification("extensions") +
     notification("finance") +
-    (upgrade?.affordable ? 1 : 0);
+    (upgrade?.affordable ? 1 : 0) +
+    groups.missions.length;
   useEffect(() => {
     if (noticedTotal.current === null) {
       noticedTotal.current = noveltyCount;
@@ -267,10 +275,9 @@ export default function App({
       }
       const map: Record<string, Exclude<Panel, null>> = {
         "1": "upgrades",
-        "2": "research",
-        "3": "missions",
-        "4": "extensions",
-        "5": "finance",
+        "2": "extensions",
+        "3": "research",
+        "4": "finance",
       };
       const next = map[event.key];
       if (!next) return;
@@ -314,15 +321,14 @@ export default function App({
       disabled: groups.upgrades.length === 0,
     },
     {
-      id: "research",
-      label: "Recherche",
-      disabled: groups.research.length === 0 && s.projects.length === 0,
-    },
-    { id: "missions", label: "Missions", disabled: false },
-    {
       id: "extensions",
       label: "Extensions",
       disabled: groups.extensions.length === 0,
+    },
+    {
+      id: "research",
+      label: "Recherche",
+      disabled: groups.research.length === 0 && s.projects.length === 0,
     },
     {
       id: "finance",
@@ -330,6 +336,9 @@ export default function App({
       disabled: !marketUnlocked(s),
     },
   ] as const;
+  const activeMissions = missions.filter(
+    (m) => !s.missionClaims.includes(m.id),
+  );
   if (!game.ready) {
     return (
       <div className="clicker-burger" role="status">
@@ -407,11 +416,30 @@ export default function App({
           </button>
         </section>
         <section className="restaurant-card">
-          <div className="card-heading">
-            <h2>Restaurant</h2>
-            <span>×{levelMultiplier(s)}</span>
-          </div>
           <dl className="metrics">
+            <div>
+              <dt
+                title="Bonus du niveau de bâtiment sur la production et les clics"
+              >
+                Bonus
+              </dt>
+              <dd>×{levelMultiplier(s)}</dd>
+            </div>
+            <div>
+              <dt>Équipe</dt>
+              <dd>
+                {fmt(s.counts.cook + s.counts.trader, 0)}
+                <small>
+                  {" "}
+                  employé
+                  {s.counts.cook + s.counts.trader > 1 ? "s" : ""}
+                </small>
+              </dd>
+            </div>
+            <div>
+              <dt>Restaurants</dt>
+              <dd>{fmt(restaurantCount(s), 0)}</dd>
+            </div>
             <div>
               <dt>En stock</dt>
               <dd>{fmt(s.stock, 0)}</dd>
@@ -479,7 +507,110 @@ export default function App({
                 </Button>
               </dd>
             </div>
+            <div>
+              <dt
+                title="Prix autour duquel les clients maximisent votre revenu / s"
+              >
+                Clients ~{willingnessToPay(s).toLocaleString("fr-FR")} €
+              </dt>
+              <dd />
+            </div>
           </dl>
+        </section>
+        <section className="missions-card" aria-label="Missions">
+          <div className="card-heading">
+            <h2>Missions</h2>
+            {s.missionClaims.length > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="missions-done-trigger"
+                onClick={() => setPanel("missions-done")}
+              >
+                {s.missionClaims.length} réussie
+                {s.missionClaims.length > 1 ? "s" : ""}
+              </Button>
+            )}
+          </div>
+          {activeMissions.map((m) => {
+            const progress = Math.min(m.target, m.progress(s));
+            const ready = progress >= m.target;
+            return (
+              <div
+                className={`mission home-mission ${ready ? "ready" : ""}`}
+                key={m.id}
+              >
+                <div className="home-mission-body">
+                  <h3>{missionLabel(m, s)}</h3>
+                  <div className="mission-meta">
+                    <span>
+                      {fmt(progress, 0)} / {fmt(m.target, 0)}
+                    </span>
+                    <span>+{fmt(m.reward)} €</span>
+                  </div>
+                  <progress max={m.target} value={progress} />
+                </div>
+                <Button
+                  variant={ready ? "primary" : "outline"}
+                  disabled={!ready}
+                  onClick={() =>
+                    game.update((current) => claimMission(current, m.id))
+                  }
+                >
+                  {ready ? "Récupérer" : "En cours"}
+                </Button>
+              </div>
+            );
+          })}
+          {activeMissions.length === 0 && (
+            <p className="footnote">Toutes les missions sont terminées.</p>
+          )}
+          {s.counts.cook > 0 && (
+            <div className="event-slot">
+              {event ? (
+                <div className="event">
+                  <h3>{event.title}</h3>
+                  <p>
+                    +{fmt(event.reward)} € · demande ×{event.multiplier} pendant{" "}
+                    {event.duration} s.
+                  </p>
+                  <div className="event-actions">
+                    <Button
+                      variant="outline"
+                      disabled={D(s.money).lt(event.cost)}
+                      onClick={() =>
+                        game.dispatch({ type: "event", accept: true })
+                      }
+                    >
+                      Participer · {fmt(event.cost)} €
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() =>
+                        game.dispatch({ type: "event", accept: false })
+                      }
+                    >
+                      Passer
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="event event-empty" role="status">
+                  <h3>
+                    {s.elapsed < s.boostUntil
+                      ? "Bonus actif"
+                      : "Prochain événement"}
+                  </h3>
+                  <p>
+                    {s.elapsed < s.boostUntil
+                      ? `Demande ×${s.boost} · ${Math.ceil(s.boostUntil - s.elapsed)} s restantes.`
+                      : "Une nouvelle occasion arrive bientôt."}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </section>
       </main>
       <div className="control-dock">
@@ -518,8 +649,7 @@ export default function App({
             Prépare un burger
           </Button>
           <p>
-            Multiplicateur ×{fmt(cpc)} <span>·</span> {fmt(r.production)}{" "}
-            burgers / s
+            Par clic ×{fmt(cpc)} <span>·</span> {fmt(r.production)} burgers / s
           </p>
         </div>
       </div>
@@ -528,12 +658,33 @@ export default function App({
           title={TITLES[panel]}
           onClose={() => setPanel(null)}
           side={
-            panel === "settings" || panel === "reset" || panel === "prestige"
+            panel === "settings" ||
+            panel === "reset" ||
+            panel === "prestige" ||
+            panel === "missions-done"
               ? "right"
               : "bottom"
           }
-          stableHeight={panel === "missions" || panel === "extensions"}
+          stableHeight={panel === "extensions"}
         >
+          {panel === "missions-done" && (
+            s.missionClaims.length > 0 ? (
+              <ul className="completed-missions">
+                {[...s.missionClaims]
+                  .reverse()
+                  .map((id) => MISSIONS.find((m) => m.id === id))
+                  .filter((m) => m !== undefined)
+                  .map((m) => (
+                    <li key={m.id} className="completed-mission">
+                      <span>{m.title}</span>
+                      <Check size={18} aria-label="Réussie" />
+                    </li>
+                  ))}
+              </ul>
+            ) : (
+              <p className="footnote">Aucune mission réussie.</p>
+            )
+          )}
           {panel === "level" && (
             <div className="building-offer">
               {upgrade ? (
@@ -548,7 +699,8 @@ export default function App({
                     Niveau {upgrade.level} · {upgrade.name}
                   </h3>
                   <p className="footnote">
-                    Multiplicateur ×{upgrade.multiplier}.
+                    Bonus de niveau ×{upgrade.multiplier} sur la production et
+                    les clics.
                   </p>
                   {!upgrade.unlocked && (
                     <p className="footnote">{upgrade.requirement}</p>
@@ -603,8 +755,8 @@ export default function App({
                             : g.demand
                               ? `+${fmt(g.demand)} demande / s`
                               : g.id === "farm"
-                                ? "+35 ingrédients / s"
-                                : "+60 distribution / s"}
+                                ? "+80 ingrédients / s"
+                                : "+120 distribution / s"}
                       </p>
                     </div>
                     <Button
@@ -761,120 +913,13 @@ export default function App({
               </div>
             </div>
           )}
-          {panel === "missions" && (
-            <Tabs defaultValue="current" className="game-tabs">
-              <TabsList aria-label="Missions">
-                <TabsTrigger value="current">En cours</TabsTrigger>
-                <TabsTrigger value="completed">Réussies</TabsTrigger>
-              </TabsList>
-              <TabsContent value="current">
-                {missions
-                  .filter((m) => !s.missionClaims.includes(m.id))
-                  .map((m) => {
-                    const claimed = s.missionClaims.includes(m.id);
-                    const progress = Math.min(m.target, m.progress(s));
-                    return (
-                      <div
-                        className={`mission ${claimed ? "claimed" : ""}`}
-                        key={m.id}
-                      >
-                        <h3>{missionLabel(m, s)}</h3>
-                        <div className="mission-meta">
-                          <span>
-                            {fmt(progress, 0)} / {fmt(m.target, 0)}
-                          </span>
-                          <span>+{fmt(m.reward)} €</span>
-                        </div>
-                        <progress max={m.target} value={progress} />
-                        <Button
-                          variant="outline"
-                          disabled={claimed || progress < m.target}
-                          onClick={() =>
-                            game.update((current) =>
-                              claimMission(current, m.id),
-                            )
-                          }
-                        >
-                          {claimed ? (
-                            <>
-                              <Check />
-                              Récompense reçue
-                            </>
-                          ) : (
-                            "Récupérer"
-                          )}
-                        </Button>
-                      </div>
-                    );
-                  })}
-                {s.counts.cook > 0 && (
-                  <div className="event-slot">
-                    {event ? (
-                      <div className="event">
-                        <h3>{event.title}</h3>
-                        <p>
-                          +{fmt(event.reward)} € · demande ×{event.multiplier}{" "}
-                          pendant {event.duration} s.
-                        </p>
-                        <div className="event-actions">
-                          <Button
-                            variant="outline"
-                            disabled={D(s.money).lt(event.cost)}
-                            onClick={() =>
-                              game.dispatch({ type: "event", accept: true })
-                            }
-                          >
-                            Participer · {fmt(event.cost)} €
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            onClick={() =>
-                              game.dispatch({ type: "event", accept: false })
-                            }
-                          >
-                            Passer
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="event event-empty" role="status">
-                        <h3>
-                          {s.elapsed < s.boostUntil
-                            ? "Bonus actif"
-                            : "Prochain événement"}
-                        </h3>
-                        <p>
-                          {s.elapsed < s.boostUntil
-                            ? `Demande ×${s.boost} · ${Math.ceil(s.boostUntil - s.elapsed)} s restantes.`
-                            : "Une nouvelle occasion arrive bientôt."}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="completed">
-                {s.missionClaims.length > 0 ? (
-                  <ul className="completed-missions">
-                    {[...s.missionClaims]
-                      .reverse()
-                      .map((id) => MISSIONS.find((m) => m.id === id))
-                      .filter((m) => m !== undefined)
-                      .map((m) => (
-                        <li key={m.id} className="completed-mission">
-                          <span>{m.title}</span>
-                          <Check size={18} aria-label="Réussie" />
-                        </li>
-                      ))}
-                  </ul>
-                ) : (
-                  <p className="footnote">Aucune mission réussie.</p>
-                )}
-              </TabsContent>
-            </Tabs>
-          )}
           {panel === "extensions" && (
             <Tabs defaultValue="available" className="game-tabs">
+              <p className="footnote">
+                Emplacements : {s.markets.length} / {restaurantCount(s)}. Siège,
+                succursales, extensions et acquisitions comptent chacun pour 1
+                restaurant.
+              </p>
               <TabsList aria-label="Extensions">
                 <TabsTrigger value="available">Disponibles</TabsTrigger>
                 <TabsTrigger value="owned">Acquises</TabsTrigger>
@@ -920,7 +965,10 @@ export default function App({
                       <div className="market-row" key={v.id}>
                         <div>
                           <h3>{v.name}</h3>
-                          <p>{v.share} % du marché · +10 % de demande</p>
+                          <p>
+                            {v.share} % du marché · +10 % de demande · +
+                            {v.crew} employés
+                          </p>
                         </div>
                         {s.rivals.includes(v.id) ? (
                           <Check size={18} />
@@ -1065,6 +1113,11 @@ export default function App({
                   {theme === "dark" ? "Oui" : "Non"}
                 </Badge>
               </Button>
+              <GameSettingsOutreach
+                className="burger-settings-actions"
+                gameName="Clicker Burger"
+                shareText="Viens gérer ton empire de burgers."
+              />
               <section className="burger-settings-actions">
                 <h3>Raccourcis clavier</h3>
                 <p className="burger-settings-note">

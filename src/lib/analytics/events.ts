@@ -19,6 +19,8 @@ export const AnalyticsEvents = {
   contact_cta: "contact_cta",
   home_cta: "home_cta",
   consent_updated: "consent_updated",
+  game_feedback: "game_feedback",
+  game_share: "game_share",
 } as const;
 
 export type AnalyticsEventName =

@@ -1,7 +1,7 @@
 // Revenue gates rise exponentially; each era also requires its infrastructure.
 export const LEVELS = [
   {
-    name: "Table",
+    name: "Burger Table",
     image: "/assets/burger/table.png",
     cost: "0",
     multiplier: 1,
@@ -15,7 +15,7 @@ export const LEVELS = [
   {
     name: "Burger Restaurant",
     image: "/assets/burger/restaurant.png",
-    cost: "100000",
+    cost: "250000",
     multiplier: 4,
   },
   {

@@ -8,7 +8,14 @@ import {
   MOON_MARKETS,
 } from "../data/content";
 import { PROJECTS } from "../data/projects";
-import { D, era, domination, marketUnlocked, type State } from "../engine/game";
+import {
+  D,
+  era,
+  domination,
+  marketUnlocked,
+  restaurantCount,
+  type State,
+} from "../engine/game";
 // Discovery uses lifetime revenue and permanent purchases, never current cash.
 export function discoveries(s: State) {
   const e = era(s),
@@ -17,9 +24,13 @@ export function discoveries(s: State) {
     cook: s.sold >= 10,
     grill: s.counts.cook > 0 && earned.gte(100),
     marketing: s.counts.grill > 0 || earned.gte(200),
-    restaurant: e >= 1,
-    trader: e >= 1 && (s.counts.marketing > 0 || s.counts.restaurant > 0),
-    farm: e >= 2,
+    restaurant: s.level >= 3 && e >= 1 && earned.gte(50000),
+    trader:
+      s.level >= 3 &&
+      e >= 1 &&
+      s.counts.restaurant >= 2 &&
+      earned.gte(200000),
+    farm: e >= 2 && s.level >= 3,
     factory: s.counts.farm > 0,
     warehouse: s.counts.factory > 0,
     megafactory: e >= 3 && s.counts.factory > 0 && earned.gte(1e7),
@@ -37,8 +48,8 @@ export function discoveries(s: State) {
       (
         {
           recipe: s.counts.cook > 0 && earned.gte(150),
-          franchise: e >= 1,
-          branding: e >= 1 && s.counts.marketing > 0,
+          franchise: e >= 1 && s.level >= 3,
+          branding: e >= 1 && s.level >= 3 && s.counts.marketing > 0,
           coldchain: s.counts.farm > 0,
           automation: s.counts.warehouse > 0,
           ipo: e >= 2 && s.counts.warehouse >= 1 && earned.gte(15000),
@@ -64,15 +75,24 @@ export function discoveries(s: State) {
       p.era <= e &&
       p.requiresResearch.every((id) => s.research.includes(id)),
   );
-  const eligible = MARKETS.filter((m) => m.era <= e);
-  const next = eligible.find((m) => !s.markets.includes(m.id));
+  const restaurants = restaurantCount(s);
+  const hasRestaurant = restaurants > 0;
+  const slotsLeft = restaurants - s.markets.length;
+  const eligible = hasRestaurant
+    ? MARKETS.filter((m) => m.era <= e)
+    : MARKETS.filter((m) => s.markets.includes(m.id));
+  const next =
+    hasRestaurant && slotsLeft > 0
+      ? eligible.find((m) => !s.markets.includes(m.id))
+      : undefined;
   const markets = eligible.filter(
     (m) => s.markets.includes(m.id) || m.id === next?.id,
   );
   const rivals = RIVALS.filter(
     (r) =>
       s.rivals.includes(r.id) ||
-      (e >= 2 &&
+      (hasRestaurant &&
+        e >= 2 &&
         earned.gte(r.cost * 0.2) &&
         r.id === RIVALS.find((v) => !s.rivals.includes(v.id))?.id),
   );
@@ -83,7 +103,8 @@ export function discoveries(s: State) {
     markets,
     rivals,
     market: marketUnlocked(s),
-    map: e >= 1,
+    map: hasRestaurant && e >= 1,
+    restaurantSlots: restaurants,
     bulk: Object.values(s.counts).some((n) => n >= 5),
     prestige: earned.gte(1e6) || s.capital > 0,
   };

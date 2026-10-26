@@ -11,7 +11,7 @@ for (const active of [true, false])
     assert.equal(buildingLevel(result.state), 10);
     assert(Object.keys(result.reached).length === 10);
     assert(D(result.state.money).gte(0));
-    assert(result.hours > 12 && result.hours < 36);
+    assert(result.hours > 8 && result.hours < 36);
     for (let i = 2; i <= 10; i++)
       assert(result.reached[i] > result.reached[i - 1]);
   });

@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
 import {
   Sheet,
   SheetContent,
@@ -788,6 +789,10 @@ function TetrisGame({
               uniquement sur les impacts forts. Elle peut ne produire aucune
               vibration.
             </p>
+            <GameSettingsOutreach
+              gameName="Tetris"
+              shareText="Viens jouer au Tetris du portfolio."
+            />
           </div>
         </SheetContent>
       </Sheet>

@@ -12,7 +12,7 @@ Bouton Accent, accordéon et panneaux partagent les composants du portfolio. Les
 
 | Niveau | Bâtiment        | Ventes cumulées minimum | Prérequis supplémentaires                                              | Multiplicateur |
 | ------ | --------------- | ----------------------: | ---------------------------------------------------------------------- | -------------: |
-| 1      | Table           |                     0 € | Aucun                                                                  |             ×1 |
+| 1      | Burger Table    |                     0 € | Aucun                                                                  |             ×1 |
 | 2      | Stand           |                   250 € | Aucun                                                                  |             ×2 |
 | 3      | Restaurant      |                 5 000 € | Recette signature                                                      |             ×4 |
 | 4      | Warehouse       |               100 000 € | Franchise et entrepôt                                                  |             ×8 |

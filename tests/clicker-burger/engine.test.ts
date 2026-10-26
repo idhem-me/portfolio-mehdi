@@ -16,11 +16,13 @@ import {
   traderTargetPrice,
   optimalPrice,
   incomeAtPrice,
+  willingnessToPay,
 } from "../../src/features/clicker-burger/engine/game";
 import {
   parseSave,
   resume,
 } from "../../src/features/clicker-burger/systems/save";
+import { discoveries } from "../../src/features/clicker-burger/systems/discovery";
 test("manual cooking consumes ingredients without directly selling", () => {
   const s = act(initial(), { type: "cook" });
   assert.equal(s.stock, 1);
@@ -88,7 +90,7 @@ test("research prerequisites and stages gate expansion", () => {
 test("construction and upgrade update production without duplicate plots", () => {
   const s = initial();
   s.earned = "1000";
-  s.money = "5000";
+  s.money = "200000";
   const n = act(s, { type: "build", id: "restaurant", x: 1, y: 2 });
   assert.equal(n.plots.length, 2);
   assert.equal(n.counts.restaurant, 1);
@@ -104,7 +106,7 @@ test("industry needs harvest and distribution", () => {
   s.counts.farm = 1;
   assert.equal(rates(s).production, 0);
   s.counts.warehouse = 1;
-  assert.equal(rates(s).production, 35);
+  assert.equal(rates(s).production, 80);
 });
 test("prestige keeps permanent bonus and resets assets", () => {
   const s = initial();
@@ -176,8 +178,20 @@ test("events apply a temporary demand modifier", () => {
 });
 
 test("base purchase prices are exact decimal values", () => {
-  assert.equal(cost(initial(), "cook").toString(), "45");
-  assert.equal(cost(initial(), "grill").toString(), "140");
+  assert.equal(cost(initial(), "cook").toString(), "280");
+  assert.equal(cost(initial(), "grill").toString(), "450");
+});
+test("cook wages stay nearly flat so late hiring stays affordable", () => {
+  const s = initial();
+  s.counts.cook = 24;
+  assert.equal(cost(s, "cook").toString(), "520");
+  const fourteen = cost(s, "cook", 14);
+  assert(fourteen.lt(12000));
+  assert(fourteen.gt(5000));
+  const thousand = cost(s, "cook", 1000);
+  assert(thousand.lt(1.1e7));
+  assert(thousand.gt(1e6));
+  assert(D(1.1e7).div(thousand).gte(1));
 });
 test("ownership cap cannot create a save that fails validation", () => {
   const s = initial();
@@ -185,6 +199,22 @@ test("ownership cap cannot create a save that fails validation", () => {
   s.counts.cook = 10000;
   assert.equal(affordable(s, "cook", "max"), 0);
   assert.equal(act(s, { type: "buy", id: "cook", quantity: 1 }), s);
+});
+test("willingness to pay rises with branding and level; revenue peaks near it", () => {
+  const s = initial();
+  s.counts.cook = 10;
+  s.counts.grill = 5;
+  s.counts.marketing = 3;
+  const early = willingnessToPay(s);
+  assert(early >= 4);
+  const optEarly = optimalPrice(s);
+  assert(Math.abs(optEarly - early) <= 2);
+  assert.notEqual(optEarly, 1);
+  s.research = ["recipe", "franchise", "branding"];
+  s.level = 3;
+  const later = willingnessToPay(s);
+  assert(later > early);
+  assert(optimalPrice(s) >= optEarly);
 });
 test("sales directors improve pricing without reaching the manual optimum", () => {
   const s = initial();
@@ -244,7 +274,8 @@ test("two early-game strategies remain solvent and reach automation", () => {
       s = act(s, { type: "cook" });
       s = tick(s, 1);
       const id = strategy[Math.floor(t / 60) % strategy.length];
-      if (D(s.money).gte(cost(s, id)))
+      const unlocked = discoveries(s).generators.some((g) => g.id === id);
+      if (unlocked && D(s.money).gte(cost(s, id)))
         s = act(s, { type: "buy", id, quantity: 1 });
       assert(D(s.money).gte(0));
     }

@@ -24,6 +24,7 @@ test("ten levels have the requested cash prices and require explicit atomic purc
   s.money = "1e25";
   s.earned = "1e25";
   s.research = ["recipe", "franchise", "coldchain", "global", "space", "warp"];
+  s.counts.cook = 8;
   s.counts.warehouse = 1;
   s.counts.megafactory = 3;
   s.markets = [
@@ -41,7 +42,7 @@ test("ten levels have the requested cash prices and require explicit atomic purc
   ];
   const prices = [
     "5000",
-    "100000",
+    "250000",
     "1000000",
     "500000000",
     "10000000000",
@@ -65,9 +66,12 @@ test("unaffordable or locked building upgrades leave money and level unchanged",
   const s = initial();
   assert.equal(act(s, { type: "level-up" }), s);
   s.level = 2;
-  s.money = "100000";
+  s.money = "250000";
   assert.equal(act(s, { type: "level-up" }), s);
   s.research = ["recipe"];
+  s.counts.cook = 7;
+  assert.equal(act(s, { type: "level-up" }), s);
+  s.counts.cook = 8;
   assert.equal(act(s, { type: "level-up" }).level, 3);
 });
 test("level multiplier applies exactly once to each manual click", () => {
@@ -129,6 +133,7 @@ test("legacy automatic levels migrate without charging for buildings already obt
   const s = initial();
   s.earned = "5000";
   s.research = ["recipe"];
+  s.counts.cook = 8;
   const raw = JSON.parse(JSON.stringify(s));
   delete raw.level;
   delete raw.eventTerms;

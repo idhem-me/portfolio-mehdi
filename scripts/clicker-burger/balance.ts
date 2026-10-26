@@ -8,6 +8,7 @@ import {
   buildingLevel,
   era,
   upgradeOffer,
+  restaurantCount,
 } from "../../src/features/clicker-burger/engine/game";
 import { discoveries } from "../../src/features/clicker-burger/systems/discovery";
 import {
@@ -42,9 +43,27 @@ export function simulate(active = true, maxHours = 48) {
       const v = discoveries(s),
         before = rates(s);
       const income = Math.min(before.production, before.demand) * s.price;
+      const slots = restaurantCount(s);
+      if (
+        slots > 0 &&
+        s.markets.length >= slots &&
+        v.generators.some((g) => g.id === "restaurant") &&
+        D(s.money).gte(cost(s, "restaurant").mul(2))
+      ) {
+        s = act(s, { type: "buy", id: "restaurant", quantity: 1 });
+        continue;
+      }
       const options = [
         ...v.generators
-          .filter((g) => D(s.money).gte(cost(s, g.id)))
+          .filter((g) => {
+            if (D(s.money).lt(cost(s, g.id))) return false;
+            if (
+              (g.id === "cook" || g.id === "grill") &&
+              before.production >= before.demand
+            )
+              return false;
+            return true;
+          })
           .map((g) => ({
             price: cost(s, g.id).toNumber(),
             state: act(s, { type: "buy", id: g.id, quantity: 1 }),

@@ -863,6 +863,27 @@
   flex-direction: column;
   gap: calc(var(--spacing) * 3);
 }
+.lava-sheet .lava-settings .game-settings-outreach {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.lava-sheet .lava-settings .game-settings-outreach h3 {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.lava-sheet .lava-settings .game-settings-outreach-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.lava-sheet .lava-settings .game-settings-outreach > [data-slot="button"] {
+  justify-content: center;
+  min-height: var(--control-height-lg, 2.75rem);
+}
 .lava-sheet .lava-settings p {
   margin: 0;
 }
