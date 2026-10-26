@@ -23,7 +23,7 @@ function franchiseBase() {
   s.stock = 200;
   s.ingredients = 500;
   s.level = 4;
-  s.markets = ["suburb", "center", "lyon"];
+  s.markets = ["suburb", "center", "lyon", "paris"];
   return s;
 }
 
@@ -66,6 +66,22 @@ test("legacy saves migrate market and projects fields", () => {
   assert.equal(migrated.marketFund, "0");
   assert.equal(migrated.marketIndex, 100);
   assert.deepEqual(migrated.projects, []);
+});
+
+test("legacy market ids migrate to renamed cities", () => {
+  const s = initial();
+  s.markets = ["suburb", "lyon", "bordeaux", "europe", "moon", "mars"];
+  const raw = JSON.parse(JSON.stringify(s));
+  raw.markets = ["suburb", "lyon", "bordeaux", "europe", "moon", "mars"];
+  const migrated = parseSave(JSON.stringify(raw));
+  assert.deepEqual(migrated.markets, [
+    "suburb",
+    "lyon",
+    "berlin",
+    "newyork",
+    "jamestown",
+    "happyvalley",
+  ]);
 });
 
 test("docs bourse save file imports cleanly", async () => {

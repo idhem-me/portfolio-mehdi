@@ -1,6 +1,15 @@
 import { LEVELS } from "../data/levels";
 import Decimal from "decimal.js";
-import { GENERATORS, MARKETS, RESEARCH, RIVALS, EVENTS } from "../data/content";
+import {
+  GENERATORS,
+  MARKETS,
+  RESEARCH,
+  RIVALS,
+  EVENTS,
+  EUROPE_CITIES,
+  WORLD_CITIES,
+  MARS_MARKETS,
+} from "../data/content";
 import { PROJECTS } from "../data/projects";
 export type State = {
   version: 1;
@@ -29,6 +38,8 @@ export type State = {
   eventSeen: number;
   boost: number;
   boostUntil: number;
+  /** Jusqu’à cet elapsed, les directeurs des ventes ne touchent pas au prix. */
+  priceHoldUntil: number;
   lastSaved: number;
   log: string[];
 };
@@ -61,10 +72,12 @@ export function initial(now = Date.now(), capital = 0): State {
     eventSeen: 0,
     boost: 1,
     boostUntil: 0,
+    priceHoldUntil: 0,
     lastSaved: now,
     log: ["Votre empire commence avec 20 € et une friteuse douteuse."],
   };
 }
+export const PRICE_HOLD_SECONDS = 180;
 export function marketUnlocked(s: State) {
   return s.research.includes("ipo");
 }
@@ -102,7 +115,7 @@ export function domination(s: State) {
   return Math.min(
     100,
     s.markets.filter((id) =>
-      ["europe", "asia", "america", "africa"].includes(id),
+      (WORLD_CITIES as readonly string[]).includes(id),
     ).length *
       18 +
       s.rivals.reduce(
@@ -118,8 +131,9 @@ export function legacyBuildingLevel(s: State) {
     s.research.includes("recipe"),
     s.research.includes("franchise") && s.counts.warehouse >= 1,
     s.research.includes("global") &&
-      s.markets.some((id) => ["lyon", "paris"].includes(id)),
-    era(s) >= 4 && s.markets.includes("mars"),
+      s.markets.some((id) => (EUROPE_CITIES as readonly string[]).includes(id)),
+    era(s) >= 4 &&
+      s.markets.some((id) => (MARS_MARKETS as readonly string[]).includes(id)),
     era(s) >= 4 && s.markets.includes("europa"),
     s.research.includes("warp"),
     s.markets.includes("alpha"),
@@ -160,8 +174,9 @@ export function upgradeOffer(s: State) {
     s.research.includes("recipe"),
     s.research.includes("franchise") && s.counts.warehouse >= 1,
     s.research.includes("global") &&
-      s.markets.some((id) => ["lyon", "paris"].includes(id)),
-    era(s) >= 4 && s.markets.includes("mars"),
+      s.markets.some((id) => (EUROPE_CITIES as readonly string[]).includes(id)),
+    era(s) >= 4 &&
+      s.markets.some((id) => (MARS_MARKETS as readonly string[]).includes(id)),
     era(s) >= 4 && s.markets.includes("europa"),
     s.research.includes("warp"),
     s.markets.includes("alpha"),
@@ -172,8 +187,8 @@ export function upgradeOffer(s: State) {
     "Atteindre la trésorerie nécessaire.",
     "Créer la recette signature.",
     "Créer une franchise et ouvrir un centre logistique.",
-    "Ouvrir un marché national et rechercher le menu mondial.",
-    "Programme spatial, 70 % de domination, 3 mégafactories et marché martien.",
+    "Ouvrir une ville européenne et rechercher le menu mondial.",
+    "Programme spatial, 70 % de domination, 3 mégafactories et une colonie martienne.",
     "Ouvrir le marché Europe / Jupiter.",
     "Rechercher la livraison supraluminique.",
     "Ouvrir Alpha du Centaure.",
@@ -304,7 +319,8 @@ export function tick(s: State, seconds: number): State {
   const n = structuredClone(s);
   const steps = Math.floor(Math.min(Math.max(0, seconds), 28800));
   for (let i = 0; i < steps; i++) {
-    if ((n.counts.trader ?? 0) > 0) n.price = traderTargetPrice(n);
+    if ((n.counts.trader ?? 0) > 0 && n.elapsed >= n.priceHoldUntil)
+      n.price = traderTargetPrice(n);
     tickMarket(n);
     const r = rates(n);
     n.elapsed++;
@@ -398,8 +414,11 @@ export function act(s: State, a: Action): State {
     n.stock += amount;
     n.manual++;
   }
-  if (a.type === "price" && Number.isFinite(a.value))
+  if (a.type === "price" && Number.isFinite(a.value)) {
     n.price = Math.min(20, Math.max(1, Math.round(a.value * 2) / 2));
+    if ((n.counts.trader ?? 0) > 0)
+      n.priceHoldUntil = n.elapsed + PRICE_HOLD_SECONDS;
+  }
   if (a.type === "buy") {
     const g = GENERATORS.find((g) => g.id === a.id);
     if (!g || g.era > era(s)) return s;

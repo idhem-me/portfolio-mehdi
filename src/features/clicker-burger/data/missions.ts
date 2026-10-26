@@ -1,4 +1,10 @@
 import { D, type State } from "../engine/game";
+import {
+  EUROPE_CITIES,
+  WORLD_CITIES,
+  MOON_MARKETS,
+  MARS_MARKETS,
+} from "./content";
 export const MISSIONS = [
   {
     id: "first-ten",
@@ -65,12 +71,12 @@ export const MISSIONS = [
   },
   {
     id: "national-cities",
-    title: "Couvrir 3 villes françaises",
+    title: "Couvrir 3 villes européennes",
     target: 3,
     reward: 250000,
     progress: (s: State) =>
       s.markets.filter((id) =>
-        ["lyon", "bordeaux", "marseille", "paris", "riviera"].includes(id),
+        (EUROPE_CITIES as readonly string[]).includes(id),
       ).length,
   },
   {
@@ -89,12 +95,12 @@ export const MISSIONS = [
   },
   {
     id: "continents",
-    title: "Ouvrir 3 continents",
+    title: "Ouvrir 3 métropoles mondiales",
     target: 3,
     reward: 1e7,
     progress: (s: State) =>
       s.markets.filter((id) =>
-        ["europe", "asia", "america", "africa"].includes(id),
+        (WORLD_CITIES as readonly string[]).includes(id),
       ).length,
   },
   {
@@ -102,7 +108,12 @@ export const MISSIONS = [
     title: "Ouvrir sur Mars",
     target: 1,
     reward: 1e12,
-    progress: (s: State) => Number(s.markets.includes("mars")),
+    progress: (s: State) =>
+      Number(
+        s.markets.some((id) =>
+          (MARS_MARKETS as readonly string[]).includes(id),
+        ),
+      ),
   },
   {
     id: "solar",
@@ -110,7 +121,16 @@ export const MISSIONS = [
     target: 3,
     reward: 5e13,
     progress: (s: State) =>
-      s.markets.filter((id) => ["moon", "mars", "europa"].includes(id)).length,
+      s.markets.filter((id) =>
+        (
+          [
+            ...MOON_MARKETS,
+            ...MARS_MARKETS,
+            "europa",
+            "titan",
+          ] as readonly string[]
+        ).includes(id),
+      ).length,
   },
   {
     id: "multiverse",

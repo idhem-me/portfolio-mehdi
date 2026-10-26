@@ -25,7 +25,7 @@ s.counts = {
   quantum: 0,
 };
 s.research = ["recipe", "franchise", "branding", "coldchain", "ipo"];
-s.markets = ["suburb", "center", "lyon", "bordeaux"];
+s.markets = ["suburb", "center", "lyon", "paris", "berlin"];
 s.rivals = [];
 s.projects = [];
 s.marketFund = "12000";

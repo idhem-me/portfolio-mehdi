@@ -3,19 +3,48 @@ import {
   act,
   tick,
   buildingLevel,
+  initial,
   type State,
   type Action,
 } from "../engine/game";
 import { load } from "../systems/save";
+
+type Snapshot = {
+  key: string | null;
+  state: State;
+  saved: boolean;
+  error: string;
+  gain: string;
+  seconds: number;
+  levelNotice: number | null;
+};
+
+const idleSnapshot: Snapshot = {
+  key: null,
+  state: initial(0),
+  saved: true,
+  error: "",
+  gain: "0",
+  seconds: 0,
+  levelNotice: null,
+};
+
+function writeSave(key: string, state: State) {
+  localStorage.setItem(
+    key,
+    JSON.stringify({ ...state, lastSaved: Date.now() }),
+  );
+}
+
 export function createGameStore(key: string) {
-  let snapshot = {
+  let snapshot: Snapshot = {
     key,
     ...load(key),
     saved: true,
-    levelNotice: null as number | null,
+    levelNotice: null,
   };
   const listeners = new Set<() => void>();
-  const publish = (next: typeof snapshot) => {
+  const publish = (next: Snapshot) => {
     snapshot = next;
     listeners.forEach((fn) => fn());
   };
@@ -31,12 +60,9 @@ export function createGameStore(key: string) {
     });
   };
   const persist = () => {
-    if (snapshot.error) return;
+    if (snapshot.error || !snapshot.key) return;
     try {
-      localStorage.setItem(
-        key,
-        JSON.stringify({ ...snapshot.state, lastSaved: Date.now() }),
-      );
+      writeSave(snapshot.key, snapshot.state);
       if (!snapshot.saved) publish({ ...snapshot, saved: true });
     } catch {
       if (snapshot.saved) publish({ ...snapshot, saved: false });
@@ -54,28 +80,40 @@ export function createGameStore(key: string) {
     advance: (seconds: number) =>
       update((s) => ({ ...tick(s, seconds), lastSaved: Date.now() })),
     replace: (s: State) => {
-      publish({
+      const next: Snapshot = {
         ...snapshot,
         state: s,
         error: "",
         gain: "0",
         seconds: 0,
         levelNotice: null,
-      });
-      persist();
+        saved: true,
+      };
+      try {
+        writeSave(key, s);
+      } catch {
+        next.saved = false;
+      }
+      publish(next);
+      return next.saved;
     },
     allowSave: () => publish({ ...snapshot, error: "" }),
     dismissLevel: () => publish({ ...snapshot, levelNotice: null }),
   };
 }
-export function useGame(key: string) {
-  const store = useMemo(() => createGameStore(key), [key]);
+
+export function useGame(key: string | null) {
+  const store = useMemo(
+    () => (key ? createGameStore(key) : null),
+    [key],
+  );
   const snapshot = useSyncExternalStore(
-    store.subscribe,
-    store.getSnapshot,
-    store.getSnapshot,
+    store?.subscribe ?? (() => () => {}),
+    store?.getSnapshot ?? (() => idleSnapshot),
+    () => idleSnapshot,
   );
   useEffect(() => {
+    if (!store) return;
     let last = Date.now();
     const timer = setInterval(() => {
       const now = Date.now(),
@@ -95,16 +133,17 @@ export function useGame(key: string) {
     };
   }, [store]);
   const update = useCallback(
-    (fn: (s: State) => State) => store.update(fn),
+    (fn: (s: State) => State) => store?.update(fn),
     [store],
   );
   return {
     ...snapshot,
+    ready: key !== null,
     update,
-    dispatch: store.dispatch,
-    replace: store.replace,
-    persist: store.persist,
-    allowSave: store.allowSave,
-    dismissLevel: store.dismissLevel,
+    dispatch: store?.dispatch ?? ((_: Action) => {}),
+    replace: store?.replace ?? ((_: State) => false),
+    persist: store?.persist ?? (() => {}),
+    allowSave: store?.allowSave ?? (() => {}),
+    dismissLevel: store?.dismissLevel ?? (() => {}),
   };
 }

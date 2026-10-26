@@ -14,9 +14,15 @@ import {
   Download,
   Upload,
   Check,
+  Info,
   X,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { LevelUp } from "./components/LevelUp";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,11 +83,12 @@ export default function App({
   backHref?: string;
 }) {
   const account = useIdentityState();
+  const saveKey = account.loaded ? accountSaveKey(account.profile) : null;
   const { resolvedTheme, setTheme } = useTheme();
   const theme = resolvedTheme ?? "light";
   const { settings, update: updateSettings, toggle: toggleSetting } =
     useSettings();
-  const game = useGame(accountSaveKey(account.profile));
+  const game = useGame(saveKey);
   const s = game.state;
   const visible = discoveries(s);
   const r = rates(s);
@@ -133,7 +140,7 @@ export default function App({
     finance: marketUnlocked(s) ? ["market"] : [],
   };
   const groupSignature = JSON.stringify(groups);
-  const seenKey = `${game.key}.seen`;
+  const seenKey = `${saveKey ?? "pending"}.seen`;
   const notices = useNotices(seenKey);
   const { seen } = notices;
   const { mark: markNotices } = notices;
@@ -280,11 +287,15 @@ export default function App({
     URL.revokeObjectURL(url);
   }
   async function importSave(f?: File) {
-    if (!f) return;
+    if (!f || !game.ready) return;
     try {
       if (f.size > 2000000) throw Error("Fichier trop volumineux.");
-      game.replace(resume(parseSave(await f.text())).state);
-      setToast("Sauvegarde importée.");
+      const saved = game.replace(resume(parseSave(await f.text())).state);
+      setToast(
+        saved
+          ? "Sauvegarde importée et enregistrée sur cet appareil."
+          : "Importée en mémoire, mais l’enregistrement local a échoué.",
+      );
     } catch (error) {
       setToast(error instanceof Error ? error.message : "Import impossible.");
     }
@@ -313,6 +324,13 @@ export default function App({
       disabled: !marketUnlocked(s),
     },
   ] as const;
+  if (!game.ready) {
+    return (
+      <div className="clicker-burger" role="status">
+        <p className="empty-state">Chargement de la sauvegarde…</p>
+      </div>
+    );
+  }
   return (
     <div className="clicker-burger">
       <header className="game-header">
@@ -417,7 +435,10 @@ export default function App({
                 {s.counts.trader > 0 && (
                   <small className="price-managed">
                     {" "}
-                    · équipe ×{s.counts.trader}
+                    ·{" "}
+                    {s.elapsed < s.priceHoldUntil
+                      ? "équipe en pause"
+                      : `équipe ×${s.counts.trader}`}
                   </small>
                 )}
               </dt>
@@ -426,7 +447,7 @@ export default function App({
                   variant="outline"
                   size="icon"
                   aria-label="Baisser le prix"
-                  disabled={s.price <= 1 || s.counts.trader > 0}
+                  disabled={s.price <= 1}
                   onClick={() =>
                     game.dispatch({ type: "price", value: s.price - 0.5 })
                   }
@@ -443,7 +464,7 @@ export default function App({
                   variant="outline"
                   size="icon"
                   aria-label="Augmenter le prix"
-                  disabled={s.price >= 20 || s.counts.trader > 0}
+                  disabled={s.price >= 20}
                   onClick={() =>
                     game.dispatch({ type: "price", value: s.price + 0.5 })
                   }
@@ -1083,9 +1104,27 @@ export default function App({
                 )}
                 {visible.prestige && (
                   <>
-                    <h3>Faillite stratégique</h3>
+                    <h3 className="prestige-heading">
+                      Faillite stratégique
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            className="info-tip"
+                            aria-label="À propos du capital permanent"
+                          >
+                            <Info size={14} />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-56 text-left">
+                          Chaque point de capital : production/clics +10 %,
+                          demande +4 %, pour toutes les parties suivantes.
+                        </TooltipContent>
+                      </Tooltip>
+                    </h3>
                     <p className="burger-settings-note">
-                      Gain : +{prestigeGain(s)} points permanents. Capital
+                      Gain à la liquidation : +{prestigeGain(s)} point
+                      {prestigeGain(s) === 1 ? "" : "s"}. Capital permanent
                       actuel : {s.capital}.
                     </p>
                     <Button

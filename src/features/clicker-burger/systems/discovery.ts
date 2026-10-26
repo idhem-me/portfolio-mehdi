@@ -1,4 +1,12 @@
-import { GENERATORS, RESEARCH, MARKETS, RIVALS } from "../data/content";
+import {
+  GENERATORS,
+  RESEARCH,
+  MARKETS,
+  RIVALS,
+  EUROPE_CITIES,
+  WORLD_CITIES,
+  MOON_MARKETS,
+} from "../data/content";
 import { PROJECTS } from "../data/projects";
 import { D, era, domination, marketUnlocked, type State } from "../engine/game";
 // Discovery uses lifetime revenue and permanent purchases, never current cash.
@@ -35,14 +43,18 @@ export function discoveries(s: State) {
           automation: s.counts.warehouse > 0,
           ipo: e >= 2 && s.counts.warehouse >= 1 && earned.gte(15000),
           global: s.markets.some((id) =>
-            ["lyon", "bordeaux", "marseille", "paris", "riviera"].includes(id),
+            (EUROPE_CITIES as readonly string[]).includes(id),
           ),
           menus: s.markets.some((id) =>
-            ["europe", "asia", "america", "africa"].includes(id),
+            (WORLD_CITIES as readonly string[]).includes(id),
           ),
           space: domination(s) >= 50,
-          astrochef: s.markets.includes("moon"),
-          warp: s.markets.includes("moon"),
+          astrochef: s.markets.some((id) =>
+            (MOON_MARKETS as readonly string[]).includes(id),
+          ),
+          warp: s.markets.some((id) =>
+            (MOON_MARKETS as readonly string[]).includes(id),
+          ),
         } as Record<string, boolean>
       )[r.id],
   );

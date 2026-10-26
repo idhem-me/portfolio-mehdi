@@ -44,7 +44,8 @@
     "suburb",
     "center",
     "lyon",
-    "bordeaux"
+    "paris",
+    "berlin"
   ],
   "rivals": [],
   "projects": [],
@@ -64,7 +65,8 @@
   "eventSeen": 4,
   "boost": 1,
   "boostUntil": 0,
-  "lastSaved": 1793006926633,
+  "priceHoldUntil": 0,
+  "lastSaved": 1793008521724,
   "log": [
     "Introduction en bourse : le ticker BGR est en ligne.",
     "Centre logistique ouvert. Les camions ont faim aussi.",

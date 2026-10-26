@@ -85,7 +85,7 @@ Sans boutique de prestige ni cartes géographiques :
 - **Événements** : 10 scénarios (early → spatial), coûts/récompenses toujours proportionnels à la trésorerie.
 - **Missions** : jalons mid/late (villes FR, concurrent, mégafactory, continents, solaire, multivers).
 - **Recherches** : +4 optionnelles (`branding`, `automation`, `menus`, `astrochef`) avec buffs demande / logistique / orbital.
-- **Marchés** : Bordeaux, Marseille, Côte d’Azur entre le national et l’Europe.
+- **Marchés** : Europe (Lyon → Londres), monde (New York → Shanghaï), Lune (Jamestown, Zvezda), Mars (Happy Valley, Chollima, Helios), puis Titan / TRAPPIST / multivers.
 - **Rivaux** : Crisp King et VoidBite.
 - **Fin narrative** : popup dédiée au niveau Univers.
 - **Directeur des ventes** : générateur stackable ; auto-prix meilleur que le défaut (4 €), asymptote ~88 % de l’optimum manuel. Le réglage manuel est verrouillé tant qu’au moins un directeur est employé.

@@ -10,10 +10,23 @@ import {
   EVENTS,
   GENERATORS,
   MARKETS,
+  MARKET_ID_MIGRATE,
   RESEARCH,
   RIVALS,
 } from "../data/content";
 import { PROJECTS } from "../data/projects";
+function migrateMarketIds(ids: unknown): string[] | null {
+  if (!Array.isArray(ids)) return null;
+  const allowed = new Set(MARKETS.map((m) => m.id));
+  const next: string[] = [];
+  for (const id of ids) {
+    if (typeof id !== "string") return null;
+    const mapped = MARKET_ID_MIGRATE[id] ?? id;
+    if (!allowed.has(mapped)) return null;
+    if (!next.includes(mapped)) next.push(mapped);
+  }
+  return next;
+}
 export const SAVE_KEY = "food-empire.save.v1";
 const numeric = (v: unknown, max = 1e100) =>
   typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= max;
@@ -75,6 +88,10 @@ export function parseSave(raw: string): State {
       throw Error(`Donnée invalide : ${k}`);
     s[k] = v[k];
   }
+  if (v.priceHoldUntil === undefined) s.priceHoldUntil = 0;
+  else if (!numeric(v.priceHoldUntil))
+    throw Error("Donnée invalide : priceHoldUntil");
+  else s.priceHoldUntil = v.priceHoldUntil;
   if (
     s.price < 1 ||
     s.price > 20 ||
@@ -95,7 +112,6 @@ export function parseSave(raw: string): State {
   );
   for (const [key, ids] of [
     ["research", RESEARCH.map((r) => r.id)],
-    ["markets", MARKETS.map((m) => m.id)],
     ["rivals", RIVALS.map((r) => r.id)],
     ["projects", PROJECTS.map((p) => p.id)],
   ] as const) {
@@ -111,6 +127,12 @@ export function parseSave(raw: string): State {
     )
       throw Error("Déblocages invalides.");
     s[key] = v[key];
+  }
+  {
+    const markets = migrateMarketIds(v.markets);
+    if (!markets || markets.length > MARKETS.length)
+      throw Error("Déblocages invalides.");
+    s.markets = markets;
   }
   if (!Array.isArray(v.plots) || v.plots.length < 1 || v.plots.length > 25)
     throw Error("Carte invalide.");

@@ -26,11 +26,13 @@ test("ten levels have the requested cash prices and require explicit atomic purc
   s.counts.megafactory = 3;
   s.markets = [
     "lyon",
-    "europe",
-    "asia",
-    "america",
-    "africa",
-    "mars",
+    "paris",
+    "newyork",
+    "tokyo",
+    "shanghai",
+    "brasilia",
+    "sydney",
+    "happyvalley",
     "europa",
     "alpha",
     "multiverse",

@@ -81,7 +81,7 @@ test("research prerequisites and stages gate expansion", () => {
   s = act(s, { type: "research", id: "global" });
   s = act(s, { type: "research", id: "space" });
   assert.equal(era(s), 3);
-  s.markets = ["europe", "asia", "africa", "america"];
+  s.markets = ["newyork", "brasilia", "sydney", "tokyo", "shanghai"];
   s.counts.megafactory = 3;
   assert.equal(era(s), 4);
 });
@@ -211,11 +211,22 @@ test("sales directors improve pricing without reaching the manual optimum", () =
   assert(Math.abs(senior - opt) <= Math.abs(junior - opt));
   s.counts.trader = 3;
   s.price = 4;
+  s.priceHoldUntil = 0;
   const managed = tick(s, 1);
-  assert.equal(managed.price, traderTargetPrice({ ...s, counts: { ...s.counts, trader: 3 } }));
+  assert.equal(
+    managed.price,
+    traderTargetPrice({ ...s, counts: { ...s.counts, trader: 3 } }),
+  );
   s.counts.trader = 0;
   s.price = 7;
   assert.equal(tick(s, 1).price, 7);
+  s.counts.trader = 3;
+  s.price = 4;
+  let held = act(s, { type: "price", value: 6 });
+  assert.equal(held.price, 6);
+  assert(held.priceHoldUntil > held.elapsed);
+  held = tick(held, 1);
+  assert.equal(held.price, 6);
 });
 test("legacy saves default missing trader counts to zero", () => {
   const s = initial();

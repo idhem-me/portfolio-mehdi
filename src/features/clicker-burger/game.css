@@ -297,6 +297,24 @@
   font-weight: 400;
   color: var(--muted-foreground);
 }
+.clicker-burger .prestige-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.clicker-burger .info-tip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+  border: 0;
+  background: transparent;
+  padding: 2px;
+  cursor: help;
+}
+.clicker-burger .info-tip:hover {
+  color: var(--foreground);
+}
 .clicker-burger .price-row dd {
   display: flex;
   align-items: center;
