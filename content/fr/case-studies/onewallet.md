@@ -2,11 +2,11 @@
 {
   "slug": "onewallet",
   "title": "OneWallet",
-  "tagline": "De l’hypothèse à un module de paiement que chaque banque européenne peut s’approprier.",
+  "tagline": "Cadrer, prototyper, tester : construire un module de paiement prêt à s’intégrer.",
   "backLabel": "Réalisations",
   "meta": {
     "role": "Product design",
-    "context": "Worldline · Banques européennes",
+    "context": "Worldline",
     "status": "En développement"
   },
   "themeToggle": {
@@ -14,7 +14,6 @@
     "dark": "Mode sombre"
   },
   "glossary": {
-    "HCE": "Host Card Emulation : technologie qui permet de payer sans contact depuis le téléphone, sans carte physique dédiée.",
     "White-label": "Solution livrée sans marque propriétaire, que chaque banque peut habiller à ses couleurs.",
     "moodboard": "Planche d’inspiration visuelle pour aligner l’équipe sur le ton, le style et les références.",
     "Wireframes": "Schémas d’écrans basse fidélité pour valider la structure et les parcours avant le design détaillé.",
@@ -30,9 +29,8 @@
       "id": "hero",
       "title": "Un wallet modulaire",
       "body": [
-        "Les banques européennes veulent du paiement sans contact natif : [[HCE]], comme Apple Pay, et Wero.",
-        "OneWallet est le module qui s’insère dans leur app. [[White-label]]. Extensible. Pensé pour demain : d’autres technologies, d’autres parcours.",
-        "Chez Worldline, mon rôle : transformer cet enjeu technique en produit clair, testé, prêt à industrialiser."
+        "OneWallet est un module de portefeuille numérique [[White-label]], conçu pour s’insérer dans une app bancaire et évoluer avec elle.",
+        "Chez Worldline, mon rôle : clarifier les parcours, les tester, et livrer un design prêt à industrialiser."
       ],
       "images": [
         {
@@ -52,13 +50,13 @@
       "title": "Comprendre le terrain",
       "body": [
         "Avant de dessiner, on cartographie.",
-        "Analyse de la concurrence, [[moodboard]], définition des objectifs. Qui fait quoi. Ce qui manque. Ce qu’on doit réussir.",
-        "Le cadre est posé. L’équipe sait où on va."
+        "Concurrence, [[moodboard]], périmètre. On aligne l’équipe sur le même cadre.",
+        "Puis on avance."
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "Cadrage OneWallet : concurrence, moodboard et objectifs",
+          "alt": "Cadrage OneWallet : concurrence, moodboard et périmètre",
           "caption": "Cadrage",
           "theme": "any"
         }
@@ -149,7 +147,7 @@
       "id": "industrialize",
       "title": "Industrialiser",
       "body": [
-        "Migration du [[design system]]. Réflexion [[White-label]] : une base, plusieurs marques.",
+        "Migration du [[design system]]. Une base adaptable à plusieurs marques.",
         "Specs Figma pour les développeurs, puis les écrans clés : portefeuille, activités, paiement sans contact, paramètres.",
         "Le design ne s’arrête plus au [[happy path]]."
       ],

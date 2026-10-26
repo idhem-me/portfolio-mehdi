@@ -2,25 +2,35 @@
 {
   "slug": "onewallet",
   "title": "OneWallet",
-  "tagline": "From hypothesis to a payment module every European bank can own.",
+  "tagline": "Frame, prototype, test: building a payment module ready to plug in.",
   "backLabel": "Work",
   "meta": {
     "role": "Product design",
-    "context": "Worldline · European banks",
+    "context": "Worldline",
     "status": "In development"
   },
   "themeToggle": {
     "light": "Light mode",
     "dark": "Dark mode"
   },
+  "glossary": {
+    "White-label": "A solution shipped without a proprietary brand, so each bank can dress it in its own identity.",
+    "moodboard": "A visual inspiration board to align the team on tone, style, and references.",
+    "Wireframes": "Low-fidelity screen sketches used to validate structure and journeys before detailed design.",
+    "flows": "Screen sequences that describe an end-to-end user journey.",
+    "Prototypes": "Interactive mockups used to simulate the product before development.",
+    "friction": "Points in a journey where users hesitate, err, or drop off.",
+    "design system": "A shared library of components, rules, and tokens for consistent design and development.",
+    "happy path": "The nominal scenario where everything goes well, with no errors or edge cases.",
+    "edge cases": "Limit or exception cases (errors, empty states, insufficient rights) outside the ideal journey."
+  },
   "sections": [
     {
       "id": "hero",
       "title": "A modular wallet",
       "body": [
-        "European banks want native contactless payments: [[HCE]], like Apple Pay, and Wero.",
-        "OneWallet is the module that plugs into their app. [[White-label]]. Extensible. Built for what’s next: more technologies, more journeys.",
-        "At Worldline, my role: turn this technical challenge into a clear product, tested and ready to scale."
+        "OneWallet is a [[White-label]] digital wallet module, designed to plug into a banking app and grow with it.",
+        "At Worldline, my role: clarify the journeys, test them, and deliver design ready to industrialize."
       ],
       "images": [
         {
@@ -40,13 +50,13 @@
       "title": "Map the ground",
       "body": [
         "Before we draw, we map.",
-        "Competitive analysis, [[moodboard]], goals. Who does what. What’s missing. What success looks like.",
-        "The frame is set. The team knows where we’re going."
+        "Competition, [[moodboard]], scope. We align the team on the same frame.",
+        "Then we move forward."
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "OneWallet framing: competition, moodboard and goals",
+          "alt": "OneWallet framing: competition, moodboard and scope",
           "caption": "Framing",
           "theme": "any"
         }
@@ -137,10 +147,11 @@
       "id": "industrialize",
       "title": "Industrialize",
       "body": [
-        "[[design system]] migration. [[White-label]] thinking: one base, many brands.",
+        "[[design system]] migration. One base adaptable to several brands.",
         "Figma specs for developers, then the key screens: wallet, activity, contactless payment, settings.",
         "Design no longer stops at the [[happy path]]."
       ],
+      "layout": "industrialize",
       "images": [
         {
           "src": "/img/photos/onewallet/figma-board.png",
@@ -150,54 +161,53 @@
         },
         {
           "src": "/img/photos/onewallet/presentation-home-light.png",
-          "alt": "Wallet light",
+          "alt": "OneWallet wallet in light mode",
           "theme": "light",
           "caption": "Wallet"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-dark.png",
-          "alt": "Wallet dark",
+          "alt": "OneWallet wallet in dark mode",
           "theme": "dark",
           "caption": "Wallet"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-light.png",
-          "alt": "Activity light",
+          "alt": "OneWallet activity in light mode",
           "theme": "light",
           "caption": "Activity"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-dark.png",
-          "alt": "Activity dark",
+          "alt": "OneWallet activity in dark mode",
           "theme": "dark",
           "caption": "Activity"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-light.png",
-          "alt": "Contactless payment light",
+          "alt": "OneWallet contactless payment in light mode",
           "theme": "light",
           "caption": "Contactless payment"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-dark.png",
-          "alt": "Contactless payment dark",
+          "alt": "OneWallet contactless payment in dark mode",
           "theme": "dark",
           "caption": "Contactless payment"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-light.png",
-          "alt": "Settings light",
+          "alt": "OneWallet settings in light mode",
           "theme": "light",
           "caption": "Settings"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-dark.png",
-          "alt": "Settings dark",
+          "alt": "OneWallet settings in dark mode",
           "theme": "dark",
           "caption": "Settings"
         }
-      ],
-      "layout": "industrialize"
+      ]
     },
     {
       "id": "today",
@@ -212,18 +222,6 @@
         "href": "/contact"
       }
     }
-  ],
-  "glossary": {
-    "HCE": "Host Card Emulation: technology that enables contactless payment from a phone without a dedicated physical card.",
-    "White-label": "A solution shipped without a proprietary brand, so each bank can dress it in its own identity.",
-    "moodboard": "A visual inspiration board to align the team on tone, style, and references.",
-    "Wireframes": "Low-fidelity screen sketches used to validate structure and journeys before detailed design.",
-    "flows": "Screen sequences that describe an end-to-end user journey.",
-    "Prototypes": "Interactive mockups used to simulate the product before development.",
-    "friction": "Points in a journey where users hesitate, err, or drop off.",
-    "design system": "A shared library of components, rules, and tokens for consistent design and development.",
-    "happy path": "The nominal scenario where everything goes well, with no errors or edge cases.",
-    "edge cases": "Limit or exception cases (errors, empty states, insufficient rights) outside the ideal journey."
-  }
+  ]
 }
 ---

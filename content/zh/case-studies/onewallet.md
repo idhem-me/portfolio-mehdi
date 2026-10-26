@@ -2,25 +2,35 @@
 {
   "slug": "onewallet",
   "title": "OneWallet",
-  "tagline": "从假设到每家欧洲银行都能落地的支付模块。",
+  "tagline": "定调、原型、测试：打造可集成的支付模块。",
   "backLabel": "作品",
   "meta": {
     "role": "Product design",
-    "context": "Worldline · 欧洲银行",
+    "context": "Worldline",
     "status": "开发中"
   },
   "themeToggle": {
     "light": "浅色模式",
     "dark": "深色模式"
   },
+  "glossary": {
+    "白标": "不带自有品牌交付的方案，各银行可套上自己的视觉身份。",
+    "情绪板": "视觉灵感板，用于对齐团队的语气、风格与参考。",
+    "线框": "低保真屏幕草图，用于在细节设计前验证结构与路径。",
+    "流程": "描述端到端用户路径的屏幕序列。",
+    "原型": "可交互的模型，用于在开发前模拟产品。",
+    "摩擦": "用户路径中犹豫、出错或放弃的节点。",
+    "设计系统": "共享的组件、规则与令牌库，保证设计与开发一致。",
+    "理想路径": "一切顺利、无错误或边界情况的标准场景。",
+    "边界情况": "理想路径之外需预见的例外（错误、空状态、权限不足等）。"
+  },
   "sections": [
     {
       "id": "hero",
       "title": "模块化钱包",
       "body": [
-        "欧洲银行需要原生非接触支付：[[HCE]]，类似 Apple Pay，以及 Wero。",
-        "OneWallet 是嵌入银行 App 的模块。[[白标]]。可扩展。面向未来：更多技术、更多路径。",
-        "在 Worldline，我的职责：把这一技术挑战变成清晰、经过验证、可规模化落地的产品。"
+        "OneWallet 是嵌入银行 App 的[[白标]]数字钱包模块，并随应用一起演进。",
+        "在 Worldline，我的职责：理清路径、加以验证，并交付可规模化落地的设计。"
       ],
       "images": [
         {
@@ -37,16 +47,16 @@
     },
     {
       "id": "research",
-      "title": "摸清现状",
+      "title": "摸清场地",
       "body": [
-        "动手画之前，先摸清场地。",
-        "竞品分析、[[情绪板]]、目标定义。谁做什么。缺什么。怎样算成功。",
-        "框架已定。团队知道方向。"
+        "动笔之前，先做地图。",
+        "竞品、[[情绪板]]、范围。让团队对齐同一框架。",
+        "然后往前走。"
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "OneWallet 定调：竞品、情绪板与目标",
+          "alt": "OneWallet 定调：竞品、情绪板与范围",
           "caption": "定调",
           "theme": "any"
         }
@@ -56,8 +66,8 @@
       "id": "wireframes",
       "title": "画出路径",
       "body": [
-        "关键路径的[[线框]]与[[流程]]：开通、支付、设置。产品、技术与设计对齐同一路径。",
-        "路径在这里站得住，后面才能站得住。"
+        "关键、支付、设置等关键[[流程]]的[[线框]]。产品、技术与设计对齐同一路径。",
+        "路径在这里站得住，后面也能站住。"
       ],
       "images": [
         {
@@ -72,7 +82,7 @@
       "title": "让它可感",
       "body": [
         "场景。可点击的[[原型]]。",
-        "想法变成可上手的东西。在写业务代码前就看到[[摩擦点]]。"
+        "想法变成能拿在手里的东西。在写业务代码之前先看见[[摩擦]]。"
       ],
       "images": [
         {
@@ -87,8 +97,8 @@
       "title": "对照现实",
       "body": [
         "第一轮用户测试。",
-        "观察。录制。记下卡住的、意外的、自然通过的。",
-        "假设碰上真实场景。"
+        "观察。录制。记下卡住、意外、以及自然顺畅之处。",
+        "假设遇见现场。"
       ],
       "images": [
         {
@@ -104,7 +114,7 @@
         },
         {
           "src": "/img/photos/onewallet/record-screen.png",
-          "alt": "用户测试屏幕录制",
+          "alt": "用户测试期间的屏幕录制",
           "theme": "any"
         }
       ]
@@ -113,21 +123,21 @@
       "id": "iterate",
       "title": "倾听，调整",
       "body": [
-        "对反馈再反馈。",
-        "迭代前：哪里卡住。迭代后：修了什么。",
+        "回顾反馈。",
+        "之前：卡住的地方。之后：我们改了什么。",
         "新原型。新测试。产品收紧。"
       ],
       "layout": "before-after",
       "images": [
         {
           "src": "/img/photos/onewallet/reponses-amont.png",
-          "alt": "迭代前用户反馈汇总",
+          "alt": "迭代前的用户反馈汇总",
           "theme": "any",
           "caption": "之前"
         },
         {
           "src": "/img/photos/onewallet/reponses-aval.png",
-          "alt": "迭代后用户反馈汇总",
+          "alt": "迭代后的用户反馈汇总",
           "theme": "any",
           "caption": "之后"
         }
@@ -135,12 +145,13 @@
     },
     {
       "id": "industrialize",
-      "title": "工业化",
+      "title": "规模化落地",
       "body": [
-        "迁移[[设计系统]]。[[白标]]思路：一套底座，多套品牌。",
-        "面向开发的 Figma 规格，以及关键屏幕：钱包、活动、非接触支付、设置。",
-        "设计不再止步于 [[happy path]]。"
+        "迁移[[设计系统]]。一套底座，适配多品牌。",
+        "给开发的 Figma 规格，以及关键屏幕：钱包、活动、非接触支付、设置。",
+        "设计不再止步于[[理想路径]]。"
       ],
+      "layout": "industrialize",
       "images": [
         {
           "src": "/img/photos/onewallet/figma-board.png",
@@ -150,80 +161,67 @@
         },
         {
           "src": "/img/photos/onewallet/presentation-home-light.png",
-          "alt": "钱包 light",
+          "alt": "OneWallet 钱包浅色模式",
           "theme": "light",
           "caption": "钱包"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-dark.png",
-          "alt": "钱包 dark",
+          "alt": "OneWallet 钱包深色模式",
           "theme": "dark",
           "caption": "钱包"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-light.png",
-          "alt": "活动 light",
+          "alt": "OneWallet 活动浅色模式",
           "theme": "light",
           "caption": "活动"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-dark.png",
-          "alt": "活动 dark",
+          "alt": "OneWallet 活动深色模式",
           "theme": "dark",
           "caption": "活动"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-light.png",
-          "alt": "非接触支付 light",
+          "alt": "OneWallet 非接触支付浅色模式",
           "theme": "light",
           "caption": "非接触支付"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-dark.png",
-          "alt": "非接触支付 dark",
+          "alt": "OneWallet 非接触支付深色模式",
           "theme": "dark",
           "caption": "非接触支付"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-light.png",
-          "alt": "设置 light",
+          "alt": "OneWallet 设置浅色模式",
           "theme": "light",
           "caption": "设置"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-dark.png",
-          "alt": "设置 dark",
+          "alt": "OneWallet 设置深色模式",
           "theme": "dark",
           "caption": "设置"
         }
-      ],
-      "layout": "industrialize"
+      ]
     },
     {
       "id": "today",
       "title": "今天",
       "body": [
         "OneWallet 正在开发中。框架已定，路径已验证，[[边界情况]]已文档化。",
-        "我在这类项目中带来的是：清晰方法（框定、原型、测试、迭代）、产品/技术文化，以及工业化落地时不丢掉使用体验。",
-        "如果你在做数字产品、[[设计系统]]或复杂路径，我们可以聊聊。"
+        "这类课题上我带来的：清晰方法（定调、原型、测试、迭代），产品/技术文化，以及规模化落地而不丢掉使用体验。",
+        "若你在做数字产品、[[设计系统]]或复杂路径，可以聊聊。"
       ],
       "cta": {
         "label": "一起聊聊",
         "href": "/contact"
       }
     }
-  ],
-  "glossary": {
-    "HCE": "Host Card Emulation：无需专用实体卡，即可在手机上完成非接触支付的技术。",
-    "白标": "交付时不带自有品牌的方案，各银行可套用自己的视觉识别。",
-    "情绪板": "视觉灵感拼贴，用于对齐团队的调性、风格与参考。",
-    "线框": "低保真屏幕草图，用于在精细设计前验证结构与路径。",
-    "流程": "描述端到端用户路径的屏幕序列。",
-    "原型": "可交互的模型，用于在开发前模拟产品。",
-    "摩擦点": "用户犹豫、出错或放弃的路径节点。",
-    "设计系统": "共享的组件、规则与设计令牌库，保证设计与开发一致。",
-    "happy path": "一切顺利、无错误与边界情况的理想路径。",
-    "边界情况": "理想路径之外的极限或异常情况（错误、空状态、权限不足等）。"
-  }
+  ]
 }
 ---

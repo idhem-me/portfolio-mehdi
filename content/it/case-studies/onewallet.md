@@ -2,25 +2,35 @@
 {
   "slug": "onewallet",
   "title": "OneWallet",
-  "tagline": "Dall’ipotesi a un modulo di pagamento che ogni banca europea può far proprio.",
-  "backLabel": "Realizzazioni",
+  "tagline": "Inquadrare, prototipare, testare: costruire un modulo di pagamento pronto a integrarsi.",
+  "backLabel": "Lavori",
   "meta": {
     "role": "Product design",
-    "context": "Worldline · Banche europee",
+    "context": "Worldline",
     "status": "In sviluppo"
   },
   "themeToggle": {
     "light": "Modalità chiara",
     "dark": "Modalità scura"
   },
+  "glossary": {
+    "White-label": "Soluzione consegnata senza marchio proprietario, che ogni banca può vestire con i propri colori.",
+    "moodboard": "Tavola di ispirazione visiva per allineare il team su tono, stile e riferimenti.",
+    "Wireframes": "Schemi di schermate a bassa fedeltà per validare struttura e percorsi prima del design dettagliato.",
+    "flows": "Sequenze di schermate che descrivono un percorso utente end-to-end.",
+    "Prototypes": "Mockup interattivi che permettono di simulare il prodotto prima dello sviluppo.",
+    "frictions": "Punti del percorso in cui l’utente esita, sbaglia o abbandona.",
+    "design system": "Libreria di componenti, regole e token condivisi per progettare e sviluppare in modo coerente.",
+    "happy path": "Scenario nominale in cui tutto va bene, senza errori né casi limite.",
+    "edge cases": "Casi limite o eccezioni (errori, stati vuoti, diritti insufficienti) da prevedere fuori dal percorso ideale."
+  },
   "sections": [
     {
       "id": "hero",
       "title": "Un wallet modulare",
       "body": [
-        "Le banche europee vogliono pagamenti contactless nativi: [[HCE]], come Apple Pay, e Wero.",
-        "OneWallet è il modulo che si inserisce nella loro app. [[White-label]]. Estensibile. Pensato per il domani: altre tecnologie, altri percorsi.",
-        "In Worldline, il mio ruolo: trasformare questa sfida tecnica in un prodotto chiaro, testato e pronto a scalare."
+        "OneWallet è un modulo di portafoglio digitale [[White-label]], pensato per inserirsi in un’app bancaria e evolvere con essa.",
+        "In Worldline, il mio ruolo: chiarire i percorsi, testarli e consegnare un design pronto a essere industrializzato."
       ],
       "images": [
         {
@@ -40,13 +50,13 @@
       "title": "Capire il terreno",
       "body": [
         "Prima di disegnare, mappiamo.",
-        "Analisi della concorrenza, [[moodboard]], obiettivi. Chi fa cosa. Cosa manca. Cosa significa il successo.",
-        "Il quadro è posto. Il team sa dove stiamo andando."
+        "Concorrenza, [[moodboard]], perimetro. Allineiamo il team sullo stesso quadro.",
+        "Poi andiamo avanti."
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "Inquadramento OneWallet: concorrenza, moodboard e obiettivi",
+          "alt": "Inquadramento OneWallet: concorrenza, moodboard e perimetro",
           "caption": "Inquadramento",
           "theme": "any"
         }
@@ -56,7 +66,7 @@
       "id": "wireframes",
       "title": "Disegnare i percorsi",
       "body": [
-        "[[Wireframe]] dei [[flow]] chiave: attivazione, pagamento, impostazioni. Prodotto, tech e design allineati sullo stesso percorso.",
+        "[[Wireframes]] dei [[flows]] chiave: attivazione, pagamento, impostazioni. Prodotto, tech e design si allineano sullo stesso cammino.",
         "Se il percorso regge qui, reggerà più avanti."
       ],
       "images": [
@@ -69,10 +79,10 @@
     },
     {
       "id": "prototypes",
-      "title": "Rendere tangibile",
+      "title": "Renderlo tangibile",
       "body": [
-        "Scenari. [[Prototipi]] cliccabili.",
-        "L’idea diventa qualcosa da tenere in mano. Vediamo le [[frizioni]] prima di scrivere codice di produzione."
+        "Scenari. [[Prototypes]] cliccabili.",
+        "L’idea diventa qualcosa che si può tenere in mano. Vediamo le [[frictions]] prima di scrivere una riga di codice di business."
       ],
       "images": [
         {
@@ -84,11 +94,11 @@
     },
     {
       "id": "user-tests",
-      "title": "Confrontarsi con la realtà",
+      "title": "Confrontarsi con il reale",
       "body": [
-        "Prima ondata di test utenti.",
-        "Osserviamo. Registriamo. Annotiamo cosa blocca, cosa sorprende, cosa funziona da solo.",
-        "Le ipotesi incontrano il campo."
+        "Prima ondata di test utente.",
+        "Osserviamo. Registriamo. Annotiamo ciò che blocca, ciò che sorprende, ciò che scorre da solo.",
+        "Le ipotesi incontrano il terreno."
       ],
       "images": [
         {
@@ -99,7 +109,7 @@
         },
         {
           "src": "/img/photos/onewallet/record-people.png",
-          "alt": "Registrazione dei partecipanti al test",
+          "alt": "Registrazione dei partecipanti ai test",
           "theme": "any"
         },
         {
@@ -113,21 +123,21 @@
       "id": "iterate",
       "title": "Ascoltare, regolare",
       "body": [
-        "Feedback sul feedback.",
-        "Prima: cosa inceppava. Dopo: cosa abbiamo corretto.",
-        "Nuovi prototipi. Nuovi test. Il prodotto si stringe."
+        "Ritorno sui feedback.",
+        "Prima: ciò che bloccava. Dopo: ciò che abbiamo corretto.",
+        "Nuovi prototipi. Nuovi test. Il prodotto si affina."
       ],
       "layout": "before-after",
       "images": [
         {
           "src": "/img/photos/onewallet/reponses-amont.png",
-          "alt": "Sintesi del feedback utenti prima dell’iterazione",
+          "alt": "Sintesi dei feedback utente prima dell’iterazione",
           "theme": "any",
           "caption": "Prima"
         },
         {
           "src": "/img/photos/onewallet/reponses-aval.png",
-          "alt": "Sintesi del feedback utenti dopo l’iterazione",
+          "alt": "Sintesi dei feedback utente dopo l’iterazione",
           "theme": "any",
           "caption": "Dopo"
         }
@@ -137,93 +147,81 @@
       "id": "industrialize",
       "title": "Industrializzare",
       "body": [
-        "Migrazione del [[design system]]. Approccio [[White-label]]: una base, più brand.",
-        "Spec Figma per gli sviluppatori, poi le schermate chiave: wallet, attività, pagamento contactless, impostazioni.",
+        "Migrazione del [[design system]]. Una base adattabile a più marchi.",
+        "Spec Figma per gli sviluppatori, poi le schermate chiave: portafoglio, attività, pagamento contactless, impostazioni.",
         "Il design non si ferma più all’[[happy path]]."
       ],
+      "layout": "industrialize",
       "images": [
         {
           "src": "/img/photos/onewallet/figma-board.png",
-          "alt": "Board Figma OneWallet per handoff agli sviluppatori",
+          "alt": "Board Figma OneWallet per l’handoff agli sviluppatori",
           "theme": "any",
-          "caption": "Spec e handoff"
+          "caption": "Spec & handoff"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-light.png",
-          "alt": "Portafoglio light",
+          "alt": "Portafoglio OneWallet in modalità chiara",
           "theme": "light",
           "caption": "Portafoglio"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-dark.png",
-          "alt": "Portafoglio dark",
+          "alt": "Portafoglio OneWallet in modalità scura",
           "theme": "dark",
           "caption": "Portafoglio"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-light.png",
-          "alt": "Attività light",
+          "alt": "Attività OneWallet in modalità chiara",
           "theme": "light",
           "caption": "Attività"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-dark.png",
-          "alt": "Attività dark",
+          "alt": "Attività OneWallet in modalità scura",
           "theme": "dark",
           "caption": "Attività"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-light.png",
-          "alt": "Pagamento contactless light",
+          "alt": "Pagamento contactless OneWallet in modalità chiara",
           "theme": "light",
           "caption": "Pagamento contactless"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-dark.png",
-          "alt": "Pagamento contactless dark",
+          "alt": "Pagamento contactless OneWallet in modalità scura",
           "theme": "dark",
           "caption": "Pagamento contactless"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-light.png",
-          "alt": "Impostazioni light",
+          "alt": "Impostazioni OneWallet in modalità chiara",
           "theme": "light",
           "caption": "Impostazioni"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-dark.png",
-          "alt": "Impostazioni dark",
+          "alt": "Impostazioni OneWallet in modalità scura",
           "theme": "dark",
           "caption": "Impostazioni"
         }
-      ],
-      "layout": "industrialize"
+      ]
     },
     {
       "id": "today",
       "title": "Oggi",
       "body": [
-        "OneWallet è in fase di sviluppo. Il quadro è posto, i percorsi sono validati, gli [[edge case]] sono documentati.",
-        "Ciò che porto su questo tipo di progetto: un metodo chiaro (inquadrare, prototipare, testare, iterare), cultura prodotto/tech, e la cura di industrializzare senza perdere l’uso.",
-        "Se costruite un prodotto digitale, un [[design system]] o un percorso complesso, ne possiamo parlare."
+        "OneWallet è in sviluppo. Il quadro è posto, i percorsi sono validati, gli [[edge cases]] sono documentati.",
+        "Ciò che porto su questo tipo di tema: un metodo chiaro (inquadrare, prototipare, testare, iterare), una cultura prodotto/tech, e la cura di industrializzare senza perdere l’uso.",
+        "Se costruisci un prodotto digitale, un [[design system]] o un percorso complesso, possiamo parlarne."
       ],
       "cta": {
         "label": "Parliamone",
         "href": "/contact"
       }
     }
-  ],
-  "glossary": {
-    "HCE": "Host Card Emulation: tecnologia che consente di pagare contactless dallo smartphone senza una carta fisica dedicata.",
-    "White-label": "Soluzione consegnata senza marchio proprietario, così ogni banca può vestirla con la propria identità.",
-    "moodboard": "Tavola di ispirazione visiva per allineare il team su tono, stile e riferimenti.",
-    "Wireframe": "Schemi di schermate a bassa fedeltà per validare struttura e percorsi prima del design dettagliato.",
-    "flow": "Sequenze di schermate che descrivono un percorso utente end-to-end.",
-    "Prototipi": "Mockup interattivi per simulare il prodotto prima dello sviluppo.",
-    "frizioni": "Punti del percorso in cui l’utente esita, sbaglia o abbandona.",
-    "design system": "Libreria condivisa di componenti, regole e token per progettare e sviluppare in modo coerente.",
-    "happy path": "Scenario nominale in cui tutto va bene, senza errori né casi limite.",
-    "edge case": "Casi limite o eccezioni (errori, stati vuoti, permessi insufficienti) fuori dal percorso ideale."
-  }
+  ]
 }
 ---
