@@ -4,13 +4,13 @@
   "intro": "Estudios de caso de product design. Habrá más.",
   "caseStudies": [
     {
-      "title": "OneWallet",
+      "title": "Cartera bancaria",
       "status": "Estudio de caso",
       "slug": "onewallet",
       "cover": {
         "light": "/img/photos/onewallet/showcase-light.png",
         "dark": "/img/photos/onewallet/showcase-dark.png",
-        "alt": "Showcase OneWallet"
+        "alt": "Showcase cartera bancaria"
       }
     },
     {

@@ -1,13 +1,13 @@
 ---
 {
   "slug": "onewallet",
-  "title": "OneWallet",
+  "title": "银行钱包",
   "tagline": "定调、原型、测试：打造可集成的支付模块。",
   "backLabel": "作品",
   "meta": {
     "role": "Product design",
     "context": "Worldline",
-    "status": "开发中"
+    "status": "案例研究"
   },
   "themeToggle": {
     "light": "浅色模式",
@@ -29,18 +29,18 @@
       "id": "hero",
       "title": "模块化钱包",
       "body": [
-        "OneWallet 是嵌入银行 App 的[[白标]]数字钱包模块，并随应用一起演进。",
+        "该银行钱包是嵌入银行 App 的[[白标]]模块，并随应用一起演进。",
         "在 Worldline，我的职责：理清路径、加以验证，并交付可规模化落地的设计。"
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/showcase-light.png",
-          "alt": "OneWallet 浅色模式展示",
+          "alt": "银行钱包 浅色模式展示",
           "theme": "light"
         },
         {
           "src": "/img/photos/onewallet/showcase-dark.png",
-          "alt": "OneWallet 深色模式展示",
+          "alt": "银行钱包 深色模式展示",
           "theme": "dark"
         }
       ]
@@ -56,7 +56,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "OneWallet 定调：竞品、情绪板与范围",
+          "alt": "银行钱包 定调：竞品、情绪板与范围",
           "caption": "定调",
           "theme": "any"
         }
@@ -72,7 +72,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/wireframes.png",
-          "alt": "OneWallet 路径线框",
+          "alt": "银行钱包 路径线框",
           "theme": "any"
         }
       ]
@@ -87,7 +87,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/prototypes.png",
-          "alt": "OneWallet 原型与场景",
+          "alt": "银行钱包 原型与场景",
           "theme": "any"
         }
       ]
@@ -103,7 +103,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/user-test.png",
-          "alt": "OneWallet 用户测试现场",
+          "alt": "银行钱包 用户测试现场",
           "theme": "any",
           "caption": "真实条件下的测试"
         },
@@ -155,55 +155,55 @@
       "images": [
         {
           "src": "/img/photos/onewallet/figma-board.png",
-          "alt": "面向开发交接的 OneWallet Figma 看板",
+          "alt": "面向开发交接的 银行钱包 Figma 看板",
           "theme": "any",
           "caption": "规格与交接"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-light.png",
-          "alt": "OneWallet 钱包浅色模式",
+          "alt": "银行钱包 钱包浅色模式",
           "theme": "light",
           "caption": "钱包"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-dark.png",
-          "alt": "OneWallet 钱包深色模式",
+          "alt": "银行钱包 钱包深色模式",
           "theme": "dark",
           "caption": "钱包"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-light.png",
-          "alt": "OneWallet 活动浅色模式",
+          "alt": "银行钱包 活动浅色模式",
           "theme": "light",
           "caption": "活动"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-dark.png",
-          "alt": "OneWallet 活动深色模式",
+          "alt": "银行钱包 活动深色模式",
           "theme": "dark",
           "caption": "活动"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-light.png",
-          "alt": "OneWallet 非接触支付浅色模式",
+          "alt": "银行钱包 非接触支付浅色模式",
           "theme": "light",
           "caption": "非接触支付"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-dark.png",
-          "alt": "OneWallet 非接触支付深色模式",
+          "alt": "银行钱包 非接触支付深色模式",
           "theme": "dark",
           "caption": "非接触支付"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-light.png",
-          "alt": "OneWallet 设置浅色模式",
+          "alt": "银行钱包 设置浅色模式",
           "theme": "light",
           "caption": "设置"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-dark.png",
-          "alt": "OneWallet 设置深色模式",
+          "alt": "银行钱包 设置深色模式",
           "theme": "dark",
           "caption": "设置"
         }
@@ -213,13 +213,15 @@
       "id": "today",
       "title": "今天",
       "body": [
-        "OneWallet 正在开发中。框架已定，路径已验证，[[边界情况]]已文档化。",
-        "这类课题上我带来的：清晰方法（定调、原型、测试、迭代），产品/技术文化，以及规模化落地而不丢掉使用体验。",
-        "若你在做数字产品、[[设计系统]]或复杂路径，可以聊聊。"
+        "框架已定，路径已验证，[[边界情况]]已文档化。",
+        "这类课题上我带来的：清晰方法（定调、原型、测试、迭代），产品/技术文化，以及规模化落地而不丢掉使用体验。"
       ],
       "cta": {
-        "label": "一起聊聊",
-        "href": "/contact"
+        "label": "返回作品",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ]

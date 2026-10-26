@@ -4,13 +4,13 @@
   "intro": "Product-Design-Fallstudien. Weitere folgen.",
   "caseStudies": [
     {
-      "title": "OneWallet",
+      "title": "Bank-Wallet",
       "status": "Fallstudie",
       "slug": "onewallet",
       "cover": {
         "light": "/img/photos/onewallet/showcase-light.png",
         "dark": "/img/photos/onewallet/showcase-dark.png",
-        "alt": "OneWallet-Showcase"
+        "alt": "Bank-Wallet-Showcase"
       }
     },
     {

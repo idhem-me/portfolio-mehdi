@@ -1,13 +1,13 @@
 ---
 {
   "slug": "onewallet",
-  "title": "OneWallet",
+  "title": "Bank-Wallet",
   "tagline": "Rahmen, prototypisieren, testen: ein Zahlungsmodul bauen, das sich integrieren lässt.",
   "backLabel": "Arbeiten",
   "meta": {
     "role": "Product design",
     "context": "Worldline",
-    "status": "In Entwicklung"
+    "status": "Case Study"
   },
   "themeToggle": {
     "light": "Hellmodus",
@@ -29,18 +29,18 @@
       "id": "hero",
       "title": "Ein modulares Wallet",
       "body": [
-        "OneWallet ist ein digitales Wallet-Modul im [[White-Label]], gedacht zum Einbau in eine Banking-App — und zum Mitwachsen.",
+        "Dieses Bank-Wallet ist ein Modul im [[White-Label]], gedacht zum Einbau in eine Banking-App — und zum Mitwachsen.",
         "Bei Worldline meine Rolle: Journeys klären, testen und Design liefern, das industrialisierbar ist."
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/showcase-light.png",
-          "alt": "OneWallet-Showcase im hellen Modus",
+          "alt": "Bank-Wallet-Showcase im hellen Modus",
           "theme": "light"
         },
         {
           "src": "/img/photos/onewallet/showcase-dark.png",
-          "alt": "OneWallet-Showcase im dunklen Modus",
+          "alt": "Bank-Wallet-Showcase im dunklen Modus",
           "theme": "dark"
         }
       ]
@@ -56,7 +56,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "OneWallet-Framing: Wettbewerb, Moodboard und Umfang",
+          "alt": "Bank-Wallet-Framing: Wettbewerb, Moodboard und Umfang",
           "caption": "Framing",
           "theme": "any"
         }
@@ -72,7 +72,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/wireframes.png",
-          "alt": "Wireframes der OneWallet-Journeys",
+          "alt": "Wireframes der Bank-Wallet-Journeys",
           "theme": "any"
         }
       ]
@@ -87,7 +87,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/prototypes.png",
-          "alt": "OneWallet-Prototypen und Szenarien",
+          "alt": "Bank-Wallet-Prototypen und Szenarien",
           "theme": "any"
         }
       ]
@@ -103,7 +103,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/user-test.png",
-          "alt": "OneWallet-Nutzertest-Session",
+          "alt": "Bank-Wallet-Nutzertest-Session",
           "theme": "any",
           "caption": "Tests unter realen Bedingungen"
         },
@@ -155,55 +155,55 @@
       "images": [
         {
           "src": "/img/photos/onewallet/figma-board.png",
-          "alt": "OneWallet-Figma-Board für den Entwickler-Handoff",
+          "alt": "Bank-Wallet-Figma-Board für den Entwickler-Handoff",
           "theme": "any",
           "caption": "Specs & Handoff"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-light.png",
-          "alt": "OneWallet-Wallet im hellen Modus",
+          "alt": "Bank-Wallet-Wallet im hellen Modus",
           "theme": "light",
           "caption": "Wallet"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-dark.png",
-          "alt": "OneWallet-Wallet im dunklen Modus",
+          "alt": "Bank-Wallet-Wallet im dunklen Modus",
           "theme": "dark",
           "caption": "Wallet"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-light.png",
-          "alt": "OneWallet-Aktivitäten im hellen Modus",
+          "alt": "Bank-Wallet-Aktivitäten im hellen Modus",
           "theme": "light",
           "caption": "Aktivitäten"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-dark.png",
-          "alt": "OneWallet-Aktivitäten im dunklen Modus",
+          "alt": "Bank-Wallet-Aktivitäten im dunklen Modus",
           "theme": "dark",
           "caption": "Aktivitäten"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-light.png",
-          "alt": "OneWallet kontaktloses Bezahlen im hellen Modus",
+          "alt": "Bank-Wallet kontaktloses Bezahlen im hellen Modus",
           "theme": "light",
           "caption": "Kontaktloses Bezahlen"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-dark.png",
-          "alt": "OneWallet kontaktloses Bezahlen im dunklen Modus",
+          "alt": "Bank-Wallet kontaktloses Bezahlen im dunklen Modus",
           "theme": "dark",
           "caption": "Kontaktloses Bezahlen"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-light.png",
-          "alt": "OneWallet-Einstellungen im hellen Modus",
+          "alt": "Bank-Wallet-Einstellungen im hellen Modus",
           "theme": "light",
           "caption": "Einstellungen"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-dark.png",
-          "alt": "OneWallet-Einstellungen im dunklen Modus",
+          "alt": "Bank-Wallet-Einstellungen im dunklen Modus",
           "theme": "dark",
           "caption": "Einstellungen"
         }
@@ -213,13 +213,15 @@
       "id": "today",
       "title": "Heute",
       "body": [
-        "OneWallet ist in Entwicklung. Der Rahmen steht, die Journeys sind validiert, die [[Edge Cases]] sind dokumentiert.",
-        "Was ich bei solchen Themen mitbringe: eine klare Methode (rahmen, prototypisieren, testen, iterieren), Produkt-/Tech-Kultur und den Anspruch, zu industrialisieren ohne den Nutzen zu verlieren.",
-        "Wenn du ein digitales Produkt, ein [[Design System]] oder eine komplexe Journey baust, können wir sprechen."
+        "Der Rahmen steht, die Journeys sind validiert, die [[Edge Cases]] sind dokumentiert.",
+        "Was ich bei solchen Themen mitbringe: eine klare Methode (rahmen, prototypisieren, testen, iterieren), Produkt-/Tech-Kultur und den Anspruch, zu industrialisieren ohne den Nutzen zu verlieren."
       ],
       "cta": {
-        "label": "Lass uns sprechen",
-        "href": "/contact"
+        "label": "Zurück zu den Arbeiten",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ]

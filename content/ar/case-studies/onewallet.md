@@ -1,13 +1,13 @@
 ---
 {
   "slug": "onewallet",
-  "title": "OneWallet",
+  "title": "المحفظة البنكية",
   "tagline": "تأطير، نمذجة، اختبار: بناء وحدة دفع جاهزة للاندماج.",
   "backLabel": "الإنجازات",
   "meta": {
     "role": "Product design",
     "context": "Worldline",
-    "status": "قيد التطوير"
+    "status": "دراسة حالة"
   },
   "themeToggle": {
     "light": "الوضع الفاتح",
@@ -29,18 +29,18 @@
       "id": "hero",
       "title": "محفظة وحدات",
       "body": [
-        "OneWallet وحدة محفظة رقمية [[White-label]]، مصمّمة للاندماج في تطبيق بنكي والتطوّر معه.",
+        "هذه المحفظة البنكية وحدة [[White-label]]، مصمّمة للاندماج في تطبيق بنكي والتطوّر معه.",
         "في Worldline، دوري: توضيح المسارات واختبارها وتسليم تصميم جاهز للتصنيع."
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/showcase-light.png",
-          "alt": "عرض OneWallet في الوضع الفاتح",
+          "alt": "عرض المحفظة البنكية في الوضع الفاتح",
           "theme": "light"
         },
         {
           "src": "/img/photos/onewallet/showcase-dark.png",
-          "alt": "عرض OneWallet في الوضع الداكن",
+          "alt": "عرض المحفظة البنكية في الوضع الداكن",
           "theme": "dark"
         }
       ]
@@ -56,7 +56,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "تأطير OneWallet: المنافسة ولوحة المزاج والنطاق",
+          "alt": "تأطير المحفظة البنكية: المنافسة ولوحة المزاج والنطاق",
           "caption": "التأطير",
           "theme": "any"
         }
@@ -72,7 +72,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/wireframes.png",
-          "alt": "إطارات شبكية لمسارات OneWallet",
+          "alt": "إطارات شبكية لمسارات المحفظة البنكية",
           "theme": "any"
         }
       ]
@@ -87,7 +87,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/prototypes.png",
-          "alt": "نماذج أولية وسيناريوهات OneWallet",
+          "alt": "نماذج أولية وسيناريوهات المحفظة البنكية",
           "theme": "any"
         }
       ]
@@ -103,7 +103,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/user-test.png",
-          "alt": "جلسة اختبار مستخدمين لـ OneWallet",
+          "alt": "جلسة اختبار مستخدمين لـ المحفظة البنكية",
           "theme": "any",
           "caption": "اختبارات في ظروف حقيقية"
         },
@@ -155,55 +155,55 @@
       "images": [
         {
           "src": "/img/photos/onewallet/figma-board.png",
-          "alt": "لوحة Figma لـ OneWallet لتسليم المطوّرين",
+          "alt": "لوحة Figma لـ المحفظة البنكية لتسليم المطوّرين",
           "theme": "any",
           "caption": "المواصفات والتسليم"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-light.png",
-          "alt": "محفظة OneWallet في الوضع الفاتح",
+          "alt": "محفظة المحفظة البنكية في الوضع الفاتح",
           "theme": "light",
           "caption": "المحفظة"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-dark.png",
-          "alt": "محفظة OneWallet في الوضع الداكن",
+          "alt": "محفظة المحفظة البنكية في الوضع الداكن",
           "theme": "dark",
           "caption": "المحفظة"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-light.png",
-          "alt": "أنشطة OneWallet في الوضع الفاتح",
+          "alt": "أنشطة المحفظة البنكية في الوضع الفاتح",
           "theme": "light",
           "caption": "الأنشطة"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-dark.png",
-          "alt": "أنشطة OneWallet في الوضع الداكن",
+          "alt": "أنشطة المحفظة البنكية في الوضع الداكن",
           "theme": "dark",
           "caption": "الأنشطة"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-light.png",
-          "alt": "دفع لاتلامسي OneWallet في الوضع الفاتح",
+          "alt": "دفع لاتلامسي المحفظة البنكية في الوضع الفاتح",
           "theme": "light",
           "caption": "الدفع اللاتلامسي"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-dark.png",
-          "alt": "دفع لاتلامسي OneWallet في الوضع الداكن",
+          "alt": "دفع لاتلامسي المحفظة البنكية في الوضع الداكن",
           "theme": "dark",
           "caption": "الدفع اللاتلامسي"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-light.png",
-          "alt": "إعدادات OneWallet في الوضع الفاتح",
+          "alt": "إعدادات المحفظة البنكية في الوضع الفاتح",
           "theme": "light",
           "caption": "الإعدادات"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-dark.png",
-          "alt": "إعدادات OneWallet في الوضع الداكن",
+          "alt": "إعدادات المحفظة البنكية في الوضع الداكن",
           "theme": "dark",
           "caption": "الإعدادات"
         }
@@ -213,13 +213,15 @@
       "id": "today",
       "title": "اليوم",
       "body": [
-        "OneWallet قيد التطوير. الإطار موضوع، والمسارات مُتحقَّق منها، و[[الحالات الحدّية]] موثّقة.",
-        "ما أقدّمه في هذا النوع من المواضيع: منهج واضح (تأطير، نمذجة، اختبار، تكرار)، ثقافة منتج/تقنية، والحرص على التصنيع دون فقدان الاستخدام.",
-        "إن كنت تبني منتجاً رقمياً أو [[نظام التصميم]] أو مساراً معقّداً، يمكننا الحديث."
+        "الإطار موضوع، والمسارات مُتحقَّق منها، و[[الحالات الحدّية]] موثّقة.",
+        "ما أقدّمه في هذا النوع من المواضيع: منهج واضح (تأطير، نمذجة، اختبار، تكرار)، ثقافة منتج/تقنية، والحرص على التصنيع دون فقدان الاستخدام."
       ],
       "cta": {
-        "label": "لنتحدث معاً",
-        "href": "/contact"
+        "label": "العودة إلى الإنجازات",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ]

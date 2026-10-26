@@ -4,13 +4,13 @@
   "intro": "دراسات حالة في تصميم المنتجات. المزيد قادم.",
   "caseStudies": [
     {
-      "title": "OneWallet",
+      "title": "المحفظة البنكية",
       "status": "دراسة حالة",
       "slug": "onewallet",
       "cover": {
         "light": "/img/photos/onewallet/showcase-light.png",
         "dark": "/img/photos/onewallet/showcase-dark.png",
-        "alt": "عرض OneWallet"
+        "alt": "عرض المحفظة البنكية"
       }
     },
     {

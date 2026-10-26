@@ -1,13 +1,13 @@
 ---
 {
   "slug": "onewallet",
-  "title": "OneWallet",
+  "title": "Banking wallet",
   "tagline": "Frame, prototype, test: building a payment module ready to plug in.",
   "backLabel": "Work",
   "meta": {
     "role": "Product design",
     "context": "Worldline",
-    "status": "In development"
+    "status": "Case study"
   },
   "themeToggle": {
     "light": "Light mode",
@@ -29,18 +29,18 @@
       "id": "hero",
       "title": "A modular wallet",
       "body": [
-        "OneWallet is a [[White-label]] digital wallet module, designed to plug into a banking app and grow with it.",
+        "This banking wallet is a [[White-label]] module, designed to plug into a banking app and grow with it.",
         "At Worldline, my role: clarify the journeys, test them, and deliver design ready to industrialize."
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/showcase-light.png",
-          "alt": "OneWallet showcase in light mode",
+          "alt": "Banking wallet showcase in light mode",
           "theme": "light"
         },
         {
           "src": "/img/photos/onewallet/showcase-dark.png",
-          "alt": "OneWallet showcase in dark mode",
+          "alt": "Banking wallet showcase in dark mode",
           "theme": "dark"
         }
       ]
@@ -56,7 +56,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "OneWallet framing: competition, moodboard and scope",
+          "alt": "Banking wallet framing: competition, moodboard and scope",
           "caption": "Framing",
           "theme": "any"
         }
@@ -72,7 +72,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/wireframes.png",
-          "alt": "OneWallet journey wireframes",
+          "alt": "Banking wallet journey wireframes",
           "theme": "any"
         }
       ]
@@ -87,7 +87,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/prototypes.png",
-          "alt": "OneWallet prototypes and scenarios",
+          "alt": "Banking wallet prototypes and scenarios",
           "theme": "any"
         }
       ]
@@ -103,7 +103,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/user-test.png",
-          "alt": "OneWallet user testing session",
+          "alt": "Banking wallet user testing session",
           "theme": "any",
           "caption": "Tests in real conditions"
         },
@@ -155,55 +155,55 @@
       "images": [
         {
           "src": "/img/photos/onewallet/figma-board.png",
-          "alt": "OneWallet Figma board for developer handoff",
+          "alt": "Banking wallet Figma board for developer handoff",
           "theme": "any",
           "caption": "Specs & handoff"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-light.png",
-          "alt": "OneWallet wallet in light mode",
+          "alt": "Banking wallet wallet in light mode",
           "theme": "light",
           "caption": "Wallet"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-dark.png",
-          "alt": "OneWallet wallet in dark mode",
+          "alt": "Banking wallet wallet in dark mode",
           "theme": "dark",
           "caption": "Wallet"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-light.png",
-          "alt": "OneWallet activity in light mode",
+          "alt": "Banking wallet activity in light mode",
           "theme": "light",
           "caption": "Activity"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-dark.png",
-          "alt": "OneWallet activity in dark mode",
+          "alt": "Banking wallet activity in dark mode",
           "theme": "dark",
           "caption": "Activity"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-light.png",
-          "alt": "OneWallet contactless payment in light mode",
+          "alt": "Banking wallet contactless payment in light mode",
           "theme": "light",
           "caption": "Contactless payment"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-dark.png",
-          "alt": "OneWallet contactless payment in dark mode",
+          "alt": "Banking wallet contactless payment in dark mode",
           "theme": "dark",
           "caption": "Contactless payment"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-light.png",
-          "alt": "OneWallet settings in light mode",
+          "alt": "Banking wallet settings in light mode",
           "theme": "light",
           "caption": "Settings"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-dark.png",
-          "alt": "OneWallet settings in dark mode",
+          "alt": "Banking wallet settings in dark mode",
           "theme": "dark",
           "caption": "Settings"
         }
@@ -213,13 +213,15 @@
       "id": "today",
       "title": "Today",
       "body": [
-        "OneWallet is in development. The frame is set, journeys are validated, [[edge cases]] are documented.",
-        "What I bring to this kind of brief: a clear method (frame, prototype, test, iterate), a product/tech culture, and care for industrializing without losing the user.",
-        "If you’re building a digital product, a [[design system]], or a complex journey, let’s talk."
+        "The frame is set, journeys are validated, [[edge cases]] are documented.",
+        "What I bring to this kind of brief: a clear method (frame, prototype, test, iterate), a product/tech culture, and care for industrializing without losing the user."
       ],
       "cta": {
-        "label": "Let’s talk",
-        "href": "/contact"
+        "label": "Back to work",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ]

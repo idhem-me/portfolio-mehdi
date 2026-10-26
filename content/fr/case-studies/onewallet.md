@@ -1,13 +1,13 @@
 ---
 {
   "slug": "onewallet",
-  "title": "OneWallet",
+  "title": "Portefeuille bancaire",
   "tagline": "Cadrer, prototyper, tester : construire un module de paiement prêt à s’intégrer.",
   "backLabel": "Réalisations",
   "meta": {
     "role": "Product design",
     "context": "Worldline",
-    "status": "En développement"
+    "status": "Étude de cas"
   },
   "themeToggle": {
     "light": "Mode clair",
@@ -29,18 +29,18 @@
       "id": "hero",
       "title": "Un wallet modulaire",
       "body": [
-        "OneWallet est un module de portefeuille numérique [[White-label]], conçu pour s’insérer dans une app bancaire et évoluer avec elle.",
+        "Ce portefeuille bancaire est un module [[White-label]], conçu pour s’insérer dans une app bancaire et évoluer avec elle.",
         "Chez Worldline, mon rôle : clarifier les parcours, les tester, et livrer un design prêt à industrialiser."
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/showcase-light.png",
-          "alt": "Showcase OneWallet en mode clair",
+          "alt": "Showcase Portefeuille bancaire en mode clair",
           "theme": "light"
         },
         {
           "src": "/img/photos/onewallet/showcase-dark.png",
-          "alt": "Showcase OneWallet en mode sombre",
+          "alt": "Showcase Portefeuille bancaire en mode sombre",
           "theme": "dark"
         }
       ]
@@ -56,7 +56,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "Cadrage OneWallet : concurrence, moodboard et périmètre",
+          "alt": "Cadrage Portefeuille bancaire : concurrence, moodboard et périmètre",
           "caption": "Cadrage",
           "theme": "any"
         }
@@ -72,7 +72,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/wireframes.png",
-          "alt": "Wireframes des parcours OneWallet",
+          "alt": "Wireframes des parcours Portefeuille bancaire",
           "theme": "any"
         }
       ]
@@ -87,7 +87,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/prototypes.png",
-          "alt": "Prototypes et scénarios OneWallet",
+          "alt": "Prototypes et scénarios Portefeuille bancaire",
           "theme": "any"
         }
       ]
@@ -103,7 +103,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/user-test.png",
-          "alt": "Session de test utilisateur OneWallet",
+          "alt": "Session de test utilisateur Portefeuille bancaire",
           "theme": "any",
           "caption": "Tests en conditions réelles"
         },
@@ -155,55 +155,55 @@
       "images": [
         {
           "src": "/img/photos/onewallet/figma-board.png",
-          "alt": "Board Figma OneWallet pour le handoff développeurs",
+          "alt": "Board Figma Portefeuille bancaire pour le handoff développeurs",
           "theme": "any",
           "caption": "Specs & handoff"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-light.png",
-          "alt": "Portefeuille OneWallet en mode clair",
+          "alt": "Portefeuille Portefeuille bancaire en mode clair",
           "theme": "light",
           "caption": "Portefeuille"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-dark.png",
-          "alt": "Portefeuille OneWallet en mode sombre",
+          "alt": "Portefeuille Portefeuille bancaire en mode sombre",
           "theme": "dark",
           "caption": "Portefeuille"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-light.png",
-          "alt": "Activités OneWallet en mode clair",
+          "alt": "Activités Portefeuille bancaire en mode clair",
           "theme": "light",
           "caption": "Activités"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-dark.png",
-          "alt": "Activités OneWallet en mode sombre",
+          "alt": "Activités Portefeuille bancaire en mode sombre",
           "theme": "dark",
           "caption": "Activités"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-light.png",
-          "alt": "Paiement sans contact OneWallet en mode clair",
+          "alt": "Paiement sans contact Portefeuille bancaire en mode clair",
           "theme": "light",
           "caption": "Paiement sans contact"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-dark.png",
-          "alt": "Paiement sans contact OneWallet en mode sombre",
+          "alt": "Paiement sans contact Portefeuille bancaire en mode sombre",
           "theme": "dark",
           "caption": "Paiement sans contact"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-light.png",
-          "alt": "Paramètres OneWallet en mode clair",
+          "alt": "Paramètres Portefeuille bancaire en mode clair",
           "theme": "light",
           "caption": "Paramètres"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-dark.png",
-          "alt": "Paramètres OneWallet en mode sombre",
+          "alt": "Paramètres Portefeuille bancaire en mode sombre",
           "theme": "dark",
           "caption": "Paramètres"
         }
@@ -213,13 +213,15 @@
       "id": "today",
       "title": "Aujourd’hui",
       "body": [
-        "OneWallet est en cours de développement. Le cadre est posé, les parcours sont validés, les [[edge cases]] sont documentés.",
-        "Ce que j’apporte sur ce type de sujet : une méthode claire (cadrer, prototyper, tester, itérer), une culture produit/tech, et le souci d’industrialiser sans perdre l’usage.",
-        "Si vous construisez un produit digital, un [[design system]] ou un parcours complexe, on peut en parler."
+        "Le cadre est posé, les parcours sont validés, les [[edge cases]] sont documentés.",
+        "Ce que j’apporte sur ce type de sujet : une méthode claire (cadrer, prototyper, tester, itérer), une culture produit/tech, et le souci d’industrialiser sans perdre l’usage."
       ],
       "cta": {
-        "label": "Discutons ensemble",
-        "href": "/contact"
+        "label": "Retours aux réalisations",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ]

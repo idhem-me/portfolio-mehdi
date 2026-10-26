@@ -111,7 +111,13 @@ export type CaseStudySection = {
   images?: CaseStudyImage[];
   /** Duo amont → aval, ou board + slider (industrialize). */
   layout?: "default" | "before-after" | "industrialize";
-  cta?: { label: string; href: string };
+  cta?: {
+    label: string;
+    href: string;
+    variant?: "accent" | "secondary" | "default" | "outline";
+    size?: "default" | "sm" | "lg";
+    align?: "start" | "center";
+  };
 };
 
 export type CaseStudyContent = {

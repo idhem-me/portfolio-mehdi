@@ -176,10 +176,20 @@ export function CaseStudyStory({ study, children }: CaseStudyStoryProps) {
           ) : null}
 
           {section.cta ? (
-            <div className="pt-2">
+            <div
+              className={cn(
+                "pt-2",
+                section.cta.align === "center" && "flex justify-center"
+              )}
+            >
               <Link
                 href={section.cta.href}
-                className={cn(buttonVariants({ variant: "accent", size: "lg" }))}
+                className={cn(
+                  buttonVariants({
+                    variant: section.cta.variant ?? "accent",
+                    size: section.cta.size ?? "lg",
+                  })
+                )}
               >
                 {section.cta.label}
               </Link>

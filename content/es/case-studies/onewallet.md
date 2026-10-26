@@ -1,13 +1,13 @@
 ---
 {
   "slug": "onewallet",
-  "title": "OneWallet",
+  "title": "Cartera bancaria",
   "tagline": "Encuadrar, prototipar, testar: construir un módulo de pago listo para integrarse.",
   "backLabel": "Trabajos",
   "meta": {
     "role": "Product design",
     "context": "Worldline",
-    "status": "En desarrollo"
+    "status": "Estudio de caso"
   },
   "themeToggle": {
     "light": "Modo claro",
@@ -29,18 +29,18 @@
       "id": "hero",
       "title": "Un wallet modular",
       "body": [
-        "OneWallet es un módulo de cartera digital [[White-label]], pensado para integrarse en una app bancaria y evolucionar con ella.",
+        "Esta cartera bancaria es un módulo [[White-label]], pensado para integrarse en una app bancaria y evolucionar con ella.",
         "En Worldline, mi rol: clarificar los recorridos, testarlos y entregar un diseño listo para industrializar."
       ],
       "images": [
         {
           "src": "/img/photos/onewallet/showcase-light.png",
-          "alt": "Showcase OneWallet en modo claro",
+          "alt": "Showcase Cartera bancaria en modo claro",
           "theme": "light"
         },
         {
           "src": "/img/photos/onewallet/showcase-dark.png",
-          "alt": "Showcase OneWallet en modo oscuro",
+          "alt": "Showcase Cartera bancaria en modo oscuro",
           "theme": "dark"
         }
       ]
@@ -56,7 +56,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/cadrage.png",
-          "alt": "Encuadre OneWallet: competencia, moodboard y perímetro",
+          "alt": "Encuadre Cartera bancaria: competencia, moodboard y perímetro",
           "caption": "Encuadre",
           "theme": "any"
         }
@@ -72,7 +72,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/wireframes.png",
-          "alt": "Wireframes de los recorridos OneWallet",
+          "alt": "Wireframes de los recorridos Cartera bancaria",
           "theme": "any"
         }
       ]
@@ -87,7 +87,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/prototypes.png",
-          "alt": "Prototipos y escenarios OneWallet",
+          "alt": "Prototipos y escenarios Cartera bancaria",
           "theme": "any"
         }
       ]
@@ -103,7 +103,7 @@
       "images": [
         {
           "src": "/img/photos/onewallet/user-test.png",
-          "alt": "Sesión de test de usuario OneWallet",
+          "alt": "Sesión de test de usuario Cartera bancaria",
           "theme": "any",
           "caption": "Tests en condiciones reales"
         },
@@ -155,55 +155,55 @@
       "images": [
         {
           "src": "/img/photos/onewallet/figma-board.png",
-          "alt": "Board Figma OneWallet para handoff a desarrolladores",
+          "alt": "Board Figma Cartera bancaria para handoff a desarrolladores",
           "theme": "any",
           "caption": "Specs & handoff"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-light.png",
-          "alt": "Cartera OneWallet en modo claro",
+          "alt": "Cartera Cartera bancaria en modo claro",
           "theme": "light",
           "caption": "Cartera"
         },
         {
           "src": "/img/photos/onewallet/presentation-home-dark.png",
-          "alt": "Cartera OneWallet en modo oscuro",
+          "alt": "Cartera Cartera bancaria en modo oscuro",
           "theme": "dark",
           "caption": "Cartera"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-light.png",
-          "alt": "Actividades OneWallet en modo claro",
+          "alt": "Actividades Cartera bancaria en modo claro",
           "theme": "light",
           "caption": "Actividades"
         },
         {
           "src": "/img/photos/onewallet/presentation-list-dark.png",
-          "alt": "Actividades OneWallet en modo oscuro",
+          "alt": "Actividades Cartera bancaria en modo oscuro",
           "theme": "dark",
           "caption": "Actividades"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-light.png",
-          "alt": "Pago sin contacto OneWallet en modo claro",
+          "alt": "Pago sin contacto Cartera bancaria en modo claro",
           "theme": "light",
           "caption": "Pago sin contacto"
         },
         {
           "src": "/img/photos/onewallet/presentation-transac-dark.png",
-          "alt": "Pago sin contacto OneWallet en modo oscuro",
+          "alt": "Pago sin contacto Cartera bancaria en modo oscuro",
           "theme": "dark",
           "caption": "Pago sin contacto"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-light.png",
-          "alt": "Ajustes OneWallet en modo claro",
+          "alt": "Ajustes Cartera bancaria en modo claro",
           "theme": "light",
           "caption": "Ajustes"
         },
         {
           "src": "/img/photos/onewallet/presentation-settings-dark.png",
-          "alt": "Ajustes OneWallet en modo oscuro",
+          "alt": "Ajustes Cartera bancaria en modo oscuro",
           "theme": "dark",
           "caption": "Ajustes"
         }
@@ -213,13 +213,15 @@
       "id": "today",
       "title": "Hoy",
       "body": [
-        "OneWallet está en desarrollo. El marco está puesto, los recorridos están validados, los [[edge cases]] están documentados.",
-        "Lo que aporto en este tipo de tema: un método claro (encuadrar, prototipar, testar, iterar), una cultura producto/tech, y el cuidado de industrializar sin perder el uso.",
-        "Si construyes un producto digital, un [[design system]] o un recorrido complejo, podemos hablar."
+        "El marco está puesto, los recorridos están validados, los [[edge cases]] están documentados.",
+        "Lo que aporto en este tipo de tema: un método claro (encuadrar, prototipar, testar, iterar), una cultura producto/tech, y el cuidado de industrializar sin perder el uso."
       ],
       "cta": {
-        "label": "Hablemos",
-        "href": "/contact"
+        "label": "Volver a trabajos",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ]
