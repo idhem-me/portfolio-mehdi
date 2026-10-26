@@ -65,8 +65,7 @@ export function gameDateISO(s: State) {
 }
 export function formatGameDate(s: State) {
   return gameDate(s).toLocaleDateString("fr-FR", {
-    weekday: "short",
-    day: "numeric",
+    day: "2-digit",
     month: "short",
     year: "numeric",
     timeZone: "UTC",

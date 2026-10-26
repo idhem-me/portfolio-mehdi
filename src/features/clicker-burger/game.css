@@ -203,13 +203,23 @@
   color: var(--muted-foreground);
 }
 .clicker-burger .cash .game-date {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
   margin-top: 6px;
   font-size: 12px;
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
 }
-.clicker-burger .cash .game-date span {
+.clicker-burger .cash .game-date-fixed {
+  width: 100px;
+  flex-shrink: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.clicker-burger .cash .game-date-elapsed {
+  flex: 1;
+  min-width: 0;
   opacity: 0.75;
 }
 .clicker-burger .building-image {

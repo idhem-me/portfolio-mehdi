@@ -423,8 +423,10 @@ export default function App({
               dateTime={gameDateISO(s)}
               title="1 seconde réelle = 1 jour dans le jeu"
             >
-              {formatGameDate(s)}
-              <span>· j+{s.elapsed.toLocaleString("fr-FR")}</span>
+              <span className="game-date-fixed">{formatGameDate(s)}</span>
+              <span className="game-date-elapsed">
+                J+{fmt(s.elapsed, 0)}
+              </span>
             </time>
           </div>
           <button
