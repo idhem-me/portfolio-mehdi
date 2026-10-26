@@ -33,7 +33,7 @@ Reproduire : `npm run balance:burger`. Les deux scénarios sont également des t
 
 - Production manuelle et automatique, vente distincte, prix et demande élastique, ingrédients et stock.
 - Achats par lots et Max, montants Decimal, coûts exponentiels, chaînes agriculture/production/distribution simples.
-- Découverte progressive, six recherches à prérequis, treize marchés, trois acquisitions et trois événements à choix.
+- Découverte progressive, dix recherches à prérequis, seize marchés, cinq acquisitions et dix événements à choix.
 - Dix niveaux illustrés, récompenses uniques de missions, prestige confirmé et bonus permanents.
 - Sauvegarde locale automatique, export/import validé, anciennes sauvegardes conservées, reprise hors ligne plafonnée à 8 h, protections contre les nombres invalides.
 - Profils locaux et passerelle de compte Tetris/Google. Les sauvegardes invitées et par profil restent séparées.
@@ -47,11 +47,11 @@ Reproduire : `npm run balance:burger`. Les deux scénarios sont également des t
 | Cartes régionale, mondiale, solaire et stellaire | Non implémentées : extensions sous forme de marchés, pas de cartes géographiques dédiées.                                                                                                                                                                                        |
 | Richesse de la progression terrestre             | Modèle simplifié : pas de pays détaillés, menus locaux, réseaux de livraison visuels, grandes chaînes logistiques ou influence corporative.                                                                                                                                      |
 | Concurrence                                      | Trois rachats statiques ; pas de parts de marché adverses dynamiques ou de réactions commerciales.                                                                                                                                                                               |
-| Recherche                                        | Six recherches, loin des dix catégories d’un arbre technologique complet.                                                                                                                                                                                                        |
+| Recherche                                        | Dix recherches (dont quatre optionnelles) ; pas encore un arbre à dix catégories distinctes.                                                                                                                                                                                     |
 | Prestige                                         | Bonus production/demande ; pas de boutique de capital permanent, coûts réduits, marketing permanent ou parcours de franchise distincts.                                                                                                                                          |
-| Événements                                       | Trois événements temporaires ; pas de grèves, crises, recettes et arcs narratifs couvrant toutes les ères.                                                                                                                                                                       |
+| Événements                                       | Dix événements temporaires (early → spatial) ; pas encore d’arcs narratifs persistants ni de crises multi-étapes.                                                                                                                                                                 |
 | Espace et endgame                                | Marchés et générateurs fonctionnels, mais pas de transport spatial, énergie, exploitation d’astéroïdes, clients extraterrestres ou économie galactique spécifique. La progression est plafonnée à 10 000 unités par catégorie et ne constitue pas encore un mode infini élaboré. |
-| Conclusion narrative                             | Très limitée ; à enrichir au niveau Univers.                                                                                                                                                                                                                                     |
+| Conclusion narrative                             | Popup dédiée au niveau Univers ; pas encore de crédits / épilogue long.                                                                                                                                                                                                          |
 | Durée initiale de 15–30 h et plus                | Pas reproduite à l’identique : le parcours automatisé actuel dure environ 16 h au total et commence l’espace vers 4,7 h. La conquête terrestre devrait encore être enrichie pour atteindre l’objectif narratif initial sans murs artificiels.                                    |
 | Comptes et cloud                                 | Google dépend des paramètres du service Tetris. La progression Clicker Burger n’est pas synchronisée entre appareils ; elle reste dans le navigateur.                                                                                                                            |
 | Validation                                       | Tests moteur et simulations, vérification navigateur ; tests E2E et validation sur appareils physiques encore à développer.                                                                                                                                                      |
@@ -76,4 +76,15 @@ La vérification isolée évite les blocages de lecture observés dans le dossie
 - Popup de niveau centrée, désactivable dans les réglages ; pastille lorsque l’achat est possible.
 - Événements proportionnels à la trésorerie et au revenu, offre figée durant l’événement et emplacement stable après participation ou refus.
 - Compte commun extrait dans `src/features/account`, utilisé par Tetris et Clicker Burger : pseudo, photo, Google et session partagés. Le stockage historique Tetris et ses routes API sont conservés pour compatibilité ; leur disponibilité ne dépend plus de l’activation du jeu Tetris. La sauvegarde Burger reste locale, séparée par identité, sans synchronisation cloud entre appareils.
-- 150 tests réussis (compte commun, Burger, Tetris). Le parcours simulé jusqu’au niveau 10 est d’environ 13,2 h avec achats optimisés ; ce n’est pas une durée garantie pour une partie humaine.
+- 150+ tests réussis (compte commun, Burger, Tetris). Le parcours simulé jusqu’au niveau 10 est d’environ 13,7 h avec achats optimisés ; ce n’est pas une durée garantie pour une partie humaine.
+
+## Enrichissement contenu (26 octobre 2026)
+
+Sans boutique de prestige ni cartes géographiques :
+
+- **Événements** : 10 scénarios (early → spatial), coûts/récompenses toujours proportionnels à la trésorerie.
+- **Missions** : jalons mid/late (villes FR, concurrent, mégafactory, continents, solaire, multivers).
+- **Recherches** : +4 optionnelles (`branding`, `automation`, `menus`, `astrochef`) avec buffs demande / logistique / orbital.
+- **Marchés** : Bordeaux, Marseille, Côte d’Azur entre le national et l’Europe.
+- **Rivaux** : Crisp King et VoidBite.
+- **Fin narrative** : popup dédiée au niveau Univers.

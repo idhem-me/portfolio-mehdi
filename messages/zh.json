@@ -58,5 +58,10 @@
     "ui": "UI",
     "project": "项目管理",
     "soft": "软技能"
+  },
+  "playerProfile": {
+    "helpLabel": "关于玩家资料",
+    "helpTitle": "玩家资料",
+    "helpBody": "昵称或 Google 账号会为你提供跨游戏的统一身份。在本设备上，你的进度和分数会自动关联到该资料。"
   }
 }

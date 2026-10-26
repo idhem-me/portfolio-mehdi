@@ -28,9 +28,17 @@ export function discoveries(s: State) {
         {
           recipe: s.counts.cook > 0 && earned.gte(150),
           franchise: e >= 1,
+          branding: e >= 1 && s.counts.marketing > 0,
           coldchain: s.counts.farm > 0,
-          global: s.markets.some((id) => ["lyon", "paris"].includes(id)),
+          automation: s.counts.warehouse > 0,
+          global: s.markets.some((id) =>
+            ["lyon", "bordeaux", "marseille", "paris", "riviera"].includes(id),
+          ),
+          menus: s.markets.some((id) =>
+            ["europe", "asia", "america", "africa"].includes(id),
+          ),
           space: domination(s) >= 50,
+          astrochef: s.markets.includes("moon"),
           warp: s.markets.includes("moon"),
         } as Record<string, boolean>
       )[r.id],

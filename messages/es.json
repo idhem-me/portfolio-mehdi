@@ -58,5 +58,10 @@
     "ui": "UI",
     "project": "Gestión",
     "soft": "Soft Skills"
+  },
+  "playerProfile": {
+    "helpLabel": "Acerca del perfil de jugador",
+    "helpTitle": "Perfil de jugador",
+    "helpBody": "Un apodo o una cuenta de Google te da una identidad común en los juegos. En este dispositivo, tu progreso y tus puntuaciones se vinculan automáticamente a ese perfil."
   }
 }

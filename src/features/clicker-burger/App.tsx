@@ -481,19 +481,7 @@ export default function App({
                 visible.research.map((v) => (
                   <div className="research-item" key={v.id}>
                     <h3>{v.name}</h3>
-                    <p>
-                      {v.id === "recipe"
-                        ? "Production et clics ×2"
-                        : v.id === "franchise"
-                          ? "Ouvrir de nouvelles villes"
-                          : v.id === "coldchain"
-                            ? "Coût des ingrédients ÷2"
-                            : v.id === "global"
-                              ? "Ouvrir de nouveaux marchés"
-                              : v.id === "space"
-                                ? "Programme orbital · 70 % de domination et 3 mégafactories nécessaires"
-                                : "Nouvelles destinations"}
-                    </p>
+                    <p>{v.description}</p>
                     <Button
                       variant="outline"
                       disabled={D(s.money).lt(v.cost)}

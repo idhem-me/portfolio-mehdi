@@ -58,5 +58,10 @@
     "ui": "UI",
     "project": "Project",
     "soft": "Soft Skills"
+  },
+  "playerProfile": {
+    "helpLabel": "About the player profile",
+    "helpTitle": "Player profile",
+    "helpBody": "A nickname or Google account gives you one identity across games. On this device, your progress and scores are linked to it automatically."
   }
 }

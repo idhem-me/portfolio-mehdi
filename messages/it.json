@@ -58,5 +58,10 @@
     "ui": "UI",
     "project": "Gestione",
     "soft": "Soft Skills"
+  },
+  "playerProfile": {
+    "helpLabel": "Informazioni sul profilo giocatore",
+    "helpTitle": "Profilo giocatore",
+    "helpBody": "Un nickname o un account Google ti dà un’identità comune tra i giochi. Su questo dispositivo, progressi e punteggi sono collegati automaticamente a quel profilo."
   }
 }

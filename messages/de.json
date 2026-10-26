@@ -58,5 +58,10 @@
     "ui": "UI",
     "project": "Projekt",
     "soft": "Soft Skills"
+  },
+  "playerProfile": {
+    "helpLabel": "Über das Spielerprofil",
+    "helpTitle": "Spielerprofil",
+    "helpBody": "Ein Spitzname oder ein Google-Konto gibt dir eine gemeinsame Identität über die Spiele hinweg. Auf diesem Gerät werden Fortschritt und Punkte automatisch damit verknüpft."
   }
 }

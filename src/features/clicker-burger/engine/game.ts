@@ -193,30 +193,37 @@ export function clickProduction(s: State) {
 export function rates(s: State) {
   const e = era(s);
   const bonus = clickProduction(s);
+  const logistics = s.research.includes("automation") ? 1.5 : 1;
+  const spaceBonus = s.research.includes("astrochef") ? 1.25 : 1;
   let production =
     GENERATORS.filter((g) => !["factory", "megafactory"].includes(g.id)).reduce(
       (n, g) => n + s.counts[g.id] * g.production,
       0,
     ) * bonus;
-  const distribution = s.counts.warehouse * 60 * bonus;
-  const harvest = s.counts.farm * 35 * bonus;
+  const distribution = s.counts.warehouse * 60 * bonus * logistics;
+  const harvest = s.counts.farm * 35 * bonus * logistics;
   production += Math.min(
     (s.counts.factory * 45 + s.counts.megafactory * 15000) * bonus,
     distribution,
     harvest,
   );
   production += s.plots.reduce((n, p) => n + (p.level - 1) * 0.5, 0);
+  production +=
+    (s.counts.orbital * 2e5 + s.counts.quantum * 5e8) * (spaceBonus - 1);
   let demand = 1.3 + s.counts.marketing * 1.4 + s.counts.restaurant * 5;
-  demand += MARKETS.filter((m) => s.markets.includes(m.id)).reduce(
+  const marketDemand = MARKETS.filter((m) => s.markets.includes(m.id)).reduce(
     (n, m) => n + m.demand * (1 - m.competition) * m.power,
     0,
   );
-  demand += s.counts.orbital * 2e5 + s.counts.quantum * 5e8;
+  demand +=
+    marketDemand * (s.research.includes("menus") ? 1.15 : 1) +
+    (s.counts.orbital * 2e5 + s.counts.quantum * 5e8) * spaceBonus;
   demand *=
     Math.pow(4 / s.price, 1.5) *
     (1 + s.capital * 0.04) *
     (s.elapsed < s.boostUntil ? s.boost : 1) *
-    (1 + s.rivals.length * 0.1);
+    (1 + s.rivals.length * 0.1) *
+    (s.research.includes("branding") ? 1.2 : 1);
   return {
     production,
     demand,

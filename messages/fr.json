@@ -58,5 +58,10 @@
     "ui": "UI",
     "project": "Gestion",
     "soft": "Soft Skills"
+  },
+  "playerProfile": {
+    "helpLabel": "À propos du profil joueur",
+    "helpTitle": "Profil joueur",
+    "helpBody": "Un pseudo ou un compte Google te donne une identité commune aux jeux. Sur cet appareil, ta progression et tes scores y sont rattachés automatiquement."
   }
 }
