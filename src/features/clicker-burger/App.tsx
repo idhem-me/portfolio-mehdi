@@ -21,6 +21,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LevelUp } from "./components/LevelUp";
@@ -1111,21 +1112,23 @@ export default function App({
                   <>
                     <h3 className="prestige-heading">
                       Faillite stratégique
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            className="info-tip"
-                            aria-label="À propos du capital permanent"
-                          >
-                            <Info size={14} />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-56 text-left">
-                          Chaque point de capital : production/clics +10 %,
-                          demande +4 %, pour toutes les parties suivantes.
-                        </TooltipContent>
-                      </Tooltip>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              className="info-tip"
+                              aria-label="À propos du capital permanent"
+                            >
+                              <Info size={14} />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-56 text-left">
+                            Chaque point de capital : production/clics +10 %,
+                            demande +4 %, pour toutes les parties suivantes.
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </h3>
                     <p className="burger-settings-note">
                       Gain à la liquidation : +{prestigeGain(s)} point
