@@ -121,6 +121,8 @@ export type CaseStudyContent = {
   backLabel: string;
   meta: { role: string; context: string; status: string };
   themeToggle?: { light: string; dark: string };
+  /** Définitions des termes marqués [[terme]] dans le body. */
+  glossary?: Record<string, string>;
   sections: CaseStudySection[];
 };
 

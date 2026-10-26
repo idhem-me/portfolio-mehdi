@@ -3,6 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import type { CaseStudyContent, CaseStudyImage } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
+import { CaseStudyBody } from "@/components/case-study/case-study-body";
 import { ScrollReveal } from "@/components/case-study/scroll-reveal";
 import { CaseStudySlider } from "@/components/case-study/case-study-slider";
 import { ImageLightboxProvider } from "@/components/case-study/image-lightbox";
@@ -92,9 +93,10 @@ export function CaseStudyStory({ study, children }: CaseStudyStoryProps) {
           <div className="space-y-3">
             {section.body.map((paragraph, i) => (
               <ScrollReveal key={i} delayMs={40 + i * 50}>
-                <p className="max-w-prose text-base leading-relaxed text-muted-foreground">
-                  {paragraph}
-                </p>
+                <CaseStudyBody
+                  text={paragraph}
+                  glossary={study.glossary}
+                />
               </ScrollReveal>
             ))}
           </div>

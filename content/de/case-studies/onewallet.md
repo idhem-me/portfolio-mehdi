@@ -18,8 +18,8 @@
       "id": "hero",
       "title": "Ein modulares Wallet",
       "body": [
-        "Europäische Banken wollen natives kontaktloses Bezahlen: HCE, wie Apple Pay, und Wero.",
-        "OneWallet ist das Modul, das in ihre App integriert wird. White-Label. Erweiterbar. Gebaut für morgen: weitere Technologien, weitere Journeys.",
+        "Europäische Banken wollen natives kontaktloses Bezahlen: [[HCE]], wie Apple Pay, und Wero.",
+        "OneWallet ist das Modul, das in ihre App integriert wird. [[White-Label]]. Erweiterbar. Gebaut für morgen: weitere Technologien, weitere Journeys.",
         "Bei Worldline meine Rolle: diese technische Herausforderung in ein klares, getestetes und skalierbares Produkt verwandeln."
       ],
       "images": [
@@ -40,7 +40,7 @@
       "title": "Das Terrain verstehen",
       "body": [
         "Bevor wir zeichnen, kartieren wir.",
-        "Wettbewerbsanalyse, Moodboard, Ziele. Wer macht was. Was fehlt. Was Erfolg bedeutet.",
+        "Wettbewerbsanalyse, [[Moodboard]], Ziele. Wer macht was. Was fehlt. Was Erfolg bedeutet.",
         "Der Rahmen steht. Das Team weiß, wohin es geht."
       ],
       "images": [
@@ -56,7 +56,7 @@
       "id": "wireframes",
       "title": "Journeys skizzieren",
       "body": [
-        "Wireframes der Kernflows: Aktivierung, Zahlung, Einstellungen. Produkt, Tech und Design auf demselben Weg.",
+        "[[Wireframes]] der [[Kernflows]]: Aktivierung, Zahlung, Einstellungen. Produkt, Tech und Design auf demselben Weg.",
         "Hält der Journey hier, hält er später."
       ],
       "images": [
@@ -71,8 +71,8 @@
       "id": "prototypes",
       "title": "Greifbar machen",
       "body": [
-        "Szenarien. Klickbare Prototypen.",
-        "Die Idee wird etwas, das man in der Hand halten kann. Reibung wird sichtbar, bevor Produktivcode geschrieben wird."
+        "Szenarien. Klickbare [[Prototypen]].",
+        "Die Idee wird etwas, das man in der Hand halten kann. [[Reibung]] wird sichtbar, bevor Produktivcode geschrieben wird."
       ],
       "images": [
         {
@@ -137,9 +137,9 @@
       "id": "industrialize",
       "title": "Industrialisieren",
       "body": [
-        "Migration des Design Systems. White-Label-Denken: eine Basis, viele Marken.",
+        "Migration des [[Design Systems]]. [[White-Label]]-Denken: eine Basis, viele Marken.",
         "Figma-Specs für Entwickler, dann die Schlüsselbildschirme: Wallet, Aktivität, kontaktloses Bezahlen, Einstellungen.",
-        "Design endet nicht mehr beim Happy Path."
+        "Design endet nicht mehr beim [[Happy Path]]."
       ],
       "images": [
         {
@@ -203,15 +203,28 @@
       "id": "today",
       "title": "Heute",
       "body": [
-        "OneWallet befindet sich in der Entwicklung. Der Rahmen steht, Journeys sind validiert, Edge Cases sind dokumentiert.",
+        "OneWallet befindet sich in der Entwicklung. Der Rahmen steht, Journeys sind validiert, [[Edge Cases]] sind dokumentiert.",
         "Was ich bei solchen Themen mitbringe: eine klare Methode (rahmen, prototypisieren, testen, iterieren), Produkt-/Tech-Kultur und den Willen zu industrialisieren, ohne den Nutzen zu verlieren.",
-        "Wenn Sie ein digitales Produkt, ein Design System oder einen komplexen Journey bauen: sprechen wir darüber."
+        "Wenn Sie ein digitales Produkt, ein [[Design System]] oder einen komplexen Journey bauen: sprechen wir darüber."
       ],
       "cta": {
         "label": "Lass uns sprechen",
         "href": "/contact"
       }
     }
-  ]
+  ],
+  "glossary": {
+    "HCE": "Host Card Emulation: Technologie für kontaktloses Bezahlen vom Smartphone ohne dedizierte physische Karte.",
+    "White-Label": "Lösung ohne eigene Marke, die jede Bank in ihrem Corporate Design ausliefern kann.",
+    "Moodboard": "Visuelle Inspirationscollage, um Ton, Stil und Referenzen im Team abzustimmen.",
+    "Wireframes": "Low-Fidelity-Bildschirmskizzen zur Validierung von Struktur und Journeys vor dem Feindesign.",
+    "Kernflows": "Bildschirmsequenzen, die einen End-to-End-User-Journey beschreiben.",
+    "Prototypen": "Interaktive Mockups, mit denen das Produkt vor der Entwicklung simuliert wird.",
+    "Reibung": "Stellen im Journey, an denen Nutzer zögern, Fehler machen oder abbrechen.",
+    "Design Systems": "Gemeinsame Bibliothek aus Komponenten, Regeln und Tokens für konsistentes Design und Entwicklung.",
+    "Design System": "Gemeinsame Bibliothek aus Komponenten, Regeln und Tokens für konsistentes Design und Entwicklung.",
+    "Happy Path": "Nominales Szenario, in dem alles glatt läuft – ohne Fehler oder Grenzfälle.",
+    "Edge Cases": "Grenz- oder Ausnahmefälle (Fehler, leere Zustände, fehlende Rechte) außerhalb des Idealpfads."
+  }
 }
 ---

@@ -13,13 +13,25 @@
     "light": "Mode clair",
     "dark": "Mode sombre"
   },
+  "glossary": {
+    "HCE": "Host Card Emulation : technologie qui permet de payer sans contact depuis le téléphone, sans carte physique dédiée.",
+    "White-label": "Solution livrée sans marque propriétaire, que chaque banque peut habiller à ses couleurs.",
+    "moodboard": "Planche d’inspiration visuelle pour aligner l’équipe sur le ton, le style et les références.",
+    "Wireframes": "Schémas d’écrans basse fidélité pour valider la structure et les parcours avant le design détaillé.",
+    "flows": "Enchaînements d’écrans qui décrivent un parcours utilisateur de bout en bout.",
+    "Prototypes": "Maquettes interactives permettant de simuler le produit avant le développement.",
+    "frictions": "Points du parcours où l’utilisateur hésite, se trompe ou abandonne.",
+    "design system": "Bibliothèque de composants, règles et tokens partagés pour concevoir et développer de façon cohérente.",
+    "happy path": "Scénario nominal où tout se passe bien, sans erreur ni cas limite.",
+    "edge cases": "Cas limites ou exceptions (erreurs, états vides, droits insuffisants) à prévoir hors du parcours idéal."
+  },
   "sections": [
     {
       "id": "hero",
       "title": "Un wallet modulaire",
       "body": [
-        "Les banques européennes veulent du paiement sans contact natif : HCE, comme Apple Pay, et Wero.",
-        "OneWallet est le module qui s’insère dans leur app. White-label. Extensible. Pensé pour demain : d’autres technologies, d’autres parcours.",
+        "Les banques européennes veulent du paiement sans contact natif : [[HCE]], comme Apple Pay, et Wero.",
+        "OneWallet est le module qui s’insère dans leur app. [[White-label]]. Extensible. Pensé pour demain : d’autres technologies, d’autres parcours.",
         "Chez Worldline, mon rôle : transformer cet enjeu technique en produit clair, testé, prêt à industrialiser."
       ],
       "images": [
@@ -40,7 +52,7 @@
       "title": "Comprendre le terrain",
       "body": [
         "Avant de dessiner, on cartographie.",
-        "Analyse de la concurrence, moodboard, définition des objectifs. Qui fait quoi. Ce qui manque. Ce qu’on doit réussir.",
+        "Analyse de la concurrence, [[moodboard]], définition des objectifs. Qui fait quoi. Ce qui manque. Ce qu’on doit réussir.",
         "Le cadre est posé. L’équipe sait où on va."
       ],
       "images": [
@@ -56,7 +68,7 @@
       "id": "wireframes",
       "title": "Dessiner les parcours",
       "body": [
-        "Wireframes des flows clés : activation, paiement, réglages. On aligne produit, tech et design sur le même chemin.",
+        "[[Wireframes]] des [[flows]] clés : activation, paiement, réglages. On aligne produit, tech et design sur le même chemin.",
         "Si le parcours tient ici, il tiendra plus loin."
       ],
       "images": [
@@ -71,8 +83,8 @@
       "id": "prototypes",
       "title": "Rendre palpable",
       "body": [
-        "Scénarios. Prototypes cliquables.",
-        "L’idée devient quelque chose qu’on peut tenir en main. On voit les frictions avant d’écrire une ligne de code métier."
+        "Scénarios. [[Prototypes]] cliquables.",
+        "L’idée devient quelque chose qu’on peut tenir en main. On voit les [[frictions]] avant d’écrire une ligne de code métier."
       ],
       "images": [
         {
@@ -137,9 +149,9 @@
       "id": "industrialize",
       "title": "Industrialiser",
       "body": [
-        "Migration du design system. Réflexion white-label : une base, plusieurs marques.",
+        "Migration du [[design system]]. Réflexion [[White-label]] : une base, plusieurs marques.",
         "Specs Figma pour les développeurs, puis les écrans clés : portefeuille, activités, paiement sans contact, paramètres.",
-        "Le design ne s’arrête plus au happy path."
+        "Le design ne s’arrête plus au [[happy path]]."
       ],
       "layout": "industrialize",
       "images": [
@@ -203,9 +215,9 @@
       "id": "today",
       "title": "Aujourd’hui",
       "body": [
-        "OneWallet est en cours de développement. Le cadre est posé, les parcours sont validés, les edge cases sont documentés.",
+        "OneWallet est en cours de développement. Le cadre est posé, les parcours sont validés, les [[edge cases]] sont documentés.",
         "Ce que j’apporte sur ce type de sujet : une méthode claire (cadrer, prototyper, tester, itérer), une culture produit/tech, et le souci d’industrialiser sans perdre l’usage.",
-        "Si vous construisez un produit digital, un design system ou un parcours complexe, on peut en parler."
+        "Si vous construisez un produit digital, un [[design system]] ou un parcours complexe, on peut en parler."
       ],
       "cta": {
         "label": "Discutons ensemble",

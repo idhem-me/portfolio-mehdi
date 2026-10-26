@@ -18,9 +18,9 @@
       "id": "hero",
       "title": "Un wallet modular",
       "body": [
-        "Los bancos europeos quieren pagos contactless nativos: HCE, como Apple Pay, y Wero.",
-        "OneWallet es el módulo que se integra en su app. White-label. Extensible. Pensado para mañana: más tecnologías, más recorridos.",
-        "En Worldline, mi rol: convertir este reto técnico en un producto claro, testado y listo para industrializar."
+        "Los bancos europeos quieren pagos sin contacto nativos: [[HCE]], como Apple Pay, y Wero.",
+        "OneWallet es el módulo que se integra en su app. [[White-label]]. Extensible. Pensado para mañana: más tecnologías, más recorridos.",
+        "En Worldline, mi rol: transformar este reto técnico en un producto claro, testado y listo para escalar."
       ],
       "images": [
         {
@@ -40,8 +40,8 @@
       "title": "Entender el terreno",
       "body": [
         "Antes de dibujar, cartografiamos.",
-        "Análisis de la competencia, moodboard, definición de objetivos. Quién hace qué. Qué falta. Qué significa el éxito.",
-        "El marco está puesto. El equipo sabe adónde vamos."
+        "Análisis de la competencia, [[moodboard]], objetivos. Quién hace qué. Qué falta. Qué significa el éxito.",
+        "El marco está puesto. El equipo sabe a dónde vamos."
       ],
       "images": [
         {
@@ -56,8 +56,8 @@
       "id": "wireframes",
       "title": "Dibujar los recorridos",
       "body": [
-        "Wireframes de los flujos clave: activación, pago, ajustes. Producto, tech y design alineados en el mismo camino.",
-        "Si el recorrido se sostiene aquí, se sostendrá después."
+        "[[Wireframes]] de los [[flows]] clave: activación, pago, ajustes. Producto, tech y design alineados en el mismo camino.",
+        "Si el recorrido aguanta aquí, aguantará más lejos."
       ],
       "images": [
         {
@@ -71,8 +71,8 @@
       "id": "prototypes",
       "title": "Hacerlo tangible",
       "body": [
-        "Escenarios. Prototipos clicables.",
-        "La idea se convierte en algo que se puede tocar. Vemos la fricción antes de escribir código de producción."
+        "Escenarios. [[Prototipos]] clicables.",
+        "La idea se vuelve algo que se puede sostener. Vemos las [[fricciones]] antes de escribir código de producción."
       ],
       "images": [
         {
@@ -137,9 +137,9 @@
       "id": "industrialize",
       "title": "Industrializar",
       "body": [
-        "Migración del design system. Reflexión white-label: una base, varias marcas.",
-        "Specs de Figma para desarrolladores, luego las pantallas clave: cartera, actividad, pago contactless, ajustes.",
-        "El diseño ya no se detiene en el happy path."
+        "Migración del [[design system]]. Enfoque [[White-label]]: una base, varias marcas.",
+        "Specs Figma para desarrolladores, luego las pantallas clave: cartera, actividad, pago sin contacto, ajustes.",
+        "El diseño ya no se detiene en el [[happy path]]."
       ],
       "images": [
         {
@@ -203,15 +203,27 @@
       "id": "today",
       "title": "Hoy",
       "body": [
-        "OneWallet está en desarrollo. El marco está puesto, los recorridos están validados, los edge cases están documentados.",
-        "Lo que aporto en este tipo de temas: un método claro (encuadrar, prototipar, testear, iterar), cultura producto/tech, y el cuidado de industrializar sin perder el uso.",
-        "Si construyes un producto digital, un design system o un recorrido complejo, hablemos."
+        "OneWallet está en desarrollo. El marco está puesto, los recorridos están validados, los [[edge cases]] están documentados.",
+        "Lo que aporto en este tipo de proyecto: un método claro (encuadrar, prototipar, testear, iterar), cultura producto/tech, y el cuidado de industrializar sin perder el uso.",
+        "Si construyes un producto digital, un [[design system]] o un recorrido complejo, podemos hablar."
       ],
       "cta": {
         "label": "Hablemos",
         "href": "/contact"
       }
     }
-  ]
+  ],
+  "glossary": {
+    "HCE": "Host Card Emulation: tecnología que permite pagar sin contacto desde el teléfono sin una tarjeta física dedicada.",
+    "White-label": "Solución entregada sin marca propia, para que cada banco la adapte a su identidad.",
+    "moodboard": "Tablero de inspiración visual para alinear al equipo en tono, estilo y referencias.",
+    "Wireframes": "Esquemas de pantallas de baja fidelidad para validar estructura y recorridos antes del diseño detallado.",
+    "flows": "Secuencias de pantallas que describen un recorrido de usuario de extremo a extremo.",
+    "Prototipos": "Maquetas interactivas para simular el producto antes del desarrollo.",
+    "fricciones": "Puntos del recorrido donde el usuario duda, se equivoca o abandona.",
+    "design system": "Biblioteca compartida de componentes, reglas y tokens para diseñar y desarrollar con coherencia.",
+    "happy path": "Escenario nominal en el que todo va bien, sin errores ni casos límite.",
+    "edge cases": "Casos límite o excepciones (errores, estados vacíos, permisos insuficientes) fuera del recorrido ideal."
+  }
 }
 ---

@@ -15,7 +15,7 @@
       "title": "Una messaggistica sotto vincolo",
       "body": [
         "Trusted Interactions è la messaggistica sicura delle banche. Creata nel 2015. Centinaia di migliaia di messaggi, decine di migliaia di agenti.",
-        "Zero designer. Oltre trenta sviluppatori. Un ambiente rigido, senza cultura UX.",
+        "Zero designer. Oltre trenta sviluppatori. Un ambiente rigido, senza cultura [[UX]].",
         "In Worldline, il mio ruolo: integrare il Design senza rompere tutto — trasformare l’audit in un prodotto chiaro, testato, industrializzabile."
       ],
       "images": [
@@ -32,8 +32,8 @@
       "id": "research",
       "title": "Diagnosticare senza accesso ai clienti",
       "body": [
-        "Nessun accesso agli utenti finali. Triangoliamo: quantitativo, qualitativo, osservazione interna.",
-        "SUS a 13,2/100. 71 % di verbatim negativi. Sovraccarico cognitivo, assenza di gerarchia, affordance confuse.",
+        "Nessun accesso agli utenti finali. [[Triangoliamo]]: quantitativo, qualitativo, osservazione interna.",
+        "[[SUS]] a 13,2/100. 71 % di [[verbatim]] negativi. [[Sovraccarico]] cognitivo, assenza di gerarchia, [[affordance]] confuse.",
         "Roadmap: chiarezza cognitiva, coerenza, autonomia dei consulenti."
       ],
       "images": [
@@ -49,7 +49,7 @@
       "id": "journeys",
       "title": "Inquadrare l’uso",
       "body": [
-        "Persona Thomas: consulente bancario, sotto pressione, paura dell’errore critico. Vuole chiarezza e guida.",
+        "[[Persona]] Thomas: consulente bancario, sotto pressione, paura dell’errore critico. Vuole chiarezza e guida.",
         "Percorso attuale per gestire un messaggio: 12 passaggi, 6–10 minuti. Obiettivo: 7 passaggi, 3–4 minuti."
       ],
       "images": [
@@ -66,7 +66,7 @@
       "title": "Renderlo tangibile",
       "body": [
         "Mockup del percorso target.",
-        "Gerarchia visiva, progressive disclosure, feedback immediato. Le frizioni emergono prima di scrivere una riga di codice di business."
+        "Gerarchia visiva, [[progressive disclosure]], feedback immediato. Le frizioni emergono prima di scrivere una riga di codice di business."
       ],
       "images": [
         {
@@ -81,7 +81,7 @@
       "id": "user-tests",
       "title": "Confrontarsi con il reale",
       "body": [
-        "Guerrilla testing. Sette missioni. Profili variati.",
+        "[[Guerrilla testing]]. Sette missioni. Profili variati.",
         "Percorso validato da tutti. Nota qualitativa 4,6/5. Mappiamo anche le frizioni residue."
       ],
       "images": [
@@ -97,16 +97,16 @@
       "id": "iterate",
       "title": "Ascoltare, aggiustare",
       "body": [
-        "Raccomandazioni design: curva di apprendimento, spazio di lettura, sessioni di A/B test.",
-        "Lato sviluppo: performance dell’IA, accessibilità, flessibilità del layout."
+        "Raccomandazioni design: curva di apprendimento, spazio di lettura, sessioni di [[A/B test]].",
+        "Lato sviluppo: accessibilità, flessibilità del layout."
       ]
     },
     {
       "id": "industrialize",
       "title": "Industrializzare",
       "body": [
-        "Architettura flat: l’essenziale in due o tre click. Template unificati. UI basata sulla libreria di componenti PrimeNG.",
-        "Spec Figma, responsive, accessibilità WCAG 2.1 AA. Il design non si ferma più all’happy path."
+        "[[Architettura]] flat: l’essenziale in due o tre click. [[Template]] unificati. UI basata sulla libreria di componenti [[PrimeNG]].",
+        "Spec Figma, responsive, accessibilità [[WCAG 2.1 AA]]. Il design non si ferma più all’[[happy path]]."
       ],
       "images": [
         {
@@ -122,7 +122,7 @@
       "id": "today",
       "title": "Oggi",
       "body": [
-        "Deliverable pronti. Handover in corso. La maturità UX del team avanza.",
+        "Deliverable pronti. Handover in corso. La maturità [[UX]] del team avanza.",
         "Ciò che porto su questo tipo di progetto: un metodo chiaro (diagnosticare, prototipare, testare, industrializzare) e la volontà di rendere utile il Design dove non c’era.",
         "Se costruite un prodotto digitale critico o un rifacimento sotto vincolo, ne possiamo parlare."
       ],
@@ -131,6 +131,23 @@
         "href": "/contact"
       }
     }
-  ]
+  ],
+  "glossary": {
+    "UX": "User Experience: qualità dell’esperienza vissuta usando un prodotto.",
+    "Triangoliamo": "Incrociare più fonti (dati, interviste, osservazione) quando non c’è accesso diretto agli utenti finali.",
+    "SUS": "System Usability Scale: questionario standardizzato che valuta la facilità d’uso su 100.",
+    "verbatim": "Citazioni esatte degli utenti per illustrare un ostacolo o un bisogno.",
+    "Sovraccarico": "Eccesso di informazioni o di scelte che affatica e rallenta la decisione.",
+    "affordance": "Indizi visivi o interattivi che suggeriscono come usare un elemento di interfaccia.",
+    "Persona": "Profilo fittizio rappresentativo di un tipo di utente, costruito dalla research.",
+    "progressive disclosure": "Mostrare prima l’essenziale, poi rivelare il dettaglio su richiesta per ridurre la complessità.",
+    "Guerrilla testing": "Test utente rapidi e a basso costo, fuori laboratorio, con profili variati.",
+    "A/B test": "Confrontare due versioni di un’interfaccia per misurare quale performa meglio.",
+    "Architettura": "Organizzazione di pagine e sezioni che struttura la navigazione.",
+    "PrimeNG": "Libreria di componenti UI per Angular, base tecnica dell’interfaccia.",
+    "WCAG 2.1 AA": "Standard internazionale di accessibilità web; il livello AA è la soglia più comune in produzione.",
+    "happy path": "Scenario nominale in cui tutto va bene, senza errori né casi limite.",
+    "Template": "Strutture di schermata riutilizzabili (lista, dettaglio, form…) che garantiscono coerenza."
+  }
 }
 ---

@@ -18,8 +18,8 @@
       "id": "hero",
       "title": "A modular wallet",
       "body": [
-        "European banks want native contactless payments: HCE, like Apple Pay, and Wero.",
-        "OneWallet is the module that plugs into their app. White-label. Extensible. Built for what’s next: more technologies, more journeys.",
+        "European banks want native contactless payments: [[HCE]], like Apple Pay, and Wero.",
+        "OneWallet is the module that plugs into their app. [[White-label]]. Extensible. Built for what’s next: more technologies, more journeys.",
         "At Worldline, my role: turn this technical challenge into a clear product, tested and ready to scale."
       ],
       "images": [
@@ -40,7 +40,7 @@
       "title": "Map the ground",
       "body": [
         "Before we draw, we map.",
-        "Competitive analysis, moodboard, goals. Who does what. What’s missing. What success looks like.",
+        "Competitive analysis, [[moodboard]], goals. Who does what. What’s missing. What success looks like.",
         "The frame is set. The team knows where we’re going."
       ],
       "images": [
@@ -56,7 +56,7 @@
       "id": "wireframes",
       "title": "Sketch the journeys",
       "body": [
-        "Wireframes of key flows: activation, payment, settings. Product, tech and design align on the same path.",
+        "[[Wireframes]] of key [[flows]]: activation, payment, settings. Product, tech and design align on the same path.",
         "If the journey holds here, it will hold later."
       ],
       "images": [
@@ -71,8 +71,8 @@
       "id": "prototypes",
       "title": "Make it tangible",
       "body": [
-        "Scenarios. Clickable prototypes.",
-        "The idea becomes something you can hold. We spot friction before writing production code."
+        "Scenarios. Clickable [[Prototypes]].",
+        "The idea becomes something you can hold. We spot [[friction]] before writing production code."
       ],
       "images": [
         {
@@ -137,9 +137,9 @@
       "id": "industrialize",
       "title": "Industrialize",
       "body": [
-        "Design system migration. White-label thinking: one base, many brands.",
+        "[[design system]] migration. [[White-label]] thinking: one base, many brands.",
         "Figma specs for developers, then the key screens: wallet, activity, contactless payment, settings.",
-        "Design no longer stops at the happy path."
+        "Design no longer stops at the [[happy path]]."
       ],
       "images": [
         {
@@ -203,15 +203,27 @@
       "id": "today",
       "title": "Today",
       "body": [
-        "OneWallet is in development. The frame is set, journeys are validated, edge cases are documented.",
+        "OneWallet is in development. The frame is set, journeys are validated, [[edge cases]] are documented.",
         "What I bring to this kind of brief: a clear method (frame, prototype, test, iterate), a product/tech culture, and care for industrializing without losing the user.",
-        "If you’re building a digital product, a design system, or a complex journey, let’s talk."
+        "If you’re building a digital product, a [[design system]], or a complex journey, let’s talk."
       ],
       "cta": {
         "label": "Let’s talk",
         "href": "/contact"
       }
     }
-  ]
+  ],
+  "glossary": {
+    "HCE": "Host Card Emulation: technology that enables contactless payment from a phone without a dedicated physical card.",
+    "White-label": "A solution shipped without a proprietary brand, so each bank can dress it in its own identity.",
+    "moodboard": "A visual inspiration board to align the team on tone, style, and references.",
+    "Wireframes": "Low-fidelity screen sketches used to validate structure and journeys before detailed design.",
+    "flows": "Screen sequences that describe an end-to-end user journey.",
+    "Prototypes": "Interactive mockups used to simulate the product before development.",
+    "friction": "Points in a journey where users hesitate, err, or drop off.",
+    "design system": "A shared library of components, rules, and tokens for consistent design and development.",
+    "happy path": "The nominal scenario where everything goes well, with no errors or edge cases.",
+    "edge cases": "Limit or exception cases (errors, empty states, insufficient rights) outside the ideal journey."
+  }
 }
 ---
