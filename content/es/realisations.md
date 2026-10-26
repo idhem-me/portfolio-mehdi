@@ -15,7 +15,8 @@
     },
     {
       "title": "Trusted Interactions",
-      "status": "Pronto"
+      "status": "Estudio de caso",
+      "slug": "trusted-interactions"
     }
   ]
 }

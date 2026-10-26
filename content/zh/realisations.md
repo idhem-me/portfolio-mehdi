@@ -15,7 +15,8 @@
     },
     {
       "title": "Trusted Interactions",
-      "status": "即将推出"
+      "status": "案例研究",
+      "slug": "trusted-interactions"
     }
   ]
 }

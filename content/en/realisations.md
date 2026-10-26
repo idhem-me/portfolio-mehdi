@@ -15,7 +15,8 @@
     },
     {
       "title": "Trusted Interactions",
-      "status": "Coming soon"
+      "status": "Case study",
+      "slug": "trusted-interactions"
     }
   ]
 }

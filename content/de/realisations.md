@@ -15,7 +15,8 @@
     },
     {
       "title": "Trusted Interactions",
-      "status": "Demnächst"
+      "status": "Fallstudie",
+      "slug": "trusted-interactions"
     }
   ]
 }
