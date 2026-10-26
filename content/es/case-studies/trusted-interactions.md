@@ -122,13 +122,14 @@
       "id": "today",
       "title": "Hoy",
       "body": [
-        "Entregables listos. Handover en curso. La madurez [[UX]] del equipo avanza.",
-        "Lo que aporto en este tipo de proyecto: un método claro (diagnosticar, prototipar, testear, industrializar) y la voluntad de hacer útil el Design donde no existía.",
-        "Si construyes un producto digital crítico o un rediseño bajo restricción, podemos hablar."
+        "Entregables listos. Handover hecho. Madurez [[UX]] del equipo mejorada."
       ],
       "cta": {
-        "label": "Hablemos",
-        "href": "/contact"
+        "label": "Volver a trabajos",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ],

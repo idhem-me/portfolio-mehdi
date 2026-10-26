@@ -122,13 +122,14 @@
       "id": "today",
       "title": "Oggi",
       "body": [
-        "Deliverable pronti. Handover in corso. La maturità [[UX]] del team avanza.",
-        "Ciò che porto su questo tipo di progetto: un metodo chiaro (diagnosticare, prototipare, testare, industrializzare) e la volontà di rendere utile il Design dove non c’era.",
-        "Se costruite un prodotto digitale critico o un rifacimento sotto vincolo, ne possiamo parlare."
+        "Deliverable pronti. Passaggio di consegne fatto. Maturità [[UX]] del team migliorata."
       ],
       "cta": {
-        "label": "Parliamone",
-        "href": "/contact"
+        "label": "Torna ai lavori",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ],

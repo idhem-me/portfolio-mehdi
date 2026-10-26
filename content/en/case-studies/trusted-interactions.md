@@ -122,13 +122,14 @@
       "id": "today",
       "title": "Today",
       "body": [
-        "Deliverables are in place. Handover is underway. [[UX]] maturity across the team is moving forward.",
-        "What I bring on this kind of brief: a clear method (diagnose, prototype, test, industrialize), and a focus on making Design useful in contexts that had none.",
-        "If you’re building a critical digital product or a constrained redesign, let’s talk."
+        "Deliverables in place. Handover done. Team [[UX]] maturity improved."
       ],
       "cta": {
-        "label": "Let’s talk",
-        "href": "/contact"
+        "label": "Back to work",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ],

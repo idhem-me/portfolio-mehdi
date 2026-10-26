@@ -122,13 +122,14 @@
       "id": "today",
       "title": "Heute",
       "body": [
-        "Deliverables stehen. Handover läuft. Die [[UX]]-Reife des Teams wächst.",
-        "Was ich bei solchen Themen mitbringe: eine klare Methode (diagnostizieren, prototypen, testen, industrialisieren) und den Anspruch, Design dort nützlich zu machen, wo es fehlte.",
-        "Wenn Sie ein kritisches Digitalprodukt oder ein Redesign unter Zwang bauen, sprechen wir darüber."
+        "Deliverables stehen. Handover erledigt. [[UX]]-Reife des Teams verbessert."
       ],
       "cta": {
-        "label": "Lassen Sie uns sprechen",
-        "href": "/contact"
+        "label": "Zurück zu den Arbeiten",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ],

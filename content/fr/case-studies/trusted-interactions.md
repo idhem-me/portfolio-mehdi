@@ -139,13 +139,14 @@
       "id": "today",
       "title": "Aujourd’hui",
       "body": [
-        "Livrables posés. Passation en cours. La maturité [[UX]] du pôle avance.",
-        "Ce que j’apporte sur ce type de sujet : une méthode claire (diagnostiquer, prototyper, tester, industrialiser), et le souci de rendre le Design utile dans des contextes qui n’en avaient pas.",
-        "Si vous construisez un produit digital critique ou une refonte sous contrainte, on peut en parler."
+        "Livrables posés. Passation faite. Maturité [[UX]] du pôle améliorée."
       ],
       "cta": {
-        "label": "Discutons ensemble",
-        "href": "/contact"
+        "label": "Retours aux réalisations",
+        "href": "/realisations",
+        "variant": "secondary",
+        "size": "default",
+        "align": "center"
       }
     }
   ]
