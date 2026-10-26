@@ -5,7 +5,22 @@ import {
   MOON_MARKETS,
   MARS_MARKETS,
 } from "./content";
-export const MISSIONS = [
+
+export type Mission = {
+  id: string;
+  /** Titre réel, révélé une fois la mission réussie. */
+  title: string;
+  /**
+   * Intitulé flou tant que la mission n’est pas récupérée.
+   * Absent = titre clair dès le départ (tutoriel early).
+   */
+  teaser?: string;
+  target: number;
+  reward: number;
+  progress: (s: State) => number;
+};
+
+export const MISSIONS: Mission[] = [
   {
     id: "first-ten",
     title: "Préparer 10 burgers",
@@ -44,6 +59,7 @@ export const MISSIONS = [
   {
     id: "franchise",
     title: "Créer une franchise",
+    teaser: "Structurer votre expansion",
     target: 1,
     reward: 1000,
     progress: (s: State) => Number(s.research.includes("franchise")),
@@ -51,6 +67,7 @@ export const MISSIONS = [
   {
     id: "logistics",
     title: "Ouvrir un centre logistique",
+    teaser: "Fluidifier la chaîne",
     target: 1,
     reward: 1500,
     progress: (s: State) => s.counts.warehouse,
@@ -58,6 +75,7 @@ export const MISSIONS = [
   {
     id: "markets",
     title: "Ouvrir 4 marchés",
+    teaser: "Étendre votre présence",
     target: 4,
     reward: 5000,
     progress: (s: State) => s.markets.length,
@@ -65,6 +83,7 @@ export const MISSIONS = [
   {
     id: "world",
     title: "Lancer l’expansion internationale",
+    teaser: "Viser plus loin",
     target: 1,
     reward: 100000,
     progress: (s: State) => Number(s.research.includes("global")),
@@ -72,6 +91,7 @@ export const MISSIONS = [
   {
     id: "national-cities",
     title: "Couvrir 3 villes européennes",
+    teaser: "Renforcer le réseau continental",
     target: 3,
     reward: 250000,
     progress: (s: State) =>
@@ -82,6 +102,7 @@ export const MISSIONS = [
   {
     id: "first-rival",
     title: "Racheter un concurrent",
+    teaser: "Réduire la concurrence",
     target: 1,
     reward: 400000,
     progress: (s: State) => s.rivals.length,
@@ -89,6 +110,7 @@ export const MISSIONS = [
   {
     id: "megafactory",
     title: "Construire une mégafactory",
+    teaser: "Passer à l’échelle industrielle",
     target: 1,
     reward: 2e6,
     progress: (s: State) => s.counts.megafactory,
@@ -96,6 +118,7 @@ export const MISSIONS = [
   {
     id: "continents",
     title: "Ouvrir 3 métropoles mondiales",
+    teaser: "Accélérer l’expansion mondiale",
     target: 3,
     reward: 1e7,
     progress: (s: State) =>
@@ -106,6 +129,7 @@ export const MISSIONS = [
   {
     id: "mars",
     title: "Ouvrir sur Mars",
+    teaser: "Pousser au-delà de la Terre",
     target: 1,
     reward: 1e12,
     progress: (s: State) =>
@@ -118,6 +142,7 @@ export const MISSIONS = [
   {
     id: "solar",
     title: "Tenir trois marchés solaires",
+    teaser: "Coloniser de nouveaux horizons",
     target: 3,
     reward: 5e13,
     progress: (s: State) =>
@@ -135,11 +160,19 @@ export const MISSIONS = [
   {
     id: "multiverse",
     title: "Ouvrir un univers parallèle",
+    teaser: "Franchir la dernière frontière",
     target: 1,
     reward: 1e18,
     progress: (s: State) => Number(s.markets.includes("multiverse")),
   },
 ];
+
+/** Titre affiché : teaser tant que non récupérée, vrai titre ensuite. */
+export function missionLabel(m: Mission, s: State) {
+  if (s.missionClaims.includes(m.id) || !m.teaser) return m.title;
+  return m.teaser;
+}
+
 export function visibleMissions(s: State) {
   const next = MISSIONS.findIndex((m) => !s.missionClaims.includes(m.id));
   return MISSIONS.filter(
@@ -148,6 +181,7 @@ export function visibleMissions(s: State) {
       i <= (next < 0 ? MISSIONS.length : next),
   );
 }
+
 export function claimMission(s: State, id: string) {
   const mission = visibleMissions(s).find((m) => m.id === id);
   if (

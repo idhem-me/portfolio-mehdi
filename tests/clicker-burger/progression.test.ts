@@ -12,6 +12,8 @@ import { parseSave } from "../../src/features/clicker-burger/systems/save";
 import {
   claimMission,
   visibleMissions,
+  missionLabel,
+  MISSIONS,
 } from "../../src/features/clicker-burger/data/missions";
 import {
   accountSaveKey,
@@ -85,6 +87,16 @@ test("mission rewards are sequential and cannot be collected twice", () => {
   assert(D(s.earned).eq(0));
   assert.equal(claimMission(s, "world"), s);
   assert.deepEqual(parseSave(JSON.stringify(s)).missionClaims, ["first-ten"]);
+});
+test("active late missions use teasers so they do not spoil future content", () => {
+  const s = initial();
+  const mars = MISSIONS.find((m) => m.id === "mars")!;
+  assert.equal(missionLabel(mars, s), "Pousser au-delà de la Terre");
+  assert.notEqual(missionLabel(mars, s), mars.title);
+  s.missionClaims = ["mars"];
+  assert.equal(missionLabel(mars, s), "Ouvrir sur Mars");
+  const early = MISSIONS.find((m) => m.id === "first-ten")!;
+  assert.equal(missionLabel(early, initial()), early.title);
 });
 test("old saves migrate mission rewards without losing progress", () => {
   const s = initial();

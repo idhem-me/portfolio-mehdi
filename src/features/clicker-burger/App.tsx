@@ -53,7 +53,12 @@ import {
 } from "./engine/game";
 import { discoveries } from "./systems/discovery";
 import { parseSave, resume } from "./systems/save";
-import { visibleMissions, claimMission } from "./data/missions";
+import {
+  visibleMissions,
+  claimMission,
+  missionLabel,
+  MISSIONS,
+} from "./data/missions";
 import { PROJECTS } from "./data/projects";
 type Panel =
   | "level"
@@ -772,7 +777,7 @@ export default function App({
                         className={`mission ${claimed ? "claimed" : ""}`}
                         key={m.id}
                       >
-                        <h3>{m.title}</h3>
+                        <h3>{missionLabel(m, s)}</h3>
                         <div className="mission-meta">
                           <span>
                             {fmt(progress, 0)} / {fmt(m.target, 0)}
@@ -848,11 +853,11 @@ export default function App({
                 )}
               </TabsContent>
               <TabsContent value="completed">
-                {missions.some((m) => s.missionClaims.includes(m.id)) ? (
+                {s.missionClaims.length > 0 ? (
                   <ul className="completed-missions">
                     {[...s.missionClaims]
                       .reverse()
-                      .map((id) => missions.find((m) => m.id === id))
+                      .map((id) => MISSIONS.find((m) => m.id === id))
                       .filter((m) => m !== undefined)
                       .map((m) => (
                         <li key={m.id} className="completed-mission">
