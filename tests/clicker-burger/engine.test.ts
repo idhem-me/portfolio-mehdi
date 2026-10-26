@@ -19,6 +19,7 @@ import {
   willingnessToPay,
   spaceWillingnessToPay,
   gameDateISO,
+  OWNERSHIP_CAP,
 } from "../../src/features/clicker-burger/engine/game";
 import {
   parseSave,
@@ -166,7 +167,6 @@ test("large-number money and cost remain finite", () => {
   assert(c.isFinite());
   // Prix unitaire catalogue × quantité (plus d’exponentielle ownership).
   assert(c.eq("800000000000000"));
-  assert.equal(fmt("1e100"), "1.00e+100");
 });
 test("first automation is reachable in under two active minutes", () => {
   let s = initial();
@@ -213,9 +213,17 @@ test("unit prices ignore ownership and only follow timeline inflation", () => {
 test("ownership cap cannot create a save that fails validation", () => {
   const s = initial();
   s.money = "1e300";
-  s.counts.cook = 10000;
+  s.counts.cook = OWNERSHIP_CAP;
   assert.equal(affordable(s, "cook", "max"), 0);
   assert.equal(act(s, { type: "buy", id: "cook", quantity: 1 }), s);
+});
+test("fmt uses French long-scale suffixes", () => {
+  assert.equal(fmt("1e9", 1), "1,0 Md");
+  assert.equal(fmt("1e12", 1), "1,0 B");
+  assert.equal(fmt("1e15", 1), "1,0 Bdr");
+  assert.equal(fmt("1e18", 1), "1,0 T");
+  assert.equal(fmt("1e21", 1), "1,0 Tdr");
+  assert.equal(fmt("1e100"), "1.00e+100");
 });
 test("overpriced tickets collapse demand; mid-game revenue tracks outlets", () => {
   const s = initial();

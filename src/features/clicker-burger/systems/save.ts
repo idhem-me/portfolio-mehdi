@@ -7,6 +7,7 @@ import {
   calendarStartISO,
   PRICE_MAX,
   PRICE_MIN,
+  OWNERSHIP_CAP,
   type State,
 } from "../engine/game";
 import {
@@ -117,7 +118,7 @@ export function parseSave(raw: string): State {
     GENERATORS.map((g) => {
       const n = v.counts[g.id];
       if (n === undefined) return [g.id, 0];
-      if (!Number.isInteger(n) || !numeric(n, 10000))
+      if (!Number.isInteger(n) || !numeric(n, OWNERSHIP_CAP))
         throw Error("Catalogue invalide.");
       return [g.id, n];
     }),

@@ -109,6 +109,8 @@ export function initial(now = Date.now(), capital = 0): State {
 }
 export const PRICE_HOLD_SECONDS = 180;
 export const PRICE_MIN = 1;
+/** Plafond d’unités par générateur (999 B = 999×10¹²). */
+export const OWNERSHIP_CAP = 999e12;
 /** Plafond technique de saisie (999 Md €). À ce niveau, on ne vend rien. */
 export const PRICE_MAX = 999e9;
 /**
@@ -668,10 +670,11 @@ export function cost(s: State, id: string, quantity = 1) {
   return inflatedCost(s, g.base).mul(quantity);
 }
 export function affordable(s: State, id: string, requested: number | "max") {
+  const room = Math.max(0, OWNERSHIP_CAP - (s.counts[id] ?? 0));
   let lo = 0,
     hi = Math.min(
-      10000 - (s.counts[id] ?? 0),
-      requested === "max" ? 10000 : Math.max(0, Math.floor(requested)),
+      room,
+      requested === "max" ? room : Math.max(0, Math.floor(requested)),
     );
   while (lo < hi) {
     const mid = Math.ceil((lo + hi) / 2);
@@ -809,7 +812,7 @@ export function act(s: State, a: Action): State {
       return s;
     n.rivals.push(r.id);
     const crew = Math.max(0, Math.floor(r.crew));
-    const room = Math.max(0, 10000 - (n.counts.cook ?? 0));
+    const room = Math.max(0, OWNERSHIP_CAP - (n.counts.cook ?? 0));
     const hired = Math.min(crew, room);
     if (hired > 0) n.counts.cook = (n.counts.cook ?? 0) + hired;
     note(
@@ -881,19 +884,28 @@ export function prestige(s: State, now = Date.now()) {
   ];
   return n;
 }
+/**
+ * Échelle longue française : k · M · Md (10⁹) · B (10¹²) · Bdr (10¹⁵) ·
+ * T (10¹⁸) · Tdr (10²¹). Au-delà : notation scientifique.
+ */
 export function fmt(v: Decimal.Value, digits = 1) {
   const n = D(v);
   if (n.abs().lt(1000))
     return n
       .toNumber()
       .toLocaleString("fr-FR", { maximumFractionDigits: digits });
+  // Au-delà du trilliard (10²¹…10²⁴), notation scientifique.
+  if (n.abs().gte("1e24")) return n.toExponential(2);
   for (const [power, suffix] of [
-    [12, "Bn"],
+    [21, "Tdr"],
+    [18, "T"],
+    [15, "Bdr"],
+    [12, "B"],
     [9, "Md"],
     [6, "M"],
     [3, "k"],
   ] as const) {
-    if (n.abs().gte(D(10).pow(power)) && n.abs().lt("1e15"))
+    if (n.abs().gte(D(10).pow(power)))
       return `${n.div(D(10).pow(power)).toFixed(digits).replace(".", ",")} ${suffix}`;
   }
   return n.toExponential(2);
