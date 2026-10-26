@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "level": 4,
+  "eventTerms": null,
+  "nextEventAt": 7380,
+  "missionClaims": [
+    "first-ten",
+    "first-sales",
+    "first-cook",
+    "signature",
+    "revenue",
+    "franchise",
+    "logistics",
+    "markets"
+  ],
+  "money": "95000",
+  "earned": "185000",
+  "stock": 420,
+  "ingredients": 680,
+  "price": 3.5,
+  "sold": 8500,
+  "manual": 120,
+  "counts": {
+    "cook": 18,
+    "grill": 12,
+    "marketing": 8,
+    "restaurant": 4,
+    "trader": 2,
+    "farm": 3,
+    "factory": 2,
+    "warehouse": 2,
+    "megafactory": 0,
+    "orbital": 0,
+    "quantum": 0
+  },
+  "research": [
+    "recipe",
+    "franchise",
+    "branding",
+    "coldchain",
+    "ipo"
+  ],
+  "markets": [
+    "suburb",
+    "center",
+    "lyon",
+    "bordeaux"
+  ],
+  "rivals": [],
+  "projects": [],
+  "marketFund": "12000",
+  "marketIndex": 98.4,
+  "plots": [
+    {
+      "x": 2,
+      "y": 2,
+      "type": "stand",
+      "level": 1
+    }
+  ],
+  "capital": 0,
+  "elapsed": 7200,
+  "event": -1,
+  "eventSeen": 4,
+  "boost": 1,
+  "boostUntil": 0,
+  "lastSaved": 1793006926633,
+  "log": [
+    "Introduction en bourse : le ticker BGR est en ligne.",
+    "Centre logistique ouvert. Les camions ont faim aussi.",
+    "Franchise nationale : même sauce, nouvelles villes."
+  ]
+}

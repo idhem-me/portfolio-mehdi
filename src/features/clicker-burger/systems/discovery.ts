@@ -1,5 +1,6 @@
 import { GENERATORS, RESEARCH, MARKETS, RIVALS } from "../data/content";
-import { D, era, domination, type State } from "../engine/game";
+import { PROJECTS } from "../data/projects";
+import { D, era, domination, marketUnlocked, type State } from "../engine/game";
 // Discovery uses lifetime revenue and permanent purchases, never current cash.
 export function discoveries(s: State) {
   const e = era(s),
@@ -32,6 +33,7 @@ export function discoveries(s: State) {
           branding: e >= 1 && s.counts.marketing > 0,
           coldchain: s.counts.farm > 0,
           automation: s.counts.warehouse > 0,
+          ipo: e >= 2 && s.counts.warehouse >= 1 && earned.gte(15000),
           global: s.markets.some((id) =>
             ["lyon", "bordeaux", "marseille", "paris", "riviera"].includes(id),
           ),
@@ -43,6 +45,12 @@ export function discoveries(s: State) {
           warp: s.markets.includes("moon"),
         } as Record<string, boolean>
       )[r.id],
+  );
+  const projects = PROJECTS.filter(
+    (p) =>
+      !s.projects.includes(p.id) &&
+      p.era <= e &&
+      p.requiresResearch.every((id) => s.research.includes(id)),
   );
   const eligible = MARKETS.filter((m) => m.era <= e);
   const next = eligible.find((m) => !s.markets.includes(m.id));
@@ -59,8 +67,10 @@ export function discoveries(s: State) {
   return {
     generators,
     research,
+    projects,
     markets,
     rivals,
+    market: marketUnlocked(s),
     map: e >= 1,
     bulk: Object.values(s.counts).some((n) => n >= 5),
     prestige: earned.gte(1e6) || s.capital > 0,

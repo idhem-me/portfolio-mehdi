@@ -4,7 +4,6 @@
 }
 .clicker-burger * {
   box-sizing: border-box;
-  border-color: var(--border);
 }
 .clicker-burger {
   margin: 0;
@@ -80,14 +79,6 @@
   display: flex;
   align-items: center;
   gap: 9px;
-}
-.clicker-burger .game-header [data-slot="button"] {
-  height: 38px;
-  width: 38px;
-  border-radius: 8px;
-}
-.clicker-burger .game-header [data-slot="button"][data-variant="outline"] {
-  background: var(--background);
 }
 .clicker-burger .game-header [data-slot="button"] svg {
   height: 19px;
@@ -342,21 +333,9 @@
   margin-bottom: 22px;
 }
 .clicker-burger .game-actions > button {
-  height: 45px;
+  height: var(--control-height-lg);
   position: relative;
   overflow: visible;
-  border-radius: 8px;
-  background: var(--background);
-  font-size: 14px;
-  transition:
-    background 0.15s ease,
-    transform 0.12s ease;
-}
-.clicker-burger .game-actions > button:active {
-  transform: scale(0.98);
-}
-.clicker-burger .game-actions > button:disabled {
-  opacity: 0.5;
 }
 .clicker-burger .notification-badge {
   position: absolute;
@@ -587,6 +566,30 @@
   color: var(--muted-foreground);
   line-height: 1.6;
   margin-top: 12px;
+}
+.clicker-burger .finance-panel .finance-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.clicker-burger .finance-panel .finance-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.clicker-burger .finance-panel .finance-stats strong {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.clicker-burger .finance-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 .clicker-burger .settings-row {
   display: flex;
@@ -942,20 +945,106 @@
   height: auto;
 }
 .clicker-burger.game-sheet-portal.game-sheet-sidebar {
+  --burger-sheet-padding: calc(var(--spacing) * 6);
   margin: 0;
-  width: min(100%, 360px);
-  max-width: 360px;
+  width: min(100%, 400px);
+  max-width: 400px;
   max-height: none;
-  height: 100%;
+  height: 100dvh;
   border-radius: 0;
   border-left: 1px solid var(--border);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 .clicker-burger.game-sheet-portal .sheet-header {
   flex-direction: row;
 }
+.clicker-burger.game-sheet-portal.game-sheet-sidebar .sheet-header {
+  padding: calc(var(--burger-sheet-padding) * 1.2)
+    calc(var(--burger-sheet-padding) + var(--control-height-lg))
+    var(--burger-sheet-padding) var(--burger-sheet-padding);
+  border-bottom: 0;
+}
 .clicker-burger.game-sheet-portal .sheet-body {
   flex: 1;
   overflow: auto;
+}
+.clicker-burger.game-sheet-portal.game-sheet-sidebar .sheet-body {
+  padding: calc(var(--burger-sheet-padding) / 2) var(--burger-sheet-padding)
+    var(--burger-sheet-padding);
+}
+.clicker-burger .burger-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--burger-sheet-padding, calc(var(--spacing) * 6));
+  line-height: 1.75;
+}
+.clicker-burger .burger-settings > [data-slot="button"] {
+  justify-content: space-between;
+  min-height: 4rem;
+  padding: calc(var(--spacing) * 4);
+  gap: calc(var(--spacing) * 4);
+  white-space: normal;
+  text-align: start;
+  height: auto;
+}
+.clicker-burger .burger-settings [data-slot="badge"] {
+  flex-shrink: 0;
+}
+.clicker-burger .burger-audio-mixer {
+  display: grid;
+  gap: calc(var(--spacing) * 5);
+  min-width: 0;
+  padding: calc(var(--spacing) * 4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.clicker-burger .burger-audio-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--spacing) * 3);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.clicker-burger .burger-audio-heading span {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.clicker-burger .burger-audio-mixer p {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+.clicker-burger .burger-audio-mixer input[type="range"] {
+  display: block;
+  width: 100%;
+  height: 2.75rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--primary);
+}
+.clicker-burger .burger-settings-note {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+.clicker-burger .burger-settings-actions {
+  display: grid;
+  gap: calc(var(--spacing) * 3);
+}
+.clicker-burger .burger-settings-actions > [data-slot="button"] {
+  min-height: var(--control-height-lg);
+  justify-content: center;
+}
+.clicker-burger .burger-ios-switch {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
 }
 .clicker-burger .level-dialog {
   position: fixed;

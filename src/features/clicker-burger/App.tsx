@@ -3,30 +3,30 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useIdentityState } from "@/features/account/client-store";
 import { PlayerProfileButton } from "@/features/account/ui/profile-button";
-import { useLevelPopups } from "./state/usePreferences";
-import { Switch } from "@/components/ui/switch";
+import { useSettings } from "./state/usePreferences";
 import { useNotices } from "./state/useNotices";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Settings,
-  Sun,
-  Moon,
   Minus,
   Plus,
   Download,
   Upload,
   Check,
-  ChevronDown,
   X,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { LevelUp } from "./components/LevelUp";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Sheet } from "./components/Sheet";
 import { accountSaveKey } from "./auth/useAccount";
 import { useGame } from "./state/useGame";
 import { BURGER_ASSETS } from "./assets/game-assets";
+import { BurgerAudio } from "./feel/audio";
+import { haptic } from "./feel/haptics";
+import type { FeedbackKind } from "./feel/config";
 import {
   buildingLevel,
   clickProduction,
@@ -43,16 +43,19 @@ import {
   upgradeOffer,
   eventOffer,
   traderSkill,
+  marketUnlocked,
 } from "./engine/game";
 import { discoveries } from "./systems/discovery";
 import { parseSave, resume } from "./systems/save";
 import { visibleMissions, claimMission } from "./data/missions";
+import { PROJECTS } from "./data/projects";
 type Panel =
   | "level"
   | "upgrades"
   | "research"
   | "missions"
   | "extensions"
+  | "finance"
   | "settings"
   | "reset"
   | "prestige"
@@ -63,6 +66,7 @@ const TITLES: Record<Exclude<Panel, null>, string> = {
   research: "Recherche",
   missions: "Missions",
   extensions: "Extensions",
+  finance: "Bourse",
   settings: "Réglages",
   reset: "Recommencer ?",
   prestige: "Faillite stratégique",
@@ -75,7 +79,8 @@ export default function App({
   const account = useIdentityState();
   const { resolvedTheme, setTheme } = useTheme();
   const theme = resolvedTheme ?? "light";
-  const popups = useLevelPopups();
+  const { settings, update: updateSettings, toggle: toggleSetting } =
+    useSettings();
   const game = useGame(accountSaveKey(account.profile));
   const s = game.state;
   const visible = discoveries(s);
@@ -100,10 +105,18 @@ export default function App({
   const particleId = useRef(0);
   const particleTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const file = useRef<HTMLInputElement>(null);
+  const audio = useRef<BurgerAudio | null>(null);
+  const iosSwitch = useRef<HTMLInputElement>(null);
+  const settingsRef = useRef(settings);
+  const noticedTotal = useRef<number | null>(null);
+  const levelNoticeRef = useRef<number | null>(null);
   const missions = visibleMissions(s);
   const groups = {
     upgrades: visible.generators.map((g) => g.id),
-    research: visible.research.map((v) => v.id),
+    research: [
+      ...visible.research.map((v) => v.id),
+      ...visible.projects.map((p) => p.id),
+    ],
     missions: missions
       .filter(
         (m) => !s.missionClaims.includes(m.id) && m.progress(s) >= m.target,
@@ -117,12 +130,27 @@ export default function App({
         .filter((v) => !s.rivals.includes(v.id))
         .map((v) => v.id),
     ],
+    finance: marketUnlocked(s) ? ["market"] : [],
   };
   const groupSignature = JSON.stringify(groups);
   const seenKey = `${game.key}.seen`;
   const notices = useNotices(seenKey);
   const { seen } = notices;
   const { mark: markNotices } = notices;
+  settingsRef.current = settings;
+  const unlockFeel = () => {
+    if (!audio.current) audio.current = new BurgerAudio();
+    audio.current.setVolume(settingsRef.current.effectsVolume);
+    if (settingsRef.current.sound) audio.current.unlock();
+  };
+  const feedback = (kind: FeedbackKind) => {
+    const current = settingsRef.current;
+    if (current.sound) {
+      unlockFeel();
+      audio.current?.emit(kind);
+    }
+    haptic(kind, current, iosSwitch.current);
+  };
   useEffect(() => {
     if (!panel) return;
     const ids = (JSON.parse(groupSignature) as Record<string, string[]>)[panel];
@@ -134,9 +162,55 @@ export default function App({
     return () => clearTimeout(timer);
   }, [toast]);
   useEffect(() => () => particleTimers.current.forEach(clearTimeout), []);
+  useEffect(() => {
+    audio.current ??= new BurgerAudio();
+    audio.current.setVolume(settings.effectsVolume);
+    if (!settings.sound) audio.current.mute();
+  }, [settings.sound, settings.effectsVolume]);
+  useEffect(
+    () => () => {
+      audio.current?.close();
+      audio.current = null;
+    },
+    [],
+  );
+  const canCook =
+    s.ingredients >= cpc ||
+    D(s.money).gte(D(cpc - s.ingredients).mul(r.ingredientCost));
+  const notification = (id: keyof typeof groups) =>
+    groups[id].filter(
+      (key) => !Array.isArray(seen[id]) || !seen[id].includes(key),
+    ).length;
+  const noveltyCount =
+    notification("upgrades") +
+    notification("research") +
+    notification("missions") +
+    notification("extensions") +
+    notification("finance") +
+    (upgrade?.affordable ? 1 : 0);
+  useEffect(() => {
+    if (noticedTotal.current === null) {
+      noticedTotal.current = noveltyCount;
+      return;
+    }
+    if (noveltyCount > noticedTotal.current) feedback("novelty");
+    noticedTotal.current = noveltyCount;
+  }, [noveltyCount]);
+  useEffect(() => {
+    if (game.levelNotice === null) {
+      levelNoticeRef.current = null;
+      return;
+    }
+    if (levelNoticeRef.current !== game.levelNotice) {
+      levelNoticeRef.current = game.levelNotice;
+      feedback("levelUp");
+    }
+  }, [game.levelNotice]);
   const cook = () => {
     if (!canCook) return;
+    unlockFeel();
     game.dispatch({ type: "cook" });
+    feedback("cook");
     setPulse((v) => v + 1);
     const id = particleId.current++;
     setParticles((old) => [
@@ -151,13 +225,48 @@ export default function App({
     }, 800);
     particleTimers.current.push(timer);
   };
-  const canCook =
-    s.ingredients >= cpc ||
-    D(s.money).gte(D(cpc - s.ingredients).mul(r.ingredientCost));
-  const notification = (id: keyof typeof groups) =>
-    groups[id].filter(
-      (key) => !Array.isArray(seen[id]) || !seen[id].includes(key),
-    ).length;
+  const cookRef = useRef(cook);
+  cookRef.current = cook;
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.closest(
+          'input, textarea, select, [contenteditable="true"]',
+        )
+      )
+        return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setPanel(null);
+        return;
+      }
+      if (target?.closest('[role="dialog"]')) return;
+      if (event.key === " " || event.code === "Space") {
+        event.preventDefault();
+        cookRef.current();
+        return;
+      }
+      if (event.key === "r" || event.key === "R") {
+        event.preventDefault();
+        setPanel((p) => (p === "settings" ? null : "settings"));
+        return;
+      }
+      const map: Record<string, Exclude<Panel, null>> = {
+        "1": "upgrades",
+        "2": "research",
+        "3": "missions",
+        "4": "extensions",
+        "5": "finance",
+      };
+      const next = map[event.key];
+      if (!next) return;
+      event.preventDefault();
+      setPanel((p) => (p === next ? null : next));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   function exportSave() {
     const url = URL.createObjectURL(
       new Blob([JSON.stringify({ ...s, lastSaved: Date.now() }, null, 2)], {
@@ -190,13 +299,18 @@ export default function App({
     {
       id: "research",
       label: "Recherche",
-      disabled: groups.research.length === 0,
+      disabled: groups.research.length === 0 && s.projects.length === 0,
     },
     { id: "missions", label: "Missions", disabled: false },
     {
       id: "extensions",
       label: "Extensions",
       disabled: groups.extensions.length === 0,
+    },
+    {
+      id: "finance",
+      label: "Bourse",
+      disabled: !marketUnlocked(s),
     },
   ] as const;
   return (
@@ -219,7 +333,7 @@ export default function App({
         <h1>Clicker Burger</h1>
         <div className="header-actions">
           <Button
-            variant="outline"
+            variant="ghost"
             size="icon"
             aria-label="Réglages"
             onClick={() => setPanel("settings")}
@@ -228,6 +342,14 @@ export default function App({
           </Button>
           <PlayerProfileButton />
         </div>
+        <input
+          ref={iosSwitch}
+          type="checkbox"
+          {...({ switch: "" } as Record<string, string>)}
+          className="burger-ios-switch"
+          tabIndex={-1}
+          aria-hidden="true"
+        />
       </header>
       <main className="home">
         <section className="balance-row" aria-label="Progression">
@@ -338,7 +460,7 @@ export default function App({
           {nav.map((v) => (
             <Button
               key={v.id}
-              variant="outline"
+              variant="secondary"
               disabled={v.disabled}
               onClick={() => setPanel(v.id)}
             >
@@ -409,7 +531,8 @@ export default function App({
                     disabled={!upgrade.affordable}
                     onClick={() => {
                       game.dispatch({ type: "level-up" });
-                      if (!popups.enabled) game.dismissLevel();
+                      feedback("buy");
+                      if (!settings.levelPopups) game.dismissLevel();
                       setPanel(null);
                     }}
                   >
@@ -461,13 +584,14 @@ export default function App({
                       variant="outline"
                       disabled={q === 0}
                       aria-label={`Acheter ${g.name}`}
-                      onClick={() =>
+                      onClick={() => {
                         game.dispatch({
                           type: "buy",
                           id: g.id,
                           quantity: visible.bulk ? quantity : 1,
-                        })
-                      }
+                        });
+                        feedback("buy");
+                      }}
                     >
                       {q > 1 ? `×${q} · ` : ""}
                       {fmt(cost(s, g.id, Math.max(1, q)))} €
@@ -478,27 +602,137 @@ export default function App({
             </>
           )}
           {panel === "research" && (
-            <>
-              {visible.research.length === 0 ? (
-                <p className="empty-state">Aucune recherche disponible.</p>
-              ) : (
-                visible.research.map((v) => (
-                  <div className="research-item" key={v.id}>
-                    <h3>{v.name}</h3>
-                    <p>{v.description}</p>
-                    <Button
-                      variant="outline"
-                      disabled={D(s.money).lt(v.cost)}
-                      onClick={() =>
-                        game.dispatch({ type: "research", id: v.id })
-                      }
-                    >
-                      {fmt(v.cost)} €
-                    </Button>
-                  </div>
-                ))
-              )}
-            </>
+            <Tabs defaultValue="tech" className="game-tabs">
+              <TabsList aria-label="Recherche">
+                <TabsTrigger value="tech">Technologies</TabsTrigger>
+                <TabsTrigger value="projects">Projets</TabsTrigger>
+              </TabsList>
+              <TabsContent value="tech">
+                {visible.research.length === 0 ? (
+                  <p className="empty-state">Aucune recherche disponible.</p>
+                ) : (
+                  visible.research.map((v) => (
+                    <div className="research-item" key={v.id}>
+                      <h3>{v.name}</h3>
+                      <p>{v.description}</p>
+                      <Button
+                        variant="outline"
+                        disabled={D(s.money).lt(v.cost)}
+                        onClick={() =>
+                          game.dispatch({ type: "research", id: v.id })
+                        }
+                      >
+                        {fmt(v.cost)} €
+                      </Button>
+                    </div>
+                  ))
+                )}
+              </TabsContent>
+              <TabsContent value="projects">
+                {visible.projects.length === 0 && s.projects.length === 0 ? (
+                  <p className="empty-state">
+                    Aucun projet. Débloquez la franchise pour investir des
+                    ressources.
+                  </p>
+                ) : (
+                  <>
+                    {visible.projects.map((p) => {
+                      const ready =
+                        D(s.money).gte(p.money) &&
+                        s.stock >= p.stock &&
+                        s.ingredients >= p.ingredients;
+                      return (
+                        <div className="research-item" key={p.id}>
+                          <h3>{p.name}</h3>
+                          <p>{p.description}</p>
+                          <p className="footnote">
+                            {fmt(p.money)} €
+                            {p.stock > 0 ? ` · ${fmt(p.stock, 0)} burgers` : ""}
+                            {p.ingredients > 0
+                              ? ` · ${fmt(p.ingredients, 0)} ingrédients`
+                              : ""}
+                          </p>
+                          <Button
+                            variant="outline"
+                            disabled={!ready}
+                            onClick={() =>
+                              game.dispatch({ type: "project", id: p.id })
+                            }
+                          >
+                            Lancer
+                          </Button>
+                        </div>
+                      );
+                    })}
+                    {s.projects.length > 0 && (
+                      <ul className="completed-missions">
+                        {[...s.projects].reverse().map((id) => {
+                          const p = PROJECTS.find((x) => x.id === id);
+                          return (
+                            <li key={id} className="completed-mission">
+                              <span>{p?.name ?? id}</span>
+                              <Check size={18} aria-label="Achevé" />
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </>
+                )}
+              </TabsContent>
+            </Tabs>
+          )}
+          {panel === "finance" && (
+            <div className="finance-panel">
+              <div className="finance-stats">
+                <div>
+                  <span>Indice BGR</span>
+                  <strong>
+                    {s.marketIndex.toLocaleString("fr-FR", {
+                      maximumFractionDigits: 2,
+                    })}
+                  </strong>
+                </div>
+                <div>
+                  <span>Fonds investis</span>
+                  <strong>{fmt(s.marketFund, 2)} €</strong>
+                </div>
+              </div>
+              <p className="footnote">
+                L’indice oscille avec votre activité. Achetez bas, vendez haut —
+                ce n’est pas un revenu passif garanti.
+              </p>
+              <h3 className="section-label">Acheter</h3>
+              <div className="finance-actions">
+                {([0.25, 0.5, 1] as const).map((fraction) => (
+                  <Button
+                    key={`buy-${fraction}`}
+                    variant="outline"
+                    disabled={D(s.money).lte(0)}
+                    onClick={() =>
+                      game.dispatch({ type: "stock-buy", fraction })
+                    }
+                  >
+                    {fraction === 1 ? "Tout" : `${fraction * 100} %`} cash
+                  </Button>
+                ))}
+              </div>
+              <h3 className="section-label">Vendre</h3>
+              <div className="finance-actions">
+                {([0.25, 0.5, 1] as const).map((fraction) => (
+                  <Button
+                    key={`sell-${fraction}`}
+                    variant="outline"
+                    disabled={D(s.marketFund).lte(0)}
+                    onClick={() =>
+                      game.dispatch({ type: "stock-sell", fraction })
+                    }
+                  >
+                    {fraction === 1 ? "Tout" : `${fraction * 100} %`} fonds
+                  </Button>
+                ))}
+              </div>
+            </div>
           )}
           {panel === "missions" && (
             <Tabs defaultValue="current" className="game-tabs">
@@ -698,42 +932,135 @@ export default function App({
             </Tabs>
           )}
           {panel === "settings" && (
-            <>
-              <div className="settings-row">
-                <span>Apparence</span>
-                <Button
-                  variant="outline"
-                  onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-                >
-                  {theme === "light" ? <Sun /> : <Moon />}
-                  {theme === "light" ? "Clair" : "Sombre"}
-                  <ChevronDown size={14} />
-                </Button>
-              </div>
-              <div className="settings-row">
-                <label htmlFor="level-popups">Popups de félicitation</label>
-                <Switch
-                  id="level-popups"
-                  checked={popups.enabled}
-                  onCheckedChange={(value) => {
-                    popups.setEnabled(value);
-                    if (!value) game.dismissLevel();
-                  }}
-                />
-              </div>
-              <h3>Sauvegarde</h3>
-              <p className="footnote">
-                {game.saved
-                  ? "Automatique sur cet appareil"
-                  : "Enregistrement indisponible"}{" "}
-                · hors ligne : 8 h maximum.
+            <div className="burger-settings">
+              <Button
+                variant="outline"
+                role="switch"
+                aria-label="Son"
+                aria-checked={settings.sound}
+                onClick={() => {
+                  unlockFeel();
+                  toggleSetting("sound");
+                }}
+              >
+                Son
+                <Badge variant={settings.sound ? "default" : "secondary"}>
+                  {settings.sound ? "Oui" : "Non"}
+                </Badge>
+              </Button>
+              {settings.sound && (
+                <fieldset className="burger-audio-mixer">
+                  <legend className="sr-only">Volume des effets</legend>
+                  <div>
+                    <div className="burger-audio-heading">
+                      <label htmlFor="burger-effects-volume">
+                        Effets sonores
+                      </label>
+                      <span aria-hidden="true">{settings.effectsVolume} %</span>
+                    </div>
+                    <p id="burger-effects-volume-description">
+                      Clics, nouveautés et niveaux
+                    </p>
+                    <input
+                      id="burger-effects-volume"
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={settings.effectsVolume}
+                      aria-valuetext={`${settings.effectsVolume} %`}
+                      aria-describedby="burger-effects-volume-description"
+                      onChange={(event) => {
+                        const value = Number(event.target.value);
+                        updateSettings({ effectsVolume: value });
+                        unlockFeel();
+                        audio.current?.setVolume(value);
+                        audio.current?.emit("cook");
+                      }}
+                    />
+                  </div>
+                </fieldset>
+              )}
+              <Button
+                variant="outline"
+                role="switch"
+                aria-checked={settings.haptics}
+                onClick={() => toggleSetting("haptics")}
+              >
+                Haptiques
+                <Badge variant={settings.haptics ? "default" : "secondary"}>
+                  {settings.haptics ? "Oui" : "Non"}
+                </Badge>
+              </Button>
+              <Button
+                variant="outline"
+                role="switch"
+                aria-checked={settings.ios}
+                onClick={() => toggleSetting("ios")}
+              >
+                Haptiques iOS expérimentales
+                <Badge variant={settings.ios ? "default" : "secondary"}>
+                  {settings.ios ? "Oui" : "Non"}
+                </Badge>
+              </Button>
+              <p className="burger-settings-note">
+                L’option iOS utilise une astuce non officielle de Safari 18+,
+                uniquement sur les nouveautés et les niveaux. Elle peut ne
+                produire aucune vibration.
               </p>
-              <div className="settings-actions">
-                <Button variant="outline" onClick={exportSave}>
+              <Button
+                variant="outline"
+                role="switch"
+                aria-checked={settings.levelPopups}
+                onClick={() => {
+                  toggleSetting("levelPopups");
+                  if (settings.levelPopups) game.dismissLevel();
+                }}
+              >
+                Popups de félicitation
+                <Badge
+                  variant={settings.levelPopups ? "default" : "secondary"}
+                >
+                  {settings.levelPopups ? "Oui" : "Non"}
+                </Badge>
+              </Button>
+              <Button
+                variant="outline"
+                role="switch"
+                aria-label="Thème sombre"
+                aria-checked={theme === "dark"}
+                onClick={() =>
+                  setTheme(theme === "light" ? "dark" : "light")
+                }
+              >
+                Thème sombre
+                <Badge variant={theme === "dark" ? "default" : "secondary"}>
+                  {theme === "dark" ? "Oui" : "Non"}
+                </Badge>
+              </Button>
+              <section className="burger-settings-actions">
+                <h3>Raccourcis clavier</h3>
+                <p className="burger-settings-note">
+                  Espace : préparer un burger · Échap : fermer · R : réglages ·
+                  1–5 : Améliorer, Recherche, Missions, Extensions, Bourse.
+                </p>
+              </section>
+              <section className="burger-settings-actions">
+                <h3>Sauvegarde</h3>
+                <p className="burger-settings-note">
+                  {game.saved
+                    ? "Automatique sur cet appareil"
+                    : "Enregistrement indisponible"}{" "}
+                  · hors ligne : 8 h maximum.
+                </p>
+                <Button variant="secondary" onClick={exportSave}>
                   <Download />
                   Exporter
                 </Button>
-                <Button variant="outline" onClick={() => file.current?.click()}>
+                <Button
+                  variant="secondary"
+                  onClick={() => file.current?.click()}
+                >
                   <Upload />
                   Importer
                 </Button>
@@ -744,37 +1071,40 @@ export default function App({
                   ref={file}
                   onChange={(ev) => void importSave(ev.target.files?.[0])}
                 />
-              </div>
-              {game.error && (
-                <>
-                  <p role="alert" className="error-message">
-                    {game.error}
-                  </p>
-                  <Button variant="outline" onClick={game.allowSave}>
-                    Remplacer la sauvegarde illisible
-                  </Button>
-                </>
-              )}
-              {visible.prestige && (
-                <div className="prestige">
-                  <h3>Faillite stratégique</h3>
-                  <p className="footnote">
-                    Gain : +{prestigeGain(s)} points permanents. Capital actuel
-                    : {s.capital}.
-                  </p>
-                  <Button
-                    variant="outline"
-                    disabled={prestigeGain(s) < 1}
-                    onClick={() => setPanel("prestige")}
-                  >
-                    Liquider
-                  </Button>
-                </div>
-              )}
-              <Button variant="destructive" onClick={() => setPanel("reset")}>
-                Recommencer
-              </Button>
-            </>
+                {game.error && (
+                  <>
+                    <p role="alert" className="error-message">
+                      {game.error}
+                    </p>
+                    <Button variant="secondary" onClick={game.allowSave}>
+                      Remplacer la sauvegarde illisible
+                    </Button>
+                  </>
+                )}
+                {visible.prestige && (
+                  <>
+                    <h3>Faillite stratégique</h3>
+                    <p className="burger-settings-note">
+                      Gain : +{prestigeGain(s)} points permanents. Capital
+                      actuel : {s.capital}.
+                    </p>
+                    <Button
+                      variant="secondary"
+                      disabled={prestigeGain(s) < 1}
+                      onClick={() => setPanel("prestige")}
+                    >
+                      Liquider
+                    </Button>
+                  </>
+                )}
+                <Button
+                  variant="destructive"
+                  onClick={() => setPanel("reset")}
+                >
+                  Recommencer
+                </Button>
+              </section>
+            </div>
           )}
           {(panel === "reset" || panel === "prestige") && (
             <>
@@ -783,8 +1113,11 @@ export default function App({
                   ? "La progression du profil actif sera effacée."
                   : `Repartir à zéro avec ${s.capital + prestigeGain(s)} points permanents.`}
               </p>
-              <div className="settings-actions">
-                <Button variant="outline" onClick={() => setPanel("settings")}>
+              <div className="burger-settings-actions">
+                <Button
+                  variant="secondary"
+                  onClick={() => setPanel("settings")}
+                >
                   Annuler
                 </Button>
                 <Button
@@ -807,7 +1140,7 @@ export default function App({
           )}
         </Sheet>
       )}
-      {popups.enabled && game.levelNotice !== null && (
+      {settings.levelPopups && game.levelNotice !== null && (
         <LevelUp level={game.levelNotice} onClose={game.dismissLevel} />
       )}
       {toast && (

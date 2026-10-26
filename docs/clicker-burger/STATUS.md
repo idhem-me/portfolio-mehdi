@@ -89,3 +89,5 @@ Sans boutique de prestige ni cartes géographiques :
 - **Rivaux** : Crisp King et VoidBite.
 - **Fin narrative** : popup dédiée au niveau Univers.
 - **Directeur des ventes** : générateur stackable ; auto-prix meilleur que le défaut (4 €), asymptote ~88 % de l’optimum manuel. Le réglage manuel est verrouillé tant qu’au moins un directeur est employé.
+- **Bourse** : recherche `ipo` (après franchise + entrepôt) ouvre l’indice BGR ; dépôt/retrait d’une fraction de la trésorerie, cours mean-reverté. Sauvegarde de test : `docs/clicker-burger/save-bourse-test.json`.
+- **Projets** : onglet Recherche → Projets ; dépenses multi-ressources (`test-kitchen`, `pilot-line`).

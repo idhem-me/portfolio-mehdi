@@ -13,9 +13,21 @@ import {
   RESEARCH,
   RIVALS,
 } from "../data/content";
+import { PROJECTS } from "../data/projects";
 export const SAVE_KEY = "food-empire.save.v1";
 const numeric = (v: unknown, max = 1e100) =>
   typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= max;
+const moneyField = (v: unknown, label: string) => {
+  if (
+    typeof v !== "string" ||
+    v.length > 1000 ||
+    !D(v).isFinite() ||
+    D(v).lt(0) ||
+    D(v).gt("1e300")
+  )
+    throw Error(label);
+  return D(v).toString();
+};
 export function parseSave(raw: string): State {
   if (raw.length > 2000000)
     throw Error("Fichier trop volumineux (2 Mo maximum).");
@@ -36,16 +48,16 @@ export function parseSave(raw: string): State {
     throw Error("Missions invalides.");
   s.missionClaims = v.missionClaims ?? [];
   for (const key of ["money", "earned"] as const) {
-    if (
-      typeof v[key] !== "string" ||
-      v[key].length > 1000 ||
-      !D(v[key]).isFinite() ||
-      D(v[key]).lt(0) ||
-      D(v[key]).gt("1e300")
-    )
-      throw Error("Montant invalide.");
-    s[key] = D(v[key]).toString();
+    s[key] = moneyField(v[key], "Montant invalide.");
   }
+  s.marketFund =
+    v.marketFund === undefined
+      ? "0"
+      : moneyField(v.marketFund, "Fonds boursiers invalides.");
+  if (v.marketIndex === undefined) s.marketIndex = 100;
+  else if (!numeric(v.marketIndex, 500) || v.marketIndex < 20)
+    throw Error("Indice boursier invalide.");
+  else s.marketIndex = v.marketIndex;
   for (const k of [
     "stock",
     "ingredients",
@@ -85,7 +97,12 @@ export function parseSave(raw: string): State {
     ["research", RESEARCH.map((r) => r.id)],
     ["markets", MARKETS.map((m) => m.id)],
     ["rivals", RIVALS.map((r) => r.id)],
+    ["projects", PROJECTS.map((p) => p.id)],
   ] as const) {
+    if (key === "projects" && v.projects === undefined) {
+      s.projects = [];
+      continue;
+    }
     if (
       !Array.isArray(v[key]) ||
       v[key].length > ids.length ||

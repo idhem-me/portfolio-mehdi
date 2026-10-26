@@ -183,6 +183,14 @@ export const RESEARCH = [
     description: "Récoltes et distribution ×1,5.",
   },
   {
+    id: "ipo",
+    name: "Introduction en bourse",
+    cost: 22000,
+    requires: ["franchise"],
+    era: 2,
+    description: "Ouvre le marché actions restauration.",
+  },
+  {
     id: "global",
     name: "Un menu pour le monde",
     cost: 250000,

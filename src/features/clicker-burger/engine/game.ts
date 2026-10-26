@@ -1,6 +1,7 @@
 import { LEVELS } from "../data/levels";
 import Decimal from "decimal.js";
 import { GENERATORS, MARKETS, RESEARCH, RIVALS, EVENTS } from "../data/content";
+import { PROJECTS } from "../data/projects";
 export type State = {
   version: 1;
   level: number;
@@ -18,6 +19,9 @@ export type State = {
   research: string[];
   markets: string[];
   rivals: string[];
+  projects: string[];
+  marketFund: string;
+  marketIndex: number;
   plots: { x: number; y: number; type: string; level: number }[];
   capital: number;
   elapsed: number;
@@ -47,6 +51,9 @@ export function initial(now = Date.now(), capital = 0): State {
     research: [],
     markets: [],
     rivals: [],
+    projects: [],
+    marketFund: "0",
+    marketIndex: 100,
     plots: [{ x: 2, y: 2, type: "stand", level: 1 }],
     capital,
     elapsed: 0,
@@ -57,6 +64,26 @@ export function initial(now = Date.now(), capital = 0): State {
     lastSaved: now,
     log: ["Votre empire commence avec 20 € et une friteuse douteuse."],
   };
+}
+export function marketUnlocked(s: State) {
+  return s.research.includes("ipo");
+}
+/** Bruit déterministe ±1, mean-reversion douce, biais revenu — drift plafonné. */
+export function marketDrift(s: State) {
+  const r = rates(s);
+  const income = Math.min(r.production, r.demand) * s.price;
+  const bias = Math.tanh((income - 40) / 200) * 0.000004;
+  const revert = ((100 - s.marketIndex) / 100) * 0.000006;
+  const noise =
+    Math.sin(s.elapsed * 12.9898) * Math.cos(s.elapsed * 78.233) * 0.000008;
+  return Math.min(0.000012, Math.max(-0.000012, bias + revert + noise));
+}
+export function tickMarket(s: State) {
+  if (!marketUnlocked(s)) return;
+  const factor = 1 + marketDrift(s);
+  s.marketIndex = Math.min(500, Math.max(20, s.marketIndex * factor));
+  if (D(s.marketFund).gt(0))
+    s.marketFund = D(s.marketFund).mul(factor).toDecimalPlaces(8).toString();
 }
 export function era(s: State) {
   if (s.research.includes("warp")) return 5;
@@ -193,7 +220,9 @@ export function clickProduction(s: State) {
 export function rates(s: State) {
   const e = era(s);
   const bonus = clickProduction(s);
-  const logistics = s.research.includes("automation") ? 1.5 : 1;
+  const logistics =
+    (s.research.includes("automation") ? 1.5 : 1) *
+    (s.projects.includes("pilot-line") ? 1.2 : 1);
   const spaceBonus = s.research.includes("astrochef") ? 1.25 : 1;
   let production =
     GENERATORS.filter((g) => !["factory", "megafactory", "trader"].includes(g.id)).reduce(
@@ -223,7 +252,8 @@ export function rates(s: State) {
     (1 + s.capital * 0.04) *
     (s.elapsed < s.boostUntil ? s.boost : 1) *
     (1 + s.rivals.length * 0.1) *
-    (s.research.includes("branding") ? 1.2 : 1);
+    (s.research.includes("branding") ? 1.2 : 1) *
+    (s.projects.includes("test-kitchen") ? 1.1 : 1);
   return {
     production,
     demand,
@@ -275,6 +305,7 @@ export function tick(s: State, seconds: number): State {
   const steps = Math.floor(Math.min(Math.max(0, seconds), 28800));
   for (let i = 0; i < steps; i++) {
     if ((n.counts.trader ?? 0) > 0) n.price = traderTargetPrice(n);
+    tickMarket(n);
     const r = rates(n);
     n.elapsed++;
     n.ingredients = Math.min(1e100, n.ingredients + r.harvest);
@@ -340,7 +371,8 @@ export type Action =
   | { type: "cook" }
   | { type: "price"; value: number }
   | { type: "buy"; id: string; quantity: number | "max" }
-  | { type: "research" | "market" | "acquire"; id: string }
+  | { type: "research" | "market" | "acquire" | "project"; id: string }
+  | { type: "stock-buy" | "stock-sell"; fraction: number }
   | { type: "build"; id: string; x: number; y: number }
   | { type: "upgrade"; index: number }
   | { type: "event"; accept: boolean };
@@ -388,6 +420,39 @@ export function act(s: State, a: Action): State {
       return s;
     n.research.push(r.id);
     note(n, `Recherche terminée : ${r.name}.`);
+  }
+  if (a.type === "project") {
+    const p = PROJECTS.find((p) => p.id === a.id);
+    if (
+      !p ||
+      n.projects.includes(p.id) ||
+      p.era > era(n) ||
+      !p.requiresResearch.every((id) => n.research.includes(id)) ||
+      n.stock < p.stock ||
+      n.ingredients < p.ingredients ||
+      !pay(p.money)
+    )
+      return s;
+    n.stock -= p.stock;
+    n.ingredients -= p.ingredients;
+    n.projects.push(p.id);
+    note(n, `Projet achevé : ${p.name}.`);
+  }
+  if (a.type === "stock-buy") {
+    if (!marketUnlocked(n) || !(a.fraction > 0) || a.fraction > 1) return s;
+    const amount = D(n.money).mul(a.fraction).toDecimalPlaces(8);
+    if (amount.lte(0) || amount.gt(n.money)) return s;
+    n.money = D(n.money).minus(amount).toString();
+    n.marketFund = D(n.marketFund).plus(amount).toString();
+    note(n, `Bourse : achat de ${fmt(amount)} €.`);
+  }
+  if (a.type === "stock-sell") {
+    if (!marketUnlocked(n) || !(a.fraction > 0) || a.fraction > 1) return s;
+    const amount = D(n.marketFund).mul(a.fraction).toDecimalPlaces(8);
+    if (amount.lte(0) || amount.gt(n.marketFund)) return s;
+    n.marketFund = D(n.marketFund).minus(amount).toString();
+    n.money = D(n.money).plus(amount).toString();
+    note(n, `Bourse : vente de ${fmt(amount)} €.`);
   }
   if (a.type === "market") {
     const m = MARKETS.find((m) => m.id === a.id);

@@ -1,30 +1,58 @@
-import { useCallback, useSyncExternalStore } from "react";
-const KEY = "clicker-burger.level-popups";
-const EVENT = "clicker-burger-preferences";
-export function useLevelPopups() {
-  const subscribe = useCallback((notify: () => void) => {
-    window.addEventListener("storage", notify);
-    window.addEventListener(EVENT, notify);
+import { useCallback, useEffect, useState } from "react";
+import {
+  defaults,
+  loadSettings,
+  saveSettings,
+  type Settings,
+} from "../feel/config";
+
+const EVENT = "clicker-burger-settings";
+
+export function useSettings() {
+  const [settings, setSettings] = useState<Settings>(defaults);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setSettings(loadSettings());
+    setReady(true);
+    const sync = () => setSettings(loadSettings());
+    window.addEventListener("storage", sync);
+    window.addEventListener(EVENT, sync);
     return () => {
-      window.removeEventListener("storage", notify);
-      window.removeEventListener(EVENT, notify);
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(EVENT, sync);
     };
   }, []);
-  const read = useCallback(() => {
-    try {
-      return localStorage.getItem(KEY) !== "off";
-    } catch {
-      return true;
-    }
-  }, []);
-  const enabled = useSyncExternalStore(subscribe, read, () => true);
-  const setEnabled = useCallback((value: boolean) => {
-    try {
-      localStorage.setItem(KEY, value ? "on" : "off");
+
+  const update = useCallback((patch: Partial<Settings>) => {
+    setSettings((prev) => {
+      const next = { ...prev, ...patch };
+      saveSettings(next);
       window.dispatchEvent(new Event(EVENT));
-    } catch {
-      /* Optional preference. */
-    }
+      return next;
+    });
   }, []);
-  return { enabled, setEnabled };
+
+  const toggle = useCallback(
+    (key: keyof Pick<Settings, "sound" | "haptics" | "ios" | "levelPopups">) => {
+      setSettings((prev) => {
+        const next = { ...prev, [key]: !prev[key] };
+        saveSettings(next);
+        window.dispatchEvent(new Event(EVENT));
+        return next;
+      });
+    },
+    [],
+  );
+
+  return { settings, ready, update, toggle };
+}
+
+/** @deprecated Prefer useSettings().settings.levelPopups */
+export function useLevelPopups() {
+  const { settings, update } = useSettings();
+  return {
+    enabled: settings.levelPopups,
+    setEnabled: (value: boolean) => update({ levelPopups: value }),
+  };
 }
