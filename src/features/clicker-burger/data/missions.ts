@@ -83,7 +83,7 @@ export const MISSIONS: Mission[] = [
   {
     id: "world",
     title: "Lancer l’expansion internationale",
-    teaser: "Viser plus loin",
+    teaser: "Élargir le menu",
     target: 1,
     reward: 100000,
     progress: (s: State) => Number(s.research.includes("global")),
@@ -91,7 +91,7 @@ export const MISSIONS: Mission[] = [
   {
     id: "national-cities",
     title: "Couvrir 3 villes européennes",
-    teaser: "Renforcer le réseau continental",
+    teaser: "Renforcer le réseau",
     target: 3,
     reward: 250000,
     progress: (s: State) =>
@@ -102,7 +102,7 @@ export const MISSIONS: Mission[] = [
   {
     id: "first-rival",
     title: "Racheter un concurrent",
-    teaser: "Réduire la concurrence",
+    teaser: "Gagner des parts de marché",
     target: 1,
     reward: 400000,
     progress: (s: State) => s.rivals.length,
@@ -110,7 +110,7 @@ export const MISSIONS: Mission[] = [
   {
     id: "megafactory",
     title: "Construire une mégafactory",
-    teaser: "Passer à l’échelle industrielle",
+    teaser: "Augmenter la capacité",
     target: 1,
     reward: 2e6,
     progress: (s: State) => s.counts.megafactory,
@@ -118,7 +118,7 @@ export const MISSIONS: Mission[] = [
   {
     id: "continents",
     title: "Ouvrir 3 métropoles mondiales",
-    teaser: "Accélérer l’expansion mondiale",
+    teaser: "Accélérer l’expansion",
     target: 3,
     reward: 1e7,
     progress: (s: State) =>
@@ -129,7 +129,7 @@ export const MISSIONS: Mission[] = [
   {
     id: "mars",
     title: "Ouvrir sur Mars",
-    teaser: "Pousser au-delà de la Terre",
+    teaser: "Ouvrir un nouveau marché",
     target: 1,
     reward: 1e12,
     progress: (s: State) =>
@@ -142,7 +142,7 @@ export const MISSIONS: Mission[] = [
   {
     id: "solar",
     title: "Tenir trois marchés solaires",
-    teaser: "Coloniser de nouveaux horizons",
+    teaser: "Consolider plusieurs marchés",
     target: 3,
     reward: 5e13,
     progress: (s: State) =>
@@ -160,7 +160,7 @@ export const MISSIONS: Mission[] = [
   {
     id: "multiverse",
     title: "Ouvrir un univers parallèle",
-    teaser: "Franchir la dernière frontière",
+    teaser: "Tenter quelque chose d’inédit",
     target: 1,
     reward: 1e18,
     progress: (s: State) => Number(s.markets.includes("multiverse")),

@@ -91,7 +91,7 @@ test("mission rewards are sequential and cannot be collected twice", () => {
 test("active late missions use teasers so they do not spoil future content", () => {
   const s = initial();
   const mars = MISSIONS.find((m) => m.id === "mars")!;
-  assert.equal(missionLabel(mars, s), "Pousser au-delà de la Terre");
+  assert.equal(missionLabel(mars, s), "Ouvrir un nouveau marché");
   assert.notEqual(missionLabel(mars, s), mars.title);
   s.missionClaims = ["mars"];
   assert.equal(missionLabel(mars, s), "Ouvrir sur Mars");
