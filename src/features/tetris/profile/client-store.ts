@@ -378,36 +378,52 @@ function queue(run: QueuedScore) {
     run,
   ]);
 }
+export type SubmitScoreResult =
+  | { ok: true }
+  | { ok: false; reason?: "auth" | "network" | "identity" };
+
 export async function submitLocalScore(
   run: QueuedScore,
   onSaved?: (result: { rank?: number | null }) => void,
-) {
-  if (run.recipient && run.recipient !== state.profile?.key) return false;
+): Promise<SubmitScoreResult> {
+  if (run.recipient && run.recipient !== state.profile?.key)
+    return { ok: false, reason: "identity" };
   try {
     rememberScore(run);
     if (run.opening || run.localOnly) {
       onSaved?.({});
-      return true;
+      return { ok: true };
     }
     try {
       const r = await sendScore(run);
-      if (!r.ok) throw Error();
+      if (!r.ok) {
+        const auth = r.status === 401;
+        throw Object.assign(Error(), { auth });
+      }
       onSaved?.(await r.json());
       write(
         queueKey,
         read<QueuedScore[]>(queueKey, []).filter((item) => item.id !== run.id),
       );
-      return true;
-    } catch {
+      return { ok: true };
+    } catch (error) {
       queue(run);
       if (!run.identity) {
         onSaved?.({});
-        return true;
+        return { ok: true };
       }
-      return false;
+      return {
+        ok: false,
+        reason:
+          error instanceof Error &&
+          "auth" in error &&
+          (error as Error & { auth?: boolean }).auth
+            ? "auth"
+            : "network",
+      };
     }
   } catch {
-    return false;
+    return { ok: false, reason: "network" };
   }
 }
 export async function syncLocalScores() {

@@ -363,7 +363,9 @@ function TetrisGame({
         game.current.tick(dt);
       }
       last = now;
-      if (now - ui > 40) {
+      // Game over mounts a modal; refreshing the HUD would recreate its props
+      // every frame and retrigger score submission.
+      if (status !== "over" && now - ui > 40) {
         refresh((v) => v + 1);
         ui = now;
       }
@@ -647,7 +649,10 @@ function TetrisGame({
           localRun={
             localRun.current ??
             (recovered
-              ? { ...recovered.run, opening: recovered.run.opening === true }
+              ? {
+                  ...recovered.run,
+                  opening: recovered.run.opening === true,
+                }
               : null)
           }
           initialName={recovered?.name}

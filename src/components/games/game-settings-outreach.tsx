@@ -73,7 +73,7 @@ export function GameSettingsOutreach({
   function sendFeedback() {
     const body = message.trim();
     if (!body) return;
-    const subject = encodeURIComponent(`Feedback — ${gameName}`);
+    const subject = encodeURIComponent(`Retour : ${gameName}`);
     const mailBody = encodeURIComponent(
       `${body}\n\n---\nJeu : ${gameName}\nPage : ${gameHomeUrl()}`,
     );
@@ -96,7 +96,7 @@ export function GameSettingsOutreach({
         onClick={() => setFeedbackOpen(true)}
       >
         <MessageSquare />
-        Feedback
+        Retour
       </Button>
       <Button type="button" variant="secondary" onClick={() => void share()}>
         {shareState === "idle" ? (
@@ -113,7 +113,7 @@ export function GameSettingsOutreach({
       <Dialog open={feedbackOpen} onOpenChange={setFeedbackOpen}>
         <DialogContent className="max-w-md">
           <DialogTitle className="text-lg font-medium tracking-tight">
-            Feedback — {gameName}
+            Retour : {gameName}
           </DialogTitle>
           <DialogDescription className="mt-2 text-sm text-muted-foreground">
             Ton message s’ouvre dans ton appli mail, adressé au développeur.
@@ -138,7 +138,7 @@ export function GameSettingsOutreach({
             </Button>
             <Button
               type="button"
-              variant="accent"
+              variant="primary"
               disabled={!message.trim()}
               onClick={sendFeedback}
             >

@@ -44,7 +44,7 @@ test("level popup follows a paid purchase, not revenue, loading or import", () =
     const loaded = createGameStore("test-a");
     assert.equal(loaded.getSnapshot().levelNotice, null);
     assert(D(loaded.getSnapshot().state.earned).gte(249));
-    assert(D(loaded.getSnapshot().state.earned).lte(253));
+    assert(D(loaded.getSnapshot().state.earned).lte(257));
     const b = createGameStore("test-b");
     assert.equal(b.getSnapshot().state.money, "20");
     assert.equal(data.has("test-b"), false);

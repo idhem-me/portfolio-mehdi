@@ -16,6 +16,7 @@ import {
   type ScoreDraft,
 } from "../auth/draft";
 import {
+  loadProfile,
   saveDeviceScore,
   saveProfile,
   submitLocalScore,
@@ -60,6 +61,7 @@ export function GameOver({
   const scoreRun = localRun ?? offlineRun;
   const [sent, setSent] = useState(false),
     [message, setMessage] = useState(""),
+    [needsReconnect, setNeedsReconnect] = useState(false),
     [retry, setRetry] = useState(0),
     [busy, setBusy] = useState(false);
   const nameId = useId();
@@ -69,7 +71,23 @@ export function GameOver({
   const [deviceSaved, setDeviceSaved] = useState(false);
   const [deviceError, setDeviceError] = useState("");
   const saving = useRef(false),
-    recipient = useRef(expectedRecipient);
+    recipient = useRef(expectedRecipient),
+    summaryRef = useRef(summary),
+    attemptKey = useRef<string | null>(null),
+    sawLogin = useRef(false);
+  summaryRef.current = summary;
+  useEffect(() => {
+    if (identity.busy === "login") {
+      sawLogin.current = true;
+      return;
+    }
+    if (!sawLogin.current) return;
+    sawLogin.current = false;
+    if (!needsReconnect) return;
+    attemptKey.current = null;
+    setNeedsReconnect(false);
+    setRetry((value) => value + 1);
+  }, [identity.busy, needsReconnect]);
   const draft: ScoreDraft | undefined = scoreRun
     ? {
         run: scoreRun,
@@ -91,7 +109,7 @@ export function GameOver({
     let active = true;
     void saveDeviceScore({
       ...scoreRun,
-      summary,
+      summary: summaryRef.current,
       name: identity.profile?.name ?? (initialName || "Anonyme"),
       recipient: recipient.current ?? identity.profile?.key,
     })
@@ -116,10 +134,9 @@ export function GameOver({
     identity.loaded,
     identity.loading,
     identity.kind,
-    identity.profile,
+    identity.profile?.key,
     initialName,
-    scoreRun,
-    summary,
+    scoreRun.id,
     retry,
   ]);
   useEffect(() => {
@@ -133,16 +150,21 @@ export function GameOver({
     )
       return;
     if (recipient.current && recipient.current !== profile.key) {
+      setNeedsReconnect(true);
       setMessage(
         "Cette partie attend son identité d’origine. Reconnecte-toi pour la sauvegarder.",
       );
       return;
     }
+    const key = `${scoreRun.id}:${profile.key}:${retry}`;
+    if (attemptKey.current === key) return;
+    attemptKey.current = key;
     recipient.current = profile.key;
     if (currentDraft.current)
       saveDraft({ ...currentDraft.current, recipient: profile.key });
     saving.current = true;
     setBusy(true);
+    setNeedsReconnect(false);
     setMessage("");
     void submitLocalScore({
       id: scoreRun.id,
@@ -150,13 +172,13 @@ export function GameOver({
       opening: scoreRun.opening,
       localOnly: scoreRun.localOnly,
       recipient: profile.key,
-      summary,
+      summary: summaryRef.current,
       ...(profile.kind === "google"
         ? { identity: "google" as const, name: profile.name }
         : {}),
     })
-      .then((ok) => {
-        if (ok) {
+      .then((result) => {
+        if (result.ok) {
           setSent(true);
           clearDraft(undefined, scoreRun.id);
           setMessage(
@@ -166,6 +188,12 @@ export function GameOver({
                 ? "Partie guidée enregistrée sur cet appareil"
                 : "Score enregistré",
           );
+        } else if (result.reason === "auth") {
+          setNeedsReconnect(true);
+          setMessage(
+            "Reconnecte-toi à Google pour enregistrer ce score. Il est conservé ici en attendant.",
+          );
+          void loadProfile(true);
         } else
           setMessage(
             "Le score n’a pas pu être envoyé. Il est conservé ici ; vérifie ta connexion et réessaie.",
@@ -179,10 +207,12 @@ export function GameOver({
     identity.profile,
     identity.loaded,
     identity.loading,
-    scoreRun,
+    scoreRun.id,
+    scoreRun.steps,
+    scoreRun.opening,
+    scoreRun.localOnly,
     sent,
     retry,
-    summary,
   ]);
   return (
     <div
@@ -299,9 +329,9 @@ export function GameOver({
           <Separator className="my-2" />
           <IdentitySelector
             draft={draft}
-            disabled={busy}
-            editOnly={!!identity.profile}
-            connectOnly={!identity.profile}
+            disabled={busy && !needsReconnect}
+            editOnly={!!identity.profile && !needsReconnect}
+            connectOnly={!identity.profile || needsReconnect}
           />
         </CardFooter>
       </Card>

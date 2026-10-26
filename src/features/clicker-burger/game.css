@@ -202,6 +202,16 @@
   font-size: 14px;
   color: var(--muted-foreground);
 }
+.clicker-burger .cash .game-date {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.clicker-burger .cash .game-date span {
+  opacity: 0.75;
+}
 .clicker-burger .building-image {
   width: 128px;
   height: 128px;
@@ -384,20 +394,79 @@
 .clicker-burger .price-row dd {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
 }
-.clicker-burger .price-row button {
-  height: 36px;
-  width: 36px;
+.clicker-burger .price-row .price-open {
+  height: auto;
+  min-height: 36px;
+  width: auto;
+  min-width: 5.5rem;
+  padding: 6px 12px;
   border-radius: 8px;
+  font-variant-numeric: tabular-nums;
 }
-.clicker-burger .price-row button svg {
-  width: 12px !important;
-  height: 12px !important;
+.clicker-burger .price-sheet {
+  display: grid;
+  gap: 16px;
 }
-.clicker-burger .price-row dd > span {
-  min-width: 52px;
+.clicker-burger .price-sheet-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.clicker-burger .price-sheet-controls > button {
+  height: 44px;
+  width: 44px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.clicker-burger .price-sheet-input {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  max-width: 11rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0 12px;
+  background: var(--card);
+}
+.clicker-burger .price-sheet-input input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 12px 0;
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
   text-align: center;
+  outline: none;
+}
+.clicker-burger .price-sheet-input span {
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+}
+.clicker-burger .price-sheet-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.clicker-burger .price-sheet-advice h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.clicker-burger .price-sheet-advice ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
 }
 .clicker-burger .control-dock {
   position: fixed;
@@ -953,9 +1022,10 @@
   .clicker-burger .metrics dd > small {
     font-size: 9px;
   }
-  .clicker-burger .price-row button {
-    width: 32px;
-    height: 34px;
+  .clicker-burger .price-row .price-open {
+    min-height: 34px;
+    min-width: 5rem;
+    padding: 5px 10px;
   }
   .clicker-burger .control-dock {
     padding-inline: 16px;

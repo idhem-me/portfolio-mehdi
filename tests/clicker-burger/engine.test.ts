@@ -17,6 +17,8 @@ import {
   optimalPrice,
   incomeAtPrice,
   willingnessToPay,
+  spaceWillingnessToPay,
+  gameDateISO,
 } from "../../src/features/clicker-burger/engine/game";
 import {
   parseSave,
@@ -30,7 +32,7 @@ test("manual cooking consumes ingredients without directly selling", () => {
   assert.equal(s.ingredients, 19);
   const n = tick(s, 1);
   assert.equal(n.stock, 0);
-  assert.equal(n.money, "24");
+  assert.equal(n.money, "28");
 });
 test("production, money and demand limit stock and sales", () => {
   const s = initial();
@@ -44,10 +46,22 @@ test("production, money and demand limit stock and sales", () => {
   assert(n.sold <= rates(s).demand);
   assert(D(n.money).gte(0));
 });
+test("high price does not burn cash filling an unsellable stockpile", () => {
+  const s = initial();
+  s.money = "500";
+  s.ingredients = 0;
+  s.counts.cook = 40;
+  s.counts.grill = 10;
+  s.price = 20;
+  const n = tick(s, 60);
+  assert(D(n.money).gt(200));
+  assert(n.stock <= rates({ ...n, price: 20 }).demand * 30 + 1);
+});
 test("higher price lowers demand", () => {
-  const s = initial(),
-    low = rates(s).demand;
-  s.price = 8;
+  const s = initial();
+  s.price = 6;
+  const low = rates(s).demand;
+  s.price = 14;
   assert(rates(s).demand < low);
 });
 test("purchases are atomic and grouped cost matches individual costs", () => {
@@ -90,7 +104,7 @@ test("research prerequisites and stages gate expansion", () => {
 test("construction and upgrade update production without duplicate plots", () => {
   const s = initial();
   s.earned = "1000";
-  s.money = "200000";
+  s.money = "5000000";
   const n = act(s, { type: "build", id: "restaurant", x: 1, y: 2 });
   assert.equal(n.plots.length, 2);
   assert.equal(n.counts.restaurant, 1);
@@ -106,7 +120,7 @@ test("industry needs harvest and distribution", () => {
   s.counts.farm = 1;
   assert.equal(rates(s).production, 0);
   s.counts.warehouse = 1;
-  assert.equal(rates(s).production, 80);
+  assert.equal(rates(s).production, 600);
 });
 test("prestige keeps permanent bonus and resets assets", () => {
   const s = initial();
@@ -150,7 +164,8 @@ test("large-number money and cost remain finite", () => {
   s.counts.quantum = 200;
   const c = cost(s, "quantum", 100);
   assert(c.isFinite());
-  assert(c.gt("1e50"));
+  // Prix unitaire catalogue × quantité (plus d’exponentielle ownership).
+  assert(c.eq("800000000000000"));
   assert.equal(fmt("1e100"), "1.00e+100");
 });
 test("first automation is reachable in under two active minutes", () => {
@@ -179,19 +194,21 @@ test("events apply a temporary demand modifier", () => {
 
 test("base purchase prices are exact decimal values", () => {
   assert.equal(cost(initial(), "cook").toString(), "280");
-  assert.equal(cost(initial(), "grill").toString(), "450");
+  assert.equal(cost(initial(), "grill").toString(), "4200");
 });
-test("cook wages stay nearly flat so late hiring stays affordable", () => {
+test("unit prices ignore ownership and only follow timeline inflation", () => {
   const s = initial();
-  s.counts.cook = 24;
-  assert.equal(cost(s, "cook").toString(), "520");
-  const fourteen = cost(s, "cook", 14);
-  assert(fourteen.lt(12000));
-  assert(fourteen.gt(5000));
-  const thousand = cost(s, "cook", 1000);
-  assert(thousand.lt(1.1e7));
-  assert(thousand.gt(1e6));
-  assert(D(1.1e7).div(thousand).gte(1));
+  assert.equal(cost(s, "cook").toString(), "280");
+  s.counts.cook = 500;
+  assert.equal(cost(s, "cook").toString(), "280");
+  assert.equal(cost(s, "cook", 10).toString(), "2800");
+  s.counts.restaurant = 40;
+  assert.equal(cost(s, "restaurant").toString(), "850000");
+  s.elapsed = 365 * 40;
+  const inflated = cost(s, "cook").toNumber();
+  assert(inflated >= 280 * 1.1);
+  assert(inflated <= 280 * 1.26);
+  assert(cost(s, "factory", 3).eq(cost(s, "factory").mul(3)));
 });
 test("ownership cap cannot create a save that fails validation", () => {
   const s = initial();
@@ -200,16 +217,92 @@ test("ownership cap cannot create a save that fails validation", () => {
   assert.equal(affordable(s, "cook", "max"), 0);
   assert.equal(act(s, { type: "buy", id: "cook", quantity: 1 }), s);
 });
+test("overpriced tickets collapse demand; mid-game revenue tracks outlets", () => {
+  const s = initial();
+  s.level = 5;
+  s.counts = {
+    ...s.counts,
+    cook: 2500,
+    grill: 80,
+    marketing: 60,
+    restaurant: 22,
+    trader: 15,
+    farm: 30,
+    factory: 15,
+    warehouse: 20,
+  };
+  s.research = [
+    "recipe",
+    "franchise",
+    "branding",
+    "coldchain",
+    "automation",
+    "menus",
+    "global",
+    "space",
+  ];
+  s.markets = [
+    "suburb",
+    "center",
+    "lyon",
+    "paris",
+    "berlin",
+    "london",
+    "newyork",
+    "tokyo",
+    "jamestown",
+  ];
+  s.capital = 6;
+  const w = willingnessToPay(s);
+  s.price = w;
+  const atComfort = Math.min(rates(s).production, rates(s).demand) * s.price;
+  s.price = Math.min(999e9, Math.max(w * 8, 1e6));
+  const atCrazy =
+    Math.min(rates(s).production, rates(s).demand) * s.price;
+  assert(atCrazy < atComfort * 0.15);
+  s.price = w;
+  // ~30 adresses : CA / j d’un réseau régional, pas d’un McDo mondial.
+  assert(atComfort < 8e5);
+  assert(rates(s).demand <= rates(s).production * 1.05);
+});
+test("absurd catalog price sells nothing; endgame comfort caps near 10k", () => {
+  const s = initial();
+  s.research = ["recipe", "branding", "space", "astrochef", "warp"];
+  s.markets = ["jamestown", "happyvalley", "europa", "alpha", "multiverse"];
+  s.level = 10;
+  s.counts.orbital = 5;
+  s.counts.quantum = 2;
+  const comfort = willingnessToPay(s);
+  assert(comfort <= 10000);
+  assert(spaceWillingnessToPay(s) <= 10000);
+  s.price = 999e9;
+  assert(rates(s).demand < 1e-6);
+});
+test("calendar advances one day per tick from today", () => {
+  const s = initial(Date.UTC(2026, 9, 26));
+  assert.equal(s.calendarStart, "2026-10-26");
+  const n = tick(s, 10);
+  assert.equal(n.elapsed, 10);
+  assert.equal(gameDateISO(n), "2026-11-05");
+});
 test("willingness to pay rises with branding and level; revenue peaks near it", () => {
   const s = initial();
   s.counts.cook = 10;
   s.counts.grill = 5;
   s.counts.marketing = 3;
   const early = willingnessToPay(s);
-  assert(early >= 4);
+  assert(early >= 5);
+  assert(early <= 28);
   const optEarly = optimalPrice(s);
-  assert(Math.abs(optEarly - early) <= 2);
-  assert.notEqual(optEarly, 1);
+  assert(Math.abs(optEarly - early) <= 4);
+  assert(optEarly > 3);
+  assert(optEarly <= 30);
+  const atLow = incomeAtPrice(s, 1);
+  const atHigh = incomeAtPrice(s, 80);
+  const atMid = incomeAtPrice(s, optEarly);
+  assert(atMid >= atLow);
+  assert(atMid >= atHigh);
+  assert(incomeAtPrice(s, 50) < atMid);
   s.research = ["recipe", "franchise", "branding"];
   s.level = 3;
   const later = willingnessToPay(s);
@@ -221,26 +314,29 @@ test("sales directors improve pricing without reaching the manual optimum", () =
   s.counts.cook = 20;
   s.counts.grill = 10;
   s.counts.marketing = 5;
-  s.price = 4;
+  s.research = ["recipe", "branding"];
+  s.level = 3;
+  s.price = 8;
   const opt = optimalPrice(s);
-  const atDefault = incomeAtPrice(s, 4);
+  const atDefault = incomeAtPrice(s, 8);
   const atOptimal = incomeAtPrice(s, opt);
   assert(atOptimal >= atDefault);
-  assert.notEqual(opt, 4);
+  assert(opt >= 9);
   assert(traderSkill(1) < traderSkill(12));
   assert(traderSkill(100) < 0.9);
   s.counts.trader = 1;
   const junior = traderTargetPrice(s);
   s.counts.trader = 12;
   const senior = traderTargetPrice(s);
-  assert(junior !== opt);
-  assert(senior !== opt);
-  assert(incomeAtPrice(s, junior) >= atDefault - 1e-9);
+  const optNow = optimalPrice(s);
+  assert(junior !== optNow);
+  assert(senior !== optNow);
   assert(incomeAtPrice(s, senior) >= incomeAtPrice(s, junior) - 1e-9);
-  assert(incomeAtPrice(s, senior) < atOptimal + 1e-9);
-  assert(Math.abs(senior - opt) <= Math.abs(junior - opt));
+  assert(incomeAtPrice(s, senior) <= atOptimal + 1e-6);
+  assert(incomeAtPrice(s, senior) >= atDefault - 1e-9);
+  assert(Math.abs(senior - optNow) <= Math.abs(junior - optNow));
   s.counts.trader = 3;
-  s.price = 4;
+  s.price = 8;
   s.priceHoldUntil = 0;
   const managed = tick(s, 1);
   assert.equal(
@@ -248,15 +344,15 @@ test("sales directors improve pricing without reaching the manual optimum", () =
     traderTargetPrice({ ...s, counts: { ...s.counts, trader: 3 } }),
   );
   s.counts.trader = 0;
-  s.price = 7;
-  assert.equal(tick(s, 1).price, 7);
+  s.price = 12;
+  assert.equal(tick(s, 1).price, 12);
   s.counts.trader = 3;
-  s.price = 4;
-  let held = act(s, { type: "price", value: 6 });
-  assert.equal(held.price, 6);
+  s.price = 8;
+  let held = act(s, { type: "price", value: 11 });
+  assert.equal(held.price, 11);
   assert(held.priceHoldUntil > held.elapsed);
   held = tick(held, 1);
-  assert.equal(held.price, 6);
+  assert.equal(held.price, 11);
 });
 test("legacy saves default missing trader counts to zero", () => {
   const s = initial();

@@ -4,6 +4,9 @@ import {
   tick,
   D,
   legacyBuildingLevel,
+  calendarStartISO,
+  PRICE_MAX,
+  PRICE_MIN,
   type State,
 } from "../engine/game";
 import {
@@ -92,13 +95,22 @@ export function parseSave(raw: string): State {
   else if (!numeric(v.priceHoldUntil))
     throw Error("Donnée invalide : priceHoldUntil");
   else s.priceHoldUntil = v.priceHoldUntil;
-  if (
-    s.price < 1 ||
-    s.price > 20 ||
-    s.boost > 10 ||
-    s.lastSaved > Date.now() + 60000
+  if (v.calendarStart === undefined) {
+    // Anciennes saves : reculer depuis aujourd’hui du nombre de jours joués.
+    const back = new Date();
+    back.setUTCDate(back.getUTCDate() - Math.floor(s.elapsed));
+    s.calendarStart = calendarStartISO(back.getTime());
+  } else if (
+    typeof v.calendarStart !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(v.calendarStart)
   )
+    throw Error("Calendrier invalide.");
+  else s.calendarStart = v.calendarStart;
+  if (s.boost > 10 || s.lastSaved > Date.now() + 60000)
     throw Error("Valeur hors limites.");
+  if (!Number.isFinite(s.price) || s.price < PRICE_MIN)
+    throw Error("Valeur hors limites.");
+  s.price = Math.min(PRICE_MAX, s.price);
   if (!v.counts || typeof v.counts !== "object")
     throw Error("Catalogue invalide.");
   s.counts = Object.fromEntries(

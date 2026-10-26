@@ -7,6 +7,9 @@ import {
   act,
   D,
   upgradeOffer,
+  burgersPerClick,
+  clickProduction,
+  rates,
 } from "../../src/features/clicker-burger/engine/game";
 import { parseSave } from "../../src/features/clicker-burger/systems/save";
 import {
@@ -58,7 +61,10 @@ test("ten levels have the requested cash prices and require explicit atomic purc
     s = act(s, { type: "level-up" });
     assert.equal(buildingLevel(s), i + 2);
     assert(D(s.money).eq(before.minus(price)));
-    assert.equal(levelMultiplier(s), 2 ** (i + 1));
+    assert.equal(
+      levelMultiplier(s),
+      [1.15, 1.35, 1.6, 1.9, 2.4, 3.1, 4.2, 5.5, 7][i],
+    );
   });
   assert.equal(upgradeOffer(s), null);
 });
@@ -77,7 +83,19 @@ test("unaffordable or locked building upgrades leave money and level unchanged",
 test("level multiplier applies exactly once to each manual click", () => {
   const s = initial();
   s.level = 2;
-  assert.equal(act(s, { type: "cook" }).stock, 2);
+  assert.equal(act(s, { type: "cook" }).stock, 1.15);
+});
+test("manual clicks scale with automatic production", () => {
+  const s = initial();
+  s.counts.cook = 100;
+  s.counts.grill = 20;
+  s.money = "10000";
+  s.ingredients = 5000;
+  const perClick = burgersPerClick(s);
+  assert(perClick > clickProduction(s));
+  assert(perClick >= rates(s).production * 0.03 - 1e-9);
+  const cooked = act(s, { type: "cook" });
+  assert(cooked.stock >= perClick - 1e-9);
 });
 test("mission rewards are sequential and cannot be collected twice", () => {
   let s = initial();

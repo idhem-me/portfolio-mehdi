@@ -9,6 +9,7 @@ import {
   era,
   upgradeOffer,
   restaurantCount,
+  optimalPrice,
 } from "../../src/features/clicker-burger/engine/game";
 import { discoveries } from "../../src/features/clicker-burger/systems/discovery";
 import {
@@ -22,6 +23,12 @@ export function simulate(active = true, maxHours = 48) {
     if ((active && time < 600) || s.counts.cook === 0)
       for (let i = 0; i < 10; i++) s = act(s, { type: "cook" });
     s = tick(s, 10);
+    // Aligner le ticket sur le confort / optimum (sinon le CA reste figé à 8 €).
+    if (time % 60 === 0) {
+      const target = optimalPrice(s);
+      if (Math.abs(target - s.price) >= 0.5)
+        s = act(s, { type: "price", value: target });
+    }
     for (const mission of visibleMissions(s)) s = claimMission(s, mission.id);
     for (const research of discoveries(s).research) {
       if (D(s.money).gte(research.cost))

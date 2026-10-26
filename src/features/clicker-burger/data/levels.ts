@@ -1,4 +1,5 @@
-// Revenue gates rise exponentially; each era also requires its infrastructure.
+// Bonus bâtiment doux : le CA vient surtout du réseau (restos / marchés),
+// pas d’un ×512 magique. Coûts restent exponentiels.
 export const LEVELS = [
   {
     name: "Burger Table",
@@ -10,54 +11,54 @@ export const LEVELS = [
     name: "Burger Stand",
     image: "/assets/burger/stand.png",
     cost: "5000",
-    multiplier: 2,
+    multiplier: 1.15,
   },
   {
     name: "Burger Restaurant",
     image: "/assets/burger/restaurant.png",
     cost: "250000",
-    multiplier: 4,
+    multiplier: 1.35,
   },
   {
     name: "Burger Warehouse",
     image: "/assets/burger/warehouse.png",
     cost: "1000000",
-    multiplier: 8,
+    multiplier: 1.6,
   },
   {
     name: "Burger International",
     image: "/assets/burger/international.png",
     cost: "500000000",
-    multiplier: 16,
+    multiplier: 1.9,
   },
   {
     name: "Burger Mars",
     image: "/assets/burger/mars.png",
     cost: "10000000000",
-    multiplier: 32,
+    multiplier: 2.4,
   },
   {
     name: "Système solaire",
     image: "/assets/burger/solar.png",
     cost: "1000000000000",
-    multiplier: 64,
+    multiplier: 3.1,
   },
   {
     name: "Burger Quantique",
     image: "/assets/burger/quantum.png",
     cost: "100000000000000",
-    multiplier: 128,
+    multiplier: 4.2,
   },
   {
     name: "Burger Intergalactique",
     image: "/assets/burger/intergalactic.png",
     cost: "10000000000000000",
-    multiplier: 256,
+    multiplier: 5.5,
   },
   {
     name: "Univers",
     image: "/assets/burger/universe.png",
     cost: "1000000000000000000",
-    multiplier: 512,
+    multiplier: 7,
   },
 ] as const;

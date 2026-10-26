@@ -8,7 +8,9 @@ import {
   EVENTS,
   EUROPE_CITIES,
   WORLD_CITIES,
+  MOON_MARKETS,
   MARS_MARKETS,
+  COOKS_PER_OUTLET,
 } from "../data/content";
 import { PROJECTS } from "../data/projects";
 export type State = {
@@ -33,7 +35,10 @@ export type State = {
   marketIndex: number;
   plots: { x: number; y: number; type: string; level: number }[];
   capital: number;
+  /** Jours de jeu écoulés (1 s réelle = 1 jour). */
   elapsed: number;
+  /** Jour civil de départ (YYYY-MM-DD, UTC). */
+  calendarStart: string;
   event: number;
   eventSeen: number;
   boost: number;
@@ -44,6 +49,29 @@ export type State = {
   log: string[];
 };
 export const D = (v: Decimal.Value) => new Decimal(v);
+/** Date UTC YYYY-MM-DD. */
+export function calendarStartISO(now = Date.now()) {
+  return new Date(now).toISOString().slice(0, 10);
+}
+/** Date in-game = calendrier de départ + jours écoulés. */
+export function gameDate(s: State): Date {
+  const [y, m, d] = s.calendarStart.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + Math.max(0, Math.floor(s.elapsed)));
+  return dt;
+}
+export function gameDateISO(s: State) {
+  return gameDate(s).toISOString().slice(0, 10);
+}
+export function formatGameDate(s: State) {
+  return gameDate(s).toLocaleDateString("fr-FR", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
 export function initial(now = Date.now(), capital = 0): State {
   return {
     version: 1,
@@ -55,7 +83,7 @@ export function initial(now = Date.now(), capital = 0): State {
     earned: "0",
     stock: 0,
     ingredients: 20,
-    price: 4,
+    price: 8,
     sold: 0,
     manual: 0,
     counts: Object.fromEntries(GENERATORS.map((g) => [g.id, 0])),
@@ -68,16 +96,29 @@ export function initial(now = Date.now(), capital = 0): State {
     plots: [{ x: 2, y: 2, type: "stand", level: 1 }],
     capital,
     elapsed: 0,
+    calendarStart: calendarStartISO(now),
     event: -1,
     eventSeen: 0,
     boost: 1,
     boostUntil: 0,
     priceHoldUntil: 0,
     lastSaved: now,
-    log: ["Votre empire commence avec 20 € et une friteuse douteuse."],
+    log: [
+      "Votre empire commence avec 20 € et une friteuse douteuse. Chaque seconde fait avancer un jour.",
+    ],
   };
 }
 export const PRICE_HOLD_SECONDS = 180;
+export const PRICE_MIN = 1;
+/** Plafond technique de saisie (999 Md €). À ce niveau, on ne vend rien. */
+export const PRICE_MAX = 999e9;
+/**
+ * Ticket confort / viable en fin de partie (~10 k€ avec le spatial lointain).
+ * Au-delà, la demande s’effondre même si la saisie reste autorisée.
+ */
+export const PRICE_COMFORT_CAP = 10_000;
+/** Au-delà, la demande terrestre s’écroule si le confort n’est pas spatial. */
+export const EARTH_PRICE_SOFT_CAP = 30;
 export function marketUnlocked(s: State) {
   return s.research.includes("ipo");
 }
@@ -209,12 +250,14 @@ export function upgradeOffer(s: State) {
   ];
   const next = LEVELS[s.level];
   const unlocked = requirements[s.level];
+  const cost = inflatedCost(s, next.cost).toString();
   return {
     ...next,
+    cost,
     level: s.level + 1,
     unlocked,
     requirement: hints[s.level],
-    affordable: unlocked && D(s.money).gte(next.cost),
+    affordable: unlocked && D(s.money).gte(cost),
   };
 }
 export function eventOffer(s: State) {
@@ -238,111 +281,325 @@ export function eventOffer(s: State) {
 export function levelMultiplier(s: State) {
   return LEVELS[buildingLevel(s) - 1].multiplier;
 }
+/**
+ * Bonus d’empire (recette, capital, niveau). Conservateur : le volume suit
+ * surtout le nombre d’adresses, pas un empilement de ×512.
+ */
 export function clickProduction(s: State) {
   return (
-    (s.research.includes("recipe") ? 2 : 1) *
-    (1 + s.capital * 0.1) *
+    (s.research.includes("recipe") ? 1.35 : 1) *
+    (1 + s.capital * 0.04) *
     levelMultiplier(s)
   );
 }
-export function rates(s: State) {
+/**
+ * Burgers par clic manuel. Suit l’empire : base niveau + ~3 % de la prod / j.
+ */
+export function burgersPerClick(s: State) {
+  const base = Math.max(1, clickProduction(s));
+  return base + rates(s).production * 0.03;
+}
+/** Commis réellement productifs (plafonnés par les points de vente). */
+export function effectiveCooks(s: State) {
+  const outlets = Math.max(1, restaurantCount(s) || 1);
+  const cap = outlets * COOKS_PER_OUTLET;
+  const cooks = s.counts.cook ?? 0;
+  if (cooks <= cap) return cooks;
+  // Surplus : rendement marginal très faible (cuisines saturées).
+  return cap + (cooks - cap) * 0.05;
+}
+const SPACE_MARKET_IDS = new Set<string>([
+  ...MOON_MARKETS,
+  ...MARS_MARKETS,
+  "europa",
+  "titan",
+  "alpha",
+  "trappist",
+  "multiverse",
+]);
+function coreRates(s: State) {
   const e = era(s);
   const bonus = clickProduction(s);
   const logistics =
-    (s.research.includes("automation") ? 1.5 : 1) *
-    (s.projects.includes("pilot-line") ? 1.2 : 1);
-  const spaceBonus = s.research.includes("astrochef") ? 1.25 : 1;
+    (s.research.includes("automation") ? 1.35 : 1) *
+    (s.projects.includes("pilot-line") ? 1.15 : 1);
+  const spaceBonus = s.research.includes("astrochef") ? 1.2 : 1;
+  const cookGen = GENERATORS.find((g) => g.id === "cook")!;
+  const otherGens = GENERATORS.filter(
+    (g) =>
+      !["factory", "megafactory", "trader", "cook"].includes(g.id),
+  );
   let production =
-    GENERATORS.filter((g) => !["factory", "megafactory", "trader"].includes(g.id)).reduce(
-      (n, g) => n + s.counts[g.id] * g.production,
-      0,
-    ) * bonus;
-  const distribution = s.counts.warehouse * 120 * bonus * logistics;
-  const harvest = s.counts.farm * 80 * bonus * logistics;
+    effectiveCooks(s) * cookGen.production * bonus +
+    otherGens.reduce((n, g) => n + s.counts[g.id] * g.production, 0) *
+      bonus;
+  const distribution = s.counts.warehouse * 2000 * bonus * logistics;
+  const harvest = s.counts.farm * 1500 * bonus * logistics;
+  const factoryGen = GENERATORS.find((g) => g.id === "factory")!;
+  const megaGen = GENERATORS.find((g) => g.id === "megafactory")!;
   production += Math.min(
-    (s.counts.factory * 90 + s.counts.megafactory * 25000) * bonus,
+    (s.counts.factory * factoryGen.production +
+      s.counts.megafactory * megaGen.production) *
+      bonus,
     distribution,
     harvest,
   );
-  production += s.plots.reduce((n, p) => n + (p.level - 1) * 0.5, 0);
+  production += s.plots.reduce((n, p) => n + (p.level - 1) * 8, 0);
+  const orbitalGen = GENERATORS.find((g) => g.id === "orbital")!;
+  const quantumGen = GENERATORS.find((g) => g.id === "quantum")!;
   production +=
-    (s.counts.orbital * 3.5e5 + s.counts.quantum * 9e8) * (spaceBonus - 1);
-  let demand = 1.3 + s.counts.marketing * 4 + s.counts.restaurant * 20;
-  const marketDemand = MARKETS.filter((m) => s.markets.includes(m.id)).reduce(
-    (n, m) => n + m.demand * (1 - m.competition) * m.power,
-    0,
-  );
-  demand +=
-    marketDemand * (s.research.includes("menus") ? 1.15 : 1) +
-    (s.counts.orbital * 3.5e5 + s.counts.quantum * 9e8) * spaceBonus;
-  const w = willingnessToPay(s);
-  demand *=
-    (2 / (1 + (s.price / w) ** 2)) *
-    (1 + s.capital * 0.04) *
+    (s.counts.orbital * orbitalGen.production +
+      s.counts.quantum * quantumGen.production) *
+    (spaceBonus - 1);
+  const demandBoost =
+    (1 + s.capital * 0.025) *
     (s.elapsed < s.boostUntil ? s.boost : 1) *
-    (1 + s.rivals.length * 0.1) *
-    (s.research.includes("branding") ? 1.2 : 1) *
-    (s.projects.includes("test-kitchen") ? 1.1 : 1);
+    (1 + s.rivals.length * 0.08) *
+    (s.research.includes("branding") ? 1.12 : 1) *
+    (s.projects.includes("test-kitchen") ? 1.08 : 1);
+  const menus = s.research.includes("menus") ? 1.1 : 1;
+  // Terre : restos + marketing + villes (ordre de grandeur McDo / jour).
+  let earthDemand =
+    30 + s.counts.marketing * 35 + s.counts.restaurant * 220;
+  if (buildingLevel(s) >= 3) earthDemand += 200;
+  else earthDemand += 30;
+  let spaceDemand = 0;
+  for (const m of MARKETS) {
+    if (!s.markets.includes(m.id)) continue;
+    const slice = m.demand * (1 - m.competition) * m.power * menus;
+    if (SPACE_MARKET_IDS.has(m.id)) spaceDemand += slice;
+    else earthDemand += slice;
+  }
+  spaceDemand +=
+    (s.counts.orbital * orbitalGen.demand +
+      s.counts.quantum * quantumGen.demand) *
+    spaceBonus;
+  earthDemand *= demandBoost;
+  spaceDemand *= demandBoost;
   return {
     production,
-    demand,
-    ingredientCost: s.research.includes("coldchain") ? 0.25 : 0.5,
+    earthDemand,
+    spaceDemand,
+    baseDemand: earthDemand + spaceDemand,
     harvest,
     era: e,
+    ingredientCost: s.research.includes("coldchain") ? 0.35 : 0.55,
   };
 }
-/** Disposition à payer des clients (€) — pic de revenu près de ce prix. */
-export function willingnessToPay(s: State) {
-  let w = 4;
-  w += (buildingLevel(s) - 1) * 0.5;
-  if (s.research.includes("recipe")) w += 1;
-  if (s.research.includes("branding")) w += 1.5;
-  if (s.research.includes("franchise")) w += 1;
+/**
+ * Multiplicateur spatial du ticket : sur Terre ~1× ; Lune puis Mars (≈100×)
+ * et au-delà élèvent le confort pour que des prix élevés restent vendables.
+ */
+export function spacePriceMultiplier(s: State) {
+  const moons = MOON_MARKETS.filter((id) => s.markets.includes(id)).length;
+  const mars = MARS_MARKETS.filter((id) => s.markets.includes(id)).length;
+  let m = 1;
+  if (moons > 0) m = Math.max(m, 5 + moons * 3);
+  if (mars > 0) m = Math.max(m, 100 * mars);
+  if (s.markets.includes("europa")) m = Math.max(m, 250);
+  if (s.markets.includes("alpha")) m = Math.max(m, 500);
+  if (s.markets.includes("multiverse")) m = Math.max(m, 1000);
+  if (s.research.includes("astrochef")) m *= 1.25;
+  if (s.counts.orbital > 0) m *= 1 + Math.min(0.5, s.counts.orbital * 0.03);
+  return m;
+}
+/**
+ * Facteur volume selon le prix. ×1 au confort ; sous le confort on écoule
+ * un peu plus. Au-dessus, chute en puissance (×2 ≈ 10 % du volume, ×5 ≈ 0).
+ * Sur Terre, au-delà de ~30 € collapse supplémentaire ; en spatial le confort
+ * suit le multiplicateur (Mars ≈ 100×), donc le ticket moyen reste viable.
+ */
+export function priceVolumeFactor(price: number, comfort: number) {
+  const c = Math.max(comfort, 0.5);
+  const ratio = price / c;
+  let factor: number;
+  if (ratio <= 1) factor = 1 + (1 - ratio) * 0.55;
+  else {
+    factor = Math.pow(ratio, -3.5);
+    if (ratio > 2) factor *= Math.pow(2 / ratio, 1.5);
+  }
+  if (price > EARTH_PRICE_SOFT_CAP && comfort < EARTH_PRICE_SOFT_CAP * 1.5) {
+    factor *= Math.pow(EARTH_PRICE_SOFT_CAP / price, 3);
+  }
+  return Math.max(0, factor);
+}
+function earthComfortPrice(
+  s: State,
+  production: number,
+  baseDemand: number,
+) {
+  let w = 8;
+  w += Math.min(6, (s.counts.cook ?? 0) * 0.008);
+  w += Math.min(5, (buildingLevel(s) - 1) * 0.55);
+  w += Math.min(5, restaurantCount(s) * 0.12);
+  if (s.research.includes("recipe")) w += 1.5;
+  if (s.research.includes("branding")) w += 2;
+  if (s.research.includes("franchise")) w += 0.5;
   if (s.research.includes("menus")) w += 1;
-  if (s.research.includes("astrochef")) w += 2;
-  w += Math.min(4, s.counts.marketing * 0.08);
-  w += s.capital * 0.15;
-  w += Math.min(3, s.markets.length * 0.25);
-  return Math.min(18, Math.max(1, Math.round(w * 2) / 2));
+  w += Math.min(3, s.counts.marketing * 0.04);
+  w += Math.min(3, s.markets.length * 0.12);
+  w += Math.min(2, s.rivals.length * 0.35);
+  w += Math.min(3, s.capital * 0.1);
+  if (s.projects.includes("test-kitchen")) w += 0.5;
+  if (production > baseDemand * 1.35)
+    w -= Math.min(
+      4,
+      (production / Math.max(baseDemand, 0.1) - 1.35) * 0.4,
+    );
+  // Plafond terrestre ~28 € : au-delà, sans marchés spatiaux, ça ne part plus.
+  return Math.min(28, Math.max(5, Math.round(w * 2) / 2));
+}
+/** Confort terrestre (€), plafonné ~28 €. */
+export function earthWillingnessToPay(s: State) {
+  const { production, baseDemand } = coreRates(s);
+  return earthComfortPrice(s, production, baseDemand);
+}
+function clampComfort(v: number) {
+  return Math.min(
+    PRICE_COMFORT_CAP,
+    Math.max(5, Math.round(v * 2) / 2),
+  );
+}
+/** Confort spatial (€) = confort Terre × multiplicateur orbital / Mars. */
+export function spaceWillingnessToPay(s: State) {
+  return clampComfort(
+    earthWillingnessToPay(s) * spacePriceMultiplier(s),
+  );
+}
+/**
+ * Confort affiché : moyenne pondérée Terre / spatial.
+ * Un seul prix mondial ; la Terre refuse les tickets lunaires.
+ */
+export function willingnessToPay(s: State) {
+  const core = coreRates(s);
+  const earth = earthComfortPrice(s, core.production, core.baseDemand);
+  const space = clampComfort(earth * spacePriceMultiplier(s));
+  const total = core.earthDemand + core.spaceDemand;
+  if (total <= 0) return earth;
+  return (
+    Math.round(
+      ((earth * core.earthDemand + space * core.spaceDemand) / total) * 2,
+    ) / 2
+  );
+}
+/** Conseils de l’équipe des ventes pour le panneau prix. */
+export function priceAdvice(s: State): string[] {
+  const w = willingnessToPay(s);
+  const earth = earthWillingnessToPay(s);
+  const spaceW = spaceWillingnessToPay(s);
+  const opt = optimalPrice(s);
+  const space = spacePriceMultiplier(s);
+  const tips: string[] = [];
+  const traders = s.counts.trader ?? 0;
+  if (traders <= 0)
+    tips.push(
+      "Sans directeur des ventes, tu règles le ticket à l’œil. Embauche-en pour un réglage auto.",
+    );
+  else
+    tips.push(
+      `L’équipe (×${traders}) recommande ~${opt.toLocaleString("fr-FR")} € — précision ~${Math.round(traderSkill(traders) * 100)} %.`,
+    );
+  if (space > 1)
+    tips.push(
+      `Terre ~${earth.toLocaleString("fr-FR")} € · spatial ~${spaceW.toLocaleString("fr-FR")} € (un seul prix pour tout le réseau).`,
+    );
+  else
+    tips.push(`Confort clients ~${w.toLocaleString("fr-FR")} €.`);
+  if (s.price > EARTH_PRICE_SOFT_CAP && space <= 1)
+    tips.push(
+      "Au-delà de 30 € sur Terre, la demande s’écroule. Ouvre la Lune puis Mars pour un ticket spatial.",
+    );
+  else if (s.price > earth * 1.5 && space > 1)
+    tips.push(
+      "Ticket élevé : la Terre décroche, seuls les marchés spatiaux suivent encore.",
+    );
+  else if (s.price > w * 1.4)
+    tips.push("Trop au-dessus du confort : tu vends peu malgré le ticket élevé.");
+  else if (s.price < w * 0.55)
+    tips.push("Prix bas : tu écoulés le stock, mais le CA net reste faible.");
+  else tips.push("Tu es dans une zone saine autour du confort.");
+  if (s.price > PRICE_COMFORT_CAP)
+    tips.push(
+      `Au-delà de ${PRICE_COMFORT_CAP.toLocaleString("fr-FR")} €, même en fin de partie, tu ne vends quasiment plus. Tu peux saisir jusqu’à ${fmt(PRICE_MAX)} € — ça ne partira pas.`,
+    );
+  else if (space >= 100)
+    tips.push(
+      "Marchés martiens : un burger peut valoir ~100× le prix terrestre et partir quand même — mais le volume reste celui des colonies.",
+    );
+  else if (space > 1)
+    tips.push(
+      "Premiers marchés spatiaux : volume encore faible ; le ticket monte, le CA suit surtout si tu ouvres plus d’adresses.",
+    );
+  return tips;
+}
+export function rates(s: State) {
+  const core = coreRates(s);
+  const earthW = earthComfortPrice(s, core.production, core.baseDemand);
+  const spaceW = clampComfort(earthW * spacePriceMultiplier(s));
+  return {
+    production: core.production,
+    demand:
+      core.earthDemand * priceVolumeFactor(s.price, earthW) +
+      core.spaceDemand * priceVolumeFactor(s.price, spaceW),
+    ingredientCost: core.ingredientCost,
+    harvest: core.harvest,
+    era: core.era,
+  };
 }
 /** Skill asymptote < 1 : même une armée de traders reste sous l’optimum manuel. */
 export function traderSkill(count: number) {
   if (count <= 0) return 0;
   return 0.88 * (1 - 1 / (1 + count * 0.35));
 }
+/** CA net / s en régime stable (ventes − ingrédients des burgers produits). */
 export function incomeAtPrice(s: State, price: number) {
   const probe = { ...s, price };
   const r = rates(probe);
-  return Math.min(r.production, r.demand) * price;
+  const flow = Math.min(r.production, r.demand);
+  return flow * (price - r.ingredientCost);
 }
 export function optimalPrice(s: State) {
-  let best = willingnessToPay(s),
+  const w = willingnessToPay(s);
+  let best = w,
     bestIncome = -1;
-  for (let p = 1; p <= 20; p += 0.5) {
+  // L’optimum réel reste près du confort : au-delà le volume s’écroule.
+  const lo = Math.max(PRICE_MIN, Math.floor(w * 0.45 * 2) / 2);
+  const hi = Math.min(PRICE_MAX, Math.ceil(w * 1.35 * 2) / 2);
+  const step = w > 200 ? 5 : w > 50 ? 1 : 0.5;
+  for (let p = lo; p <= hi; p += step) {
     const income = incomeAtPrice(s, p);
     if (income > bestIncome) {
       bestIncome = income;
       best = p;
     }
   }
-  return best;
+  return Math.round(best * 2) / 2;
 }
-/** Prix ciblé : se rapproche de l’optimum depuis la disposition à payer, sans l’atteindre. */
+/** Prix ciblé : se rapproche de l’optimum depuis un ancrage prudent, sans l’atteindre. */
 export function traderTargetPrice(s: State) {
   const n = s.counts.trader ?? 0;
   if (n <= 0) return s.price;
   const skill = traderSkill(n);
   const optimal = optimalPrice(s);
   const anchor = willingnessToPay(s);
+  // Junior : sous-tarif prudent ; senior : rapprochement de l’optimum.
+  const naive = Math.max(
+    PRICE_MIN,
+    Math.round(anchor * (0.72 + skill * 0.1) * 2) / 2,
+  );
   let target = Math.min(
-    20,
-    Math.max(1, Math.round((anchor + (optimal - anchor) * skill) * 2) / 2),
+    PRICE_MAX,
+    Math.max(
+      PRICE_MIN,
+      Math.round((naive + (optimal - naive) * skill) * 2) / 2,
+    ),
   );
   if (target === optimal && skill < 1) {
-    const lo = Math.max(1, optimal - 0.5);
-    const hi = Math.min(20, optimal + 0.5);
+    const step = skill < 0.55 ? 1 : 0.5;
+    const lo = Math.max(PRICE_MIN, optimal - step);
+    const hi = Math.min(PRICE_MAX, optimal + step);
     target =
-      incomeAtPrice(s, lo) <= incomeAtPrice(s, hi) ? lo : hi;
+      incomeAtPrice(s, lo) >= incomeAtPrice(s, hi) ? lo : hi;
   }
   return target;
 }
@@ -356,13 +613,17 @@ export function tick(s: State, seconds: number): State {
     const r = rates(n);
     n.elapsed++;
     n.ingredients = Math.min(1e100, n.ingredients + r.harvest);
+    // Tampon ≈ 30 s de demande (pas de production) : évite de payer des
+    // ingrédients pour un stock invendable quand le prix est trop haut.
+    const stockCap = Math.max(r.demand * 30, Math.min(r.production, 1));
+    const room = Math.max(0, stockCap - n.stock);
+    const fromCash =
+      n.price > r.ingredientCost
+        ? Math.max(0, D(n.money).div(r.ingredientCost).toNumber())
+        : 0;
     const can = Math.max(
       0,
-      Math.min(
-        Math.min(r.production, Math.max(r.production, r.demand) * 30 - n.stock),
-        n.ingredients +
-          Math.max(0, D(n.money).div(r.ingredientCost).toNumber()),
-      ),
+      Math.min(r.production, room, n.ingredients + fromCash),
     );
     const used = Math.max(0, can - n.ingredients);
     n.ingredients = Math.max(0, n.ingredients - can);
@@ -388,22 +649,24 @@ export function tick(s: State, seconds: number): State {
   }
   return n;
 }
+/**
+ * Inflation de la timeline : +0 % → ~+25 % sur ~40 ans de jeu
+ * (1 s réelle = 1 jour). Pas d’exponentielle liée au nombre d’unités.
+ */
+export function timelineInflation(s: State) {
+  const years = Math.max(0, s.elapsed) / 365;
+  const t = years / 40;
+  return 1 + 0.25 * (1 - Math.exp(-1.8 * t));
+}
+/** Prix catalogue × inflation timeline. */
+export function inflatedCost(s: State, base: Decimal.Value) {
+  return D(base).mul(timelineInflation(s)).ceil();
+}
+/** Coût d’achat : prix unitaire (quasi) fixe × quantité. */
 export function cost(s: State, id: string, quantity = 1) {
   const g = GENERATORS.find((g) => g.id === id);
   if (!g || quantity < 1) return D(0);
-  const owned = s.counts[id] ?? 0;
-  if (g.step != null) {
-    // Suite arithmétique : q * base + step * (owned*q + q*(q-1)/2)
-    return D(g.base)
-      .mul(quantity)
-      .plus(D(g.step).mul(owned * quantity + (quantity * (quantity - 1)) / 2))
-      .ceil();
-  }
-  return D(g.base)
-    .mul(D(g.growth).pow(owned))
-    .mul(D(g.growth).pow(quantity).minus(1))
-    .div(D(g.growth).minus(1))
-    .ceil();
+  return inflatedCost(s, g.base).mul(quantity);
 }
 export function affordable(s: State, id: string, requested: number | "max") {
   let lo = 0,
@@ -446,7 +709,7 @@ export function act(s: State, a: Action): State {
     note(n, `${offer.name} · niveau ${n.level}.`);
   }
   if (a.type === "cook") {
-    const amount = clickProduction(s);
+    const amount = burgersPerClick(s);
     const extra = Math.max(0, amount - n.ingredients);
     if (!pay(D(extra).mul(rates(n).ingredientCost))) return s;
     n.ingredients = Math.max(0, n.ingredients - amount);
@@ -454,7 +717,10 @@ export function act(s: State, a: Action): State {
     n.manual++;
   }
   if (a.type === "price" && Number.isFinite(a.value)) {
-    n.price = Math.min(20, Math.max(1, Math.round(a.value * 2) / 2));
+    n.price = Math.min(
+      PRICE_MAX,
+      Math.max(PRICE_MIN, Math.round(a.value * 2) / 2),
+    );
     if ((n.counts.trader ?? 0) > 0)
       n.priceHoldUntil = n.elapsed + PRICE_HOLD_SECONDS;
   }
@@ -479,7 +745,7 @@ export function act(s: State, a: Action): State {
       n.research.includes(r.id) ||
       r.era > era(n) ||
       !r.requires.every((id) => n.research.includes(id)) ||
-      !pay(r.cost)
+      !pay(inflatedCost(n, r.cost))
     )
       return s;
     n.research.push(r.id);
@@ -494,7 +760,7 @@ export function act(s: State, a: Action): State {
       !p.requiresResearch.every((id) => n.research.includes(id)) ||
       n.stock < p.stock ||
       n.ingredients < p.ingredients ||
-      !pay(p.money)
+      !pay(inflatedCost(n, p.money))
     )
       return s;
     n.stock -= p.stock;
@@ -526,7 +792,7 @@ export function act(s: State, a: Action): State {
       n.markets.length >= restaurantCount(n) ||
       m.era > era(n) ||
       n.markets.includes(m.id) ||
-      !pay(m.cost)
+      !pay(inflatedCost(n, m.cost))
     )
       return s;
     n.markets.push(m.id);
@@ -539,7 +805,7 @@ export function act(s: State, a: Action): State {
       n.level < 3 ||
       era(n) < 2 ||
       n.rivals.includes(r.id) ||
-      !pay(r.cost)
+      !pay(inflatedCost(n, r.cost))
     )
       return s;
     n.rivals.push(r.id);
@@ -576,7 +842,12 @@ export function act(s: State, a: Action): State {
   }
   if (a.type === "upgrade") {
     const p = n.plots[a.index];
-    if (!p || p.level >= 4 || !pay(D(180).mul(D(4).pow(p.level - 1)))) return s;
+    if (
+      !p ||
+      p.level >= 4 ||
+      !pay(inflatedCost(n, 2500 * p.level))
+    )
+      return s;
     p.level++;
     note(n, `Bâtiment amélioré au niveau ${p.level}.`);
   }
@@ -590,7 +861,7 @@ export function act(s: State, a: Action): State {
       n.boostUntil = n.elapsed + ev.duration;
       note(
         n,
-        `${ev.title} : demande ×${ev.multiplier} pendant ${ev.duration} s.`,
+        `${ev.title} : demande ×${ev.multiplier} pendant ${ev.duration} j.`,
       );
     }
     n.event = -1;

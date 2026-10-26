@@ -38,6 +38,7 @@ import type { FeedbackKind } from "./feel/config";
 import {
   buildingLevel,
   clickProduction,
+  burgersPerClick,
   levelMultiplier,
   rates,
   cost,
@@ -54,7 +55,20 @@ import {
   marketUnlocked,
   willingnessToPay,
   restaurantCount,
+  PRICE_MIN,
+  PRICE_MAX,
+  PRICE_COMFORT_CAP,
+  EARTH_PRICE_SOFT_CAP,
+  priceAdvice,
+  optimalPrice,
+  spacePriceMultiplier,
+  formatGameDate,
+  gameDateISO,
+  effectiveCooks,
+  inflatedCost,
+  timelineInflation,
 } from "./engine/game";
+import { COOKS_PER_OUTLET } from "./data/content";
 import { discoveries } from "./systems/discovery";
 import { parseSave, resume } from "./systems/save";
 import {
@@ -74,6 +88,7 @@ type Panel =
   | "settings"
   | "reset"
   | "prestige"
+  | "price"
   | null;
 const TITLES: Record<Exclude<Panel, null>, string> = {
   level: "Améliorer le bâtiment",
@@ -85,6 +100,7 @@ const TITLES: Record<Exclude<Panel, null>, string> = {
   settings: "Réglages",
   reset: "Recommencer ?",
   prestige: "Faillite stratégique",
+  price: "Prix de vente",
 };
 export default function App({
   backHref = "http://127.0.0.1:3000/fr/jeux",
@@ -103,15 +119,25 @@ export default function App({
   const r = rates(s);
   const level = buildingLevel(s);
   const asset = BURGER_ASSETS.levels[level - 1];
-  const cpc = clickProduction(s);
+  const empire = clickProduction(s);
+  const cpc = burgersPerClick(s);
   const upgrade = upgradeOffer(s);
   const event = eventOffer(s);
+  const stockCap = Math.max(r.demand * 30, Math.min(r.production, 1));
+  const stockRoom = Math.max(0, stockCap - s.stock);
+  const cashForIngredients =
+    s.price > r.ingredientCost
+      ? Math.max(0, D(s.money).div(r.ingredientCost).toNumber())
+      : 0;
   const fundedProduction = Math.min(
     r.production,
-    s.ingredients + Math.max(0, D(s.money).div(r.ingredientCost).toNumber()),
+    stockRoom,
+    s.ingredients + cashForIngredients,
   );
-  const income = Math.min(s.stock + fundedProduction, r.demand) * s.price;
+  const soldPerSec = Math.min(s.stock + fundedProduction, r.demand);
+  const income = soldPerSec * (s.price - r.ingredientCost);
   const [panel, setPanel] = useState<Panel>(null);
+  const [priceDraft, setPriceDraft] = useState("");
   const [quantity, setQuantity] = useState<number | "max">(1);
   const [toast, setToast] = useState("");
   const [pulse, setPulse] = useState(0);
@@ -392,6 +418,14 @@ export default function App({
             <small>
               {asset.name} · Niv. {level}
             </small>
+            <time
+              className="game-date"
+              dateTime={gameDateISO(s)}
+              title="1 seconde réelle = 1 jour dans le jeu"
+            >
+              {formatGameDate(s)}
+              <span>· j+{s.elapsed.toLocaleString("fr-FR")}</span>
+            </time>
           </div>
           <button
             className="building-upgrade"
@@ -426,13 +460,16 @@ export default function App({
               <dd>×{levelMultiplier(s)}</dd>
             </div>
             <div>
-              <dt>Équipe</dt>
+              <dt
+                title={`Cuisine plafonnée à ~${COOKS_PER_OUTLET} postes utiles par adresse`}
+              >
+                Équipe
+              </dt>
               <dd>
                 {fmt(s.counts.cook + s.counts.trader, 0)}
                 <small>
                   {" "}
-                  employé
-                  {s.counts.cook + s.counts.trader > 1 ? "s" : ""}
+                  · {fmt(effectiveCooks(s), 0)} cuisine
                 </small>
               </dd>
             </div>
@@ -449,7 +486,11 @@ export default function App({
               <dd>{fmt(s.sold, 0)}</dd>
             </div>
             <div>
-              <dt>Revenu / s</dt>
+              <dt
+                title="Ventes − coût des ingrédients, par jour de jeu (1 s = 1 j). Un prix trop haut freine la demande."
+              >
+                Revenu net / j
+              </dt>
               <dd>{fmt(income, 2)} €</dd>
             </div>
             <div>
@@ -478,40 +519,32 @@ export default function App({
               </dt>
               <dd>
                 <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Baisser le prix"
-                  disabled={s.price <= 1}
-                  onClick={() =>
-                    game.dispatch({ type: "price", value: s.price - 0.5 })
-                  }
+                  type="button"
+                  variant="secondary"
+                  className="price-open"
+                  aria-label="Régler le prix de vente"
+                  onClick={() => {
+                    setPriceDraft(String(s.price));
+                    setPanel("price");
+                  }}
                 >
-                  <Minus />
-                </Button>
-                <span>
                   {s.price.toLocaleString("fr-FR", {
                     minimumFractionDigits: 2,
                   })}{" "}
                   €
-                </span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  aria-label="Augmenter le prix"
-                  disabled={s.price >= 20}
-                  onClick={() =>
-                    game.dispatch({ type: "price", value: s.price + 0.5 })
-                  }
-                >
-                  <Plus />
                 </Button>
               </dd>
             </div>
             <div>
               <dt
-                title="Prix autour duquel les clients maximisent votre revenu / s"
+                title={`Confort clients. Sur Terre, au-delà de ${EARTH_PRICE_SOFT_CAP} € la demande s’écroule ; Mars et le spatial multiplient le ticket viable.`}
               >
-                Clients ~{willingnessToPay(s).toLocaleString("fr-FR")} €
+                Confort ~
+                {willingnessToPay(s).toLocaleString("fr-FR", {
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 1,
+                })}{" "}
+                €
               </dt>
               <dd />
             </div>
@@ -604,7 +637,7 @@ export default function App({
                   </h3>
                   <p>
                     {s.elapsed < s.boostUntil
-                      ? `Demande ×${s.boost} · ${Math.ceil(s.boostUntil - s.elapsed)} s restantes.`
+                      ? `Demande ×${s.boost} · ${Math.ceil(s.boostUntil - s.elapsed)} j restants.`
                       : "Une nouvelle occasion arrive bientôt."}
                   </p>
                 </div>
@@ -648,8 +681,10 @@ export default function App({
           >
             Prépare un burger
           </Button>
-          <p>
-            Par clic ×{fmt(cpc)} <span>·</span> {fmt(r.production)} burgers / s
+          <p title="1 s réelle = 1 jour. Le clic suit ~3 % de ta prod / j. Si la demande suit, le stock reste à 0.">
+            Clic {fmt(cpc)} <span>·</span> Prod. {fmt(r.production)}/j{" "}
+            <span>·</span> Vente{" "}
+            {fmt(Math.min(fundedProduction, r.demand))}/j
           </p>
         </div>
       </div>
@@ -684,6 +719,125 @@ export default function App({
             ) : (
               <p className="footnote">Aucune mission réussie.</p>
             )
+          )}
+          {panel === "price" && (
+            <div className="price-sheet">
+              <div className="price-sheet-controls">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Baisser le prix"
+                  disabled={s.price <= PRICE_MIN}
+                  onClick={() => {
+                    const next = Math.max(PRICE_MIN, s.price - 0.5);
+                    game.dispatch({ type: "price", value: next });
+                    setPriceDraft(String(next));
+                  }}
+                >
+                  <Minus />
+                </Button>
+                <label className="price-sheet-input">
+                  <span className="sr-only">Prix en euros</span>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min={PRICE_MIN}
+                    max={PRICE_MAX}
+                    step={0.5}
+                    value={priceDraft}
+                    onChange={(event) => setPriceDraft(event.target.value)}
+                    onBlur={() => {
+                      const parsed = Number(
+                        priceDraft.replace(",", "."),
+                      );
+                      if (!Number.isFinite(parsed)) {
+                        setPriceDraft(String(s.price));
+                        return;
+                      }
+                      const next = Math.min(
+                        PRICE_MAX,
+                        Math.max(
+                          PRICE_MIN,
+                          Math.round(parsed * 2) / 2,
+                        ),
+                      );
+                      game.dispatch({ type: "price", value: next });
+                      setPriceDraft(String(next));
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter")
+                        (event.target as HTMLInputElement).blur();
+                    }}
+                  />
+                  <span aria-hidden>€</span>
+                </label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Augmenter le prix"
+                  disabled={s.price >= PRICE_MAX}
+                  onClick={() => {
+                    const next = Math.min(PRICE_MAX, s.price + 0.5);
+                    game.dispatch({ type: "price", value: next });
+                    setPriceDraft(String(next));
+                  }}
+                >
+                  <Plus />
+                </Button>
+              </div>
+              <div className="price-sheet-quick">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    const next = willingnessToPay(s);
+                    game.dispatch({ type: "price", value: next });
+                    setPriceDraft(String(next));
+                  }}
+                >
+                  Confort (
+                  {willingnessToPay(s).toLocaleString("fr-FR")} €)
+                </Button>
+                {s.counts.trader > 0 && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      const next = optimalPrice(s);
+                      game.dispatch({ type: "price", value: next });
+                      setPriceDraft(String(next));
+                    }}
+                  >
+                    Conseil équipe (
+                    {optimalPrice(s).toLocaleString("fr-FR")} €)
+                  </Button>
+                )}
+              </div>
+              <section className="price-sheet-advice" aria-label="Conseils">
+                <h3>
+                  Équipe des ventes
+                  {s.counts.trader > 0
+                    ? ` · précision ~${Math.round(traderSkill(s.counts.trader) * 100)} %`
+                    : ""}
+                </h3>
+                <ul>
+                  {priceAdvice(s).map((tip) => (
+                    <li key={tip}>{tip}</li>
+                  ))}
+                </ul>
+                <p className="footnote">
+                  {spacePriceMultiplier(s) <= 1
+                    ? `Au-delà de ${EARTH_PRICE_SOFT_CAP} € sur Terre, presque personne n’achète. Lune / Mars font monter le confort.`
+                    : `Confort de fin de partie ~${PRICE_COMFORT_CAP.toLocaleString("fr-FR")} €.`}{" "}
+                  Saisie libre jusqu’à {fmt(PRICE_MAX)} € — au-delà du confort,
+                  les ventes tombent à zéro.
+                </p>
+              </section>
+            </div>
           )}
           {panel === "level" && (
             <div className="building-offer">
@@ -725,6 +879,13 @@ export default function App({
           )}
           {panel === "upgrades" && (
             <>
+              <p className="footnote">
+                Prix unitaires stables : seule l’inflation du calendrier s’applique
+                (+
+                {Math.round((timelineInflation(s) - 1) * 100)} % aujourd’hui,
+                plafond ~25 %). Les grosses infrastructures restent chères à
+                l’unité — on scale en volume.
+              </p>
               {visible.bulk && (
                 <div className="quantity" aria-label="Quantité d’achat">
                   {([1, 10, 100, "max"] as const).map((q) => (
@@ -751,12 +912,12 @@ export default function App({
                         {g.id === "trader"
                           ? `Auto-prix · précision ~${Math.round(traderSkill(s.counts.trader + 1) * 100)} % au prochain`
                           : g.production
-                            ? `+${fmt(g.production * cpc)} burgers / s`
+                            ? `+${fmt(g.production * empire)} burgers / j`
                             : g.demand
-                              ? `+${fmt(g.demand)} demande / s`
+                              ? `+${fmt(g.demand)} demande / j`
                               : g.id === "farm"
-                                ? "+80 ingrédients / s"
-                                : "+120 distribution / s"}
+                                ? "+1 500 ingrédients / j"
+                                : "+2 000 distribution / j"}
                       </p>
                     </div>
                     <Button
@@ -796,12 +957,12 @@ export default function App({
                       <p>{v.description}</p>
                       <Button
                         variant="outline"
-                        disabled={D(s.money).lt(v.cost)}
+                        disabled={D(s.money).lt(inflatedCost(s, v.cost))}
                         onClick={() =>
                           game.dispatch({ type: "research", id: v.id })
                         }
                       >
-                        {fmt(v.cost)} €
+                        {fmt(inflatedCost(s, v.cost))} €
                       </Button>
                     </div>
                   ))
@@ -816,8 +977,9 @@ export default function App({
                 ) : (
                   <>
                     {visible.projects.map((p) => {
+                      const cash = inflatedCost(s, p.money);
                       const ready =
-                        D(s.money).gte(p.money) &&
+                        D(s.money).gte(cash) &&
                         s.stock >= p.stock &&
                         s.ingredients >= p.ingredients;
                       return (
@@ -825,7 +987,7 @@ export default function App({
                           <h3>{p.name}</h3>
                           <p>{p.description}</p>
                           <p className="footnote">
-                            {fmt(p.money)} €
+                            {fmt(cash)} €
                             {p.stock > 0 ? ` · ${fmt(p.stock, 0)} burgers` : ""}
                             {p.ingredients > 0
                               ? ` · ${fmt(p.ingredients, 0)} ingrédients`
@@ -935,7 +1097,7 @@ export default function App({
                         <div>
                           <h3>{m.name}</h3>
                           <p>
-                            +{fmt(m.demand)} demande / s · pouvoir d’achat ×
+                            +{fmt(m.demand)} demande / j · pouvoir d’achat ×
                             {m.power}
                           </p>
                         </div>
@@ -944,12 +1106,12 @@ export default function App({
                         ) : (
                           <Button
                             variant="outline"
-                            disabled={D(s.money).lt(m.cost)}
+                            disabled={D(s.money).lt(inflatedCost(s, m.cost))}
                             onClick={() =>
                               game.dispatch({ type: "market", id: m.id })
                             }
                           >
-                            {fmt(m.cost)} €
+                            {fmt(inflatedCost(s, m.cost))} €
                           </Button>
                         )}
                       </div>
@@ -975,12 +1137,12 @@ export default function App({
                         ) : (
                           <Button
                             variant="outline"
-                            disabled={D(s.money).lt(v.cost)}
+                            disabled={D(s.money).lt(inflatedCost(s, v.cost))}
                             onClick={() =>
                               game.dispatch({ type: "acquire", id: v.id })
                             }
                           >
-                            {fmt(v.cost)} €
+                            {fmt(inflatedCost(s, v.cost))} €
                           </Button>
                         )}
                       </div>
