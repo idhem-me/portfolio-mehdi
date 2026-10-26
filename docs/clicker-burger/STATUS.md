@@ -88,3 +88,4 @@ Sans boutique de prestige ni cartes géographiques :
 - **Marchés** : Bordeaux, Marseille, Côte d’Azur entre le national et l’Europe.
 - **Rivaux** : Crisp King et VoidBite.
 - **Fin narrative** : popup dédiée au niveau Univers.
+- **Directeur des ventes** : générateur stackable ; auto-prix meilleur que le défaut (4 €), asymptote ~88 % de l’optimum manuel. Le réglage manuel est verrouillé tant qu’au moins un directeur est employé.

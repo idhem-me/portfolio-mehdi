@@ -18,7 +18,7 @@ Conserver `main` intacte et pousser `feature/tetris-v2`. Activer `NEXT_PUBLIC_EN
 
 ## Backend Supabase
 
-Le compte Supabase existant est désormais privilégié : adaptateur REST/RPC côté serveur, migration PostgreSQL dédiée et tests réels des permissions et transactions. Le classement attend SUPABASE_URL et SUPABASE_SECRET_KEY, l’application de la migration et un build avec son flag actif. Guide : docs/tetris/LEADERBOARD_SETUP.md. Turso reste un backend alternatif ; il n’est plus nécessaire d’y créer un compte.
+Le compte Supabase existant est désormais privilégié : adaptateur REST/RPC côté serveur, migration PostgreSQL dédiée et tests réels des permissions et transactions. Le classement attend SUPABASE_URL et SUPABASE_SECRET_KEY, l’application de la migration et un build avec son flag actif. Guide : [LEADERBOARD_SETUP.md](LEADERBOARD_SETUP.md). Turso reste un backend alternatif ; il n’est plus nécessaire d’y créer un compte.
 
 ## Identité et présentation
 

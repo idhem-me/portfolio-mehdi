@@ -15,7 +15,7 @@ Aucun sitemap n’existait : `/sitemap.xml` renvoie 404 et ne référence pas La
 
 ## Commandes reproductibles
 
-Voir `TETRIS_README.md`. Les tests navigateur nécessitent le serveur démarré séparément. La variable de test `TETRIS_TEST_DISABLED=true` sélectionne les assertions du flag off et saute les parcours de gameplay.
+Voir [README.md](README.md). Les tests navigateur nécessitent le serveur démarré séparément. La variable de test `TETRIS_TEST_DISABLED=true` sélectionne les assertions du flag off et saute les parcours de gameplay.
 
 ## Résultats finaux
 

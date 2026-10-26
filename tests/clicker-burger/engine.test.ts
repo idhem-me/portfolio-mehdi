@@ -12,6 +12,10 @@ import {
   prestigeGain,
   D,
   fmt,
+  traderSkill,
+  traderTargetPrice,
+  optimalPrice,
+  incomeAtPrice,
 } from "../../src/features/clicker-burger/engine/game";
 import {
   parseSave,
@@ -181,6 +185,43 @@ test("ownership cap cannot create a save that fails validation", () => {
   s.counts.cook = 10000;
   assert.equal(affordable(s, "cook", "max"), 0);
   assert.equal(act(s, { type: "buy", id: "cook", quantity: 1 }), s);
+});
+test("sales directors improve pricing without reaching the manual optimum", () => {
+  const s = initial();
+  s.counts.cook = 20;
+  s.counts.grill = 10;
+  s.counts.marketing = 5;
+  s.price = 4;
+  const opt = optimalPrice(s);
+  const atDefault = incomeAtPrice(s, 4);
+  const atOptimal = incomeAtPrice(s, opt);
+  assert(atOptimal >= atDefault);
+  assert.notEqual(opt, 4);
+  assert(traderSkill(1) < traderSkill(12));
+  assert(traderSkill(100) < 0.9);
+  s.counts.trader = 1;
+  const junior = traderTargetPrice(s);
+  s.counts.trader = 12;
+  const senior = traderTargetPrice(s);
+  assert(junior !== opt);
+  assert(senior !== opt);
+  assert(incomeAtPrice(s, junior) >= atDefault - 1e-9);
+  assert(incomeAtPrice(s, senior) >= incomeAtPrice(s, junior) - 1e-9);
+  assert(incomeAtPrice(s, senior) < atOptimal + 1e-9);
+  assert(Math.abs(senior - opt) <= Math.abs(junior - opt));
+  s.counts.trader = 3;
+  s.price = 4;
+  const managed = tick(s, 1);
+  assert.equal(managed.price, traderTargetPrice({ ...s, counts: { ...s.counts, trader: 3 } }));
+  s.counts.trader = 0;
+  s.price = 7;
+  assert.equal(tick(s, 1).price, 7);
+});
+test("legacy saves default missing trader counts to zero", () => {
+  const s = initial();
+  const raw = JSON.parse(JSON.stringify(s));
+  delete raw.counts.trader;
+  assert.equal(parseSave(JSON.stringify(raw)).counts.trader, 0);
 });
 test("two early-game strategies remain solvent and reach automation", () => {
   for (const strategy of [

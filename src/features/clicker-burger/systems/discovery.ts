@@ -9,6 +9,7 @@ export function discoveries(s: State) {
     grill: s.counts.cook > 0 && earned.gte(100),
     marketing: s.counts.grill > 0 || earned.gte(200),
     restaurant: e >= 1,
+    trader: e >= 1 && (s.counts.marketing > 0 || s.counts.restaurant > 0),
     farm: e >= 2,
     factory: s.counts.farm > 0,
     warehouse: s.counts.factory > 0,

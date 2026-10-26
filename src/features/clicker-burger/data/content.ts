@@ -63,6 +63,18 @@ export const GENERATORS: Generator[] = [
     asset: "restaurant",
   },
   {
+    id: "trader",
+    name: "Directeur des ventes",
+    description:
+      "Ajuste le prix automatiquement. Plus il y en a, plus c’est juste — jamais parfait.",
+    base: 400,
+    growth: 1.28,
+    production: 0,
+    demand: 0,
+    era: 1,
+    asset: "restaurant",
+  },
+  {
     id: "farm",
     name: "Ferme partenaire",
     description: "Produit les ingrédients sans coût à l’unité.",

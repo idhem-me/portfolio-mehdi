@@ -2,6 +2,6 @@ Rôle : Expert Next.js, Tailwind CSS, Shadcn UI et SEO.
 
 UI/UX : Layout inspiré de ChatGPT (Sidebar rétractable à gauche, contenu principal centré max-w-3xl très épuré, contrastes doux, zéro bruit visuel).
 
-Design System : Toujours consulter designsystem.md avant de modifier le style global. Nous n'importons que les composants Shadcn strictement nécessaires.
+Design System : Toujours consulter docs/designsystem.md avant de modifier le style global. Nous n'importons que les composants Shadcn strictement nécessaires.
 
 RÈGLE PLAYGROUND : Chaque fois qu'un composant Shadcn est présent ou ajouté dans src/components/ui, il DOIT être affiché avec ses variantes sur la page /playground.

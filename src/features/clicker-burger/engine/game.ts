@@ -196,7 +196,7 @@ export function rates(s: State) {
   const logistics = s.research.includes("automation") ? 1.5 : 1;
   const spaceBonus = s.research.includes("astrochef") ? 1.25 : 1;
   let production =
-    GENERATORS.filter((g) => !["factory", "megafactory"].includes(g.id)).reduce(
+    GENERATORS.filter((g) => !["factory", "megafactory", "trader"].includes(g.id)).reduce(
       (n, g) => n + s.counts[g.id] * g.production,
       0,
     ) * bonus;
@@ -232,10 +232,49 @@ export function rates(s: State) {
     era: e,
   };
 }
+/** Skill asymptote < 1 : même une armée de traders reste sous l’optimum manuel. */
+export function traderSkill(count: number) {
+  if (count <= 0) return 0;
+  return 0.88 * (1 - 1 / (1 + count * 0.35));
+}
+export function incomeAtPrice(s: State, price: number) {
+  const probe = { ...s, price };
+  const r = rates(probe);
+  return Math.min(r.production, r.demand) * price;
+}
+export function optimalPrice(s: State) {
+  let best = 4,
+    bestIncome = -1;
+  for (let p = 1; p <= 20; p += 0.5) {
+    const income = incomeAtPrice(s, p);
+    if (income > bestIncome) {
+      bestIncome = income;
+      best = p;
+    }
+  }
+  return best;
+}
+/** Prix ciblé : se rapproche de l’optimum depuis 4 €, sans l’atteindre (skill < 1). */
+export function traderTargetPrice(s: State) {
+  const n = s.counts.trader ?? 0;
+  if (n <= 0) return s.price;
+  const skill = traderSkill(n);
+  const optimal = optimalPrice(s);
+  let target = Math.min(
+    20,
+    Math.max(1, Math.round((4 + (optimal - 4) * skill) * 2) / 2),
+  );
+  if (target === optimal && skill < 1) {
+    target = optimal > 4 ? target - 0.5 : optimal < 4 ? target + 0.5 : target;
+    target = Math.min(20, Math.max(1, target));
+  }
+  return target;
+}
 export function tick(s: State, seconds: number): State {
   const n = structuredClone(s);
   const steps = Math.floor(Math.min(Math.max(0, seconds), 28800));
   for (let i = 0; i < steps; i++) {
+    if ((n.counts.trader ?? 0) > 0) n.price = traderTargetPrice(n);
     const r = rates(n);
     n.elapsed++;
     n.ingredients = Math.min(1e100, n.ingredients + r.harvest);

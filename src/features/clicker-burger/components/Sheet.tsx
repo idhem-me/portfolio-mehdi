@@ -14,13 +14,16 @@ export function Sheet({
   title,
   children,
   onClose,
+  side = "bottom",
   stableHeight = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  side?: "bottom" | "right";
   stableHeight?: boolean;
 }) {
+  const isSidebar = side === "right";
   return (
     <PortfolioSheet
       open
@@ -29,11 +32,11 @@ export function Sheet({
       }}
     >
       <SheetContent
-        side="bottom"
+        side={side}
         showCloseButton={false}
-        className={`clicker-burger game-sheet-portal ${stableHeight ? "missions-sheet" : ""}`}
+        className={`clicker-burger game-sheet-portal ${isSidebar ? "game-sheet-sidebar" : ""} ${stableHeight ? "missions-sheet" : ""}`}
       >
-        <div className="sheet-handle" />
+        {!isSidebar && <div className="sheet-handle" />}
         <SheetHeader className="sheet-header">
           <SheetTitle>{title}</SheetTitle>
           <SheetDescription className="sr-only">

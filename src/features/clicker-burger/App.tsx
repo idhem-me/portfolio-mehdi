@@ -42,6 +42,7 @@ import {
   domination,
   upgradeOffer,
   eventOffer,
+  traderSkill,
 } from "./engine/game";
 import { discoveries } from "./systems/discovery";
 import { parseSave, resume } from "./systems/save";
@@ -202,7 +203,7 @@ export default function App({
     <div className="clicker-burger">
       <header className="game-header">
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
           aria-label="Retour"
           onClick={() => {
@@ -224,18 +225,6 @@ export default function App({
             onClick={() => setPanel("settings")}
           >
             <Settings />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            aria-label={
-              theme === "light"
-                ? "Activer le thème sombre"
-                : "Activer le thème clair"
-            }
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-          >
-            {theme === "light" ? <Moon /> : <Sun />}
           </Button>
           <PlayerProfileButton />
         </div>
@@ -301,13 +290,21 @@ export default function App({
               </dd>
             </div>
             <div className="price-row">
-              <dt>Prix de vente</dt>
+              <dt>
+                Prix de vente
+                {s.counts.trader > 0 && (
+                  <small className="price-managed">
+                    {" "}
+                    · équipe ×{s.counts.trader}
+                  </small>
+                )}
+              </dt>
               <dd>
                 <Button
                   variant="outline"
                   size="icon"
                   aria-label="Baisser le prix"
-                  disabled={s.price <= 1}
+                  disabled={s.price <= 1 || s.counts.trader > 0}
                   onClick={() =>
                     game.dispatch({ type: "price", value: s.price - 0.5 })
                   }
@@ -324,7 +321,7 @@ export default function App({
                   variant="outline"
                   size="icon"
                   aria-label="Augmenter le prix"
-                  disabled={s.price >= 20}
+                  disabled={s.price >= 20 || s.counts.trader > 0}
                   onClick={() =>
                     game.dispatch({ type: "price", value: s.price + 0.5 })
                   }
@@ -381,6 +378,11 @@ export default function App({
         <Sheet
           title={TITLES[panel]}
           onClose={() => setPanel(null)}
+          side={
+            panel === "settings" || panel === "reset" || panel === "prestige"
+              ? "right"
+              : "bottom"
+          }
           stableHeight={panel === "missions" || panel === "extensions"}
         >
           {panel === "level" && (
@@ -444,13 +446,15 @@ export default function App({
                         <span>{s.counts[g.id]}</span>
                       </h3>
                       <p>
-                        {g.production
-                          ? `+${fmt(g.production * cpc)} burgers / s`
-                          : g.demand
-                            ? `+${fmt(g.demand)} demande / s`
-                            : g.id === "farm"
-                              ? "+35 ingrédients / s"
-                              : "+60 distribution / s"}
+                        {g.id === "trader"
+                          ? `Auto-prix · précision ~${Math.round(traderSkill(s.counts.trader + 1) * 100)} % au prochain`
+                          : g.production
+                            ? `+${fmt(g.production * cpc)} burgers / s`
+                            : g.demand
+                              ? `+${fmt(g.demand)} demande / s`
+                              : g.id === "farm"
+                                ? "+35 ingrédients / s"
+                                : "+60 distribution / s"}
                       </p>
                     </div>
                     <Button

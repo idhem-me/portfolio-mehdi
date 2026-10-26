@@ -6,7 +6,13 @@ import {
   legacyBuildingLevel,
   type State,
 } from "../engine/game";
-import { GENERATORS, MARKETS, RESEARCH, RIVALS } from "../data/content";
+import {
+  EVENTS,
+  GENERATORS,
+  MARKETS,
+  RESEARCH,
+  RIVALS,
+} from "../data/content";
 export const SAVE_KEY = "food-empire.save.v1";
 const numeric = (v: unknown, max = 1e100) =>
   typeof v === "number" && Number.isFinite(v) && v >= 0 && v <= max;
@@ -64,15 +70,17 @@ export function parseSave(raw: string): State {
     s.lastSaved > Date.now() + 60000
   )
     throw Error("Valeur hors limites.");
-  if (
-    !v.counts ||
-    GENERATORS.some(
-      (g) =>
-        !Number.isInteger(v.counts[g.id]) || !numeric(v.counts[g.id], 10000),
-    )
-  )
+  if (!v.counts || typeof v.counts !== "object")
     throw Error("Catalogue invalide.");
-  s.counts = Object.fromEntries(GENERATORS.map((g) => [g.id, v.counts[g.id]]));
+  s.counts = Object.fromEntries(
+    GENERATORS.map((g) => {
+      const n = v.counts[g.id];
+      if (n === undefined) return [g.id, 0];
+      if (!Number.isInteger(n) || !numeric(n, 10000))
+        throw Error("Catalogue invalide.");
+      return [g.id, n];
+    }),
+  );
   for (const [key, ids] of [
     ["research", RESEARCH.map((r) => r.id)],
     ["markets", MARKETS.map((m) => m.id)],
@@ -115,7 +123,11 @@ export function parseSave(raw: string): State {
     type: p.type,
     level: p.level,
   }));
-  if (!Number.isInteger(v.event) || v.event < -1 || v.event > 2)
+  if (
+    !Number.isInteger(v.event) ||
+    v.event < -1 ||
+    v.event >= EVENTS.length
+  )
     throw Error("Événement invalide.");
   s.event = v.event;
   if (

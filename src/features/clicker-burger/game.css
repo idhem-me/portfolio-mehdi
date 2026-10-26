@@ -85,6 +85,8 @@
   height: 38px;
   width: 38px;
   border-radius: 8px;
+}
+.clicker-burger .game-header [data-slot="button"][data-variant="outline"] {
   background: var(--background);
 }
 .clicker-burger .game-header [data-slot="button"] svg {
@@ -299,6 +301,10 @@
 }
 .clicker-burger .price-row {
   margin-top: 4px;
+}
+.clicker-burger .price-managed {
+  font-weight: 400;
+  color: var(--muted-foreground);
 }
 .clicker-burger .price-row dd {
   display: flex;
@@ -932,6 +938,17 @@
   background: var(--background);
   color: var(--foreground);
   overflow: hidden;
+  min-height: 0;
+  height: auto;
+}
+.clicker-burger.game-sheet-portal.game-sheet-sidebar {
+  margin: 0;
+  width: min(100%, 360px);
+  max-width: 360px;
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+  border-left: 1px solid var(--border);
 }
 .clicker-burger.game-sheet-portal .sheet-header {
   flex-direction: row;
@@ -939,11 +956,6 @@
 .clicker-burger.game-sheet-portal .sheet-body {
   flex: 1;
   overflow: auto;
-}
-
-.clicker-burger.game-sheet-portal {
-  min-height: 0;
-  height: auto;
 }
 .clicker-burger .level-dialog {
   position: fixed;

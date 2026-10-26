@@ -18,7 +18,7 @@ Il s’agit d’une comparaison de source et de comportements testés, pas d’u
 
 ## Portée matérielle
 
-WebKit Playwright sur Mac avec profil iPhone 13 : preuve de compatibilité de ces parcours, pas d’une reproduction de l’iPhone physique signalé. Le défaut global identifié et la limite de reproduction sont détaillés dans DECISIONS.md. Safe areas physiques, vibrations et temps GPU restent à vérifier sur téléphone.
+WebKit Playwright sur Mac avec profil iPhone 13 : preuve de compatibilité de ces parcours, pas d’une reproduction de l’iPhone physique signalé. Le défaut global identifié et la limite de reproduction sont détaillés dans [DECISIONS.md](../DECISIONS.md). Safe areas physiques, vibrations et temps GPU restent à vérifier sur téléphone.
 
 ## Flag désactivé
 Build de production local servi par next start. Deux parcours passent, sept parcours de gameplay sont volontairement ignorés. HTTP 404 sur /jeux, /jeux/tetris et /realisations/tetris, sans préfixe et en fr/en/ar. Navigation Jeux absente ; réalisations sans Lava. Menu et Touche-moi réagissent sur WebKit iPhone. Aucun sitemap ne référence le jeu.

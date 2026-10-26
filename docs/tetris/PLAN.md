@@ -16,13 +16,13 @@ Tokens : globals.css :root/.dark, couleurs sémantiques neutres, radius .625rem 
 7. Documentation de lancement, limites observées et commits locaux atomiques. Aucun push/déploiement.
 
 ## Réalisation et vérification
-Les étapes 1 à 7 sont exécutées. Moteur (78 tests), shader WebGL 1 et fallback, springs/haptiques, contrôles tactiles/clavier, settings persistés, récit Markdown/covers et feature gate livrés. Sept tests navigateur passent, dont paysage et fallback. Flag désactivé vérifié sur un build de production local : carte absente et 404 HTTP dans quatre variantes de langue, absence du sitemap. Détails et limites matérielles : docs/tetris/VERIFICATION.md et TETRIS_README.md.
+Les étapes 1 à 7 sont exécutées. Moteur (78 tests), shader WebGL 1 et fallback, springs/haptiques, contrôles tactiles/clavier, settings persistés, récit Markdown/covers et feature gate livrés. Sept tests navigateur passent, dont paysage et fallback. Flag désactivé vérifié sur un build de production local : carte absente et 404 HTTP dans quatre variantes de langue, absence du sitemap. Détails et limites matérielles : [VERIFICATION.md](VERIFICATION.md) et [README.md](README.md).
 
 ## Corrections V3
-P0 puis sections 1–6 exécutées dans des commits distincts : isolation iPhone, section Jeux, menu minimal, plein écran/HUD/pause, silhouettes lumineuses, récompenses et caméra par ligne, ouverture première partie. Vérification finale : 83 tests unitaires et 9 parcours activés ; 2 parcours flag off en production locale. Rapport et 30 captures : docs/tetris/v3. Aucune feature V2.
+P0 puis sections 1–6 exécutées dans des commits distincts : isolation iPhone, section Jeux, menu minimal, plein écran/HUD/pause, silhouettes lumineuses, récompenses et caméra par ligne, ouverture première partie. Vérification finale : 83 tests unitaires et 9 parcours activés ; 2 parcours flag off en production locale. Rapport et 30 captures : [v3](v3/). Aucune feature V2.
 
 ## Retours suivants
-Priorités traitées : Safari via LAN (reproduit/corrigé), aération des portails, boutons et retours, puis matière posée unique irisée. 83 tests unitaires, 10 parcours activés et 2 parcours flag off passent ; builds/lint/types validés. Captures et diagnostic : docs/tetris/v4.
+Priorités traitées : Safari via LAN (reproduit/corrigé), aération des portails, boutons et retours, puis matière posée unique irisée. 83 tests unitaires, 10 parcours activés et 2 parcours flag off passent ; builds/lint/types validés. Captures et diagnostic : [v4](v4/).
 
 ## Roadmap V2
 La planification des fonctionnalités futures est détaillée dans [V2_PLAN.md](V2_PLAN.md). Elle ne démarre aucun développement : priorité à la fiabilité matérielle puis au son, suivis du défi quotidien, du classement et du duel privé.

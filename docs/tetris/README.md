@@ -51,7 +51,7 @@ npm run test:tetris:browser
 TETRIS_TEST_DISABLED=true npm run test:tetris:browser
 ```
 
-`docs/tetris/v3/` contient les captures clair/sombre, Chromium desktop et WebKit iPhone : accueil du portfolio, Jeux, menu, partie, pause, 2 lignes et 4 lignes. Ces deux derniers états sont obtenus par de vraies actions du moteur, sans injection de plateau ni route de démonstration. Des captures de géométrie 320×568 et 844×390 complètent la couverture.
+[`v3/`](v3/) contient les captures clair/sombre, Chromium desktop et WebKit iPhone : accueil du portfolio, Jeux, menu, partie, pause, 2 lignes et 4 lignes. Ces deux derniers états sont obtenus par de vraies actions du moteur, sans injection de plateau ni route de démonstration. Des captures de géométrie 320×568 et 844×390 complètent la couverture.
 
 ## À contrôler sur téléphone physique
 
@@ -59,13 +59,13 @@ Safari avec sa barre d’adresse visible/masquée, rotation de l’appareil, enc
 
 ## Attribution
 
-Logique adaptée de [sen-ltd/tetris](https://github.com/sen-ltd/tetris), commit `9280c94c2f36a79d7cb184927ec0c8d1f0d48572`, MIT, © 2026 SEN LLC. Licence conservée dans engine/LICENSE.source et consultable dans Règles et informations. Les références de récompense sont les deux images fournies par l’utilisateur, archivées dans docs/tetris/references ; aucun texte ou asset de leur jeu n’est intégré au rendu.
+Logique adaptée de [sen-ltd/tetris](https://github.com/sen-ltd/tetris), commit `9280c94c2f36a79d7cb184927ec0c8d1f0d48572`, MIT, © 2026 SEN LLC. Licence conservée dans engine/LICENSE.source et consultable dans Règles et informations. Les références de récompense sont les deux images fournies par l’utilisateur, archivées dans [`references/`](references/) ; aucun texte ou asset de leur jeu n’est intégré au rendu.
 
 ## Derniers retours appliqués
 
 Ordre du bandeau : Pause, Réglages, Quitter. L’effacement de quatre lignes affiche **Tetris**. Les liens de retour utilisent ArrowLeft de Lucide. Les panneaux règles/réglages définissent leurs propres tokens d’espacement car les portails Radix sont hors du conteneur du jeu : marges de 24 px, interlignes et contrôles tactiles aérés.
 
-Les cellules posées partagent une seule matière : violet lumineux dominant, reflets cyan/rose sur un cycle doux de 32 secondes. La pièce active et les previews restent colorées. Les vraies cases vides restent visibles et le moteur ne change pas. Réglages : render/material.ts ; rendu WebGL et fallback SVG cohérents. Captures actualisées dans docs/tetris/v4.
+Les cellules posées partagent une seule matière : violet lumineux dominant, reflets cyan/rose sur un cycle doux de 32 secondes. La pièce active et les previews restent colorées. Les vraies cases vides restent visibles et le moteur ne change pas. Réglages : render/material.ts ; rendu WebGL et fallback SVG cohérents. Captures actualisées dans [`v4/`](v4/).
 
 ## V2 : son et classement
 
@@ -87,19 +87,19 @@ La croix en jeu ouvre Pause. Reprendre conserve la partie ; Quitter (bouton dest
 
 ## Android et classement persistant
 
-Les contraintes mobiles et les couleurs de l’avatar sont vérifiées par `tests/responsive.spec.ts` sur Chrome Android émulé, Chromium et WebKit. Captures dans `docs/tetris/responsive/`. Le test Auto Dark compare les pixels de l’avatar ; les sept traductions doivent rester dans le viewport. Cela complète les tests iPhone ; un contrôle physique Samsung Internet reste nécessaire.
+Les contraintes mobiles et les couleurs de l’avatar sont vérifiées par `tests/responsive.spec.ts` sur Chrome Android émulé, Chromium et WebKit. Captures dans [`responsive/`](responsive/). Le test Auto Dark compare les pixels de l’avatar ; les sept traductions doivent rester dans le viewport. Cela complète les tests iPhone ; un contrôle physique Samsung Internet reste nécessaire.
 
-Le backend persistant du classement est maintenant intégré via Turso/libSQL. Configuration serveur : `TURSO_DATABASE_URL` et `TURSO_AUTH_TOKEN`. Sans ces paramètres, le classement ne peut pas être activé sur Vercel et n’utilise jamais son disque éphémère. Les tables sont créées automatiquement dans une base dédiée. Voir [la procédure d’activation complète](docs/tetris/LEADERBOARD_SETUP.md). Les anciennes indications demandant un adaptateur distant sont désormais satisfaites ; il reste à connecter la base et vérifier la persistance en production.
+Le backend persistant du classement est maintenant intégré via Turso/libSQL. Configuration serveur : `TURSO_DATABASE_URL` et `TURSO_AUTH_TOKEN`. Sans ces paramètres, le classement ne peut pas être activé sur Vercel et n’utilise jamais son disque éphémère. Les tables sont créées automatiquement dans une base dédiée. Voir [la procédure d’activation complète](LEADERBOARD_SETUP.md). Les anciennes indications demandant un adaptateur distant sont désormais satisfaites ; il reste à connecter la base et vérifier la persistance en production.
 
 ## Supabase (backend recommandé avec votre compte existant)
 
-L’adaptateur Supabase est intégré. Appliquer les migrations 001, 002 puis 003, configurer `SUPABASE_URL` et `SUPABASE_SECRET_KEY` exclusivement côté serveur dans Vercel, puis reconstruire. Le backend Supabase est prioritaire sur Turso si ses variables sont présentes. Voir [le guide Supabase](docs/tetris/LEADERBOARD_SETUP.md) pour les étapes exactes.
+L’adaptateur Supabase est intégré. Appliquer les migrations 001, 002 puis 003, configurer `SUPABASE_URL` et `SUPABASE_SECRET_KEY` exclusivement côté serveur dans Vercel, puis reconstruire. Le backend Supabase est prioritaire sur Turso si ses variables sont présentes. Voir [le guide Supabase](LEADERBOARD_SETUP.md) pour les étapes exactes.
 
 ## Game over, choix d’identité et rendu verre
 
-L’écran Game over propose le récapitulatif et la relance. Sans profil joueur, l’envoi public au pseudo ou avec Google reste volontaire. Avec un profil, la sauvegarde est automatique ; les scores de profil local restent privés, tandis que Google conserve le classement public. La configuration du fournisseur est détaillée dans [GOOGLE_AUTH_SETUP.md](docs/tetris/GOOGLE_AUTH_SETUP.md).
+L’écran Game over propose le récapitulatif et la relance. Sans profil joueur, l’envoi public au pseudo ou avec Google reste volontaire. Avec un profil, la sauvegarde est automatique ; les scores de profil local restent privés, tandis que Google conserve le classement public. La configuration du fournisseur est détaillée dans [GOOGLE_AUTH_SETUP.md](GOOGLE_AUTH_SETUP.md).
 
-Le halo extérieur du plateau a été supprimé. Le titre et les actions occupent le haut des colonnes sur desktop/tablette, tandis que les petits écrans conservent des cibles tactiles utilisables. Le néon intérieur, les reflets de verre et leur intensité se règlent dans `src/features/tetris/render/material.ts`. WebGL et fallback SVG partagent cette intention de matière ; les menus et Game over restent dans la DA neutre du portfolio. Captures de la version courante : `docs/tetris/v5/`.
+Le halo extérieur du plateau a été supprimé. Le titre et les actions occupent le haut des colonnes sur desktop/tablette, tandis que les petits écrans conservent des cibles tactiles utilisables. Le néon intérieur, les reflets de verre et leur intensité se règlent dans `src/features/tetris/render/material.ts`. WebGL et fallback SVG partagent cette intention de matière ; les menus et Game over restent dans la DA neutre du portfolio. Captures de la version courante : [`v5/`](v5/).
 
 ## Profils joueurs et sauvegarde automatique
 
