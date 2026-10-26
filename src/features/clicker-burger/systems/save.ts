@@ -1,5 +1,11 @@
 import { MISSIONS } from "../data/missions";
-import { initial, tick, D, type State } from "../engine/game";
+import {
+  initial,
+  tick,
+  D,
+  legacyBuildingLevel,
+  type State,
+} from "../engine/game";
 import { GENERATORS, MARKETS, RESEARCH, RIVALS } from "../data/content";
 export const SAVE_KEY = "food-empire.save.v1";
 const numeric = (v: unknown, max = 1e100) =>
@@ -112,6 +118,28 @@ export function parseSave(raw: string): State {
   if (!Number.isInteger(v.event) || v.event < -1 || v.event > 2)
     throw Error("Événement invalide.");
   s.event = v.event;
+  if (
+    v.level !== undefined &&
+    (!Number.isInteger(v.level) || v.level < 1 || v.level > 10)
+  )
+    throw Error("Niveau invalide.");
+  s.level = v.level ?? legacyBuildingLevel(s);
+  if (v.nextEventAt !== undefined && !numeric(v.nextEventAt))
+    throw Error("Événement invalide.");
+  s.nextEventAt = v.nextEventAt ?? s.elapsed + 180;
+  if (v.eventTerms !== undefined && v.eventTerms !== null) {
+    for (const k of ["cost", "reward"])
+      if (
+        typeof v.eventTerms[k] !== "string" ||
+        v.eventTerms[k].length > 1000 ||
+        !D(v.eventTerms[k]).isFinite() ||
+        D(v.eventTerms[k]).lt(0) ||
+        D(v.eventTerms[k]).gt("1e300")
+      )
+        throw Error("Offre invalide.");
+    s.eventTerms = { cost: v.eventTerms.cost, reward: v.eventTerms.reward };
+  }
+
   s.log = Array.isArray(v.log)
     ? v.log
         .filter((x: unknown) => typeof x === "string")

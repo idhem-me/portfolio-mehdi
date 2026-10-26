@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { tetrisEnabled } from "@/features/tetris/flags";
 import { player, json, failure } from "@/features/tetris/server/http";
 import { activePlayer } from "@/features/tetris/server/player";
 import { store } from "@/features/tetris/server/store";
 function gate(request: NextRequest) {
-  if (!tetrisEnabled) return new NextResponse("Not Found", { status: 404 });
   if (
     request.headers.get("origin") !==
     request.nextUrl.protocol + "//" + request.headers.get("host")
@@ -12,7 +10,6 @@ function gate(request: NextRequest) {
     return new NextResponse("Forbidden", { status: 403 });
 }
 export async function GET(request: NextRequest) {
-  if (!tetrisEnabled) return new NextResponse("Not Found", { status: 404 });
   try {
     const active = await activePlayer(request);
     return active.auth.apply(json(active.profile));

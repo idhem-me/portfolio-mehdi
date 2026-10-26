@@ -1,3 +1,4 @@
+import { SiteAccountProvider } from "@/features/account/provider";
 import type { Metadata } from "next";
 import {
   Geist_Mono,
@@ -70,7 +71,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           disableTransitionOnChange
         >
           <NextIntlClientProvider locale="fr" messages={frMessages}>
-            <AnalyticsRoot>{children}</AnalyticsRoot>
+            <SiteAccountProvider>
+              <AnalyticsRoot>{children}</AnalyticsRoot>
+            </SiteAccountProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

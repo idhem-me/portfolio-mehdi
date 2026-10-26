@@ -67,3 +67,13 @@ Les nouveaux souhaits de simplicité, suppression du quartier et absence de spoi
 - Vérification de la popup réellement déclenchée par une vente, et de l’historique des missions. La sauvegarde de test utilise une autre origine locale et ne remplace pas la partie de l’utilisateur.
 
 La vérification isolée évite les blocages de lecture observés dans le dossier synchronisé. Le commit conserve le code et les images du dépôt original, sans les données, secrets, dépendances ou fichiers de compilation temporaires.
+
+## Révision du 26 octobre 2026 (remplace les indications précédentes)
+
+- Missions : onglets « En cours / Réussies ». Extensions : « Disponibles / Acquises ». Composants Tabs du portfolio, panneaux de hauteur stable. Missions réussies en style normal avec coche, triées par ordre de récupération décroissant. Multiplicateur centré sous le bouton.
+- Apparence commune avec le site via next-themes ; aucune préférence indépendante du jeu.
+- Niveaux achetés depuis l’image du bâtiment : 5 k€, 100 k€, 1 M€, 500 M€, 10 Md€, 1 000 Md€, puis 100 000 Md€, 10¹⁶ € et 10¹⁸ €. Les prérequis de recherche et de marché restent nécessaires. Anciennes sauvegardes migrées sans retrait rétroactif d’argent.
+- Popup de niveau centrée, désactivable dans les réglages ; pastille lorsque l’achat est possible.
+- Événements proportionnels à la trésorerie et au revenu, offre figée durant l’événement et emplacement stable après participation ou refus.
+- Compte commun extrait dans `src/features/account`, utilisé par Tetris et Clicker Burger : pseudo, photo, Google et session partagés. Le stockage historique Tetris et ses routes API sont conservés pour compatibilité ; leur disponibilité ne dépend plus de l’activation du jeu Tetris. La sauvegarde Burger reste locale, séparée par identité, sans synchronisation cloud entre appareils.
+- 150 tests réussis (compte commun, Burger, Tetris). Le parcours simulé jusqu’au niveau 10 est d’environ 13,2 h avec achats optimisés ; ce n’est pas une durée garantie pour une partie humaine.

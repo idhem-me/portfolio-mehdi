@@ -4,9 +4,9 @@ import {
   initial,
   buildingLevel,
   levelMultiplier,
-  clickProduction,
   act,
   D,
+  upgradeOffer,
 } from "../../src/features/clicker-burger/engine/game";
 import { parseSave } from "../../src/features/clicker-burger/systems/save";
 import {
@@ -17,8 +17,10 @@ import {
   accountSaveKey,
   validProfile,
 } from "../../src/features/clicker-burger/auth/useAccount";
-test("ten levels require exponential revenue and the right infrastructure", () => {
-  const s = initial();
+test("ten levels have the requested cash prices and require explicit atomic purchases", () => {
+  let s = initial();
+  s.money = "1e25";
+  s.earned = "1e25";
   s.research = ["recipe", "franchise", "coldchain", "global", "space", "warp"];
   s.counts.warehouse = 1;
   s.counts.megafactory = 3;
@@ -33,29 +35,40 @@ test("ten levels require exponential revenue and the right infrastructure", () =
     "alpha",
     "multiverse",
   ];
-  const thresholds = [
-    "0",
-    "250",
+  const prices = [
     "5000",
     "100000",
-    "5000000",
+    "1000000",
     "500000000",
-    "500000000000",
-    "5000000000000",
-    "500000000000000",
-    "500000000000000000",
+    "10000000000",
+    "1000000000000",
+    "100000000000000",
+    "10000000000000000",
+    "1000000000000000000",
   ];
-  thresholds.forEach((threshold, i) => {
-    s.earned = threshold;
+  prices.forEach((price, i) => {
     assert.equal(buildingLevel(s), i + 1);
-    assert.equal(levelMultiplier(s), 2 ** i);
+    assert.equal(upgradeOffer(s)?.cost, price);
+    const before = D(s.money);
+    s = act(s, { type: "level-up" });
+    assert.equal(buildingLevel(s), i + 2);
+    assert(D(s.money).eq(before.minus(price)));
+    assert.equal(levelMultiplier(s), 2 ** (i + 1));
   });
-  s.markets = s.markets.filter((id) => id !== "mars");
-  assert.equal(buildingLevel(s), 5);
+  assert.equal(upgradeOffer(s), null);
+});
+test("unaffordable or locked building upgrades leave money and level unchanged", () => {
+  const s = initial();
+  assert.equal(act(s, { type: "level-up" }), s);
+  s.level = 2;
+  s.money = "100000";
+  assert.equal(act(s, { type: "level-up" }), s);
+  s.research = ["recipe"];
+  assert.equal(act(s, { type: "level-up" }).level, 3);
 });
 test("level multiplier applies exactly once to each manual click", () => {
   const s = initial();
-  s.earned = "1000";
+  s.level = 2;
   assert.equal(act(s, { type: "cook" }).stock, 2);
 });
 test("mission rewards are sequential and cannot be collected twice", () => {
@@ -97,3 +110,19 @@ test("profiles and guest use distinct local save keys", () => {
   assert.notEqual(accountSaveKey(a), accountSaveKey(null));
   assert.equal(accountSaveKey(null), "food-empire.save.v1");
 });
+
+test("legacy automatic levels migrate without charging for buildings already obtained", () => {
+  const s = initial();
+  s.earned = "5000";
+  s.research = ["recipe"];
+  const raw = JSON.parse(JSON.stringify(s));
+  delete raw.level;
+  delete raw.eventTerms;
+  delete raw.nextEventAt;
+  const restored = parseSave(JSON.stringify(raw));
+  assert.equal(restored.level, 3);
+  assert.equal(restored.money, s.money);
+  assert(restored.nextEventAt > restored.elapsed);
+});
+
+test('buying a building with the last cash includes enough starter ingredients to resume sales',()=>{const s=initial();s.money='5000';s.ingredients=0;const upgraded=act(s,{type:'level-up'});assert.equal(upgraded.money,'0');const cooked=act(upgraded,{type:'cook'});assert(cooked.stock>0);assert(cooked.ingredients>=0);});

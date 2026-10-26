@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { gate, json } from "@/features/tetris/server/http";
+import { json } from "@/features/tetris/server/http";
+import { accountGate as gate } from "@/features/account/server/http";
 import {
   authClient,
   googleConfigured,

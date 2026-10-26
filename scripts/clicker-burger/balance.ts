@@ -7,6 +7,7 @@ import {
   cost,
   buildingLevel,
   era,
+  upgradeOffer,
 } from "../../src/features/clicker-burger/engine/game";
 import { discoveries } from "../../src/features/clicker-burger/systems/discovery";
 import {
@@ -25,6 +26,7 @@ export function simulate(active = true, maxHours = 48) {
       if (D(s.money).gte(research.cost))
         s = act(s, { type: "research", id: research.id });
     }
+    if (upgradeOffer(s)?.affordable) s = act(s, { type: "level-up" });
     const fixed =
       era(s) >= 3
         ? ["farm", "factory", "warehouse", "megafactory"]

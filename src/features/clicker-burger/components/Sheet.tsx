@@ -14,12 +14,12 @@ export function Sheet({
   title,
   children,
   onClose,
-  theme,
+  stableHeight = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
-  theme: string;
+  stableHeight?: boolean;
 }) {
   return (
     <PortfolioSheet
@@ -31,8 +31,7 @@ export function Sheet({
       <SheetContent
         side="bottom"
         showCloseButton={false}
-        className="clicker-burger game-sheet-portal"
-        data-theme={theme}
+        className={`clicker-burger game-sheet-portal ${stableHeight ? "missions-sheet" : ""}`}
       >
         <div className="sheet-handle" />
         <SheetHeader className="sheet-header">

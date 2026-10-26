@@ -3,6 +3,9 @@ import Decimal from "decimal.js";
 import { GENERATORS, MARKETS, RESEARCH, RIVALS, EVENTS } from "../data/content";
 export type State = {
   version: 1;
+  level: number;
+  eventTerms: { cost: string; reward: string } | null;
+  nextEventAt: number;
   missionClaims: string[];
   money: string;
   earned: string;
@@ -29,6 +32,9 @@ export const D = (v: Decimal.Value) => new Decimal(v);
 export function initial(now = Date.now(), capital = 0): State {
   return {
     version: 1,
+    level: 1,
+    eventTerms: null,
+    nextEventAt: 180,
     missionClaims: [],
     money: "20",
     earned: "0",
@@ -78,7 +84,7 @@ export function domination(s: State) {
       ),
   );
 }
-export function buildingLevel(s: State) {
+export function legacyBuildingLevel(s: State) {
   const gates = [
     true,
     true,
@@ -94,10 +100,85 @@ export function buildingLevel(s: State) {
   ];
   let level = 1;
   for (let i = 1; i < LEVELS.length; i++) {
-    if (!gates[i] || D(s.earned).lt(LEVELS[i].revenue)) break;
+    if (
+      !gates[i] ||
+      D(s.earned).lt(
+        [
+          "0",
+          "250",
+          "5000",
+          "100000",
+          "5000000",
+          "500000000",
+          "500000000000",
+          "5000000000000",
+          "500000000000000",
+          "500000000000000000",
+        ][i],
+      )
+    )
+      break;
     level = i + 1;
   }
   return level;
+}
+export function buildingLevel(s: State) {
+  return s.level;
+}
+export function upgradeOffer(s: State) {
+  if (s.level >= LEVELS.length) return null;
+  const requirements = [
+    true,
+    true,
+    s.research.includes("recipe"),
+    s.research.includes("franchise") && s.counts.warehouse >= 1,
+    s.research.includes("global") &&
+      s.markets.some((id) => ["lyon", "paris"].includes(id)),
+    era(s) >= 4 && s.markets.includes("mars"),
+    era(s) >= 4 && s.markets.includes("europa"),
+    s.research.includes("warp"),
+    s.markets.includes("alpha"),
+    s.markets.includes("multiverse"),
+  ];
+  const hints = [
+    "",
+    "Atteindre la trésorerie nécessaire.",
+    "Créer la recette signature.",
+    "Créer une franchise et ouvrir un centre logistique.",
+    "Ouvrir un marché national et rechercher le menu mondial.",
+    "Programme spatial, 70 % de domination, 3 mégafactories et marché martien.",
+    "Ouvrir le marché Europe / Jupiter.",
+    "Rechercher la livraison supraluminique.",
+    "Ouvrir Alpha du Centaure.",
+    "Ouvrir le marché multivers.",
+  ];
+  const next = LEVELS[s.level];
+  const unlocked = requirements[s.level];
+  return {
+    ...next,
+    level: s.level + 1,
+    unlocked,
+    requirement: hints[s.level],
+    affordable: unlocked && D(s.money).gte(next.cost),
+  };
+}
+export function eventOffer(s: State) {
+  if (s.event < 0) return null;
+  if (s.eventTerms) return { ...EVENTS[s.event], ...s.eventTerms };
+  const e = EVENTS[s.event],
+    r = rates(s);
+  const revenue = D(Math.min(r.production, r.demand)).mul(s.price);
+  const price = Decimal.max(
+    e.cost,
+    D(s.money).mul(0.01),
+    revenue.mul(5),
+  ).ceil();
+  const reward = Decimal.max(
+    price.mul(2),
+    D(s.money).mul(0.05),
+    revenue.mul(30),
+  ).ceil();
+  return { ...e, cost: price.toString(), reward: reward.toString() };
 }
 export function levelMultiplier(s: State) {
   return LEVELS[buildingLevel(s) - 1].multiplier;
@@ -169,9 +250,16 @@ export function tick(s: State, seconds: number): State {
     const revenue = D(sold).mul(n.price);
     n.money = D(n.money).plus(revenue).toString();
     n.earned = D(n.earned).plus(revenue).toString();
-    if (n.elapsed >= 180 * (n.eventSeen + 1) && n.event < 0) {
+    if (n.event >= 0 && !n.eventTerms) {
+      const offer = eventOffer(n)!;
+      n.eventTerms = { cost: offer.cost, reward: offer.reward };
+    }
+    if (n.elapsed >= n.nextEventAt && n.event < 0) {
       n.event = n.eventSeen % EVENTS.length;
       n.eventSeen++;
+      const offer = eventOffer(n)!;
+      n.eventTerms = { cost: offer.cost, reward: offer.reward };
+      n.nextEventAt = n.elapsed + 180;
     }
   }
   return n;
@@ -202,6 +290,7 @@ function note(s: State, text: string) {
   s.log = [text, ...s.log].slice(0, 25);
 }
 export type Action =
+  | { type: "level-up" }
   | { type: "cook" }
   | { type: "price"; value: number }
   | { type: "buy"; id: string; quantity: number | "max" }
@@ -216,6 +305,13 @@ export function act(s: State, a: Action): State {
     n.money = D(n.money).minus(v).toString();
     return true;
   };
+  if (a.type === "level-up") {
+    const offer = upgradeOffer(s);
+    if (!offer?.affordable || !pay(offer.cost)) return s;
+    n.level++;
+    n.ingredients=Math.max(n.ingredients,clickProduction(n)*10);
+    note(n, `${offer.name} · niveau ${n.level}.`);
+  }
   if (a.type === "cook") {
     const amount = clickProduction(s);
     const extra = Math.max(0, amount - n.ingredients);
@@ -288,9 +384,10 @@ export function act(s: State, a: Action): State {
   }
   if (a.type === "event") {
     if (n.event < 0) return s;
-    const ev = EVENTS[n.event];
+    const ev = eventOffer(n)!;
     if (a.accept && !pay(ev.cost)) return s;
     if (a.accept) {
+      n.money = D(n.money).plus(ev.reward).toString();
       n.boost = ev.multiplier;
       n.boostUntil = n.elapsed + ev.duration;
       note(
@@ -299,6 +396,8 @@ export function act(s: State, a: Action): State {
       );
     }
     n.event = -1;
+    n.eventTerms = null;
+    n.nextEventAt = n.elapsed + 180;
   }
   return n;
 }

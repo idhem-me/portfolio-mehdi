@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createGameStore } from "../../src/features/clicker-burger/state/useGame";
 import { initial } from "../../src/features/clicker-burger/engine/game";
 import { visibleMissions } from "../../src/features/clicker-burger/data/missions";
-test("level popup is raised by earned progression, never by loading or importing a profile", () => {
+test("level popup follows a paid purchase, not revenue, loading or import", () => {
   const descriptor = Object.getOwnPropertyDescriptor(
     globalThis,
     "localStorage",
@@ -20,10 +20,13 @@ test("level popup is raised by earned progression, never by loading or importing
     const a = createGameStore("test-a");
     const imported = initial();
     imported.earned = "249";
+    imported.money = "5000";
     imported.stock = 1;
     a.replace(imported);
     assert.equal(a.getSnapshot().levelNotice, null);
     a.advance(1);
+    assert.equal(a.getSnapshot().levelNotice, null);
+    a.dispatch({ type: "level-up" });
     assert.equal(a.getSnapshot().levelNotice, 2);
     a.dismissLevel();
     assert.equal(a.getSnapshot().levelNotice, null);

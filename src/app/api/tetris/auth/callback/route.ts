@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { gate } from "@/features/tetris/server/http";
+import { accountGate as gate } from "@/features/account/server/http";
 import { authClient, googleConfigured } from "@/features/tetris/server/auth";
 import { safeGamePath } from "@/features/tetris/auth/identity";
 import { popupResult } from "@/features/tetris/server/oauth-popup";

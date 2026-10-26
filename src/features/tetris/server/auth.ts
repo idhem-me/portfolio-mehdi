@@ -1,9 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { type NextRequest, type NextResponse } from "next/server";
-import { leaderboardEnabled } from "../flags";
 import { googleIdentity } from "../auth/identity";
 export function googleConfigured() {
-  if (!leaderboardEnabled) return false;
   try {
     const url = new URL(process.env.SUPABASE_URL || "");
     const key =

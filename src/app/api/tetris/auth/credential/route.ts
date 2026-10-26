@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { authClient, googleConfigured } from "@/features/tetris/server/auth";
-import { gate, json } from "@/features/tetris/server/http";
+import { json } from "@/features/tetris/server/http";
+import { accountGate as gate } from "@/features/account/server/http";
 const cookie = "lava-google-nonce";
 export async function GET(request: NextRequest) {
   const denied = gate(request);

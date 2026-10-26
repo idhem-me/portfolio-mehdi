@@ -80,6 +80,7 @@ async function HomeContent({ params }: Props) {
               >
                 {home.title}
               </span>
+              {" "}
               <span
                 data-physics-item
                 data-physics-split-lines

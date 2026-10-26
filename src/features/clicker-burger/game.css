@@ -1,69 +1,6 @@
 .clicker-burger {
-  color-scheme: light;
-  font-family: "Google Sans", sans-serif;
+  font-family: var(--font-sans), sans-serif;
   font-synthesis: none;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: var(--background);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --muted: var(--secondary);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --border: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.705 0.015 286.067);
-  --destructive: oklch(0.577 0.245 27.325);
-  --radius: 0.625rem;
-  --accent: oklch(0.563 0.193 256.156);
-  --accent-foreground: oklch(0.985 0 0);
-  --control-height-accent: 2.5rem;
-  --control-height-accent-lg: 2.75rem;
-  --control-height-accent-xs: 2rem;
-  --control-height-accent-sm: 2.25rem;
-  --control-height: 2rem;
-  --control-height-sm: 1.75rem;
-  --control-height-xs: 1.5rem;
-  --control-height-lg: 2.25rem;
-  --control-height-icon: 2rem;
-  --control-height-icon-xs: 1.5rem;
-  --control-height-icon-sm: 1.75rem;
-  --control-height-icon-lg: 2.25rem;
-  --control-text: 0.875rem;
-  --control-text-sm: 0.8rem;
-  --control-text-xs: 0.75rem;
-  --map-bg: #fafafa;
-  --map-grid: #e4e4e7;
-  --map-grass: #e4e7df;
-  --road: #e4e4e7;
-  --building-wall: #e7e3d4;
-  --building-side: #c3c5b7;
-  --building-roof: #3d4b46;
-  --window: #b5c0ad;
-  --tree: #789773;
-  --shadow: #18181b14;
-}
-.clicker-burger[data-theme="dark"] {
-  color-scheme: dark;
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: var(--background);
-  --primary: oklch(0.92 0.004 286.32);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --border: oklch(1 0 0 / 10%);
-  --ring: oklch(0.552 0.016 285.938);
-  --destructive: oklch(0.704 0.191 22.216);
-  --map-bg: #202022;
-  --map-grid: #303033;
-  --map-grass: #353935;
-  --road: #38383b;
-  --building-wall: #b4b6a2;
-  --building-side: #737f70;
-  --building-roof: #26352d;
-  --window: #d6b374;
-  --tree: #54724b;
-  --shadow: #0003;
 }
 .clicker-burger * {
   box-sizing: border-box;
@@ -78,7 +15,7 @@
 .clicker-burger button,
 .clicker-burger input,
 .clicker-burger select {
-  font: inherit;
+  font-family: inherit;
 }
 .clicker-burger button {
   cursor: pointer;
@@ -770,10 +707,10 @@
   display: grid;
   place-items: center;
 }
-.clicker-burger[data-theme="dark"] .restaurant-card {
+.dark .clicker-burger .restaurant-card {
   background: var(--secondary);
 }
-.clicker-burger[data-theme="dark"] .burger-cover {
+.dark .clicker-burger .burger-cover {
   opacity: 0.9;
 }
 @keyframes burger-float-up {
@@ -952,16 +889,7 @@
   margin-top: 24px;
   color: var(--muted-foreground);
 }
-.clicker-burger .mission-history [data-slot="accordion-trigger"] {
-  font-size: 12px;
-}
-.clicker-burger .completed-mission {
-  font-size: 12px;
-  color: var(--muted-foreground);
-  opacity: 0.6;
-  padding: 8px 0;
-  user-select: none;
-}
+
 .clicker-burger .level-dialog {
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -1013,4 +941,106 @@
   overflow: auto;
 }
 
-.clicker-burger.game-sheet-portal{min-height:0;height:auto}.clicker-burger .level-dialog{position:fixed;inset:0;margin:auto;max-height:calc(100dvh - 32px);overflow:auto}
+.clicker-burger.game-sheet-portal {
+  min-height: 0;
+  height: auto;
+}
+.clicker-burger .level-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+}
+
+.clicker-burger .building-upgrade {
+  position: relative;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 12px;
+}
+.clicker-burger .building-upgrade:hover {
+  background: var(--muted);
+}
+.clicker-burger .building-notification {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--destructive);
+  box-shadow: 0 0 0 3px var(--background);
+}
+.clicker-burger .building-offer {
+  text-align: center;
+  padding: 12px 0 20px;
+}
+.clicker-burger .building-offer img {
+  margin: 0 auto 18px;
+}
+.clicker-burger .building-offer > button {
+  margin-top: 20px;
+  width: 100%;
+}
+.clicker-burger .game-header [data-slot="button"]:has([data-slot="avatar"]) {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  padding: 0;
+  background: transparent;
+}
+.clicker-burger.game-sheet-portal.missions-sheet {
+  height: min(85dvh, 680px);
+}
+.clicker-burger .event-slot {
+  height: 180px;
+  flex-shrink: 0;
+}
+.clicker-burger .event-slot .event {
+  padding: 18px 0 0;
+  margin: 0;
+  border-top: 1px solid var(--border);
+}
+.clicker-burger .event-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+}
+.clicker-burger .event-empty {
+  color: var(--muted-foreground);
+}
+.clicker-burger .completed-missions {
+  list-style: none;
+  padding: 8px 0;
+  margin: 0;
+}
+.clicker-burger .completed-missions .completed-mission {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px 0;
+  color: var(--foreground);
+}
+
+.clicker-burger .game-tabs {
+  width: 100%;
+}
+.clicker-burger .game-tabs > [data-slot="tabs-list"] {
+  width: 100%;
+  min-height: 40px;
+  margin-bottom: 12px;
+}
+.clicker-burger .game-tabs > [data-slot="tabs-content"] {
+  min-width: 0;
+}
+
+.clicker-burger .clicker-bar > p {
+  text-align: center;
+}

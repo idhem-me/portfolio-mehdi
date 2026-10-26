@@ -1,36 +1,15 @@
 "use client";
-import { useEffect } from "react";
 import {
   loadProfile,
   useIdentityState,
   login,
   logout,
-  syncLocalScores,
-  setNetworkOnline,
 } from "../profile/client-store";
 export function PlayerIdentityProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  useEffect(() => {
-    void loadProfile();
-    const reload = () => void loadProfile(true).then(syncLocalScores);
-    const offline = () => setNetworkOnline(false);
-    const sync = (event: StorageEvent) => {
-      if (event.key?.startsWith("tetris.")) reload();
-    };
-    window.addEventListener("online", reload);
-    window.addEventListener("offline", offline);
-    window.addEventListener("focus", reload);
-    window.addEventListener("storage", sync);
-    return () => {
-      window.removeEventListener("online", reload);
-      window.removeEventListener("offline", offline);
-      window.removeEventListener("focus", reload);
-      window.removeEventListener("storage", sync);
-    };
-  }, []);
   return children;
 }
 export function usePlayerIdentity() {
