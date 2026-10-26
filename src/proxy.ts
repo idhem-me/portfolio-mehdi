@@ -1,3 +1,4 @@
+import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { DASHBOARD_COOKIE, isValidDashboardToken } from "@/lib/dashboard-auth";
@@ -59,13 +60,14 @@ async function handleDashboardAuth(request: NextRequest) {
 export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Early response guarantees HTTP 404 before any App Router streaming.
-  if (
-    !tetrisEnabled &&
-    /^\/(?:[a-z]{2}\/)?(?:realisations\/tetris\/?|jeux(?:\/.*)?)$/.test(
-      pathname,
-    )
-  ) {
+  const gamePath = pathname
+    .replace(/^\/(?:fr|en|zh|ar|es|it|de)(?=\/)/, "")
+    .replace(/\/$/, "");
+  const hiddenTetris = !tetrisEnabled &&
+    ["/jeux/tetris", "/realisations/tetris"].includes(gamePath);
+  const hiddenBurger = !clickerBurgerEnabled && gamePath === "/jeux/clicker-burger";
+  const hiddenGames = !tetrisEnabled && !clickerBurgerEnabled && gamePath === "/jeux";
+  if (hiddenTetris || hiddenBurger || hiddenGames) {
     return new NextResponse("Not Found", {
       status: 404,
       headers: { "X-Robots-Tag": "noindex" },

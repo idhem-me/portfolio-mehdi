@@ -1,0 +1,1016 @@
+.clicker-burger {
+  color-scheme: light;
+  font-family: "Google Sans", sans-serif;
+  font-synthesis: none;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+  --card: var(--background);
+  --primary: oklch(0.21 0.006 285.885);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.967 0.001 286.375);
+  --muted: var(--secondary);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --border: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.705 0.015 286.067);
+  --destructive: oklch(0.577 0.245 27.325);
+  --radius: 0.625rem;
+  --accent: oklch(0.563 0.193 256.156);
+  --accent-foreground: oklch(0.985 0 0);
+  --control-height-accent: 2.5rem;
+  --control-height-accent-lg: 2.75rem;
+  --control-height-accent-xs: 2rem;
+  --control-height-accent-sm: 2.25rem;
+  --control-height: 2rem;
+  --control-height-sm: 1.75rem;
+  --control-height-xs: 1.5rem;
+  --control-height-lg: 2.25rem;
+  --control-height-icon: 2rem;
+  --control-height-icon-xs: 1.5rem;
+  --control-height-icon-sm: 1.75rem;
+  --control-height-icon-lg: 2.25rem;
+  --control-text: 0.875rem;
+  --control-text-sm: 0.8rem;
+  --control-text-xs: 0.75rem;
+  --map-bg: #fafafa;
+  --map-grid: #e4e4e7;
+  --map-grass: #e4e7df;
+  --road: #e4e4e7;
+  --building-wall: #e7e3d4;
+  --building-side: #c3c5b7;
+  --building-roof: #3d4b46;
+  --window: #b5c0ad;
+  --tree: #789773;
+  --shadow: #18181b14;
+}
+.clicker-burger[data-theme="dark"] {
+  color-scheme: dark;
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+  --card: var(--background);
+  --primary: oklch(0.92 0.004 286.32);
+  --primary-foreground: oklch(0.21 0.006 285.885);
+  --secondary: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --border: oklch(1 0 0 / 10%);
+  --ring: oklch(0.552 0.016 285.938);
+  --destructive: oklch(0.704 0.191 22.216);
+  --map-bg: #202022;
+  --map-grid: #303033;
+  --map-grass: #353935;
+  --road: #38383b;
+  --building-wall: #b4b6a2;
+  --building-side: #737f70;
+  --building-roof: #26352d;
+  --window: #d6b374;
+  --tree: #54724b;
+  --shadow: #0003;
+}
+.clicker-burger * {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+.clicker-burger {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+.clicker-burger button,
+.clicker-burger input,
+.clicker-burger select {
+  font: inherit;
+}
+.clicker-burger button {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.clicker-burger button:disabled {
+  cursor: default;
+}
+.clicker-burger h1,
+.clicker-burger h2,
+.clicker-burger h3,
+.clicker-burger p,
+.clicker-burger dl,
+.clicker-burger dd {
+  margin: 0;
+}
+.clicker-burger h1 {
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: -0.8px;
+  white-space: nowrap;
+}
+.clicker-burger h2 {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.4px;
+}
+.clicker-burger h3 {
+  font-size: 14px;
+  font-weight: 500;
+}
+.clicker-burger p {
+  line-height: 1.6;
+}
+.clicker-burger button:focus-visible,
+.clicker-burger input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.clicker-burger {
+  max-width: 980px;
+  margin: auto;
+  min-height: 100svh;
+}
+.clicker-burger .game-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 20px 20px 10px;
+  padding-top: max(20px, env(safe-area-inset-top));
+  position: relative;
+  z-index: 20;
+}
+.clicker-burger .game-header > [data-slot="button"] {
+  flex-shrink: 0;
+}
+.clicker-burger .game-header h1 {
+  margin-right: auto;
+}
+.clicker-burger .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.clicker-burger .game-header [data-slot="button"] {
+  height: 38px;
+  width: 38px;
+  border-radius: 8px;
+  background: var(--background);
+}
+.clicker-burger .game-header [data-slot="button"] svg {
+  height: 19px;
+  width: 19px;
+}
+.clicker-burger .account-menu {
+  position: relative;
+}
+.clicker-burger .avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--ring);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.clicker-burger .avatar > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+.clicker-burger .avatar > span {
+  font-weight: 500;
+}
+.clicker-burger .dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 252px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+  box-shadow: 0 10px 35px #00000014;
+  z-index: 50;
+  animation: burger-appear 0.14s ease-out;
+}
+.clicker-burger .dropdown-heading {
+  padding: 11px 9px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 5px;
+}
+.clicker-burger .dropdown-heading b {
+  font-size: 13px;
+  font-weight: 500;
+  display: block;
+}
+.clicker-burger .dropdown-heading small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  margin-top: 5px;
+}
+.clicker-burger .dropdown > button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 11px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  text-align: left;
+  color: var(--foreground);
+}
+.clicker-burger .dropdown > button:hover {
+  background: var(--muted);
+}
+.clicker-burger .dropdown > button:disabled {
+  opacity: 0.45;
+}
+.clicker-burger .account-hint {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+  padding: 4px 9px 9px;
+}
+.clicker-burger .home {
+  padding: 12px 20px 235px;
+  max-width: 620px;
+  margin: auto;
+}
+.clicker-burger .balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 133px;
+  margin-bottom: 14px;
+}
+.clicker-burger .cash {
+  min-width: 0;
+}
+.clicker-burger .cash > span {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+.clicker-burger .cash strong {
+  font-size: 27px;
+  letter-spacing: -0.8px;
+  font-weight: 500;
+  line-height: 1.25;
+  display: block;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.clicker-burger .cash small {
+  display: block;
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.clicker-burger .building-image {
+  width: 128px;
+  height: 128px;
+  object-fit: contain;
+  flex-shrink: 0;
+  animation: burger-building-arrive 0.45s ease-out;
+}
+.clicker-burger .restaurant-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 17px 18px 18px;
+}
+.clicker-burger .card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.clicker-burger .card-heading > span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  padding: 3px 7px;
+  background: var(--muted);
+  border-radius: 5px;
+}
+.clicker-burger .burger-zone {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-bottom: 13px;
+}
+.clicker-burger .burger-cover {
+  width: 100%;
+  height: 94px;
+  max-width: 270px;
+  background: var(--muted);
+  border: 0;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+.clicker-burger .burger-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 48%;
+  user-select: none;
+  pointer-events: none;
+}
+.clicker-burger .burger-cover:hover {
+  filter: brightness(1.025);
+}
+.clicker-burger .burger-cover:active {
+  transform: scale(0.96);
+}
+.clicker-burger .metrics {
+  display: grid;
+  gap: 13px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.clicker-burger .metrics > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 22px;
+}
+.clicker-burger .metrics dt {
+  color: var(--muted-foreground);
+}
+.clicker-burger .metrics dt > span {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.clicker-burger .metrics dd {
+  text-align: right;
+}
+.clicker-burger .metrics dd > small {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  display: inline-block;
+  margin-left: 5px;
+}
+.clicker-burger .price-row {
+  margin-top: 4px;
+}
+.clicker-burger .price-row dd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.clicker-burger .price-row button {
+  height: 36px;
+  width: 36px;
+  border-radius: 8px;
+}
+.clicker-burger .price-row button svg {
+  width: 12px !important;
+  height: 12px !important;
+}
+.clicker-burger .price-row dd > span {
+  min-width: 52px;
+  text-align: center;
+}
+.clicker-burger .control-dock {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  max-width: 620px;
+  padding: 15px 20px max(14px, env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--background) 12%);
+  z-index: 25;
+}
+.clicker-burger .game-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px 13px;
+  margin-bottom: 22px;
+}
+.clicker-burger .game-actions > button {
+  height: 45px;
+  position: relative;
+  overflow: visible;
+  border-radius: 8px;
+  background: var(--background);
+  font-size: 14px;
+  transition:
+    background 0.15s ease,
+    transform 0.12s ease;
+}
+.clicker-burger .game-actions > button:active {
+  transform: scale(0.98);
+}
+.clicker-burger .game-actions > button:disabled {
+  opacity: 0.5;
+}
+.clicker-burger .notification-badge {
+  position: absolute;
+  right: -5px;
+  top: -7px;
+  background: var(--destructive);
+  color: white;
+  min-width: 17px;
+  height: 17px;
+  border: 2px solid var(--background);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 500;
+  padding: 0 3px;
+}
+.clicker-burger .clicker-button {
+  width: 100%;
+  min-height: 52px;
+  font-size: 18px;
+  user-select: none;
+}
+.clicker-burger .clicker-bar {
+  position: relative;
+}
+.clicker-burger .clicker-bar > p {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.clicker-burger .clicker-bar > p > span {
+  padding: 0 4px;
+  opacity: 0.5;
+}
+.clicker-burger .click-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+}
+.clicker-burger .click-particles > span {
+  position: absolute;
+  bottom: 15px;
+  color: var(--foreground);
+  background: var(--background);
+  box-shadow: 0 3px 15px #0001;
+  padding: 4px 9px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 11px;
+  animation: burger-float-up 0.8s ease-out both;
+}
+.clicker-burger .bottom-sheet {
+  padding: 0;
+  border: 0;
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  color: var(--foreground);
+  margin: 0;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+.clicker-burger .bottom-sheet::backdrop {
+  background: #0005;
+  backdrop-filter: blur(2px);
+}
+.clicker-burger .bottom-sheet[open] {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.clicker-burger .sheet-surface {
+  width: min(100%, 640px);
+  max-height: 85dvh;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 50px #0001;
+  display: flex;
+  flex-direction: column;
+  animation: burger-sheet-up 0.22s ease-out;
+}
+.clicker-burger .sheet-handle {
+  width: 35px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--border);
+  margin: 9px auto 0;
+  flex-shrink: 0;
+}
+.clicker-burger .sheet-header {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.clicker-burger .sheet-header h2 {
+  font-size: 18px;
+}
+.clicker-burger .sheet-header button {
+  border-radius: 50%;
+}
+.clicker-burger .sheet-body {
+  padding: 10px 20px max(28px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 100px;
+}
+.clicker-burger .upgrade,
+.clicker-burger .market-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 19px 0;
+  border-bottom: 1px solid var(--border);
+}
+.clicker-burger .upgrade h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.clicker-burger .upgrade h3 > span {
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.clicker-burger .upgrade p,
+.clicker-burger .market-row p,
+.clicker-burger .research-item p {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  margin-top: 7px;
+  line-height: 1.5;
+}
+.clicker-burger .upgrade button,
+.clicker-burger .market-row button {
+  font-size: 12px;
+  flex-shrink: 0;
+  min-width: 72px;
+  height: 36px;
+}
+.clicker-burger .quantity {
+  display: flex;
+  gap: 4px;
+  margin: 10px 0;
+  justify-content: flex-end;
+}
+.clicker-burger .quantity button {
+  font-size: 11px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 9px;
+  color: var(--muted-foreground);
+}
+.clicker-burger .quantity button[aria-pressed="true"] {
+  color: var(--foreground);
+  background: var(--muted);
+}
+.clicker-burger .research-item {
+  border-bottom: 1px solid var(--border);
+  padding: 20px 0;
+}
+.clicker-burger .research-item button {
+  margin-top: 15px;
+  font-size: 12px;
+}
+.clicker-burger .mission {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+.clicker-burger .mission.claimed {
+  opacity: 0.6;
+}
+.clicker-burger .mission-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 12px 0 8px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.clicker-burger .mission progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--muted);
+  accent-color: var(--primary);
+  overflow: hidden;
+}
+.clicker-burger .mission progress::-webkit-progress-bar {
+  background: var(--muted);
+}
+.clicker-burger .mission progress::-webkit-progress-value {
+  background: var(--primary);
+  border-radius: 5px;
+}
+.clicker-burger .mission > button {
+  font-size: 12px;
+  margin-top: 16px;
+}
+.clicker-burger .event {
+  padding: 25px 0 0;
+}
+.clicker-burger .event > p {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin-top: 8px;
+}
+.clicker-burger .empty-state,
+.clicker-burger .footnote {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  line-height: 1.6;
+  margin-top: 12px;
+}
+.clicker-burger .settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 23px;
+  font-size: 13px;
+}
+.clicker-burger .settings-row button {
+  font-size: 12px;
+}
+.clicker-burger .settings-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 18px 0 25px;
+}
+.clicker-burger .settings-actions button,
+.clicker-burger .sheet-body > button {
+  font-size: 12px;
+}
+.clicker-burger .prestige {
+  margin: 25px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.clicker-burger .prestige > button {
+  font-size: 12px;
+  margin-top: 15px;
+}
+.clicker-burger .section-label {
+  margin-top: 25px;
+}
+.clicker-burger .confirm-text {
+  font-size: 14px;
+  margin-top: 18px;
+  color: var(--muted-foreground);
+}
+.clicker-burger .profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 12px 0 24px;
+}
+.clicker-burger .profile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+}
+.clicker-burger .profile-summary p {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin-top: 5px;
+}
+.clicker-burger .profile-label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  margin-bottom: 15px;
+}
+.clicker-burger .profile-label input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 14px;
+}
+.clicker-burger .sheet-body form > button,
+.clicker-burger .account-connect > button,
+.clicker-burger .guest-copy > button {
+  font-size: 12px;
+}
+.clicker-burger .account-connect {
+  padding-top: 20px;
+  margin-top: 22px;
+  border-top: 1px solid var(--border);
+}
+.clicker-burger .guest-copy {
+  margin-top: 22px;
+}
+.clicker-burger .guest-copy button {
+  margin-top: 13px;
+}
+.clicker-burger .error-message {
+  font-size: 12px;
+  color: var(--destructive);
+  margin-top: 14px;
+  line-height: 1.6;
+}
+.clicker-burger .toast {
+  position: fixed;
+  left: 50%;
+  bottom: 235px;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 30px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 12px 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 5px 25px #0002;
+  z-index: 100;
+  font-size: 12px;
+  animation: burger-appear 0.15s ease-out;
+}
+.clicker-burger .toast button {
+  border: 0;
+  background: transparent;
+  color: var(--muted-foreground);
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.clicker-burger[data-theme="dark"] .restaurant-card {
+  background: var(--secondary);
+}
+.clicker-burger[data-theme="dark"] .burger-cover {
+  opacity: 0.9;
+}
+@keyframes burger-float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-65px) scale(1.1);
+  }
+}
+@keyframes burger-sheet-up {
+  from {
+    transform: translateY(40px);
+    opacity: 0.5;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes burger-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes burger-building-arrive {
+  from {
+    opacity: 0.4;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (min-width: 700px) {
+  .clicker-burger .game-header {
+    padding: 30px 25px 15px;
+  }
+  .clicker-burger .game-header h1 {
+    font-size: 25px;
+  }
+  .clicker-burger .home {
+    padding-top: 20px;
+    max-width: 620px;
+  }
+  .clicker-burger .balance-row {
+    min-height: 155px;
+  }
+  .clicker-burger .building-image {
+    width: 150px;
+    height: 150px;
+  }
+  .clicker-burger .cash strong {
+    font-size: 36px;
+  }
+  .clicker-burger .restaurant-card {
+    padding: 23px 25px;
+  }
+  .clicker-burger .burger-cover {
+    height: 120px;
+    max-width: 340px;
+  }
+  .clicker-burger .metrics {
+    font-size: 14px;
+    gap: 15px;
+  }
+  .clicker-burger .control-dock {
+    padding-inline: 20px;
+    padding-bottom: 20px;
+  }
+  .clicker-burger .game-actions {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .clicker-burger .game-actions > button {
+    height: 44px;
+  }
+  .clicker-burger .sheet-surface {
+    max-height: 80dvh;
+  }
+  .clicker-burger .sheet-body {
+    padding-inline: 25px;
+  }
+  .clicker-burger .toast {
+    bottom: 242px;
+  }
+}
+@media (max-width: 380px) {
+  .clicker-burger .game-header {
+    padding-inline: 12px;
+    gap: 7px;
+  }
+  .clicker-burger .game-header h1 {
+    font-size: 20px;
+    letter-spacing: -0.8px;
+  }
+  .clicker-burger .game-header [data-slot="button"] {
+    width: 33px;
+    height: 35px;
+  }
+  .clicker-burger .header-actions {
+    gap: 6px;
+  }
+  .clicker-burger .avatar {
+    width: 35px;
+    height: 35px;
+    font-size: 12px;
+  }
+  .clicker-burger .home {
+    padding-inline: 16px;
+  }
+  .clicker-burger .balance-row {
+    min-height: 117px;
+    margin-bottom: 10px;
+  }
+  .clicker-burger .building-image {
+    width: 108px;
+    height: 108px;
+  }
+  .clicker-burger .cash strong {
+    font-size: 24px;
+  }
+  .clicker-burger .restaurant-card {
+    padding: 16px;
+  }
+  .clicker-burger .burger-cover {
+    height: 78px;
+  }
+  .clicker-burger .metrics {
+    gap: 10px;
+    font-size: 12px;
+  }
+  .clicker-burger .metrics dd > small {
+    font-size: 9px;
+  }
+  .clicker-burger .price-row button {
+    width: 32px;
+    height: 34px;
+  }
+  .clicker-burger .control-dock {
+    padding-inline: 16px;
+  }
+  .clicker-burger .game-actions {
+    margin-bottom: 18px;
+    gap: 10px;
+  }
+  .clicker-burger .game-actions > button {
+    height: 42px;
+    font-size: 13px;
+  }
+  .clicker-burger .clicker-button {
+    height: 48px !important;
+    font-size: 17px !important;
+  }
+  .clicker-burger .toast {
+    bottom: 218px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clicker-burger *,
+  .clicker-burger *::before,
+  .clicker-burger *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.clicker-burger .mission-history {
+  margin-top: 24px;
+  color: var(--muted-foreground);
+}
+.clicker-burger .mission-history [data-slot="accordion-trigger"] {
+  font-size: 12px;
+}
+.clicker-burger .completed-mission {
+  font-size: 12px;
+  color: var(--muted-foreground);
+  opacity: 0.6;
+  padding: 8px 0;
+  user-select: none;
+}
+.clicker-burger .level-dialog {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  width: min(90vw, 360px);
+  background: var(--background);
+  color: var(--foreground);
+  text-align: center;
+}
+.clicker-burger .level-dialog::backdrop {
+  background: #0006;
+  backdrop-filter: blur(3px);
+}
+.clicker-burger .level-dialog img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  margin: 5px auto 15px;
+}
+.clicker-burger .level-dialog h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+.clicker-burger .level-dialog p {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  margin-bottom: 22px;
+}
+.clicker-burger .level-dialog button {
+  width: 100%;
+}
+
+.clicker-burger.game-sheet-portal {
+  margin: 0 auto;
+  max-width: 640px;
+  max-height: 85dvh;
+  padding: 0;
+  gap: 0;
+  border-radius: 20px 20px 0 0;
+  background: var(--background);
+  color: var(--foreground);
+  overflow: hidden;
+}
+.clicker-burger.game-sheet-portal .sheet-header {
+  flex-direction: row;
+}
+.clicker-burger.game-sheet-portal .sheet-body {
+  flex: 1;
+  overflow: auto;
+}
+
+.clicker-burger.game-sheet-portal{min-height:0;height:auto}.clicker-burger .level-dialog{position:fixed;inset:0;margin:auto;max-height:calc(100dvh - 32px);overflow:auto}

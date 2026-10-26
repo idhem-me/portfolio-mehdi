@@ -1,3 +1,4 @@
+import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
@@ -222,6 +223,15 @@ export function getCaseStudy(
   return data as CaseStudyContent;
 }
 
-export function getGames(locale:string):RealisationsContent {
- const {data}=readMarkdown(locale,"jeux.md");const page=data as RealisationsContent;return {...page,caseStudies:tetrisEnabled?page.caseStudies:[]};
+export function getGames(locale: string): RealisationsContent {
+  const { data } = readMarkdown(locale, "jeux.md");
+  const page = data as RealisationsContent;
+  return {
+    ...page,
+    caseStudies: page.caseStudies.filter((study) => {
+      if (study.slug === "tetris") return tetrisEnabled;
+      if (study.slug === "clicker-burger") return clickerBurgerEnabled;
+      return true;
+    }),
+  };
 }

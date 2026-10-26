@@ -1,4 +1,5 @@
 "use client";
+import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 
 import { Home, Layers, UserRound, Gamepad2 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -54,7 +55,14 @@ export function AppSidebar() {
       icon: Layers,
       match: (path: string) => path.startsWith("/realisations"),
     },
-    ...(tetrisEnabled ? [{href:"/jeux",label:t("games"),icon:Gamepad2,match:(path:string)=>path.startsWith("/jeux")}] : []),
+    ...(tetrisEnabled || clickerBurgerEnabled
+      ? [{
+          href: "/jeux",
+          label: t("games"),
+          icon: Gamepad2,
+          match: (path: string) => path.startsWith("/jeux"),
+        }]
+      : []),
     {
       href: "/a-propos",
       label: t("about"),
