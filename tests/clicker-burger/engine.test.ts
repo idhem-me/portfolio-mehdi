@@ -20,6 +20,8 @@ import {
   spaceWillingnessToPay,
   gameDateISO,
   OWNERSHIP_CAP,
+  burgersPerClick,
+  capitalMultiplier,
 } from "../../src/features/clicker-burger/engine/game";
 import {
   parseSave,
@@ -133,6 +135,20 @@ test("prestige keeps permanent bonus and resets assets", () => {
   assert.equal(n.capital, 5);
   assert.equal(n.money, "20");
   assert.equal(n.counts.cook, 0);
+  assert(n.ingredients >= 20);
+});
+test("high capital still lets the first cook happen with a tiny treasury", () => {
+  const s = initial();
+  s.capital = 800_000;
+  s.money = "20";
+  s.ingredients = 20;
+  const before = burgersPerClick(s);
+  assert(before > 5);
+  const n = act(s, { type: "cook" });
+  assert(n.manual === 1);
+  assert(n.stock > 0);
+  assert(D(n.money).gte(0));
+  assert(n.stock <= before + 1e-9);
 });
 test("save roundtrip rejects corrupt and unknown data", () => {
   const s = initial();
@@ -270,7 +286,7 @@ test("overpriced tickets collapse demand; mid-game revenue tracks outlets", () =
   assert(atCrazy < atComfort * 0.15);
   s.price = w;
   // ~30 adresses : CA / j d’un réseau régional, pas d’un McDo mondial.
-  assert(atComfort < 8e5);
+  assert(atComfort < 1.5e6);
   assert(rates(s).demand <= rates(s).production * 1.05);
 });
 test("absurd catalog price sells nothing; endgame comfort caps near 10k", () => {

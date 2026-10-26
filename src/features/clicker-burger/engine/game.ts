@@ -283,13 +283,21 @@ export function levelMultiplier(s: State) {
   return LEVELS[buildingLevel(s) - 1].multiplier;
 }
 /**
+ * Bonus permanent après liquidations. Logarithmique : un gros capital
+ * accélère sans rendre le premier clic impayable (ex-×0,04 linéaire).
+ * capital 10 ≈ ×2,2 · 100 ≈ ×3,3 · 10k ≈ ×5,6 · 1M ≈ ×7,9
+ */
+export function capitalMultiplier(s: State) {
+  return 1 + Math.log10(1 + Math.max(0, s.capital)) * 1.15;
+}
+/**
  * Bonus d’empire (recette, capital, niveau). Conservateur : le volume suit
  * surtout le nombre d’adresses, pas un empilement de ×512.
  */
 export function clickProduction(s: State) {
   return (
     (s.research.includes("recipe") ? 1.35 : 1) *
-    (1 + s.capital * 0.04) *
+    capitalMultiplier(s) *
     levelMultiplier(s)
   );
 }
@@ -353,7 +361,7 @@ function coreRates(s: State) {
       s.counts.quantum * quantumGen.production) *
     (spaceBonus - 1);
   const demandBoost =
-    (1 + s.capital * 0.025) *
+    (1 + (capitalMultiplier(s) - 1) * 0.55) *
     (s.elapsed < s.boostUntil ? s.boost : 1) *
     (1 + s.rivals.length * 0.08) *
     (s.research.includes("branding") ? 1.12 : 1) *
@@ -711,10 +719,18 @@ export function act(s: State, a: Action): State {
     note(n, `${offer.name} · niveau ${n.level}.`);
   }
   if (a.type === "cook") {
-    const amount = burgersPerClick(s);
-    const extra = Math.max(0, amount - n.ingredients);
-    if (!pay(D(extra).mul(rates(n).ingredientCost))) return s;
-    n.ingredients = Math.max(0, n.ingredients - amount);
+    // Après une grosse liquidation, le clic théorique peut dépasser la caisse :
+    // on prépare autant que les stocks + la trésorerie le permettent.
+    const wanted = burgersPerClick(s);
+    const unit = rates(n).ingredientCost;
+    const cashRoom =
+      unit > 0 ? Math.max(0, D(n.money).div(unit).toNumber()) : wanted;
+    const amount = Math.min(wanted, n.ingredients + cashRoom);
+    if (amount <= 0) return s;
+    const fromStock = Math.min(n.ingredients, amount);
+    const extra = Math.max(0, amount - fromStock);
+    if (extra > 0 && !pay(D(extra).mul(unit))) return s;
+    n.ingredients = Math.max(0, n.ingredients - fromStock);
     n.stock += amount;
     n.manual++;
   }
@@ -879,6 +895,11 @@ export function prestige(s: State, now = Date.now()) {
   const gain = prestigeGain(s);
   if (!gain) return s;
   const n = initial(now, Math.min(1e9, s.capital + gain));
+  // Petit filet de redémarrage proportionnel au capital (sans casser l’early).
+  n.ingredients = Math.max(
+    20,
+    Math.min(120, 20 + Math.floor(Math.sqrt(n.capital))),
+  );
   n.log = [
     "Votre entreprise vient de faire faillite. Les actionnaires sont ravis.",
   ];
