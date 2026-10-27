@@ -25,7 +25,7 @@
     },
     {
       "title": "Cards",
-      "status": "收集原型",
+      "status": "Work in progress",
       "slug": "cards"
     }
   ]

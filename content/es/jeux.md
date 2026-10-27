@@ -25,7 +25,7 @@
     },
     {
       "title": "Cartas",
-      "status": "Prototipo de colección",
+      "status": "Work in progress",
       "slug": "cards"
     }
   ]

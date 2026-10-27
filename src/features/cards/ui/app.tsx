@@ -1,5 +1,7 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Settings2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -99,7 +101,10 @@ export default function CardsApp({ backHref }: { backHref: string }) {
             <ArrowLeft />
           </Link>
         </Button>
-        <h1 className="cards-title">Cartes</h1>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <h1 className="cards-title">Cartes</h1>
+          <Badge variant="secondary">Work in progress</Badge>
+        </div>
         <div className="cards-header-actions">
           <Button
             variant="ghost"

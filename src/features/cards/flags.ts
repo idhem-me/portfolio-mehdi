@@ -1,10 +1,7 @@
-/**
- * Enabled on localhost (`next dev`), disabled on production builds.
- * Override with NEXT_PUBLIC_ENABLE_CARDS=true for a remote preview.
- */
+/** Available publicly while under development; explicit false remains a kill switch. */
 export const cardsEnabled =
   process.env.NODE_ENV === "development" ||
-  process.env.NEXT_PUBLIC_ENABLE_CARDS === "true";
+  process.env.NEXT_PUBLIC_ENABLE_CARDS !== "false";
 
-/** Prototype: keep out of search indexes. */
+/** Keep the work in progress out of search indexes. */
 export const cardsPublic = false;

@@ -25,7 +25,7 @@
     },
     {
       "title": "Cartes",
-      "status": "Prototype collection",
+      "status": "Work in progress",
       "slug": "cards"
     }
   ]

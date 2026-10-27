@@ -25,7 +25,7 @@
     },
     {
       "title": "Cards",
-      "status": "نموذج أولي للجمع",
+      "status": "Work in progress",
       "slug": "cards"
     }
   ]
