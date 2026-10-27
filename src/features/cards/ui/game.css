@@ -47,6 +47,9 @@
   align-items: center;
   gap: 0.25rem;
 }
+.cards-header-actions:has(.cards-avatar-frame) > :last-child {
+  margin-inline-start: 8px;
+}
 
 .cards-tabs {
   padding: 0 1rem 7rem;
@@ -270,12 +273,6 @@
   border: 1px solid var(--border);
 }
 
-.cards-card-back-mark {
-  font-size: 2rem;
-  font-weight: 600;
-  color: var(--muted-foreground);
-}
-
 .cards-rarity-common .cards-card-art {
   background: var(--muted);
 }
@@ -449,6 +446,13 @@
 .cards-summary .cards-summary-list {
   width: 100%;
   margin-top: 1.5rem;
+}
+.cards-summary-segments {
+  margin-top: 1rem;
+  width: 100%;
+}
+.cards-summary:has(.cards-summary-segments) .cards-summary-list {
+  margin-top: 1rem;
 }
 .cards-summary-item {
   position: relative;
@@ -1298,6 +1302,7 @@
   padding-bottom: calc(200px + env(safe-area-inset-bottom));
 }
 .cards-summary > h2,
+.cards-summary > .cards-summary-segments,
 .cards-summary > .cards-summary-list {
   flex-shrink: 0;
 }

@@ -278,7 +278,7 @@ function FrontCard({
       aria-label={
         faceUp
           ? `${card.name}${front.shiny ? ", Shiny" : ""}, ${RARITY_LABELS[front.rarity]}. Touchez ou glissez pour avancer.`
-          : `Carte ${currentIndex + 1} face cachée`
+          : `${card.name}${front.shiny ? ", Shiny" : ""}, ${RARITY_LABELS[front.rarity]}. Révélation…`
       }
       onPointerDown={(event) => {
         if (
@@ -340,7 +340,6 @@ function FrontCard({
         <div className="cards-wow-front">
           <CardFace
             card={card}
-            faceDown={!faceUp}
             shiny={front.shiny}
             effectActive={faceUp && !reduced}
             className="cards-stack-face"

@@ -226,7 +226,12 @@ export function Shop() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Toast message={toast} error={failed} onDismiss={() => setToast(null)} />
+      <Toast
+        message={toast}
+        error={failed}
+        placement="top-end"
+        onDismiss={() => setToast(null)}
+      />
     </div>
   );
 }

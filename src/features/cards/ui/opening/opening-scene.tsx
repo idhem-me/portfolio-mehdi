@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { BoosterSelector } from "./booster-selector";
 import { RARITY_RANK } from "../../catalog/types";
@@ -136,8 +137,14 @@ export function OpeningScene({
   };
 
   const [summaryLimit, setSummaryLimit] = useState(50);
+  const [summaryFilter, setSummaryFilter] = useState<"new" | "dup">("new");
   const [startError, setStartError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setSummaryLimit(50);
+    setSummaryFilter("new");
+  }, [open?.openId]);
   const start = async (quantity: number) => {
     if (starting.current || !ready) return;
     if (
@@ -477,6 +484,36 @@ export function OpeningScene({
 
   // —— Summary ——
   if (open.phase === "summary") {
+    const summaryCards = open.batchCards ?? open.cards;
+    const summaryItems = summaryCards.map((drawn, index) => {
+      const card = getCard(drawn.cardId)!;
+      const before = open.batchCards
+        ? Math.max(
+            0,
+            (collection[drawn.cardId]?.qty ?? 0) -
+              summaryCards.filter((entry) => entry.cardId === drawn.cardId)
+                .length,
+          )
+        : qtyBefore(drawn.cardId, open);
+      const isNew =
+        before === 0 &&
+        !open.simulation &&
+        summaryCards.findIndex((entry) => entry.cardId === drawn.cardId) ===
+          index;
+      const ownedNow = open.simulation
+        ? before
+        : (collection[drawn.cardId]?.qty ?? before + 1);
+      return { drawn, index, card, isNew, ownedNow };
+    });
+    const nouvelles = summaryItems.filter((item) => item.isNew);
+    const doublons = summaryItems.filter((item) => !item.isNew);
+    const showSegments = nouvelles.length > 0 && doublons.length > 0;
+    const visibleItems = showSegments
+      ? summaryFilter === "new"
+        ? nouvelles
+        : doublons
+      : summaryItems;
+
     return (
       <div className="cards-opening cards-summary">
         {open.simulation && (
@@ -485,50 +522,49 @@ export function OpeningScene({
           </Badge>
         )}
         <h2 className="text-lg font-medium">Récapitulatif</h2>
+        {showSegments && (
+          <Tabs
+            value={summaryFilter}
+            onValueChange={(value) => {
+              setSummaryFilter(value as "new" | "dup");
+              setSummaryLimit(50);
+            }}
+            className="cards-summary-segments"
+          >
+            <TabsList
+              aria-label="Filtrer le récapitulatif"
+              className="w-full"
+            >
+              <TabsTrigger value="new" className="flex-1">
+                Nouvelles ({nouvelles.length})
+              </TabsTrigger>
+              <TabsTrigger value="dup" className="flex-1">
+                Doublons ({doublons.length})
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
         <ul className="cards-grid cards-summary-list">
-          {(open.batchCards ?? open.cards)
-            .slice(0, summaryLimit)
-            .map((drawn, index) => {
-              const card = getCard(drawn.cardId)!;
-              const summaryCards = open.batchCards ?? open.cards;
-              const before = open.batchCards
-                ? Math.max(
-                    0,
-                    (collection[drawn.cardId]?.qty ?? 0) -
-                      summaryCards.filter(
-                        (card) => card.cardId === drawn.cardId,
-                      ).length,
-                  )
-                : qtyBefore(drawn.cardId, open);
-              const isNew =
-                before === 0 &&
-                !open.simulation &&
-                summaryCards.findIndex((c) => c.cardId === drawn.cardId) ===
-                  index;
-              const ownedNow = open.simulation
-                ? before
-                : (collection[drawn.cardId]?.qty ?? before + 1);
-              return (
-                <li
-                  key={`${open.openId}-sum-${index}`}
-                  className="cards-summary-item"
-                >
-                  <CardFace
-                    card={card}
-                    compact
-                    shiny={drawn.shiny}
-                    qty={ownedNow}
-                  />
-                  {isNew && (
-                    <Badge variant="default" className="cards-summary-new">
-                      Nouveau
-                    </Badge>
-                  )}
-                </li>
-              );
-            })}
+          {visibleItems.slice(0, summaryLimit).map((item) => (
+            <li
+              key={`${open.openId}-sum-${item.index}`}
+              className="cards-summary-item"
+            >
+              <CardFace
+                card={item.card}
+                compact
+                shiny={item.drawn.shiny}
+                qty={item.ownedNow}
+              />
+              {item.isNew && !showSegments && (
+                <Badge variant="default" className="cards-summary-new">
+                  Nouveau
+                </Badge>
+              )}
+            </li>
+          ))}
         </ul>
-        {(open.batchCards ?? open.cards).length > summaryLimit && (
+        {visibleItems.length > summaryLimit && (
           <Button
             variant="secondary"
             onClick={() => setSummaryLimit((n) => n + 50)}

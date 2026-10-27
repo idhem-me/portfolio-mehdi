@@ -111,13 +111,9 @@ export function CardFace({
         }
         aria-disabled={missing || undefined}
       >
-        {missing ? (
+        {missing && (
           <span className="text-2xl font-semibold text-center px-2">
             Non obtenue
-          </span>
-        ) : (
-          <span className="cards-card-back-mark" aria-hidden>
-            ?
           </span>
         )}
         {missing && compact && (
