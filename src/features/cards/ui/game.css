@@ -1104,6 +1104,8 @@
   padding-bottom: calc(200px + env(safe-area-inset-bottom));
 }
 .cards-opening-idle .cards-booster-reserve {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   margin-bottom: 0.5rem;
 }
@@ -1390,12 +1392,13 @@
 }
 
 /* Center with a spring, rather than native snap (which can jump on release).
-   Extend the scroll viewport vertically so the booster shadows fade naturally. */
+   Extend the scroll viewport downward so booster shadows fade without
+   overlapping the reserve header (which must stay interactive). */
 .cards-opening-idle .cards-booster-carousel {
   scroll-snap-type: none;
   scroll-behavior: auto;
-  padding-block: 6rem;
-  margin-block: -4rem;
+  padding-block: 2rem 6rem;
+  margin-block: 0 -4rem;
 }
 
 .cards-booster-reserve {
