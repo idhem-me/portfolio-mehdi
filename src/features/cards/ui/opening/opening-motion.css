@@ -531,3 +531,24 @@
     animation: none;
   }
 }
+
+.cards-opening-overlay {
+  background: transparent;
+  backdrop-filter: none;
+}
+.cards-scene-entering {
+  animation: cards-scene-enter 550ms ease-out both;
+}
+@keyframes cards-scene-enter {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: var(--background);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cards-scene-entering {
+    animation: none;
+  }
+}

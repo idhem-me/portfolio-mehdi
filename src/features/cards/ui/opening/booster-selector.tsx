@@ -18,14 +18,20 @@ export function BoosterSelector({
   onSelect,
   reduced,
   collection,
+  onOpen,
+  canOpen,
 }: {
   selected: CardSetId;
+  onOpen: () => void;
+  canOpen: boolean;
   onSelect: (setId: CardSetId) => void;
   reduced: boolean;
   collection: Record<string, { qty: number }>;
 }) {
   const viewport = useRef<HTMLDivElement>(null);
   const selectedRef = useRef(selected);
+  const suppressClick = useRef(false);
+  const pressedSet = useRef<string | undefined>(undefined);
   const settling = useRef<ReturnType<typeof animate> | null>(null);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mouseDrag = useRef<{
@@ -119,7 +125,25 @@ export function BoosterSelector({
             settleTimer.current = setTimeout(() => go(nearest(element)), 120);
           }
         }}
+        onClick={(event) => {
+          if (suppressClick.current) {
+            suppressClick.current = false;
+            return;
+          }
+          const option = (event.target as HTMLElement).closest<HTMLElement>(
+            "[data-booster-set]",
+          );
+          const clickedSet = option?.dataset.boosterSet ?? pressedSet.current;
+          if (!clickedSet) return;
+          if (clickedSet === selected) {
+            if (canOpen) onOpen();
+          } else go(CARD_SETS.findIndex((set) => set.id === clickedSet));
+        }}
         onPointerDown={(event) => {
+          suppressClick.current = false;
+          pressedSet.current = (
+            event.target as HTMLElement
+          ).closest<HTMLElement>("[data-booster-set]")?.dataset.boosterSet;
           if (event.pointerType !== "mouse" || event.button !== 0) return;
           settling.current?.stop();
           settling.current = null;
@@ -154,6 +178,7 @@ export function BoosterSelector({
           const drag = mouseDrag.current;
           if (!drag) return;
           const distance = drag.x - event.clientX;
+          suppressClick.current = Math.abs(distance) > 8;
           const velocity =
             performance.now() - drag.time < 100 ? drag.velocity : 0;
           const width = (
@@ -185,12 +210,25 @@ export function BoosterSelector({
         {CARD_SETS.map((set) => (
           <div
             key={set.id}
+            data-booster-set={set.id}
             className={`cards-booster-option cards-booster-option-${set.id}`}
             role="group"
             aria-roledescription="diapositive"
             aria-label={`${set.name}, ${set.count} cartes`}
           >
-            <div className="cards-selector-pack-frame">
+            <div
+              className="cards-selector-pack-frame"
+              role="button"
+              tabIndex={selected === set.id ? 0 : -1}
+              aria-label={`Ouvrir un booster ${set.name}`}
+              aria-disabled={!canOpen}
+              onKeyDown={(event) => {
+                if (["Enter", " "].includes(event.key)) {
+                  event.preventDefault();
+                  if (canOpen && !event.repeat) onOpen();
+                }
+              }}
+            >
               <BoosterArtwork setId={set.id} />
               <Badge
                 variant="secondary"

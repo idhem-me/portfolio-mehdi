@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { motion, useMotionValue, animate } from "motion/react";
 import type { PackKind } from "../../engine/draw";
 import type { CardsAudio } from "../../feel/audio";
@@ -13,6 +19,7 @@ import { cutGesture, wrapperExitTiming, cutRelease } from "./gesture-config";
 
 type Props = {
   kind: PackKind;
+  entryRect?: { x: number; y: number; width: number; height: number } | null;
   stackIndex?: number;
   batchCount?: number;
   setId: CardSetId;
@@ -28,6 +35,7 @@ type Props = {
 };
 
 export function BoosterCutStage({
+  entryRect,
   stackIndex = 0,
   setId,
   frontIndex = 0,
@@ -47,6 +55,35 @@ export function BoosterCutStage({
   const maxTravel = useRef(0);
   const committedRef = useRef(false);
   const axisLocked = useRef<"h" | "v" | null>(null);
+  const assembly = useRef<HTMLDivElement>(null);
+  const enterX = useMotionValue(0);
+  const enterY = useMotionValue(0);
+  const enterScaleX = useMotionValue(1);
+  const enterScaleY = useMotionValue(1);
+  const [entering, setEntering] = useState(Boolean(entryRect && !reduced));
+  useLayoutEffect(() => {
+    if (!entryRect || reduced || !assembly.current) return;
+    const target = assembly.current.getBoundingClientRect();
+    enterX.set(entryRect.x - target.x);
+    enterY.set(entryRect.y - target.y);
+    enterScaleX.set(entryRect.width / target.width);
+    enterScaleY.set(entryRect.height / target.height);
+    const options = {
+      duration: 0.55,
+      ease: [0.22, 0.8, 0.25, 1] as [number, number, number, number],
+    };
+    const animations = [
+      animate(enterX, 0, options),
+      animate(enterY, 0, options),
+      animate(enterScaleX, 1, options),
+      animate(enterScaleY, 1, options),
+    ];
+    const timer = window.setTimeout(() => setEntering(false), 550);
+    return () => {
+      window.clearTimeout(timer);
+      animations.forEach((animation) => animation.stop());
+    };
+  }, [entryRect, reduced, enterX, enterY, enterScaleX, enterScaleY]);
   const stripX = useMotionValue(0);
   const bodyY = useMotionValue(0);
 
@@ -78,7 +115,7 @@ export function BoosterCutStage({
 
   const commit = useCallback(
     (direction: CutDirection) => {
-      if (committedRef.current || phase !== "cutting") return;
+      if (entering || committedRef.current || phase !== "cutting") return;
       committedRef.current = true;
       setCommitted(true);
       unlock();
@@ -87,7 +124,7 @@ export function BoosterCutStage({
       setProgress(1);
       onCutValidated(direction);
     },
-    [phase, unlock, audio, settings, iosSwitch, onCutValidated],
+    [entering, phase, unlock, audio, settings, iosSwitch, onCutValidated],
   );
 
   useEffect(() => {
@@ -245,7 +282,7 @@ export function BoosterCutStage({
       animate={{
         y: -depth * 4,
         scale: 1 - depth * (0.075 / 9),
-        opacity: 1,
+        opacity: entering && stackIndex > 0 ? 0 : 1,
       }}
       transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.8, 0.25, 1] }}
       style={{
@@ -255,12 +292,20 @@ export function BoosterCutStage({
       }}
       aria-hidden={stackIndex > 0}
     >
-      {stackIndex === 0 && phase === "cutting" && !committed && (
+      {stackIndex === 0 && phase === "cutting" && !committed && !entering && (
         <p className="cards-cut-hint">Touche ou glisse pour ouvrir</p>
       )}
-      <div
+      <motion.div
+        ref={assembly}
         className={`cards-booster-assembly ${phase === "wrapperExit" ? "is-exiting" : ""}`}
-        style={{ ["--cut-progress" as string]: String(progress) }}
+        style={{
+          ["--cut-progress" as string]: String(progress),
+          x: enterX,
+          y: enterY,
+          scaleX: enterScaleX,
+          scaleY: enterScaleY,
+          transformOrigin: "0 0",
+        }}
         role={stackIndex === 0 ? "button" : undefined}
         tabIndex={stackIndex === 0 && phase === "cutting" ? 0 : -1}
         aria-label="Découper le booster"
@@ -307,10 +352,10 @@ export function BoosterCutStage({
           <BoosterArtwork setId={setId} showCollection={false} />
           <span className="cards-cut-line" />
         </motion.div>
-        {stackIndex === 0 && phase === "cutting" && !committed && (
+        {stackIndex === 0 && phase === "cutting" && !committed && !entering && (
           <span className="cards-cut-glow" aria-hidden="true" />
         )}
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

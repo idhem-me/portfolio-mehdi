@@ -58,6 +58,24 @@ export function OpeningScene({
 }: Props) {
   const reduced = usePrefersReducedMotion();
   const [selectedSet, setSelectedSet] = useState<CardSetId>("origins");
+  const [entryRect, setEntryRect] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const captureBooster = () => {
+    const rect = document
+      .querySelector(
+        `[data-booster-set="${selectedSet}"] .cards-selector-pack-frame`,
+      )
+      ?.getBoundingClientRect();
+    setEntryRect(
+      rect
+        ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
+        : null,
+    );
+  };
   const [cutFrontIndex, setCutFrontIndex] = useState(0);
   const [tick, setTick] = useState(0);
   const starting = useRef(false);
@@ -97,6 +115,7 @@ export function OpeningScene({
   const startOpen = () => {
     if (starting.current) return;
     starting.current = true;
+    captureBooster();
     unlockFeel();
     cardsHaptic("light", settings, iosSwitch.current);
     const next = controller.startOpen({ setId: selectedSet }, devUnlimited);
@@ -283,6 +302,8 @@ export function OpeningScene({
         {boosterStatus}
         <BoosterSelector
           collection={collection}
+          onOpen={startOpen}
+          canOpen={bank.available > 0 || unlimited}
           selected={selectedSet}
           onSelect={setSelectedSet}
           reduced={reduced}
@@ -300,6 +321,7 @@ export function OpeningScene({
             onClick={() => {
               if (starting.current) return;
               starting.current = true;
+              captureBooster();
               unlockFeel();
               controller.openTen({ setId: selectedSet }, unlimited);
               refresh();
@@ -330,6 +352,7 @@ export function OpeningScene({
                 : undefined
             }
             onSimulate={(opts) => {
+              captureBooster();
               unlockFeel();
               controller.startSimulation({ ...opts, setId: selectedSet });
               refresh();
@@ -456,7 +479,8 @@ export function OpeningScene({
       }}
     >
       <DialogContent
-        className="cards-opening-immersive cards-surface is-immersive"
+        className={`cards-opening-immersive cards-surface is-immersive ${entryRect && !reduced ? "cards-scene-entering" : ""}`}
+        overlayClassName="cards-opening-overlay"
         style={{ translate: "none" }}
         onPointerDownOutside={(event) => event.preventDefault()}
         onInteractOutside={(event) => event.preventDefault()}
@@ -506,6 +530,7 @@ export function OpeningScene({
             Array.from({ length: open.batchKinds?.length ?? 1 }, (_, index) => (
               <BoosterCutStage
                 key={`${open.openId}-cut-${index}`}
+                entryRect={entryRect}
                 stackIndex={index}
                 batchCount={open.batchKinds?.length ?? 1}
                 kind={open.batchKinds?.[index] ?? open.kind}
