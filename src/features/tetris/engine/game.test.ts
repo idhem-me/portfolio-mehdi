@@ -10,6 +10,7 @@ import {
   ghost,
   clear,
   lineScore,
+  gravityMs,
   type Piece,
 } from "./game";
 import { createBag, PIECE_NAMES, getKicks } from "./pieces";
@@ -93,6 +94,13 @@ function well(g: Game, n: number) {
   for (let y = 22 - n; y < 22; y++) g.board[y][5] = null;
   g.current = { piece: "I", rot: 1, x: 3, y: 18 };
 }
+test("gravity curve steepens with level (0.7 decay, 35ms floor)", () => {
+  assert.equal(gravityMs(1), 1000);
+  assert.equal(gravityMs(2), 700);
+  assert.equal(gravityMs(5), 1000 * Math.pow(0.7, 4));
+  assert.ok(gravityMs(5) < 1000 * Math.pow(0.8, 4));
+  assert.equal(gravityMs(20), 35);
+});
 test("event bus, actual scoring, B2B, combo and levels", () => {
   const g = new Game(() => 0.2);
   const events: string[] = [];
