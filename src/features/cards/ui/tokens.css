@@ -21,7 +21,7 @@
   margin-inline: calc((100% - 100vw) / 2);
   padding: 0;
   border-bottom: none;
-  background: var(--background);
+  background: transparent;
 }
 .cards-header-inner {
   display: flex;

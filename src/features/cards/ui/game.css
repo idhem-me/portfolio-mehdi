@@ -17,6 +17,8 @@
 }
 
 .cards-game {
+  position: relative;
+  isolation: isolate;
   font-family: var(--font-sans), sans-serif;
   max-width: 40rem;
   margin: 0 auto;
@@ -24,6 +26,146 @@
   background: var(--background);
   color: var(--foreground);
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+.cards-game > :not(.cards-ambient) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Pastel wallpaper + light dust (tokens only; reduced-motion = static wash). */
+.cards-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 90% 70% at 12% 8%,
+      color-mix(in oklch, var(--accent) 14%, transparent),
+      transparent 62%
+    ),
+    radial-gradient(
+      ellipse 80% 55% at 92% 18%,
+      color-mix(in oklch, var(--muted) 85%, var(--accent) 15%),
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 70% 60% at 70% 88%,
+      color-mix(in oklch, var(--secondary) 70%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 8% 78%,
+      color-mix(in oklch, var(--accent) 8%, transparent),
+      transparent 65%
+    );
+}
+.cards-ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: 0.45;
+  will-change: transform;
+}
+.cards-ambient-orb-a {
+  width: min(52vw, 22rem);
+  height: min(52vw, 22rem);
+  left: -8%;
+  top: 12%;
+  background: color-mix(in oklch, var(--accent) 22%, white);
+  animation: cards-ambient-drift-a 28s ease-in-out infinite alternate;
+}
+.cards-ambient-orb-b {
+  width: min(44vw, 18rem);
+  height: min(44vw, 18rem);
+  right: -6%;
+  top: 28%;
+  background: color-mix(in oklch, var(--muted) 55%, var(--accent) 18%);
+  animation: cards-ambient-drift-b 34s ease-in-out infinite alternate;
+}
+.cards-ambient-orb-c {
+  width: min(48vw, 20rem);
+  height: min(48vw, 20rem);
+  left: 28%;
+  bottom: -10%;
+  background: color-mix(in oklch, var(--secondary) 60%, white);
+  animation: cards-ambient-drift-c 31s ease-in-out infinite alternate;
+}
+.cards-ambient-orb-d {
+  width: min(36vw, 14rem);
+  height: min(36vw, 14rem);
+  right: 18%;
+  bottom: 22%;
+  background: color-mix(in oklch, var(--accent) 12%, var(--muted));
+  opacity: 0.35;
+  animation: cards-ambient-drift-d 24s ease-in-out infinite alternate;
+}
+.cards-ambient-dust {
+  position: absolute;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--foreground) 28%, transparent);
+  animation-name: cards-ambient-dust;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, opacity;
+  opacity: var(--dust-opacity, 0.22);
+}
+@keyframes cards-ambient-drift-a {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(8%, 10%) scale(1.08);
+  }
+}
+@keyframes cards-ambient-drift-b {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(-10%, 6%) scale(1.12);
+  }
+}
+@keyframes cards-ambient-drift-c {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(6%, -8%) scale(1.06);
+  }
+}
+@keyframes cards-ambient-drift-d {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(-7%, -5%);
+  }
+}
+@keyframes cards-ambient-dust {
+  0% {
+    transform: translate3d(0, 8px, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--dust-opacity, 0.22);
+  }
+  88% {
+    opacity: var(--dust-opacity, 0.22);
+  }
+  100% {
+    transform: translate3d(var(--dust-drift, 8px), -110vh, 0);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cards-ambient-orb {
+    animation: none;
+  }
+  .cards-ambient-dust {
+    display: none;
+  }
 }
 
 .cards-header {

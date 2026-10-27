@@ -7,6 +7,8 @@ export type CardsSettings = {
   effectsVolume: number;
   haptics: boolean;
   ios: boolean;
+  /** Soft pastel dust wallpaper behind the game shell. */
+  animatedBackground: boolean;
 };
 
 export const defaults: CardsSettings = {
@@ -14,6 +16,7 @@ export const defaults: CardsSettings = {
   effectsVolume: 50,
   haptics: true,
   ios: false,
+  animatedBackground: true,
 };
 
 export function audioGain(slider: number) {
@@ -31,6 +34,10 @@ export function loadSettings(): CardsSettings {
     return {
       ...defaults,
       ...stored,
+      animatedBackground:
+        typeof stored.animatedBackground === "boolean"
+          ? stored.animatedBackground
+          : defaults.animatedBackground,
       effectsVolume: Math.max(
         0,
         Math.min(

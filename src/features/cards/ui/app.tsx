@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { Settings2, Gem, Store } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -36,6 +37,7 @@ import { Toast } from "@/components/ui/toast";
 import { CardsAudio } from "../feel/audio";
 import { defaults, type CardsSettings } from "../feel/config";
 
+import { AmbientBackdrop } from "./ambient-backdrop";
 import { CollectionScreen } from "./collection-screen";
 import { OpeningScene } from "./opening-scene";
 import { ResetCollection } from "./reset-collection";
@@ -57,7 +59,10 @@ export default function CardsApp({
     [notify],
   );
   const controller = session.controller;
-  const settings = account.data?.profile.settings ?? defaults;
+  const settings: CardsSettings = {
+    ...defaults,
+    ...(account.data?.profile.settings ?? {}),
+  };
   useEffect(() => {
     if (account.data) {
       controller.replaceSave(account.data.save);
@@ -132,6 +137,7 @@ export default function CardsApp({
   return (
     <ScopedTheme value={theme}>
       <div className="cards-game" data-cards-theme={theme}>
+        {settings.animatedBackground && <AmbientBackdrop />}
         <header className="cards-header">
           <div className="cards-header-inner">
             <h1 className="cards-title">Cartes</h1>
@@ -267,6 +273,35 @@ export default function CardsApp({
             </SheetHeader>
             <div className="cards-settings px-4 pb-6">
               <GameAppearanceSettings />
+              <section
+                className="cards-settings-section"
+                aria-labelledby="cards-ambient-title"
+              >
+                <h2 id="cards-ambient-title">Fond d’écran</h2>
+                <p>Poussière pastel animée derrière le jeu.</p>
+                <div className="cards-feel-settings">
+                  <Button
+                    variant="outline"
+                    role="switch"
+                    aria-label="Fond animé"
+                    aria-checked={settings.animatedBackground}
+                    onClick={() =>
+                      updateSettings({
+                        animatedBackground: !settings.animatedBackground,
+                      })
+                    }
+                  >
+                    Fond animé
+                    <Badge
+                      variant={
+                        settings.animatedBackground ? "default" : "secondary"
+                      }
+                    >
+                      {settings.animatedBackground ? "Oui" : "Non"}
+                    </Badge>
+                  </Button>
+                </div>
+              </section>
               <section
                 className="cards-settings-section"
                 aria-labelledby="cards-feel-title"
