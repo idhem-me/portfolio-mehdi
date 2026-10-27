@@ -3,6 +3,7 @@ import type { CardDefinition, Rarity } from "../catalog/types";
 import { cryptoRandom, type Rng } from "@/lib/games/rng";
 import {
   GOLD_PACK_PROBABILITY,
+  SHINY_PROBABILITY,
   STANDARD_COMMON_SLOTS,
   STANDARD_PACK_SIZE,
   buildFifthCardIntervals,
@@ -11,6 +12,7 @@ import {
 export type PackKind = "standard" | "gold_pack";
 
 export type DrawnCard = {
+  shiny?: boolean;
   cardId: string;
   rarity: Rarity;
   slot: number;
@@ -23,13 +25,18 @@ export type PackResult = {
 
 export type DrawOptions = {
   rng?: Rng;
+  /** Simulation only, never passed to a real opening. */
+  forceShiny?: boolean;
   /** Force pack kind (dev preview). Does not alter live rates. */
   forceKind?: PackKind;
   /** Force 5th-card rarity for standard packs (dev preview). */
   forceFifthRarity?: Exclude<Rarity, "common">;
 };
 
-function pickUniform(list: readonly CardDefinition[], rng: Rng): CardDefinition {
+function pickUniform(
+  list: readonly CardDefinition[],
+  rng: Rng,
+): CardDefinition {
   if (list.length === 0) {
     throw new Error("Empty rarity pool");
   }
@@ -76,7 +83,10 @@ export function drawPack(options: DrawOptions = {}): PackResult {
     for (let slot = 0; slot < STANDARD_PACK_SIZE; slot++) {
       cards.push(toDrawn(pickByRarity("legendary", rng), slot));
     }
-    return { kind: "gold_pack", cards };
+    return {
+      kind: "gold_pack",
+      cards: rollShiny(cards, rng, options.forceShiny),
+    };
   }
 
   const cards: DrawnCard[] = [];
@@ -85,15 +95,26 @@ export function drawPack(options: DrawOptions = {}): PackResult {
   }
   const fifthRarity = rollFifthRarity(rng, options.forceFifthRarity);
   cards.push(toDrawn(pickByRarity(fifthRarity, rng), STANDARD_COMMON_SLOTS));
-  return { kind: "standard", cards };
+  return { kind: "standard", cards: rollShiny(cards, rng, options.forceShiny) };
+}
+
+export function rollShiny(
+  cards: DrawnCard[],
+  rng: Rng,
+  force = false,
+): DrawnCard[] {
+  return cards.map((card) => ({
+    ...card,
+    shiny: force || rng() < SHINY_PROBABILITY,
+  }));
 }
 
 export function resolveDrawnCards(
   drawn: DrawnCard[],
-): (CardDefinition & { slot: number })[] {
+): (CardDefinition & { slot: number; shiny?: boolean })[] {
   return drawn.map((d) => {
     const card = getCard(d.cardId);
     if (!card) throw new Error(`Unknown card ${d.cardId}`);
-    return { ...card, slot: d.slot };
+    return { ...card, slot: d.slot, shiny: d.shiny };
   });
 }

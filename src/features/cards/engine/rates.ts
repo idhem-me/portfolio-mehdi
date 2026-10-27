@@ -62,3 +62,7 @@ export function buildFifthCardIntervals(): {
 
 export const STANDARD_PACK_SIZE = 5;
 export const STANDARD_COMMON_SLOTS = 4;
+
+/** Independent per-copy roll: 0.001% = one in 100,000. */
+export const SHINY_PERCENT = 0.001;
+export const SHINY_PROBABILITY = SHINY_PERCENT / 100;

@@ -1,12 +1,9 @@
 import { audioGain } from "./config";
 
-export type CardsSound =
-  | "tear"
-  | "flip"
-  | "reveal"
-  | "exceptional";
+export type CardsSound = "fall" | "tear" | "flip" | "reveal" | "exceptional";
 
 const NOTES: Record<CardsSound, number | number[]> = {
+  fall: [160, 90],
   tear: [220, 180],
   flip: 420,
   reveal: [520, 660],
@@ -19,6 +16,7 @@ export class CardsAudio {
   private voices = new Set<OscillatorNode>();
   private volume = 50;
   private muted = false;
+  private lastSoundAt = new Map<CardsSound, number>();
 
   setVolume(slider: number) {
     this.volume = Math.max(0, Math.min(100, slider));
@@ -56,6 +54,8 @@ export class CardsAudio {
       !this.bus
     )
       return;
+    if (c.currentTime - (this.lastSoundAt.get(kind) ?? -1) < 0.08) return;
+    this.lastSoundAt.set(kind, c.currentTime);
     const notes = NOTES[kind];
     const list = Array.isArray(notes) ? notes : [notes];
     const gainPeak =
@@ -88,8 +88,7 @@ export class CardsAudio {
     });
   }
 
-  mute() {
-    this.muted = true;
+  stop() {
     for (const voice of this.voices) {
       try {
         voice.stop();
@@ -98,6 +97,11 @@ export class CardsAudio {
       }
     }
     this.voices.clear();
+  }
+
+  mute() {
+    this.muted = true;
+    this.stop();
     if (this.context?.state === "running")
       void this.context.suspend().catch(() => {});
   }
@@ -114,5 +118,6 @@ export class CardsAudio {
     this.bus = null;
     if (this.context) void this.context.close().catch(() => {});
     this.context = null;
+    this.lastSoundAt.clear();
   }
 }

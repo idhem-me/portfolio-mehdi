@@ -131,3 +131,55 @@ test("load resumes cutting as revealing without new draw", () => {
     ids,
   );
 });
+
+test("stale interaction index cannot skip the next card", () => {
+  const { repo } = memoryRepo();
+  const c = createOpeningController(repo);
+  c.startOpen();
+  c.advanceCard(0); // cutting is not interactive
+  assert.equal(c.getSave().activeOpen?.currentIndex, 0);
+  c.setPhase("revealing");
+  c.advanceCard(0);
+  c.advanceCard(0);
+  assert.equal(c.getSave().activeOpen?.currentIndex, 1);
+});
+
+test("rapid starts draw once; successive boosters retain five credits each", () => {
+  const { repo } = memoryRepo();
+  const c = createOpeningController(repo);
+  let calls = 0;
+  const rng = () => {
+    calls++;
+    return 0.5;
+  };
+  const first = c.startOpen({ rng });
+  const count = calls;
+  assert.equal(c.startOpen({ rng })?.openId, first?.openId);
+  assert.equal(calls, count);
+  c.dismissSummary(); // a live pack must not be discarded
+  assert.equal(c.getSave().activeOpen?.openId, first?.openId);
+  c.setPhase("revealing");
+  for (let i = 0; i < 5; i++) c.advanceCard(i);
+  const second = c.startOpen({ rng });
+  assert.notEqual(second?.openId, first?.openId);
+  assert.equal(second?.currentIndex, 0);
+  assert.equal(second?.phase, "cutting");
+  c.setPhase("revealing");
+  for (let i = 0; i < 5; i++) c.advanceCard(i);
+  assert.equal(c.getSave().stats.boostersOpened, 2);
+  assert.equal(
+    Object.values(c.getSave().collection).reduce((n, e) => n + e.qty, 0),
+    10,
+  );
+});
+
+test("an interrupted legacy summary credits on load once", () => {
+  const { repo } = memoryRepo();
+  const c = createOpeningController(repo);
+  c.startOpen();
+  c.setPhase("summary");
+  assert.equal(c.getSave().stats.boostersOpened, 0);
+  const recovered = createOpeningController(repo);
+  assert.equal(recovered.getSave().stats.boostersOpened, 1);
+  assert.equal(createOpeningController(repo).getSave().stats.boostersOpened, 1);
+});

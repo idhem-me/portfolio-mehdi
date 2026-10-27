@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
@@ -15,7 +16,21 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function CardsPage({ params }: Props) {
+export default function CardsPage(props: Props) {
+  return (
+    <Suspense
+      fallback={
+        <div role="status" className="p-6 text-sm text-muted-foreground">
+          Chargement de Cartes…
+        </div>
+      }
+    >
+      <LocalizedCards {...props} />
+    </Suspense>
+  );
+}
+
+async function LocalizedCards({ params }: Props) {
   if (!cardsEnabled) notFound();
   const { locale } = await params;
   setRequestLocale(locale);

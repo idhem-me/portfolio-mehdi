@@ -139,8 +139,12 @@ export async function loadProfile(force = false): Promise<void> {
           signal: AbortSignal.timeout(8000),
         }),
       ]);
-      if (!p.ok || !a.ok) throw Error();
-      const [profile, auth] = await Promise.all([p.json(), a.json()]);
+      // A missing local-profile backend must not disable the independent Google login.
+      if (!a.ok) throw Error();
+      const [profile, auth] = await Promise.all([
+        p.ok ? p.json() : Promise.resolve(null),
+        a.json(),
+      ]);
       if (id !== generation) return;
       if (validProfile(profile) && profile.kind === "local" && !local) {
         local = profile;
@@ -153,9 +157,14 @@ export async function loadProfile(force = false): Promise<void> {
         loading: false,
         loaded: true,
         googleAvailable: !!auth.googleAvailable,
-        ...(state.error.startsWith("Connexion indisponible")
-          ? { error: "" }
-          : {}),
+        ...(!p.ok
+          ? {
+              error:
+                "Connexion indisponible pour le profil local. Tu peux continuer à jouer sur cet appareil ou te connecter avec Google.",
+            }
+          : state.error.startsWith("Connexion indisponible")
+            ? { error: "" }
+            : {}),
       });
       void syncLocalScores();
     } catch {
@@ -379,8 +388,7 @@ function queue(run: QueuedScore) {
   ]);
 }
 export type SubmitScoreResult =
-  | { ok: true }
-  | { ok: false; reason?: "auth" | "network" | "identity" };
+  { ok: true } | { ok: false; reason?: "auth" | "network" | "identity" };
 
 export async function submitLocalScore(
   run: QueuedScore,

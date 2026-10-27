@@ -129,9 +129,9 @@ export const openingEffectTokens: Record<Rarity, OpeningEffectToken> = {
     shineMs: 640,
     particles: 16,
     particlesMobile: 8,
-    tensionMs: 220,
+    tensionMs: 140,
     revealMs: 420,
-    settleMs: 200,
+    settleMs: 100,
     glowVar: "--cards-effect-legendary",
   },
   gold: {
@@ -139,9 +139,9 @@ export const openingEffectTokens: Record<Rarity, OpeningEffectToken> = {
     shineMs: 700,
     particles: 18,
     particlesMobile: 9,
-    tensionMs: 240,
+    tensionMs: 160,
     revealMs: 460,
-    settleMs: 220,
+    settleMs: 100,
     glowVar: "--cards-effect-gold",
   },
   diamond: {
@@ -149,15 +149,19 @@ export const openingEffectTokens: Record<Rarity, OpeningEffectToken> = {
     shineMs: 820,
     particles: 22,
     particlesMobile: 10,
-    tensionMs: 280,
+    tensionMs: 180,
     revealMs: 520,
-    settleMs: 260,
+    settleMs: 120,
     glowVar: "--cards-effect-diamond",
   },
 };
 
 export function isSpecialRarity(rarity: Rarity): boolean {
-  return (
-    rarity === "legendary" || rarity === "gold" || rarity === "diamond"
-  );
+  return rarity === "legendary" || rarity === "gold" || rarity === "diamond";
 }
+
+export const shinyRevealTiming = {
+  tensionMs: 140,
+  revealMs: 500,
+  settleMs: 150,
+};

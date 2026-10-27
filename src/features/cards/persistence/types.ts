@@ -1,3 +1,4 @@
+import { initialBoosterBank } from "../engine/boosters";
 import type { Rarity } from "../catalog/types";
 import type { DrawnCard, PackKind } from "../engine/draw";
 
@@ -19,6 +20,8 @@ export type OpeningPhase =
   | "tearing";
 
 export type OwnedEntry = {
+  /** Shiny copies are included in qty. Older saves have zero. */
+  shinyQty?: number;
   qty: number;
   firstAcquiredAt: number;
   lastAcquiredAt: number;
@@ -50,6 +53,7 @@ export type ActiveOpen = {
 
 export type CardsSave = {
   schemaVersion: number;
+  boosters: import("../engine/boosters").BoosterBank;
   collection: Record<string, OwnedEntry>;
   stats: CardsStats;
   /** Finalized open ids (idempotency + short history). */
@@ -76,6 +80,7 @@ export function emptyStats(): CardsStats {
 export function emptySave(): CardsSave {
   return {
     schemaVersion: SCHEMA_VERSION,
+    boosters: initialBoosterBank(),
     collection: {},
     stats: emptyStats(),
     finalizedOpenIds: [],

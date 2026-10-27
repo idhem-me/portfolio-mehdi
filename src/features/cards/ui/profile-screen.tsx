@@ -10,13 +10,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
-import { PlayerProfileButton } from "@/features/account/ui/profile-button";
-import { usePlayerProfile } from "@/features/account/client-store";
 import { CATALOG } from "../catalog/cards";
 import { RARITIES, RARITY_LABELS } from "../catalog/types";
 import {
   FIFTH_CARD_PERCENT,
   GOLD_PACK_PERCENT,
+  SHINY_PERCENT,
 } from "../engine/rates";
 import type { CardsSave } from "../persistence/types";
 import {
@@ -34,32 +33,15 @@ export function ProfileScreen({
   onOpenSettings: () => void;
   onResetLocal: () => void;
 }) {
-  const profile = usePlayerProfile();
   const [confirmReset, setConfirmReset] = useState(false);
   const [ratesOpen, setRatesOpen] = useState(false);
   const progress = catalogProgress(save);
 
   return (
     <div className="cards-profile space-y-6">
-      <section className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h2 className="text-base font-medium">Compte</h2>
-            <p className="text-sm text-muted-foreground">
-              {profile
-                ? profile.name
-                : "Invité — connexion optionnelle"}
-            </p>
-          </div>
-          <PlayerProfileButton />
-        </div>
-        <p className="text-xs text-muted-foreground">
-          La collection de ce prototype est stockée sur cet appareil uniquement.
-          Elle n’est pas synchronisée avec le compte.
-        </p>
-      </section>
-
-      <Separator />
+      <p className="text-xs text-muted-foreground">
+        La collection est stockée sur cet appareil uniquement.
+      </p>
 
       <section className="space-y-3">
         <h2 className="text-base font-medium">Statistiques locales</h2>
@@ -69,15 +51,20 @@ export function ProfileScreen({
           <Stat label="Cartes uniques" value={uniqueOwnedCount(save)} />
           <Stat label="Exemplaires" value={totalCopies(save)} />
           <Stat
+            label="Exemplaires Shiny"
+            value={Object.values(save.collection).reduce(
+              (total, entry) => total + (entry.shinyQty ?? 0),
+              0,
+            )}
+          />
+          <Stat
             label="Progression"
             value={`${progress.owned}/${CATALOG.length}`}
           />
           <Stat
             label="Meilleure rareté"
             value={
-              save.stats.bestRarity
-                ? RARITY_LABELS[save.stats.bestRarity]
-                : "—"
+              save.stats.bestRarity ? RARITY_LABELS[save.stats.bestRarity] : "—"
             }
           />
         </dl>
@@ -145,6 +132,10 @@ export function ProfileScreen({
                 </li>
               ))}
             </ul>
+            <p className="text-sm text-muted-foreground">
+              Shiny : {SHINY_PERCENT} % par exemplaire, indépendamment de la
+              rareté (1 sur 100 000).
+            </p>
             <p className="text-xs text-muted-foreground">
               Tirage côté client — non sécurisé contre la triche. Une future
               version serveur validera les boosters.
@@ -160,7 +151,7 @@ export function ProfileScreen({
             <DialogDescription>
               Efface uniquement la collection et les stats de ce jeu sur cet
               appareil. Le compte, les réglages globaux et les autres jeux sont
-              conservés.
+              conservés. La réserve de boosters n’est pas rechargée.
             </DialogDescription>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
               <Button variant="outline" onClick={() => setConfirmReset(false)}>

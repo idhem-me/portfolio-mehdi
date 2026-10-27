@@ -9,7 +9,7 @@ export const cutGesture = {
   axisLockRatio: 1.15,
   axisLockMinDy: 28,
   /** Haptic/audio tick every N% of cut progress. */
-  feedbackStep: 0.2,
+  feedbackStep: 0.4,
   /** Default eject for accessible « Découper » button. */
   defaultDirection: "right" as const,
 };
@@ -28,14 +28,14 @@ export const swipeGesture = {
 };
 
 export const wrapperExitTiming = {
-  bodyMs: 720,
-  stripMs: 680,
-  fallbackMs: 900,
+  bodyMs: 460,
+  stripMs: 420,
+  fallbackMs: 500,
 };
 
 export const cameraZoomTiming = {
-  durationMs: 560,
-  reducedMs: 180,
+  durationMs: 240,
+  reducedMs: 40,
 };
 
 export const stackLayout = {
@@ -43,3 +43,30 @@ export const stackLayout = {
   backScaleStep: 0.04,
   maxVisibleBehind: 3,
 };
+
+/** A release owns the interaction; the ensuing browser click never advances. */
+export function releaseAction(
+  dx: number,
+  dy: number,
+  elapsedMs: number,
+  maxTravel: number,
+): "tap" | "left" | "right" | "cancel" {
+  if (maxTravel <= swipeGesture.tapSlop) return "tap";
+  if (Math.abs(dx) <= Math.abs(dy)) return "cancel";
+  const fast = Math.abs(dx) / Math.max(1, elapsedMs) >= swipeGesture.velocity;
+  if (
+    Math.abs(dx) < swipeGesture.distance &&
+    !(fast && Math.abs(dx) > swipeGesture.tapSlop * 2)
+  )
+    return "cancel";
+  return dx < 0 ? "left" : "right";
+}
+
+export function cutRelease(dx: number, dy: number): "left" | "right" | null {
+  if (
+    Math.abs(dx) < cutGesture.distance * cutGesture.commitProgress ||
+    Math.abs(dy) > Math.abs(dx) * cutGesture.axisLockRatio
+  )
+    return null;
+  return dx < 0 ? "left" : "right";
+}

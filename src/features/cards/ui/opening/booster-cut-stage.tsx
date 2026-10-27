@@ -2,13 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, animate } from "motion/react";
-import { Button } from "@/components/ui/button";
 import type { PackKind } from "../../engine/draw";
 import type { CardsAudio } from "../../feel/audio";
 import type { CardsSettings } from "../../feel/config";
 import { cardsHaptic } from "../../feel/haptics";
 import type { CutDirection } from "../../persistence/types";
-import { cutGesture, wrapperExitTiming } from "./gesture-config";
+import { cutGesture, wrapperExitTiming, cutRelease } from "./gesture-config";
 
 type Props = {
   kind: PackKind;
@@ -39,7 +38,6 @@ export function BoosterCutStage({
   const lastTick = useRef(0);
   const committedRef = useRef(false);
   const axisLocked = useRef<"h" | "v" | null>(null);
-  const exitStarted = useRef(false);
   const stripX = useMotionValue(0);
   const bodyY = useMotionValue(0);
 
@@ -84,13 +82,12 @@ export function BoosterCutStage({
   );
 
   useEffect(() => {
-    if (phase !== "wrapperExit" || exitStarted.current) return;
-    exitStarted.current = true;
+    if (phase !== "wrapperExit") return;
+    if (settings.sound) audio.current?.emit("fall");
 
     const dir = cutDirection === "left" ? -1 : 1;
     const stripTarget =
-      dir *
-      (typeof window !== "undefined" ? window.innerWidth * 0.75 : 400);
+      dir * (typeof window !== "undefined" ? window.innerWidth * 0.75 : 400);
     const bodyTarget =
       typeof window !== "undefined" ? window.innerHeight * 1.15 : 800;
 
@@ -99,11 +96,11 @@ export function BoosterCutStage({
       return () => window.clearTimeout(t);
     }
 
-    void animate(stripX, stripTarget, {
+    const stripAnimation = animate(stripX, stripTarget, {
       duration: wrapperExitTiming.stripMs / 1000,
       ease: [0.22, 0.8, 0.3, 1],
     });
-    void animate(bodyY, bodyTarget, {
+    const bodyAnimation = animate(bodyY, bodyTarget, {
       duration: wrapperExitTiming.bodyMs / 1000,
       ease: [0.55, 0.06, 0.85, 0.3],
     });
@@ -112,7 +109,11 @@ export function BoosterCutStage({
       () => onWrapperExitDone(),
       wrapperExitTiming.fallbackMs,
     );
-    return () => window.clearTimeout(fallback);
+    return () => {
+      window.clearTimeout(fallback);
+      stripAnimation.stop();
+      bodyAnimation.stop();
+    };
   }, [
     phase,
     cutDirection,
@@ -120,18 +121,28 @@ export function BoosterCutStage({
     onWrapperExitDone,
     stripX,
     bodyY,
+    settings.sound,
+    audio,
   ]);
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    if (phase !== "cutting" || committedRef.current) return;
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (
+      phase !== "cutting" ||
+      committedRef.current ||
+      !e.isPrimary ||
+      e.button !== 0 ||
+      dragStart.current
+    )
+      return;
     e.currentTarget.setPointerCapture(e.pointerId);
     dragStart.current = { x: e.clientX, y: e.clientY };
     axisLocked.current = null;
     lastTick.current = 0;
   };
 
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragStart.current || phase !== "cutting" || committedRef.current) return;
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragStart.current || phase !== "cutting" || committedRef.current)
+      return;
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
 
@@ -154,26 +165,30 @@ export function BoosterCutStage({
     if (axisLocked.current === "v") return;
 
     const p = Math.min(1, Math.abs(dx) / cutGesture.distance);
+    e.currentTarget.style.setProperty(
+      "--cut-origin",
+      dx >= 0 ? "left" : "right",
+    );
     setProgress(p);
     stripX.set(dx * 0.35);
     feedbackAt(p);
 
-    if (p >= 1) {
+    if (p >= 1 && cutRelease(dx, dy)) {
       commit(dx >= 0 ? "right" : "left");
     }
   };
 
-  const onPointerUp = (e: React.PointerEvent) => {
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragStart.current || phase !== "cutting") return;
     const dx = e.clientX - dragStart.current.x;
-    const p = Math.min(1, Math.abs(dx) / cutGesture.distance);
+    const direction = cutRelease(dx, e.clientY - dragStart.current.y);
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch {
       /* ignore */
     }
-    if (p >= cutGesture.commitProgress && axisLocked.current !== "v") {
-      commit(dx >= 0 ? "right" : "left");
+    if (direction && axisLocked.current !== "v") {
+      commit(direction);
     } else if (!committedRef.current) {
       resetCut();
     }
@@ -185,11 +200,7 @@ export function BoosterCutStage({
 
   const gold = kind === "gold_pack";
   const stripRotate =
-    phase === "wrapperExit"
-      ? cutDirection === "left"
-        ? -18
-        : 18
-      : 0;
+    phase === "wrapperExit" ? (cutDirection === "left" ? -18 : 18) : 0;
 
   return (
     <div className="cards-cut-stage">
@@ -201,14 +212,6 @@ export function BoosterCutStage({
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
       >
-        <div className="cards-booster-inner-cards" aria-hidden>
-          <div className="cards-mini-stack">
-            <span />
-            <span />
-            <span />
-          </div>
-        </div>
-
         <motion.div
           className={`cards-booster-body ${gold ? "cards-booster-gold" : ""}`}
           style={{ y: bodyY }}
@@ -220,10 +223,14 @@ export function BoosterCutStage({
 
         <motion.div
           className="cards-booster-strip"
-          style={{
-            x: stripX,
-            y: phase === "wrapperExit" ? bodyY : 0,
-            rotate: stripRotate,
+          style={{ x: stripX }}
+          animate={{
+            y: phase === "wrapperExit" && !reduced ? -80 : 0,
+            rotate: reduced ? 0 : stripRotate,
+          }}
+          transition={{
+            duration: reduced ? 0 : wrapperExitTiming.stripMs / 1000,
+            ease: "easeOut",
           }}
           aria-hidden
         >
@@ -236,14 +243,6 @@ export function BoosterCutStage({
           <p className="text-center text-sm text-muted-foreground">
             Glisse horizontalement pour découper le haut du booster.
           </p>
-          <Button
-            variant="accent"
-            size="lg"
-            className="min-h-11"
-            onClick={() => commit(cutGesture.defaultDirection)}
-          >
-            Découper le booster
-          </Button>
         </div>
       )}
     </div>

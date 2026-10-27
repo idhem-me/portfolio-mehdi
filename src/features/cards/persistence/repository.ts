@@ -1,3 +1,4 @@
+import { initialBoosterBank, refillBoosters } from "../engine/boosters";
 import { CATALOG } from "../catalog/cards";
 import { RARITY_RANK, type Rarity } from "../catalog/types";
 import type { DrawnCard } from "../engine/draw";
@@ -36,8 +37,10 @@ function isDrawnCard(value: unknown): value is DrawnCard {
   const c = value as DrawnCard;
   return (
     typeof c.cardId === "string" &&
-    typeof c.rarity === "string" &&
-    typeof c.slot === "number"
+    CATALOG.some((card) => card.id === c.cardId && card.rarity === c.rarity) &&
+    Number.isInteger(c.slot) &&
+    c.slot >= 0 &&
+    c.slot < 5
   );
 }
 
@@ -65,9 +68,7 @@ function sanitizeActiveOpen(raw: unknown): ActiveOpen | null {
     return null;
   }
   const phase = (
-    VALID_PHASES.includes(a.phase as OpeningPhase)
-      ? a.phase
-      : "revealing"
+    VALID_PHASES.includes(a.phase as OpeningPhase) ? a.phase : "revealing"
   ) as OpeningPhase;
   const cutDirection: CutDirection | undefined =
     a.cutDirection === "left" || a.cutDirection === "right"
@@ -77,7 +78,7 @@ function sanitizeActiveOpen(raw: unknown): ActiveOpen | null {
   const open: ActiveOpen = {
     openId: a.openId,
     kind: a.kind === "gold_pack" ? "gold_pack" : "standard",
-    cards: a.cards,
+    cards: a.cards.map((card) => ({ ...card, shiny: card.shiny === true })),
     phase,
     revealed: Array.isArray(a.revealed)
       ? a.revealed.map(Boolean).slice(0, 5)
@@ -100,7 +101,13 @@ export function parseSave(raw: unknown): CardsSave {
   const collection: Record<string, OwnedEntry> = {};
   if (data.collection && typeof data.collection === "object") {
     for (const [id, entry] of Object.entries(data.collection)) {
-      if (isOwnedEntry(entry) && entry.qty > 0) collection[id] = entry;
+      if (isOwnedEntry(entry) && entry.qty > 0)
+        collection[id] = {
+          ...entry,
+          shinyQty: Number.isFinite(entry.shinyQty)
+            ? Math.min(entry.qty, Math.max(0, Math.floor(entry.shinyQty!)))
+            : 0,
+        };
     }
   }
   const stats = emptySave().stats;
@@ -124,6 +131,15 @@ export function parseSave(raw: unknown): CardsSave {
     : [];
   return {
     schemaVersion: SCHEMA_VERSION,
+    boosters:
+      data.boosters &&
+      Number.isFinite(data.boosters.available) &&
+      Number.isFinite(data.boosters.updatedAt)
+        ? refillBoosters({
+            available: data.boosters.available,
+            updatedAt: Math.max(0, data.boosters.updatedAt),
+          })
+        : initialBoosterBank(),
     collection,
     stats,
     finalizedOpenIds: finalizedOpenIds.slice(-200),
@@ -156,6 +172,8 @@ export function createLocalCardsRepository(
           SAVE_KEY,
           JSON.stringify({ ...data, schemaVersion: SCHEMA_VERSION }),
         );
+        if (typeof window !== "undefined")
+          window.dispatchEvent(new Event("cards:save"));
       } catch {
         /* Private browsing / quota. */
       }
@@ -229,11 +247,13 @@ export function finalizeOpen(
       collection[drawn.cardId] = {
         ...prev,
         qty: prev.qty + 1,
+        shinyQty: (prev.shinyQty ?? 0) + (drawn.shiny ? 1 : 0),
         lastAcquiredAt: now,
       };
     } else {
       collection[drawn.cardId] = {
         qty: 1,
+        shinyQty: drawn.shiny ? 1 : 0,
         firstAcquiredAt: now,
         lastAcquiredAt: now,
       };
@@ -266,5 +286,7 @@ export function finalizeOpen(
 }
 
 export function createOpenId(rng: () => number = Math.random): string {
+  if (rng === Math.random && typeof crypto !== "undefined" && crypto.randomUUID)
+    return `open-${crypto.randomUUID()}`;
   return `open-${Date.now().toString(36)}-${Math.floor(rng() * 1e9).toString(36)}`;
 }

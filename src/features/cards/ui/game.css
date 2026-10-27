@@ -1,12 +1,21 @@
 /* Cards game — classic UI uses design tokens; opening effects are scoped here. */
 
-.cards-game {
-  --cards-effect-common: color-mix(in oklch, var(--muted-foreground) 35%, transparent);
+.cards-game,
+.cards-surface {
+  --cards-ratio: calc(5 / 7);
+  --cards-effect-common: color-mix(
+    in oklch,
+    var(--muted-foreground) 35%,
+    transparent
+  );
   --cards-effect-rare: color-mix(in oklch, var(--accent) 55%, white);
   --cards-effect-epic: color-mix(in oklch, var(--accent) 70%, #a855f7);
   --cards-effect-legendary: color-mix(in oklch, #f59e0b 80%, white);
   --cards-effect-gold: #e8c547;
   --cards-effect-diamond: #a5f3fc;
+}
+
+.cards-game {
   font-family: var(--font-sans), sans-serif;
   max-width: 40rem;
   margin: 0 auto;
@@ -117,6 +126,9 @@
   flex-direction: column;
   width: 100%;
   max-width: 11rem;
+  position: relative;
+  aspect-ratio: var(--cards-ratio);
+  flex-shrink: 0;
   border-radius: var(--radius-lg, var(--radius));
   border: 1px solid var(--border);
   background: var(--card);
@@ -130,7 +142,8 @@
 
 .cards-card-art {
   position: relative;
-  aspect-ratio: 3 / 4;
+  flex: 1;
+  min-height: 0;
   display: grid;
   place-items: center;
   background: var(--muted);
@@ -152,7 +165,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  padding: 0.5rem 0.6rem 0.65rem;
+  padding: 0.5rem;
+  flex-shrink: 0;
 }
 
 .cards-card-name {
@@ -185,7 +199,7 @@
 }
 
 .cards-card-back {
-  aspect-ratio: 3 / 4;
+  aspect-ratio: var(--cards-ratio);
   max-width: 8.5rem;
   display: grid;
   place-items: center;
@@ -206,16 +220,32 @@
   background: color-mix(in oklch, var(--muted) 60%, var(--accent) 25%);
 }
 .cards-rarity-epic .cards-card-art {
-  background: color-mix(in oklch, var(--muted) 45%, var(--cards-effect-epic) 40%);
+  background: color-mix(
+    in oklch,
+    var(--muted) 45%,
+    var(--cards-effect-epic) 40%
+  );
 }
 .cards-rarity-legendary .cards-card-art {
-  background: color-mix(in oklch, var(--muted) 40%, var(--cards-effect-legendary) 45%);
+  background: color-mix(
+    in oklch,
+    var(--muted) 40%,
+    var(--cards-effect-legendary) 45%
+  );
 }
 .cards-rarity-gold .cards-card-art {
-  background: color-mix(in oklch, var(--muted) 35%, var(--cards-effect-gold) 50%);
+  background: color-mix(
+    in oklch,
+    var(--muted) 35%,
+    var(--cards-effect-gold) 50%
+  );
 }
 .cards-rarity-diamond .cards-card-art {
-  background: color-mix(in oklch, var(--muted) 35%, var(--cards-effect-diamond) 50%);
+  background: color-mix(
+    in oklch,
+    var(--muted) 35%,
+    var(--cards-effect-diamond) 50%
+  );
 }
 
 /* Opening-scene shine (scoped; transform/opacity only) */
@@ -235,19 +265,24 @@
 }
 
 .cards-rarity-epic.cards-card-effect-active {
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--cards-effect-epic) 50%, transparent),
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--cards-effect-epic) 50%, transparent),
     0 0 24px color-mix(in oklch, var(--cards-effect-epic) 35%, transparent);
 }
 .cards-rarity-legendary.cards-card-effect-active {
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--cards-effect-legendary) 55%, transparent),
+  box-shadow:
+    0 0 0 1px
+      color-mix(in oklch, var(--cards-effect-legendary) 55%, transparent),
     0 0 28px color-mix(in oklch, var(--cards-effect-legendary) 40%, transparent);
 }
 .cards-rarity-gold.cards-card-effect-active {
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--cards-effect-gold) 60%, transparent),
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--cards-effect-gold) 60%, transparent),
     0 0 32px color-mix(in oklch, var(--cards-effect-gold) 45%, transparent);
 }
 .cards-rarity-diamond.cards-card-effect-active {
-  box-shadow: 0 0 0 1px color-mix(in oklch, var(--cards-effect-diamond) 60%, transparent),
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--cards-effect-diamond) 60%, transparent),
     0 0 36px color-mix(in oklch, var(--cards-effect-diamond) 50%, transparent);
 }
 
@@ -301,7 +336,11 @@
 }
 
 .cards-booster-gold {
-  background: color-mix(in oklch, var(--card) 50%, var(--cards-effect-gold) 40%);
+  background: color-mix(
+    in oklch,
+    var(--card) 50%,
+    var(--cards-effect-gold) 40%
+  );
 }
 
 .cards-booster-top {
@@ -345,25 +384,57 @@
 }
 
 .cards-summary-list {
+  --summary-card-width: max(
+    4.5rem,
+    min(
+      calc((100vw - 4rem) / 3),
+      calc((100dvh - 350px) * var(--cards-ratio) / 2),
+      9rem
+    )
+  );
   list-style: none;
   margin: 1rem 0 0;
   padding: 0;
-  width: 100%;
-  max-width: 24rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(6, calc(var(--summary-card-width) / 2));
+  gap: 0.75rem 0;
+  justify-content: center;
 }
-
 .cards-summary-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  grid-column: span 2;
+  padding: 0 0.2rem;
+  min-width: 0;
+  text-align: center;
 }
-
+.cards-summary-item:nth-child(4) {
+  grid-column: 2 / span 2;
+}
 .cards-summary-item .cards-card {
-  max-width: 5.5rem;
-  flex-shrink: 0;
+  width: 100%;
+  max-width: none;
+}
+.cards-summary-item > div {
+  margin-top: 0.3rem;
+}
+.cards-summary-item > div > p:first-child {
+  display: none;
+}
+.cards-summary-item > div > p {
+  font-size: 0.65rem;
+}
+.cards-summary .cards-card-name {
+  font-size: 0.7rem;
+}
+.cards-summary .cards-card-row {
+  gap: 0.15rem;
+}
+.cards-summary .cards-card-row [data-slot="badge"] {
+  padding: 0.1rem 0.25rem;
+  font-size: 0.6rem;
+}
+.cards-summary .cards-card-meta {
+  gap: 0.2rem;
+  padding: 0.35rem;
 }
 
 /* —— Collection —— */
@@ -414,4 +485,227 @@
 
 .cards-dev-preview {
   background: var(--card);
+}
+
+/* Card inspection: its own touch surface, leaving dialog controls and scrolling free. */
+.cards-detail {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: max(3.5rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
+  border: 0;
+  border-radius: 0;
+  overflow-y: auto;
+}
+.cards-detail-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 100%;
+  justify-content: center;
+}
+.cards-detail-close {
+  position: absolute;
+  top: max(0.5rem, env(safe-area-inset-top));
+  right: max(0.5rem, env(safe-area-inset-right));
+  min-width: 44px;
+  min-height: 44px;
+}
+.cards-detail-card {
+  width: min(
+    calc(100vw - 2rem),
+    calc((100dvh - 170px) * var(--cards-ratio)),
+    30rem
+  );
+  min-width: 10rem;
+  perspective: 900px;
+}
+.cards-detail-card .cards-card {
+  width: 100%;
+  max-width: none;
+}
+.cards-detail-card .cards-card-name {
+  font-size: 1rem;
+}
+.cards-card-interactive {
+  touch-action: none;
+  user-select: none;
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg))
+    rotateY(var(--tilt-y, 0deg));
+  transition: transform 300ms ease-out;
+}
+.cards-card-interactive[data-touching] {
+  transition-duration: 50ms;
+}
+.cards-touch-glare {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: var(--glare, 0);
+  transition: opacity 250ms;
+  background: radial-gradient(
+    circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+    white,
+    transparent 65%
+  );
+  mix-blend-mode: screen;
+}
+.cards-rarity-gold .cards-touch-glare {
+  background: radial-gradient(
+    ellipse at var(--pointer-x, 50%) var(--pointer-y, 50%),
+    white,
+    var(--cards-effect-gold) 25%,
+    transparent 65%
+  );
+}
+.cards-rarity-diamond .cards-touch-glare,
+.cards-rarity-legendary .cards-touch-glare {
+  background:
+    radial-gradient(
+      circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+      white,
+      transparent 55%
+    ),
+    repeating-linear-gradient(
+      120deg,
+      #a5f3fc 0%,
+      #f0abfc 15%,
+      #fde68a 30%,
+      #a5f3fc 45%
+    );
+  background-size:
+    100% 100%,
+    250% 250%;
+  background-position:
+    center,
+    var(--pointer-x, 50%) var(--pointer-y, 50%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cards-card-interactive {
+    transform: none;
+    transition: none;
+  }
+  .cards-touch-glare {
+    display: none;
+  }
+}
+
+/* A shared viewport anchor keeps the main action in the same place in every phase. */
+.cards-primary-cta {
+  position: fixed;
+  z-index: 40;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  inset-inline: 1rem;
+  width: calc(100% - 2rem);
+  max-width: 24rem;
+  margin-inline: auto;
+}
+.cards-opening {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+}
+
+.cards-detail .cards-card-art-label {
+  display: none;
+}
+
+.cards-card-unowned {
+  background: var(--muted);
+  color: var(--muted-foreground);
+  opacity: 0.65;
+  cursor: default;
+  touch-action: pan-y;
+}
+.cards-grid .cards-card-unowned > span {
+  font-size: 1rem;
+}
+
+.cards-card-unowned-footer {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 0.5rem;
+  text-align: end;
+  background: var(--card);
+}
+.cards-grid .cards-card-unowned > .cards-card-unowned-footer {
+  font-size: 0.7rem;
+}
+
+/* Shiny is a per-copy variant, independent of the rarity palette. */
+.cards-card-shiny {
+  box-shadow:
+    0 0 0 1px color-mix(in oklch, var(--accent) 45%, white),
+    0 0 22px color-mix(in oklch, var(--accent) 30%, transparent);
+}
+.cards-shiny-label {
+  font-size: 0.7em;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.cards-shiny-foil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(
+      125deg,
+      transparent 0 16px,
+      color-mix(in oklch, white 16%, transparent) 17px,
+      transparent 18px 32px
+    ),
+    radial-gradient(
+      ellipse at var(--pointer-x, 50%) var(--pointer-y, 30%),
+      color-mix(in oklch, var(--accent) 18%, transparent),
+      transparent 65%
+    );
+}
+.cards-shiny-foil > span {
+  position: absolute;
+  color: color-mix(in oklch, var(--foreground) 25%, white);
+  text-shadow: 0 0 8px var(--accent);
+  animation: cards-shiny-twinkle 2.6s ease-in-out infinite;
+  font-size: 1.2rem;
+}
+.cards-shiny-foil > span:nth-child(1) {
+  top: 12%;
+  left: 14%;
+}
+.cards-shiny-foil > span:nth-child(2) {
+  top: 28%;
+  right: 12%;
+  animation-delay: 0.6s;
+}
+.cards-shiny-foil > span:nth-child(3) {
+  bottom: 30%;
+  left: 20%;
+  animation-delay: 1.2s;
+}
+.cards-shiny-foil > span:nth-child(4) {
+  bottom: 18%;
+  right: 18%;
+  animation-delay: 1.8s;
+}
+@keyframes cards-shiny-twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cards-shiny-foil > span {
+    animation: none;
+    opacity: 0.6;
+  }
 }

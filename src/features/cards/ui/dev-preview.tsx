@@ -6,6 +6,7 @@ import type { Rarity } from "../catalog/types";
 import { RARITY_LABELS } from "../catalog/types";
 
 const PREVIEWS: { label: string; options: DrawOptions }[] = [
+  { label: "Shiny", options: { forceKind: "standard", forceShiny: true } },
   { label: "Standard", options: { forceKind: "standard" } },
   {
     label: "5ᵉ Rare",

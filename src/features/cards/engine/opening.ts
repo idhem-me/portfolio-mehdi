@@ -1,3 +1,4 @@
+import { refillBoosters, canBypassBoosterLimit } from "./boosters";
 import { drawPack, type DrawOptions, type PackResult } from "./draw";
 import {
   createOpenId,
@@ -13,8 +14,9 @@ import type {
 
 export type OpeningController = {
   getSave(): CardsSave;
+  replaceSave(save: CardsSave): void;
   /** Start a real open (credits on finalize). No-op if already opening. */
-  startOpen(options?: DrawOptions): ActiveOpen | null;
+  startOpen(options?: DrawOptions, bypassLimit?: boolean): ActiveOpen | null;
   /** Dev-only simulation — never credits. */
   startSimulation(options: DrawOptions): ActiveOpen | null;
   setPhase(phase: OpeningPhase): void;
@@ -23,7 +25,7 @@ export type OpeningController = {
    * Reveal current front card and advance. Idempotent per index.
    * When all five are done, finalizes once into summary.
    */
-  advanceCard(): ActiveOpen | null;
+  advanceCard(expectedIndex?: number): ActiveOpen | null;
   /** @deprecated Prefer advanceCard for stack flow; still used for random index. */
   reveal(index: number): void;
   revealAll(): void;
@@ -61,16 +63,22 @@ function packToActive(
 function isBusy(open: ActiveOpen | null): boolean {
   return Boolean(
     open &&
-      !open.finalized &&
-      open.phase !== "closed" &&
-      open.phase !== "summary",
+    !open.finalized &&
+    open.phase !== "closed" &&
+    open.phase !== "summary",
   );
 }
 
 export function createOpeningController(
   repo: CardsRepository,
+  now: () => number = Date.now,
 ): OpeningController {
   let save = repo.load();
+  // A reload between the summary write and credit must still finalize once.
+  if (save.activeOpen?.phase === "summary" && !save.activeOpen.finalized) {
+    save = finalizeOpen(save, save.activeOpen);
+    repo.save(save);
+  }
 
   const persist = (next: CardsSave) => {
     save = next;
@@ -87,8 +95,9 @@ export function createOpeningController(
 
   const controller: OpeningController = {
     getSave: () => save,
+    replaceSave: (next) => persist(next),
 
-    startOpen(options = {}) {
+    startOpen(options = {}, bypassLimit = false) {
       if (isBusy(save.activeOpen)) return save.activeOpen;
       if (
         save.activeOpen &&
@@ -97,14 +106,28 @@ export function createOpeningController(
       ) {
         return save.activeOpen;
       }
-      const pack = drawPack(options);
+      const boosters = refillBoosters(save.boosters, now());
+      const bypass = bypassLimit && canBypassBoosterLimit();
+      if (!bypass && boosters.available === 0) return null;
+      // Real openings never accept a forced Shiny; simulations use their own path.
+      const pack = drawPack({ ...options, forceShiny: false });
       const open = packToActive(pack, createOpenId(), false);
-      persist({ ...save, activeOpen: open });
+      persist({
+        ...save,
+        boosters: bypass
+          ? boosters
+          : { ...boosters, available: boosters.available - 1 },
+        activeOpen: open,
+      });
       return open;
     },
 
     startSimulation(options) {
-      if (isBusy(save.activeOpen) && save.activeOpen && !save.activeOpen.simulation) {
+      if (
+        isBusy(save.activeOpen) &&
+        save.activeOpen &&
+        !save.activeOpen.simulation
+      ) {
         return null;
       }
       const pack = drawPack(options);
@@ -123,10 +146,12 @@ export function createOpeningController(
       patchOpen({ cutDirection: direction });
     },
 
-    advanceCard() {
+    advanceCard(expectedIndex) {
       const open = save.activeOpen;
       if (!open || open.finalized) return open;
-      if (open.phase === "summary") return open;
+      if (open.phase !== "revealing") return open;
+      if (expectedIndex !== undefined && open.currentIndex !== expectedIndex)
+        return open;
 
       const revealed = ensureRevealed(open);
       const index = Math.max(0, Math.min(4, open.currentIndex));
@@ -141,16 +166,15 @@ export function createOpeningController(
       const allDone = nextIndex >= 5 || revealed.every(Boolean);
 
       if (allDone) {
-        persist({
-          ...save,
-          activeOpen: {
+        persist(
+          finalizeOpen(save, {
             ...open,
             revealed,
             currentIndex: 5,
             phase: "summary",
-          },
-        });
-        return controller.complete().activeOpen;
+          }),
+        );
+        return save.activeOpen;
       }
 
       patchOpen({
@@ -208,13 +232,16 @@ export function createOpeningController(
     },
 
     dismissSummary() {
-      if (!save.activeOpen) return;
+      if (!save.activeOpen?.finalized) return;
       persist({ ...save, activeOpen: null });
     },
 
     resetLocal() {
+      if (typeof window !== "undefined")
+        window.dispatchEvent(new Event("cards:reset"));
+      const boosters = refillBoosters(save.boosters, now());
       repo.clear();
-      save = repo.load();
+      persist({ ...repo.load(), boosters });
     },
   };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Settings2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,9 @@ import {
   saveSettings,
   type CardsSettings,
 } from "../feel/config";
+import { useCardsCloudSync } from "../persistence/cloud-client";
+import { CloudSaveStatus } from "./cloud-save-status";
+import { LocalSaveNotice } from "./local-save-notice";
 import { CollectionScreen } from "./collection-screen";
 import { OpeningScene } from "./opening-scene";
 import { ProfileScreen } from "./profile-screen";
@@ -36,6 +39,8 @@ export default function CardsApp({ backHref }: { backHref: string }) {
   const repo = useMemo(() => createLocalCardsRepository(), []);
   const controller = useMemo(() => createOpeningController(repo), [repo]);
   const [saveVersion, setSaveVersion] = useState(0);
+  const notify = useCallback(() => setSaveVersion((value) => value + 1), []);
+  const cloud = useCardsCloudSync(controller, notify);
   const [settings, setSettings] = useState<CardsSettings>(readClientSettings);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tab, setTab] = useState("open");
@@ -84,7 +89,12 @@ export default function CardsApp({ backHref }: { backHref: string }) {
   return (
     <div className="cards-game">
       <header className="cards-header">
-        <Button variant="ghost" size="icon" asChild aria-label="Retour aux jeux">
+        <Button
+          variant="ghost"
+          size="icon"
+          asChild
+          aria-label="Retour aux jeux"
+        >
           <Link href={backHref}>
             <ArrowLeft />
           </Link>
@@ -102,6 +112,15 @@ export default function CardsApp({ backHref }: { backHref: string }) {
           <PlayerProfileButton />
         </div>
       </header>
+
+      <LocalSaveNotice boostersOpened={save.stats.boostersOpened} />
+      <CloudSaveStatus
+        cloud={cloud}
+        openingActive={Boolean(
+          save.activeOpen &&
+          !["summary", "closed", "idle"].includes(save.activeOpen.phase),
+        )}
+      />
 
       <Tabs value={tab} onValueChange={setTab} className="cards-tabs">
         <TabsList className="cards-tabs-list w-full">
@@ -125,7 +144,7 @@ export default function CardsApp({ backHref }: { backHref: string }) {
             audio={audio}
             iosSwitch={iosSwitch}
             collection={save.collection}
-            onSaveChange={() => setSaveVersion((v) => v + 1)}
+            onSaveChange={notify}
           />
         </TabsContent>
         <TabsContent value="profile" className="cards-tab-panel">

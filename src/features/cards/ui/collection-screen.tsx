@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,7 +37,11 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
   const [rarity, setRarity] = useState<Rarity | "all">("all");
   const [own, setOwn] = useState<OwnFilter>("all");
   const [sort, setSort] = useState<SortKey>("number");
+  const [shinyOnly, setShinyOnly] = useState(false);
+  const [normalViewFor, setNormalViewFor] = useState<string | null>(null);
   const [detail, setDetail] = useState<CardDefinition | null>(null);
+
+  const swipeStart = useRef<{ id: number; x: number; y: number } | null>(null);
 
   const progress = catalogProgress(save);
   const copies = totalCopies(save);
@@ -53,6 +58,10 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
           c.id.includes(q),
       );
     }
+    if (shinyOnly)
+      list = list.filter(
+        (card) => (save.collection[card.id]?.shinyQty ?? 0) > 0,
+      );
     if (rarity !== "all") list = list.filter((c) => c.rarity === rarity);
     if (own === "owned") list = list.filter((c) => save.collection[c.id]);
     if (own === "missing") list = list.filter((c) => !save.collection[c.id]);
@@ -68,7 +77,20 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
       return tb - ta || a.number - b.number;
     });
     return list;
-  }, [query, rarity, own, sort, save.collection]);
+  }, [query, rarity, own, sort, shinyOnly, save.collection]);
+
+  const detailShiny = Boolean(
+    detail &&
+    (save.collection[detail.id]?.shinyQty ?? 0) > 0 &&
+    normalViewFor !== detail.id,
+  );
+  const detailIndex = detail
+    ? rows.findIndex((card) => card.id === detail.id)
+    : -1;
+  const navigate = (direction: -1 | 1) => {
+    const next = rows[detailIndex + direction];
+    if (next) setDetail(next);
+  };
 
   return (
     <div className="cards-collection">
@@ -118,6 +140,15 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
       </div>
 
       <div className="cards-filter-row mt-2">
+        <Button
+          size="sm"
+          variant={shinyOnly ? "secondary" : "outline"}
+          aria-pressed={shinyOnly}
+          className="min-h-11"
+          onClick={() => setShinyOnly((value) => !value)}
+        >
+          Shiny uniquement
+        </Button>
         <Button
           size="sm"
           variant={rarity === "all" ? "secondary" : "outline"}
@@ -177,6 +208,8 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
                 >
                   <CardFace
                     card={card}
+                    shiny={(entry?.shinyQty ?? 0) > 0}
+                    shinyQty={entry?.shinyQty}
                     missing={missing}
                     qty={entry?.qty}
                     compact
@@ -188,20 +221,66 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
         </ul>
       )}
 
-      <Dialog open={Boolean(detail)} onOpenChange={(o) => !o && setDetail(null)}>
-        <DialogContent className="max-w-sm">
+      <Dialog
+        open={Boolean(detail)}
+        onOpenChange={(o) => !o && setDetail(null)}
+      >
+        <DialogContent
+          className="cards-detail cards-surface"
+          onKeyDown={(event) => {
+            if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+              event.preventDefault();
+              if (!event.repeat) navigate(event.key === "ArrowLeft" ? -1 : 1);
+            }
+          }}
+        >
           {detail && (
-            <div className="space-y-3">
-              <DialogTitle>{detail.name}</DialogTitle>
-              <DialogDescription>
+            <div className="cards-detail-layout">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="cards-detail-close"
+                aria-label="Fermer la fiche"
+                onClick={() => setDetail(null)}
+              >
+                <X />
+              </Button>
+              <DialogTitle className="sr-only">{detail.name}</DialogTitle>
+              <DialogDescription className="sr-only">
                 {RARITY_LABELS[detail.rarity]} · #
                 {String(detail.number).padStart(3, "0")}
               </DialogDescription>
-              <div className="flex justify-center py-2">
+              <div
+                className="cards-detail-card"
+                onPointerDownCapture={(event) => {
+                  if (event.isPrimary && event.button === 0) {
+                    event.currentTarget.setPointerCapture(event.pointerId);
+                    swipeStart.current = {
+                      id: event.pointerId,
+                      x: event.clientX,
+                      y: event.clientY,
+                    };
+                  }
+                }}
+                onPointerUpCapture={(event) => {
+                  const start = swipeStart.current;
+                  swipeStart.current = null;
+                  if (!start || start.id !== event.pointerId) return;
+                  const dx = event.clientX - start.x;
+                  const dy = event.clientY - start.y;
+                  if (Math.abs(dx) >= 80 && Math.abs(dx) > Math.abs(dy) * 1.3)
+                    navigate(dx < 0 ? 1 : -1);
+                }}
+                onPointerCancelCapture={() => {
+                  swipeStart.current = null;
+                }}
+              >
                 <CardFace
-                  card={detail}
+                  key={detail.id}
+                  interactive={Boolean(save.collection[detail.id])}
                   missing={!save.collection[detail.id]}
-                  qty={save.collection[detail.id]?.qty}
+                  card={detail}
+                  shiny={detailShiny}
                   effectActive={
                     !reduced &&
                     Boolean(save.collection[detail.id]) &&
@@ -209,16 +288,67 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
                   }
                 />
               </div>
-              {detail.description && (
-                <p className="text-sm text-muted-foreground">
+              {detail && (save.collection[detail.id]?.shinyQty ?? 0) > 0 && (
+                <div
+                  className="flex justify-center gap-2"
+                  aria-label="Variante de carte"
+                >
+                  {save.collection[detail.id]!.qty >
+                    (save.collection[detail.id]!.shinyQty ?? 0) && (
+                    <Button
+                      size="sm"
+                      variant={!detailShiny ? "secondary" : "outline"}
+                      onClick={() => setNormalViewFor(detail.id)}
+                    >
+                      Classique
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant={detailShiny ? "secondary" : "outline"}
+                    onClick={() => setNormalViewFor(null)}
+                  >
+                    ✦ Shiny ×{save.collection[detail.id]!.shinyQty}
+                  </Button>
+                </div>
+              )}
+              <div
+                className="flex items-center justify-center gap-4"
+                aria-label="Navigation entre les cartes"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="min-h-11 min-w-11"
+                  aria-label="Carte précédente"
+                  disabled={detailIndex <= 0}
+                  onClick={() => navigate(-1)}
+                >
+                  <ChevronLeft />
+                </Button>
+                <span
+                  role="status"
+                  aria-live="polite"
+                  className="text-xs text-muted-foreground"
+                >
+                  {detailIndex + 1} / {rows.length}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="min-h-11 min-w-11"
+                  aria-label="Carte suivante"
+                  disabled={detailIndex >= rows.length - 1}
+                  onClick={() => navigate(1)}
+                >
+                  <ChevronRight />
+                </Button>
+              </div>
+              {save.collection[detail.id] && detail.description && (
+                <p className="text-center text-xs text-muted-foreground">
                   {detail.description}
                 </p>
               )}
-              <p className="text-sm">
-                {save.collection[detail.id]
-                  ? `Possédée ×${save.collection[detail.id]!.qty}`
-                  : "Manquante"}
-              </p>
             </div>
           )}
         </DialogContent>
