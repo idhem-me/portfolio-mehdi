@@ -17,6 +17,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { CATALOG, CARD_SETS, cardSet, type CardSetId } from "../catalog/cards";
 import {
@@ -35,7 +36,6 @@ import {
 import { CardFace } from "./card-face";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
-type OwnFilter = "all" | "owned" | "missing";
 type SortKey = "number" | "rarity" | "recent";
 
 export function CollectionScreen({ save }: { save: CardsSave }) {
@@ -44,7 +44,7 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
   const [setFilter, setSetFilter] = useState<CardSetId | "all">("all");
   const [query, setQuery] = useState("");
   const [rarity, setRarity] = useState<Rarity | "all">("all");
-  const [own, setOwn] = useState<OwnFilter>("all");
+  const [includeMissing, setIncludeMissing] = useState(false);
   const [sort, setSort] = useState<SortKey>("number");
   const [shinyOnly, setShinyOnly] = useState(false);
   const [normalViewFor, setNormalViewFor] = useState<string | null>(null);
@@ -74,8 +74,8 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
         (card) => (save.collection[card.id]?.shinyQty ?? 0) > 0,
       );
     if (rarity !== "all") list = list.filter((c) => c.rarity === rarity);
-    if (own === "owned") list = list.filter((c) => save.collection[c.id]);
-    if (own === "missing") list = list.filter((c) => !save.collection[c.id]);
+    if (!includeMissing)
+      list = list.filter((c) => (save.collection[c.id]?.qty ?? 0) > 0);
 
     list.sort((a, b) => {
       if (sort === "number") return a.number - b.number;
@@ -88,7 +88,15 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
       return tb - ta || a.number - b.number;
     });
     return list;
-  }, [query, rarity, own, sort, shinyOnly, setFilter, save.collection]);
+  }, [
+    query,
+    rarity,
+    includeMissing,
+    sort,
+    shinyOnly,
+    setFilter,
+    save.collection,
+  ]);
 
   const detailShiny = Boolean(
     detail &&
@@ -116,12 +124,6 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
       label: `Recherche : ${query.trim()}`,
       clear: () => setQuery(""),
     });
-  if (own !== "all")
-    activeFilters.push({
-      key: "own",
-      label: own === "owned" ? "Possédées" : "Manquantes",
-      clear: () => setOwn("all"),
-    });
   if (rarity !== "all")
     activeFilters.push({
       key: "rarity",
@@ -143,7 +145,6 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
   const clearFilters = () => {
     setSetFilter("all");
     setQuery("");
-    setOwn("all");
     setRarity("all");
     setShinyOnly(false);
     setSort("number");
@@ -161,9 +162,16 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
       </div>
 
       <div className="cards-collection-toolbar">
-        <p role="status" className="text-xs text-muted-foreground">
-          {rows.length} carte{rows.length > 1 ? "s" : ""}
-        </p>
+        <div className="cards-collection-toolbar-start">
+          <label className="cards-missing-toggle">
+            <span>Afficher les cartes manquantes</span>
+            <Switch
+              checked={includeMissing}
+              onCheckedChange={setIncludeMissing}
+              aria-label="Afficher les cartes manquantes"
+            />
+          </label>
+        </div>
         <Button
           variant="outline"
           className="min-h-11"
@@ -237,36 +245,6 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
               className="mt-3"
               aria-label="Rechercher par nom"
             />
-
-            <div className="cards-filter-row mt-3">
-              <Button
-                size="sm"
-                aria-pressed={own === "all"}
-                variant={own === "all" ? "default" : "outline"}
-                className="min-h-11"
-                onClick={() => setOwn("all")}
-              >
-                Toutes
-              </Button>
-              <Button
-                size="sm"
-                aria-pressed={own === "owned"}
-                variant={own === "owned" ? "default" : "outline"}
-                className="min-h-11"
-                onClick={() => setOwn("owned")}
-              >
-                Possédées
-              </Button>
-              <Button
-                size="sm"
-                aria-pressed={own === "missing"}
-                variant={own === "missing" ? "default" : "outline"}
-                className="min-h-11"
-                onClick={() => setOwn("missing")}
-              >
-                Manquantes
-              </Button>
-            </div>
 
             <div className="cards-filter-row mt-2">
               <Button

@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { X } from "lucide-react";
+import { X, PlayingCardsFan, Info } from "lucide-react";
+import { Popover } from "radix-ui";
 import {
   Dialog,
   DialogContent,
@@ -179,38 +180,98 @@ export function OpeningScene({
   const bank = refillBoosters(save.boosters, clock);
   const wait = nextBoosterIn(bank, clock);
   const seconds = Math.ceil((wait ?? 0) / 1000);
-  const countdown = `${String(Math.floor(seconds / 3600)).padStart(2, "0")}:${String(Math.floor(seconds / 60) % 60).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+  const countdown = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
   const unlimited = devUnlimited && canBypassBoosterLimit();
   const boosterStatus = (
     <div className="cards-booster-reserve">
-      <div className="cards-reserve-line">
-        <p>
-          {bank.available} / {BOOSTER_CAPACITY} boosters
+      <div className="cards-reserve-start">
+        <p
+          className="cards-reserve-quantity"
+          aria-label={`${bank.available} boosters disponibles`}
+        >
+          <PlayingCardsFan aria-hidden="true" />
+          <span>{bank.available}</span>
         </p>
-        <span title="Un booster offert par heure">
-          {wait === null ? "Réserve pleine" : `+1 dans ${countdown}`}
-        </span>
+        <Popover.Root>
+          <Popover.Trigger asChild>
+            <Button variant="primary" size="sm">
+              Obtenir des boosters
+            </Button>
+          </Popover.Trigger>
+          <Popover.Portal>
+            <Popover.Content
+              side="bottom"
+              align="start"
+              sideOffset={8}
+              className="z-50 w-64 rounded-lg border border-border bg-popover p-4 text-sm text-popover-foreground shadow-md outline-none"
+            >
+              <p className="font-medium">Obtenir des boosters</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Un booster est offert chaque heure, même hors ligne, jusqu’à{" "}
+                {BOOSTER_CAPACITY} dans ta réserve.
+              </p>
+              <p className="mt-2 text-xs font-medium">
+                {wait === null
+                  ? "Ta réserve est pleine."
+                  : `Prochain booster dans ${countdown}.`}
+              </p>
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
       </div>
-      <div
-        className="cards-recharge-meter"
-        role="progressbar"
-        aria-label="Recharge du prochain booster"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(
-          wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100,
-        )}
-        aria-valuetext={
-          wait === null
-            ? "Réserve pleine"
-            : `Prochain booster dans ${countdown}`
-        }
-      >
-        <span
-          style={{
-            width: `${wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100}%`,
-          }}
-        />
+      <div className="cards-reserve-recharge">
+        <Popover.Root>
+          <Popover.Trigger asChild>
+            <Button
+              variant="secondary"
+              size="icon-sm"
+              aria-label="Informations sur les boosters"
+            >
+              <Info aria-hidden="true" />
+            </Button>
+          </Popover.Trigger>
+          <Popover.Portal>
+            <Popover.Content
+              side="bottom"
+              align="end"
+              sideOffset={8}
+              className="z-50 w-64 rounded-lg border border-border bg-popover p-4 text-sm text-popover-foreground shadow-md outline-none"
+            >
+              <p className="font-medium">Ta réserve de boosters</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Tu reçois 1 booster par heure, même hors ligne, jusqu’à{" "}
+                {BOOSTER_CAPACITY} boosters maximum. La recharge reprend dès
+                qu’une place se libère.
+              </p>
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
+        <div className="cards-reserve-timer-stack">
+          <div
+            className="cards-recharge-meter"
+            role="progressbar"
+            aria-label="Recharge du prochain booster"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(
+              wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100,
+            )}
+            aria-valuetext={
+              wait === null
+                ? "Réserve pleine"
+                : `Prochain booster dans ${countdown}`
+            }
+          >
+            <span
+              style={{
+                width: `${wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100}%`,
+              }}
+            />
+          </div>
+          <span className="cards-reserve-countdown">
+            {wait === null ? "Réserve pleine" : `+1 dans ${countdown}`}
+          </span>
+        </div>
       </div>
     </div>
   );
