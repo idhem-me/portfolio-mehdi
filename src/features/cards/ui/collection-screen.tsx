@@ -98,16 +98,44 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
     save.collection,
   ]);
 
+  const sections = useMemo(() => {
+    const sets =
+      setFilter === "all"
+        ? CARD_SETS
+        : CARD_SETS.filter((set) => set.id === setFilter);
+    return sets
+      .map((set) => ({
+        set,
+        cards: rows.filter((card) => cardSet(card) === set.id),
+      }))
+      .filter((section) => section.cards.length > 0);
+  }, [rows, setFilter]);
+  const galleryOrder = useMemo(
+    () => sections.flatMap((section) => section.cards),
+    [sections],
+  );
+
   const detailShiny = Boolean(
     detail &&
     (save.collection[detail.id]?.shinyQty ?? 0) > 0 &&
     normalViewFor !== detail.id,
   );
   const detailIndex = detail
-    ? rows.findIndex((card) => card.id === detail.id)
+    ? galleryOrder.findIndex((card) => card.id === detail.id)
+    : -1;
+  const detailSetId = detail ? cardSet(detail) : null;
+  const detailSet = detailSetId
+    ? CARD_SETS.find((set) => set.id === detailSetId)
+    : undefined;
+  const setRows = detailSetId
+    ? (sections.find((section) => section.set.id === detailSetId)?.cards ??
+      [])
+    : [];
+  const setIndex = detail
+    ? setRows.findIndex((card) => card.id === detail.id)
     : -1;
   const navigate = (direction: -1 | 1) => {
-    const next = rows[detailIndex + direction];
+    const next = galleryOrder[detailIndex + direction];
     if (next) setDetail(next);
   };
 
@@ -309,41 +337,58 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
               Tout effacer
             </Button>
             <Button variant="primary" onClick={() => setFiltersOpen(false)}>
-              Voir {rows.length} carte{rows.length > 1 ? "s" : ""}
+              Voir {galleryOrder.length} carte
+              {galleryOrder.length > 1 ? "s" : ""}
             </Button>
           </div>
         </SheetContent>
       </Sheet>
 
-      {rows.length === 0 ? (
+      {sections.length === 0 ? (
         <p className="mt-8 text-center text-sm text-muted-foreground">
           Aucune carte ne correspond aux filtres.
         </p>
       ) : (
-        <ul className="cards-grid mt-4">
-          {rows.map((card) => {
-            const entry = save.collection[card.id];
-            const missing = !entry;
-            return (
-              <li key={card.id}>
-                <button
-                  type="button"
-                  className="cards-grid-hit"
-                  onClick={() => setDetail(card)}
-                >
-                  <CardFace
-                    card={card}
-                    shiny={(entry?.shinyQty ?? 0) > 0}
-                    shinyQty={entry?.shinyQty}
-                    missing={missing}
-                    qty={entry?.qty}
-                    compact
-                  />
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <div className="cards-collection-sections">
+          {sections.map(({ set, cards }) => (
+            <section
+              key={set.id}
+              className="cards-collection-section"
+              aria-labelledby={`cards-set-${set.id}`}
+            >
+              <header className="cards-collection-section-header">
+                <h2 id={`cards-set-${set.id}`}>{set.name}</h2>
+                <span className="text-xs text-muted-foreground">
+                  {cards.length} carte{cards.length > 1 ? "s" : ""}
+                </span>
+              </header>
+              <ul className="cards-grid">
+                {cards.map((card) => {
+                  const entry = save.collection[card.id];
+                  const missing = !entry;
+                  return (
+                    <li key={card.id}>
+                      <button
+                        type="button"
+                        className="cards-grid-hit"
+                        onClick={() => setDetail(card)}
+                      >
+                        <CardFace
+                          card={card}
+                          shiny={(entry?.shinyQty ?? 0) > 0}
+                          shinyQty={entry?.shinyQty}
+                          missing={missing}
+                          qty={entry?.qty}
+                          compact
+                        />
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
       )}
 
       <Dialog
@@ -370,10 +415,30 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
               >
                 <X />
               </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="cards-detail-nav cards-detail-nav-prev"
+                aria-label="Carte précédente"
+                disabled={detailIndex <= 0}
+                onClick={() => navigate(-1)}
+              >
+                <ChevronLeft />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="cards-detail-nav cards-detail-nav-next"
+                aria-label="Carte suivante"
+                disabled={detailIndex >= galleryOrder.length - 1}
+                onClick={() => navigate(1)}
+              >
+                <ChevronRight />
+              </Button>
               <DialogTitle className="sr-only">{detail.name}</DialogTitle>
               <DialogDescription className="sr-only">
-                {RARITY_LABELS[detail.rarity]} · #
-                {String(detail.number).padStart(3, "0")}
+                {detailSet?.name ?? "Collection"} · {setIndex + 1} /{" "}
+                {setRows.length}
               </DialogDescription>
               <div
                 className="cards-detail-card"
@@ -437,43 +502,16 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
                   </Button>
                 </div>
               )}
-              <div
-                className="flex items-center justify-center gap-4"
-                aria-label="Navigation entre les cartes"
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="min-h-11 min-w-11"
-                  aria-label="Carte précédente"
-                  disabled={detailIndex <= 0}
-                  onClick={() => navigate(-1)}
-                >
-                  <ChevronLeft />
-                </Button>
+              <div className="cards-detail-meta" aria-label="Carte courante">
+                <span className="cards-detail-set">{detailSet?.name}</span>
                 <span
                   role="status"
                   aria-live="polite"
-                  className="text-xs text-muted-foreground"
+                  className="cards-detail-counter"
                 >
-                  {detailIndex + 1} / {rows.length}
+                  {setIndex + 1} / {setRows.length}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="min-h-11 min-w-11"
-                  aria-label="Carte suivante"
-                  disabled={detailIndex >= rows.length - 1}
-                  onClick={() => navigate(1)}
-                >
-                  <ChevronRight />
-                </Button>
               </div>
-              {save.collection[detail.id] && detail.description && (
-                <p className="text-center text-xs text-muted-foreground">
-                  {detail.description}
-                </p>
-              )}
             </div>
           )}
         </DialogContent>
