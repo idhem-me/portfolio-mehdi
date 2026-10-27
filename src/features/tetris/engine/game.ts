@@ -71,6 +71,10 @@ export function lineScore(
     level
   );
 }
+/** Drop interval in ms. Decay 0.7 (was 0.8) steepens the level curve. */
+export function gravityMs(level: number) {
+  return Math.max(35, 1000 * Math.pow(0.7, level - 1));
+}
 export class Game {
   board = emptyBoard();
   current: Piece;
@@ -222,7 +226,7 @@ export class Game {
     if (this.over) return;
     this.elapsed += dt;
     this.fallMs += dt;
-    const gravity = Math.max(35, 1000 * Math.pow(0.8, this.level - 1));
+    const gravity = gravityMs(this.level);
     while (this.fallMs >= gravity) {
       this.fallMs -= gravity;
       const q = { ...this.current, y: this.current.y + 1 };
