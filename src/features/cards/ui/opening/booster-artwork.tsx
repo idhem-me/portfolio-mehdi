@@ -1,27 +1,27 @@
-import { Layers3, Sparkles } from "lucide-react";
-import { CARD_SETS, type CardSetId } from "../../catalog/cards";
+import type { CardSetId } from "../../catalog/cards";
 
-/** The same full wrapper is used in the gallery and both pieces of the torn pack. */
+/** Sachet wrapper shared by the gallery and both halves of the torn pack. */
 export function BoosterArtwork({
   setId,
-  showCollection = true,
 }: {
   setId: CardSetId;
+  /** @deprecated Kept for call-site compatibility; branding lives on the future image. */
   showCollection?: boolean;
 }) {
-  const set = CARD_SETS.find((entry) => entry.id === setId)!;
   return (
     <div
       className={`cards-selector-pack cards-booster-artwork-${setId}`}
+      data-booster-art={setId}
       aria-hidden="true"
     >
-      {showCollection && (
-        <span className="cards-selector-seal">
-          Collection · {setId === "origins" ? "01" : "02"}
-        </span>
-      )}
-      {setId === "origins" ? <Layers3 /> : <Sparkles />}
-      <strong>{set.name}</strong>
+      <span className="cards-booster-tip cards-booster-tip-top" />
+      <span className="cards-booster-crimp cards-booster-crimp-top" />
+      <div className="cards-booster-face">
+        {/* Swap for a set artwork <img> when assets are ready. */}
+        <div className="cards-booster-art-placeholder" />
+      </div>
+      <span className="cards-booster-crimp cards-booster-crimp-bottom" />
+      <span className="cards-booster-tip cards-booster-tip-bottom" />
     </div>
   );
 }

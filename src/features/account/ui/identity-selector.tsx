@@ -211,6 +211,7 @@ export function IdentitySelector({
   connectOnly = false,
   editOnly = false,
   avatarOverride,
+  menuExtras,
 }: {
   draft?: ScoreDraft;
   disabled?: boolean;
@@ -219,6 +220,8 @@ export function IdentitySelector({
   connectOnly?: boolean;
   editOnly?: boolean;
   avatarOverride?: React.ReactNode;
+  /** Extra items rendered at the end of the avatar dropdown. */
+  menuExtras?: React.ReactNode;
 }) {
   const state = useIdentityState();
   const [open, setOpen] = useState(false);
@@ -362,6 +365,7 @@ export function IdentitySelector({
                 Se connecter avec Google
               </DropdownMenuItem>
             )}
+            {menuExtras}
             {state.error && <div className="p-2">{error}</div>}
           </DropdownMenuContent>
         </DropdownMenu>

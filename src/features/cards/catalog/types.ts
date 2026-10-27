@@ -11,11 +11,11 @@ export type Rarity = (typeof RARITIES)[number];
 
 export const RARITY_LABELS: Record<Rarity, string> = {
   common: "Commune",
-  rare: "Rare",
-  epic: "Épique",
-  legendary: "Légendaire",
-  gold: "Gold",
-  diamond: "Diamant",
+  rare: "Peu commune",
+  epic: "Rare",
+  legendary: "Épique",
+  gold: "Légendaire",
+  diamond: "God",
 };
 
 /** Ordered from lowest to highest for comparisons / “best rarity”. */

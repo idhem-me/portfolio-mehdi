@@ -156,7 +156,9 @@ export function Shop() {
                             asChild
                             className="w-full"
                           >
-                            <Link href="/jeux/cards?tab=profile">Équiper</Link>
+                            <Link href="/jeux/cards?tab=profile&section=perso">
+                              Équiper
+                            </Link>
                           </Button>
                         ) : (
                           <Button

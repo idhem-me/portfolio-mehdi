@@ -12,7 +12,7 @@ import { Link } from "@/i18n/navigation";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { X, PlayingCardsFan, Info, Gem } from "lucide-react";
+import { PlayingCardsFan, Info, Gem, SkipForward } from "lucide-react";
 import { Popover } from "radix-ui";
 import {
   Dialog,
@@ -32,7 +32,7 @@ import type { OpeningController } from "../../engine/opening";
 import type { CardsAudio } from "../../feel/audio";
 import type { CardsSettings } from "../../feel/config";
 import { cardsHaptic } from "../../feel/haptics";
-import type { ActiveOpen, CutDirection } from "../../persistence/types";
+import type { CutDirection } from "../../persistence/types";
 import { CardFace } from "../card-face";
 import { DevPreviewPanel } from "../dev-preview";
 import { BoosterCutStage } from "./booster-cut-stage";
@@ -44,6 +44,7 @@ import {
   BOOSTER_INTERVAL_MS,
   canBypassBoosterLimit,
 } from "../../engine/boosters";
+import { classifyOpeningPulls } from "../../engine/summary";
 import { cameraZoomTiming, wrapperExitTiming } from "./gesture-config";
 import "./opening-motion.css";
 
@@ -62,7 +63,6 @@ type Props = {
   audio: React.MutableRefObject<CardsAudio | null>;
   iosSwitch: React.RefObject<HTMLInputElement | null>;
   onSaveChange: () => void;
-  onViewCollection: () => void;
   collection: Record<string, { qty: number }>;
 };
 
@@ -75,7 +75,6 @@ export function OpeningScene({
   audio,
   iosSwitch,
   onSaveChange,
-  onViewCollection,
   collection,
 }: Props) {
   const scopedTheme = useScopedTheme();
@@ -140,10 +139,14 @@ export function OpeningScene({
   const [summaryFilter, setSummaryFilter] = useState<"new" | "dup">("new");
   const [startError, setStartError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [autoPlay, setAutoPlay] = useState(false);
+  const [advanceRequest, setAdvanceRequest] = useState(0);
 
   useEffect(() => {
     setSummaryLimit(50);
     setSummaryFilter("new");
+    setAutoPlay(false);
+    setAdvanceRequest(0);
   }, [open?.openId]);
   const start = async (quantity: number) => {
     if (starting.current || !ready) return;
@@ -265,17 +268,6 @@ export function OpeningScene({
 
   const commit = (index: number) => {
     controller.advanceCard(index);
-  };
-
-  const qtyBefore = (cardId: string, openSnapshot: ActiveOpen) => {
-    const owned = collection[cardId]?.qty ?? 0;
-    if (openSnapshot.finalized || openSnapshot.simulation) {
-      const inPack = openSnapshot.cards.filter(
-        (c) => c.cardId === cardId,
-      ).length;
-      return Math.max(0, owned - (openSnapshot.simulation ? 0 : inPack));
-    }
-    return owned;
   };
 
   const bank = refillBoosters(save.boosters, clock);
@@ -485,26 +477,14 @@ export function OpeningScene({
   // —— Summary ——
   if (open.phase === "summary") {
     const summaryCards = open.batchCards ?? open.cards;
-    const summaryItems = summaryCards.map((drawn, index) => {
-      const card = getCard(drawn.cardId)!;
-      const before = open.batchCards
-        ? Math.max(
-            0,
-            (collection[drawn.cardId]?.qty ?? 0) -
-              summaryCards.filter((entry) => entry.cardId === drawn.cardId)
-                .length,
-          )
-        : qtyBefore(drawn.cardId, open);
-      const isNew =
-        before === 0 &&
-        !open.simulation &&
-        summaryCards.findIndex((entry) => entry.cardId === drawn.cardId) ===
-          index;
-      const ownedNow = open.simulation
-        ? before
-        : (collection[drawn.cardId]?.qty ?? before + 1);
-      return { drawn, index, card, isNew, ownedNow };
-    });
+    const summaryItems = classifyOpeningPulls(
+      summaryCards,
+      save.collection,
+      { simulation: open.simulation },
+    ).map((item) => ({
+      ...item,
+      card: getCard(item.drawn.cardId)!,
+    }));
     const nouvelles = summaryItems.filter((item) => item.isNew);
     const doublons = summaryItems.filter((item) => !item.isNew);
     const showSegments = nouvelles.length > 0 && doublons.length > 0;
@@ -513,100 +493,119 @@ export function OpeningScene({
         ? nouvelles
         : doublons
       : summaryItems;
+    const closeSummary = () => {
+      controller.dismissSummary();
+      refresh();
+    };
 
     return (
-      <div className="cards-opening cards-summary">
-        {open.simulation && (
-          <Badge variant="secondary" className="mb-3">
-            Simulation — non ajoutée à la collection
-          </Badge>
-        )}
-        <h2 className="text-lg font-medium">Récapitulatif</h2>
-        {showSegments && (
-          <Tabs
-            value={summaryFilter}
-            onValueChange={(value) => {
-              setSummaryFilter(value as "new" | "dup");
-              setSummaryLimit(50);
-            }}
-            className="cards-summary-segments"
-          >
-            <TabsList
-              aria-label="Filtrer le récapitulatif"
-              className="w-full"
-            >
-              <TabsTrigger value="new" className="flex-1">
-                Nouvelles ({nouvelles.length})
-              </TabsTrigger>
-              <TabsTrigger value="dup" className="flex-1">
-                Doublons ({doublons.length})
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        )}
-        <ul className="cards-grid cards-summary-list">
-          {visibleItems.slice(0, summaryLimit).map((item) => (
-            <li
-              key={`${open.openId}-sum-${item.index}`}
-              className="cards-summary-item"
-            >
-              <CardFace
-                card={item.card}
-                compact
-                shiny={item.drawn.shiny}
-                qty={item.ownedNow}
-              />
-              {item.isNew && !showSegments && (
-                <Badge variant="default" className="cards-summary-new">
-                  Nouveau
-                </Badge>
+      <Dialog
+        open
+        onOpenChange={(value) => {
+          if (!value) closeSummary();
+        }}
+      >
+        <DialogContent
+          className="cards-opening-immersive cards-surface is-immersive cards-summary border-0 p-0 shadow-none"
+          overlayClassName="cards-opening-overlay"
+          style={{ translate: "none" }}
+          onPointerDownOutside={(event) => event.preventDefault()}
+          onInteractOutside={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            document
+              .querySelector<HTMLElement>('[role="tab"][data-state="active"]')
+              ?.focus();
+          }}
+        >
+          {open.simulation && (
+            <div className="cards-immersive-chrome">
+              <Badge variant="secondary">Simulation (dev)</Badge>
+            </div>
+          )}
+          <div className="cards-summary-header">
+            <DialogTitle className="text-lg font-medium">
+              Récapitulatif
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Cartes obtenues pendant cette ouverture. OK ferme le récapitulatif.
+            </DialogDescription>
+            {showSegments && (
+              <Tabs
+                value={summaryFilter}
+                onValueChange={(value) => {
+                  setSummaryFilter(value as "new" | "dup");
+                  setSummaryLimit(50);
+                }}
+                className="cards-summary-segments"
+              >
+                <TabsList
+                  aria-label="Filtrer le récapitulatif"
+                  className="w-full"
+                >
+                  <TabsTrigger value="new" className="flex-1">
+                    Nouvelles ({nouvelles.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="dup" className="flex-1">
+                    Doublons ({doublons.length})
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
+          </div>
+          <div className="cards-summary-body">
+            <div className="cards-summary-content">
+              <ul className="cards-grid cards-summary-list">
+                {visibleItems.slice(0, summaryLimit).map((item) => (
+                  <li
+                    key={`${open.openId}-sum-${item.index}`}
+                    className="cards-summary-item"
+                  >
+                    <CardFace
+                      card={item.card}
+                      compact
+                      shiny={item.drawn.shiny}
+                      qty={item.ownedNow}
+                    />
+                    {item.isNew && !showSegments && (
+                      <Badge variant="default" className="cards-summary-new">
+                        Nouveau
+                      </Badge>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {visibleItems.length > summaryLimit && (
+                <Button
+                  variant="secondary"
+                  onClick={() => setSummaryLimit((n) => n + 50)}
+                >
+                  Afficher les 50 cartes suivantes
+                </Button>
               )}
-            </li>
-          ))}
-        </ul>
-        {visibleItems.length > summaryLimit && (
-          <Button
-            variant="secondary"
-            onClick={() => setSummaryLimit((n) => n + 50)}
-          >
-            Afficher les 50 cartes suivantes
-          </Button>
-        )}
-        <div className="cards-summary-actions">
-          <Button
-            variant="secondary"
-            size="lg"
-            className="min-h-11"
-            onClick={() => {
-              controller.dismissSummary();
-              refresh();
-              onViewCollection();
-            }}
-          >
-            Voir ma collection
-          </Button>
-          <Button
-            variant="accent"
-            size="lg"
-            className="min-h-11"
-            onClick={() => {
-              controller.dismissSummary();
-              refresh();
-            }}
-          >
-            Ouvrir des boosters
-          </Button>
-        </div>
-        {open.simulation && process.env.NODE_ENV === "development" && (
-          <DevPreviewPanel
-            onSimulate={(options) => {
-              unlockFeel();
-              controller.startSimulation(options);
-              refresh();
-            }}
-          />
-        )}
-      </div>
+              {open.simulation && process.env.NODE_ENV === "development" && (
+                <DevPreviewPanel
+                  onSimulate={(options) => {
+                    unlockFeel();
+                    controller.startSimulation(options);
+                    refresh();
+                  }}
+                />
+              )}
+            </div>
+          </div>
+          <div className="cards-summary-actions">
+            <Button
+              variant="primary"
+              size="lg"
+              className="min-h-11 w-full"
+              onClick={closeSummary}
+            >
+              OK
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 
@@ -652,29 +651,27 @@ export function OpeningScene({
             .querySelector<HTMLElement>('[role="tab"][data-state="active"]')
             ?.focus();
         }}
+        onClick={() => {
+          if (open.phase === "revealing") setAdvanceRequest((n) => n + 1);
+        }}
       >
         <DialogTitle className="sr-only">Ouverture du booster</DialogTitle>
         <DialogDescription className="sr-only">
-          Découpez puis touchez ou glissez les cartes. Échap termine l’ouverture
-          et affiche le récapitulatif.
+          Découpez puis touchez n’importe où ou glissez les cartes. Skip fait
+          défiler automatiquement. Échap termine l’ouverture et affiche le
+          récapitulatif.
         </DialogDescription>
-        <div className="cards-immersive-chrome">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="min-h-11 min-w-11"
-            aria-label="Quitter la scène d’ouverture"
-            onClick={finishOpening}
-          >
-            <X />
-          </Button>
-          {open.simulation && (
-            <Badge variant="secondary">Simulation (dev)</Badge>
-          )}
-          {open.kind === "gold_pack" && open.phase !== "revealing" && (
-            <Badge variant="default">Gold Pack</Badge>
-          )}
-        </div>
+        {(open.simulation ||
+          (open.kind === "gold_pack" && open.phase !== "revealing")) && (
+          <div className="cards-immersive-chrome">
+            {open.simulation && (
+              <Badge variant="secondary">Simulation (dev)</Badge>
+            )}
+            {open.kind === "gold_pack" && open.phase !== "revealing" && (
+              <Badge variant="default">Gold Pack</Badge>
+            )}
+          </div>
+        )}
 
         <motion.div
           className="cards-opening-stage"
@@ -737,9 +734,32 @@ export function OpeningScene({
               iosSwitch={iosSwitch}
               onCommit={commit}
               onSettled={refresh}
+              autoPlay={autoPlay}
+              advanceRequest={advanceRequest}
             />
           )}
         </motion.div>
+        {open.phase === "revealing" && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            data-opening-skip=""
+            className="cards-opening-skip min-h-11 min-w-11"
+            aria-label={
+              autoPlay
+                ? "Arrêter le défilement automatique"
+                : "Défiler les cartes automatiquement"
+            }
+            aria-pressed={autoPlay}
+            onClick={(event) => {
+              event.stopPropagation();
+              setAutoPlay((value) => !value);
+            }}
+          >
+            <SkipForward />
+          </Button>
+        )}
       </DialogContent>
     </Dialog>
   );

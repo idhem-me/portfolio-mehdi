@@ -9,10 +9,12 @@ export function PlayerProfileButton({
   draft,
   showHelp = true,
   avatarOverride,
+  menuExtras,
 }: {
   className?: string;
   showHelp?: boolean;
   avatarOverride?: React.ReactNode;
+  menuExtras?: React.ReactNode;
   draft?: ScoreDraft;
 }) {
   const profile = usePlayerProfile();
@@ -23,6 +25,7 @@ export function PlayerProfileButton({
         dropdown
         avatarOverride={avatarOverride}
         draft={draft}
+        menuExtras={menuExtras}
         trigger={
           <Button
             type="button"

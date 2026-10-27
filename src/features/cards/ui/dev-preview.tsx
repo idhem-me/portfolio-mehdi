@@ -18,23 +18,23 @@ const PREVIEWS: { label: string; options: DrawOptions }[] = [
   { label: "Shiny", options: { forceKind: "standard", forceShiny: true } },
   { label: "Standard", options: { forceKind: "standard" } },
   {
-    label: "5ᵉ Rare",
+    label: "5ᵉ Peu commune",
     options: { forceKind: "standard", forceFifthRarity: "rare" },
   },
   {
-    label: "5ᵉ Épique",
+    label: "5ᵉ Rare",
     options: { forceKind: "standard", forceFifthRarity: "epic" },
   },
   {
-    label: "5ᵉ Légendaire",
+    label: "5ᵉ Épique",
     options: { forceKind: "standard", forceFifthRarity: "legendary" },
   },
   {
-    label: "5ᵉ Gold",
+    label: "5ᵉ Légendaire",
     options: { forceKind: "standard", forceFifthRarity: "gold" },
   },
   {
-    label: "5ᵉ Diamant",
+    label: "5ᵉ God",
     options: { forceKind: "standard", forceFifthRarity: "diamond" },
   },
   { label: "Gold Pack", options: { forceKind: "gold_pack" } },

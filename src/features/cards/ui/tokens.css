@@ -20,7 +20,7 @@
   align-self: center;
   margin-inline: calc((100% - 100vw) / 2);
   padding: 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: none;
   background: var(--background);
 }
 .cards-header-inner {
@@ -44,6 +44,9 @@
     var(--surface-reveal-low),
     var(--surface-reveal-high)
   );
+}
+.cards-game .cards-opening-immersive.is-immersive.cards-summary {
+  background: var(--background);
 }
 .cards-opening-immersive::before {
   content: "";
@@ -78,15 +81,6 @@
 .cards-booster-artwork-horizons {
   box-shadow: var(--cards-shadow-soft);
 }
-.cards-game .cards-selector-pack::after {
-  filter: blur(3rem);
-  opacity: 0.5;
-  background: radial-gradient(
-    ellipse at center,
-    color-mix(in oklch, var(--cards-halo-color) 6%, transparent),
-    transparent 75%
-  );
-}
 @media (prefers-reduced-motion: reduce) {
   .cards-opening-immersive::before {
     transition: none;
@@ -97,24 +91,6 @@
   display: inline-flex;
   isolation: isolate;
 }
-.cards-avatar-frame {
-  position: absolute;
-  width: 130%;
-  height: 130%;
-  max-width: none;
-  left: -15%;
-  top: -15%;
-  pointer-events: none;
-  z-index: 1;
-}
-.cards-avatar-frame.is-shiny {
-  animation: cards-frame-shimmer 6s ease-in-out infinite;
-}
-@keyframes cards-frame-shimmer {
-  50% {
-    opacity: 0.8;
-  }
-}
 .cards-avatar-crop {
   position: relative;
   width: 100%;
@@ -123,11 +99,6 @@
   overflow: hidden;
   border-radius: var(--radius-lg);
   background: var(--muted);
-}
-@media (prefers-reduced-motion: reduce) {
-  .cards-avatar-frame.is-shiny {
-    animation: none;
-  }
 }
 /* Semantic palettes scoped to this game and its portals. Neutral text remains distinct from rarity colors. */
 [data-cards-theme="blue"] {
@@ -416,8 +387,9 @@
   .cards-profile > section > dl {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
-  .cards-game .cards-summary-list {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 220px));
+  .cards-summary .cards-summary-list {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    justify-content: center;
   }
   .cards-game .cards-booster-reserve {
     max-width: 64rem;
@@ -488,18 +460,6 @@
   --cards-effect-rare: color-mix(in oklch, var(--accent) 55%, white);
   --cards-effect-epic: color-mix(in oklch, var(--accent) 70%, #a855f7);
 }
-@media (min-width: 768px) {
-  .cards-summary .cards-summary-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 220px));
-    gap: 1.25rem;
-  }
-  .cards-summary-item {
-    width: 100%;
-    max-width: none;
-  }
-}
-
 .cards-navigation-tab svg.cards-navigation-icon {
   background: none;
 }

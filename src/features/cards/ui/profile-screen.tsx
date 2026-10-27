@@ -3,7 +3,7 @@
 import { Personalization } from "../avatar/personalization";
 import { useCardsAccount } from "../account/client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +12,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CATALOG } from "../catalog/cards";
 import { RARITIES, RARITY_LABELS } from "../catalog/types";
 import {
@@ -30,7 +30,13 @@ import {
 export function ProfileScreen({ save }: { save: CardsSave }) {
   const account = useCardsAccount();
   const [ratesOpen, setRatesOpen] = useState(false);
+  const [tab, setTab] = useState<"stats" | "perso">("stats");
   const progress = catalogProgress(save);
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("section") === "perso")
+      setTab("perso");
+  }, []);
 
   return (
     <div className="cards-profile space-y-6">
@@ -40,65 +46,92 @@ export function ProfileScreen({ save }: { save: CardsSave }) {
           : "Progression sauvegardée avec Google."}
       </p>
 
-      <section className="space-y-3">
-        <h2 className="text-base font-medium">Statistiques</h2>
-        <dl className="grid grid-cols-2 gap-3 text-sm">
-          <Stat label="Boosters ouverts" value={save.stats.boostersOpened} />
-          <Stat label="Gold Packs" value={save.stats.goldPacksOpened} />
-          <Stat label="Cartes uniques" value={uniqueOwnedCount(save)} />
-          <Stat label="Exemplaires" value={totalCopies(save)} />
-          <Stat
-            label="Exemplaires Shiny"
-            value={Object.values(save.collection).reduce(
-              (total, entry) => total + (entry.shinyQty ?? 0),
-              0,
-            )}
-          />
-          <Stat
-            label="Progression"
-            value={`${progress.owned}/${CATALOG.length}`}
-          />
-          <Stat
-            label="Meilleure rareté"
-            value={
-              save.stats.bestRarity ? RARITY_LABELS[save.stats.bestRarity] : "—"
-            }
-          />
-        </dl>
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Exemplaires par rareté</p>
-          <ul className="flex flex-wrap gap-2">
-            {RARITIES.map((r) => (
-              <li key={r}>
-                <Badge variant="secondary">
-                  {RARITY_LABELS[r]} · {save.stats.copiesByRarity[r]}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <Tabs
+        value={tab}
+        onValueChange={(value) => {
+          const next = value as "stats" | "perso";
+          setTab(next);
+          const url = new URL(window.location.href);
+          if (next === "perso") url.searchParams.set("section", "perso");
+          else url.searchParams.delete("section");
+          window.history.replaceState(null, "", url);
+        }}
+        className="gap-4"
+      >
+        <TabsList className="w-full" aria-label="Sections du profil">
+          <TabsTrigger value="stats" className="flex-1">
+            Statistiques
+          </TabsTrigger>
+          <TabsTrigger value="perso" className="flex-1">
+            Personnalisation
+          </TabsTrigger>
+        </TabsList>
 
-      <section className="flex flex-col gap-2">
-        <Button
-          variant="secondary"
-          className="w-fit"
-          onClick={() => setRatesOpen(true)}
-        >
-          Probabilités
-        </Button>
-      </section>
+        <TabsContent value="stats" className="space-y-6">
+          <section className="space-y-3">
+            <dl className="grid grid-cols-2 gap-3 text-sm">
+              <Stat label="Boosters ouverts" value={save.stats.boostersOpened} />
+              <Stat label="Gold Packs" value={save.stats.goldPacksOpened} />
+              <Stat label="Cartes uniques" value={uniqueOwnedCount(save)} />
+              <Stat label="Exemplaires" value={totalCopies(save)} />
+              <Stat
+                label="Exemplaires Shiny"
+                value={Object.values(save.collection).reduce(
+                  (total, entry) => total + (entry.shinyQty ?? 0),
+                  0,
+                )}
+              />
+              <Stat
+                label="Progression"
+                value={`${progress.owned}/${CATALOG.length}`}
+              />
+              <Stat
+                label="Meilleure rareté"
+                value={
+                  save.stats.bestRarity
+                    ? RARITY_LABELS[save.stats.bestRarity]
+                    : "—"
+                }
+              />
+            </dl>
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Exemplaires par rareté</p>
+              <ul className="flex flex-wrap gap-2">
+                {RARITIES.map((rarity) => (
+                  <li key={rarity}>
+                    <Badge variant="secondary">
+                      {RARITY_LABELS[rarity]} ·{" "}
+                      {save.stats.copiesByRarity[rarity]}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
 
-      <Personalization />
-      <Separator />
+          <section className="flex flex-col gap-2">
+            <Button
+              variant="secondary"
+              className="w-fit"
+              onClick={() => setRatesOpen(true)}
+            >
+              Probabilités
+            </Button>
+          </section>
+        </TabsContent>
+
+        <TabsContent value="perso" className="cards-profile-perso">
+          <Personalization />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={ratesOpen} onOpenChange={setRatesOpen}>
         <DialogContent className="max-w-sm">
           <div className="space-y-3">
             <DialogTitle>Probabilités</DialogTitle>
             <DialogDescription>
-              Booster standard : 4 communes + 1 carte rare minimum. Gold Pack
-              avant tirage : {GOLD_PACK_PERCENT}&nbsp;% (
+              Booster standard : 4 communes + 1 carte peu commune minimum. Gold
+              Pack avant tirage : {GOLD_PACK_PERCENT}&nbsp;% (
               {GOLD_PACK_PERCENT / 100}).
             </DialogDescription>
             <ul className="space-y-2 text-sm">
@@ -132,7 +165,7 @@ export function ProfileScreen({ save }: { save: CardsSave }) {
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-border bg-card px-3 py-2">
+    <div className="rounded-lg bg-muted/60 px-3 py-2">
       <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className="mt-0.5 font-medium tabular-nums">{value}</dd>
     </div>

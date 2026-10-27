@@ -31,7 +31,13 @@ type Props = {
   iosSwitch: React.RefObject<HTMLInputElement | null>;
   onCommit: (index: number) => void;
   onSettled: () => void;
+  /** When true, cards advance on their own after each reveal settles. */
+  autoPlay?: boolean;
+  /** Increment to request advancing the front card (tap outside). */
+  advanceRequest?: number;
 };
+
+const AUTO_PLAY_HOLD_MS = 520;
 
 export function CardStack(props: Props) {
   const { cards, currentIndex, enabled, visible } = props;
@@ -75,7 +81,7 @@ export function CardStack(props: Props) {
         aria-live="polite"
       >
         {enabled
-          ? `Carte ${currentIndex + 1} sur ${cards.length} · Touchez ou glissez`
+          ? `Carte ${currentIndex + 1} sur ${cards.length} · Touchez n’importe où ou glissez`
           : "Découpez le booster"}
       </p>
     </div>
@@ -99,6 +105,8 @@ function FrontCard({
   interactive,
   discovered,
   onDiscover,
+  autoPlay = false,
+  advanceRequest = 0,
 }: Props & {
   front: DrawnCard;
   active: boolean;
@@ -109,8 +117,10 @@ function FrontCard({
 }) {
   const wasDiscovered = discovered?.includes(currentIndex) ?? false;
   const [faceUp, setFaceUp] = useState(wasDiscovered);
+  const [settled, setSettled] = useState(wasDiscovered);
   const revealedOnce = useRef(wasDiscovered);
   const discoveryCallback = useRef(onDiscover);
+  const lastAdvanceRequest = useRef(advanceRequest);
   useEffect(() => {
     discoveryCallback.current = onDiscover;
   }, [onDiscover]);
@@ -187,6 +197,7 @@ function FrontCard({
           () => {
             setSpecial(false);
             locked.current = false;
+            setSettled(true);
           },
           wow && !reduced
             ? 1400
@@ -218,6 +229,7 @@ function FrontCard({
   const eject = async (direction: 1 | -1) => {
     if (locked.current || !interactive || !faceUp) return;
     locked.current = true; // Synchronous: rapid taps/keys cannot enqueue another eject.
+    setSettled(false);
     pointer.current = null;
     // Persist the accepted gesture now; credit/resume never waits for animation.
     onCommit(currentIndex);
@@ -243,6 +255,27 @@ function FrontCard({
       onSettled();
     }
   };
+
+  useEffect(() => {
+    if (!autoPlay || !interactive || !settled || !faceUp) return;
+    const timer = window.setTimeout(
+      () => {
+        void eject(1);
+      },
+      reduced ? 120 : AUTO_PLAY_HOLD_MS,
+    );
+    return () => window.clearTimeout(timer);
+    // eject closes over the latest interactive/settled card; index identity is enough.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, interactive, settled, faceUp, currentIndex, reduced]);
+
+  useEffect(() => {
+    if (advanceRequest === lastAdvanceRequest.current) return;
+    lastAdvanceRequest.current = advanceRequest;
+    if (!interactive || !settled || !faceUp || advanceRequest <= 0) return;
+    void eject(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [advanceRequest, interactive, settled, faceUp]);
 
   const cancel = () => {
     pointer.current = null;
@@ -277,7 +310,7 @@ function FrontCard({
       aria-disabled={!faceUp || !interactive}
       aria-label={
         faceUp
-          ? `${card.name}${front.shiny ? ", Shiny" : ""}, ${RARITY_LABELS[front.rarity]}. Touchez ou glissez pour avancer.`
+          ? `${card.name}${front.shiny ? ", Shiny" : ""}, ${RARITY_LABELS[front.rarity]}. Touchez n’importe où ou glissez pour avancer.`
           : `${card.name}${front.shiny ? ", Shiny" : ""}, ${RARITY_LABELS[front.rarity]}. Révélation…`
       }
       onPointerDown={(event) => {

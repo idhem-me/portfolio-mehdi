@@ -21,8 +21,10 @@ test("cards: mobile browser smoke, reduced motion, ratio and profile", async ({
   await expect(
     page.getByRole("heading", { name: "Récapitulatif" }),
   ).toBeVisible();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.locator(".cards-summary-item")).toHaveCount(5);
+  await page.getByRole("button", { name: "OK", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.getByRole("tab", { name: "Profil", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Statistiques locales" }),

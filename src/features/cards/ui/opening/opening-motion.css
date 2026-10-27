@@ -18,6 +18,9 @@
   display: flex;
   flex-direction: column;
   background: var(--background);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .cards-immersive-chrome {
@@ -27,6 +30,17 @@
   padding: 0.5rem 0.75rem;
   position: relative;
   z-index: 5;
+}
+
+.cards-opening-skip {
+  position: absolute;
+  z-index: 6;
+  right: max(0.75rem, env(safe-area-inset-right));
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+.cards-opening-skip[aria-pressed="true"] {
+  background: var(--muted);
+  color: var(--foreground);
 }
 
 .cards-opening-stage {
@@ -79,8 +93,9 @@
   position: absolute;
   inset: 0;
   border-radius: var(--radius);
-  border: 1px solid var(--border);
+  border: none;
   background: color-mix(in oklch, var(--muted) 80%, var(--accent) 12%);
+  box-shadow: 0 1px 3px color-mix(in oklch, var(--foreground) 12%, transparent);
 }
 
 .cards-mini-stack span:nth-child(1) {
@@ -97,8 +112,8 @@
   position: absolute;
   inset: 0;
   z-index: 2;
-  border-radius: var(--radius-lg, var(--radius));
-  border: 1px solid var(--border);
+  border-radius: 0;
+  border: none;
   background: color-mix(in oklch, var(--card) 80%, var(--accent) 20%);
   display: grid;
   place-items: center;
@@ -119,10 +134,8 @@
   right: 0;
   height: 18%;
   z-index: 3;
-  border-radius: var(--radius-lg, var(--radius)) var(--radius-lg, var(--radius))
-    0 0;
-  border: 1px solid var(--border);
-  border-bottom: none;
+  border-radius: 0;
+  border: none;
   background: color-mix(in oklch, var(--card) 92%, var(--foreground) 8%);
   transform-origin: 50% 100%;
   pointer-events: none;
@@ -471,7 +484,7 @@
 .cards-booster-strip {
   display: block;
   border: 0;
-  border-radius: var(--radius-xl);
+  border-radius: 0;
   background: transparent;
 }
 .cards-booster-body {
@@ -490,7 +503,7 @@
 .cards-booster-assembly {
   box-shadow: 0 18px 40px
     color-mix(in oklch, var(--foreground) 18%, transparent);
-  border-radius: var(--radius-xl);
+  border-radius: 0;
 }
 .cards-booster-assembly > .cards-cut-glow {
   top: calc(18% - 3px);

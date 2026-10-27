@@ -257,7 +257,7 @@ test("network failure keeps local identity and scores available in this browser"
   ).toBeVisible();
   await openIdentityMenu(page);
   await expect(page.locator(".identity-error")).toContainText(
-    "Connexion indisponible",
+    "Serveur injoignable",
   );
   await page.goto("/en/jeux/tetris");
   await endGame(page);

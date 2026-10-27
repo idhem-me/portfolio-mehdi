@@ -7,11 +7,9 @@ import { useLocale } from "next-intl";
 import { usePathname, getPathname } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { CardsPlayerAvatar } from "../avatar/player-avatar";
-import { Badge } from "@/components/ui/badge";
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowLeft, Settings2, Gem, Store } from "lucide-react";
+import { Settings2, Gem, Store } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +20,10 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { GameFeelSettings } from "@/components/games/game-feel-settings";
 import { GameAppearanceSettings } from "@/components/games/game-appearance-settings";
 import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
@@ -132,20 +134,7 @@ export default function CardsApp({
       <div className="cards-game" data-cards-theme={theme}>
         <header className="cards-header">
           <div className="cards-header-inner">
-            <Button
-              variant="ghost"
-              size="icon"
-              asChild
-              aria-label="Retour aux jeux"
-            >
-              <Link href={backHref}>
-                <ArrowLeft />
-              </Link>
-            </Button>
-            <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <h1 className="cards-title">Cartes</h1>
-              <Badge variant="secondary">Work in progress</Badge>
-            </div>
+            <h1 className="cards-title">Cartes</h1>
             <div className="cards-header-actions">
               <Button
                 variant="ghost"
@@ -170,6 +159,14 @@ export default function CardsApp({
               <PlayerProfileButton
                 showHelp={false}
                 avatarOverride={<CardsPlayerAvatar />}
+                menuExtras={
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild variant="destructive">
+                      <Link href={backHref}>Quitter le jeu</Link>
+                    </DropdownMenuItem>
+                  </>
+                }
               />
             </div>
           </div>
@@ -202,7 +199,6 @@ export default function CardsApp({
                 iosSwitch={iosSwitch}
                 collection={save.collection}
                 onSaveChange={notify}
-                onViewCollection={() => setTab("collection")}
               />
             </TabsContent>
             <TabsContent value="shop" className="cards-tab-panel">

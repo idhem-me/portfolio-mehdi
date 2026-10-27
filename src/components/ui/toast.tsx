@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { XIcon } from "lucide-react";
 import { cn } from "cn";
 
 const placements = {
@@ -29,11 +30,19 @@ export function Toast({
       role={error ? "alert" : "status"}
       aria-live={error ? "assertive" : "polite"}
       className={cn(
-        "fixed z-[100] max-w-[calc(100%-2rem)] rounded-xl border bg-popover px-5 py-3 text-sm text-popover-foreground shadow-lg",
+        "fixed z-[100] flex max-w-[calc(100%-2rem)] items-center gap-3 rounded-xl border bg-popover py-3 pl-5 pr-3 text-sm text-popover-foreground shadow-lg",
         placements[placement],
       )}
     >
-      {message}
+      <p className="min-w-0 flex-1">{message}</p>
+      <button
+        type="button"
+        aria-label="Fermer"
+        className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        onClick={onDismiss}
+      >
+        <XIcon className="size-4" />
+      </button>
     </div>
   ) : null;
 }

@@ -48,10 +48,9 @@ test("cards: mobile successive packs, modal, resume, summary ratio and touch det
   await expect(
     page.locator(".cards-stack-cover, .cards-card-back-mark"),
   ).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Quitter la scène d’ouverture" })
-    .click();
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "Défiler les cartes automatiquement" }),
+  ).toBeVisible();
   const saved = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("cards.save.v1")!),
   );
@@ -63,7 +62,10 @@ test("cards: mobile successive packs, modal, resume, summary ratio and touch det
   expect(resumed.activeOpen.openId).toBe(saved.activeOpen.openId);
   expect(resumed.activeOpen.cards).toEqual(saved.activeOpen.cards);
   await finish(page, 1);
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(
+    page.getByRole("tab", { name: "Ouvrir", exact: true }),
+  ).toHaveCount(0);
   const cards = await page
     .locator(".cards-summary-item .cards-card")
     .evaluateAll((nodes) =>
@@ -75,19 +77,16 @@ test("cards: mobile successive packs, modal, resume, summary ratio and touch det
   expect(cards).toHaveLength(5);
   for (const card of cards)
     expect(card.width / card.height).toBeCloseTo(5 / 7, 2);
-  expect(cards[0].y).toBe(cards[2].y);
-  expect(cards[3].y).toBe(cards[4].y);
-  expect(cards[3].y).toBeGreaterThan(cards[0].y);
-  const summaryButton = page.getByRole("button", {
-    name: "Ouvrir",
-    exact: true,
-  });
-  expect(
-    (await summaryButton.boundingBox())!.y +
-      (await summaryButton.boundingBox())!.height,
-  ).toBeLessThanOrEqual(844);
+  expect(cards[0].y).toBe(cards[1].y);
+  expect(cards[2].y).toBe(cards[3].y);
+  expect(cards[2].y).toBeGreaterThan(cards[0].y);
+  expect(cards[4].y).toBeGreaterThan(cards[2].y);
   await page.screenshot({ path: "/tmp/cards-summary-mobile.png" });
-  await summaryButton.dblclick();
+  await page.getByRole("button", { name: "OK", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page
+    .getByRole("button", { name: "Ouvrir un booster", exact: true })
+    .dblclick();
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
     .press("Enter");
@@ -126,7 +125,7 @@ test("cards: swipe directions, cancellation, special previews, reduced motion an
   page,
 }) => {
   await page.goto("/jeux/cards");
-  await page.getByRole("button", { name: "5ᵉ Diamant", exact: true }).click();
+  await page.getByRole("button", { name: "5ᵉ God", exact: true }).click();
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
     .press("Enter");
@@ -174,10 +173,9 @@ test("cards: swipe directions, cancellation, special previews, reduced motion an
   await ready(page, 0);
   await page.keyboard.press("Escape");
   await expect(
-    page.getByRole("button", { name: "Reprendre", exact: true }),
+    page.getByRole("heading", { name: "Récapitulatif" }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Reprendre", exact: true }).click();
-  await finish(page);
+  await page.getByRole("button", { name: "OK", exact: true }).click();
   await expect(page.locator(".cards-special-reveal")).toHaveCount(0);
 });
 
@@ -248,8 +246,8 @@ for (const direction of [-1, 1]) {
 }
 
 for (const [label, rarity] of [
-  ["5ᵉ Légendaire", "legendary"],
-  ["5ᵉ Gold", "gold"],
+  ["5ᵉ Épique", "legendary"],
+  ["5ᵉ Légendaire", "gold"],
 ] as const) {
   test(`cards: exceptional preview ${rarity} stays hidden until active`, async ({
     page,
@@ -382,14 +380,11 @@ test("cards: opening controls survive cut, resume and summary", async ({
   expect(pack.width).toBeCloseTo(stack.width, 0);
   expect(pack.height).toBeCloseTo(stack.height, 0);
   await page
-    .getByRole("button", { name: "Quitter la scène d’ouverture", exact: true })
-    .click();
-  await assertAnchor("Reprendre");
-  await page.getByRole("button", { name: "Reprendre", exact: true }).click();
-  await expect(page.locator(".cards-cut-hint")).toBeVisible();
-  await page
     .getByRole("button", { name: "Découper le booster", exact: true })
     .press("Enter");
+  await expect(
+    page.getByRole("button", { name: "Défiler les cartes automatiquement" }),
+  ).toBeVisible();
   await finish(page);
   await assertAnchor("Ouvrir");
 });

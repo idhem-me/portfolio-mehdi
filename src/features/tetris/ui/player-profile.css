@@ -134,3 +134,8 @@
 .identity-dropdown [data-slot="dropdown-menu-item"] {
   min-height: 44px;
 }
+
+.identity-dropdown:has(.identity-error) {
+  min-width: 18rem;
+  width: min(100vw - 2rem, 20rem);
+}

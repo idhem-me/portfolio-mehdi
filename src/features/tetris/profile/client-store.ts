@@ -160,9 +160,9 @@ export async function loadProfile(force = false): Promise<void> {
         ...(!p.ok
           ? {
               error:
-                "Connexion indisponible pour le profil local. Tu peux continuer à jouer sur cet appareil ou te connecter avec Google.",
+                "Serveur injoignable. Continue ici, ou connecte-toi avec Google.",
             }
-          : state.error.startsWith("Connexion indisponible")
+          : state.error.startsWith("Serveur injoignable")
             ? { error: "" }
             : {}),
       });
@@ -172,8 +172,7 @@ export async function loadProfile(force = false): Promise<void> {
         emit({
           loading: false,
           loaded: true,
-          error:
-            "Connexion indisponible. Tu peux continuer à jouer sur cet appareil.",
+          error: "Serveur injoignable. Continue sur cet appareil.",
         });
     } finally {
       loading = null;

@@ -10,6 +10,7 @@ import {
   type CardDefinition,
   type Rarity,
 } from "../catalog/types";
+import { RarityIcons } from "./rarity-icons";
 
 const rarityClass: Record<Rarity, string> = {
   common: "cards-rarity-common",
@@ -167,25 +168,13 @@ export function CardFace({
         </div>
       )}
       <div className="cards-card-art" aria-hidden>
-        <span className="cards-card-art-label">
-          CARTE {card.number}
-          <br />
-          {RARITY_LABELS[card.rarity]}
-        </span>
+        <span className="cards-card-art-label">CARTE {card.number}</span>
         {effectActive && <span className="cards-card-shine" />}
       </div>
       <div className="cards-card-meta">
-        <p className="cards-card-name">
-          {card.name}
-          {shiny && (
-            <span className="cards-shiny-label">
-              {" "}
-              ✦ Shiny{shinyQty ? ` ×${shinyQty}` : ""}
-            </span>
-          )}
-        </p>
+        <p className="cards-card-name">{card.name}</p>
         <div className="cards-card-row">
-          <Badge variant="secondary">{RARITY_LABELS[card.rarity]}</Badge>
+          <RarityIcons rarity={card.rarity} shiny={shiny} shinyQty={shinyQty} />
           <span className="flex items-center gap-2">
             {qty !== undefined && qty > 0 && (
               <span className="text-xs text-muted-foreground">×{qty}</span>
