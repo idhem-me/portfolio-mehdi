@@ -12,6 +12,12 @@ const Game = dynamic(() => import("./ui/app"), {
   ),
 });
 
-export function CardsGame({ backHref }: { backHref: string }) {
-  return <Game backHref={backHref} />;
+export function CardsGame({
+  backHref,
+  initialTheme,
+}: {
+  backHref: string;
+  initialTheme?: string;
+}) {
+  return <Game backHref={backHref} initialTheme={initialTheme} />;
 }

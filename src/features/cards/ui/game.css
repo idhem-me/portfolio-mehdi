@@ -1,3 +1,4 @@
+@import "./tokens.css";
 /* Cards game — classic UI uses design tokens; opening effects are scoped here. */
 
 .cards-game,

@@ -1,4 +1,8 @@
 "use client";
+import { clampQuantity } from "../../engine/quantity";
+import { QuantityPicker } from "./quantity-picker";
+import { useScopedTheme } from "@/components/ui/scoped-theme";
+import { Link } from "@/i18n/navigation";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
@@ -14,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { BoosterSelector } from "./booster-selector";
+import { RARITY_RANK } from "../../catalog/types";
 import { cardSet, type CardSetId } from "../../catalog/cards";
 import { getCard } from "../../catalog/cards";
 import type { OpeningController } from "../../engine/opening";
@@ -39,6 +44,10 @@ const ignoreWrapperExit = () => {};
 
 type Props = {
   controller: OpeningController;
+  onStart: (setId: CardSetId, quantity: number) => Promise<void>;
+  credits: number;
+  purchasedBoosters: number;
+  ready: boolean;
   settings: CardsSettings;
   audio: React.MutableRefObject<CardsAudio | null>;
   iosSwitch: React.RefObject<HTMLInputElement | null>;
@@ -49,6 +58,10 @@ type Props = {
 
 export function OpeningScene({
   controller,
+  onStart,
+  credits,
+  purchasedBoosters,
+  ready,
   settings,
   audio,
   iosSwitch,
@@ -56,7 +69,9 @@ export function OpeningScene({
   onViewCollection,
   collection,
 }: Props) {
+  const scopedTheme = useScopedTheme();
   const reduced = usePrefersReducedMotion();
+  const [quantity, setQuantity] = useState(1);
   const [selectedSet, setSelectedSet] = useState<CardSetId>("origins");
   const [entryRect, setEntryRect] = useState<{
     x: number;
@@ -112,16 +127,40 @@ export function OpeningScene({
     }
   };
 
-  const startOpen = () => {
-    if (starting.current) return;
+  const [startError, setStartError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const start = async (quantity: number) => {
+    if (starting.current || !ready) return;
     starting.current = true;
+    setLoading(true);
+    setStartError(null);
     captureBooster();
     unlockFeel();
     cardsHaptic("light", settings, iosSwitch.current);
-    const next = controller.startOpen({ setId: selectedSet }, devUnlimited);
-    if (!next) starting.current = false;
-    refresh();
-    // Keep the guard until React commits the new opening.
+    try {
+      if (devUnlimited && canBypassBoosterLimit())
+        controller.startSimulation({
+          setId: selectedSet,
+          batchSize: quantity > 1 ? quantity : undefined,
+        });
+      else await onStart(selectedSet, quantity);
+      refresh();
+    } catch (error) {
+      setStartError(
+        error instanceof Error ? error.message : "Ouverture impossible.",
+      );
+    } finally {
+      starting.current = false;
+      setLoading(false);
+    }
+  };
+  const startOpen = () => {
+    void start(
+      clampQuantity(
+        quantity,
+        refillBoosters(save.boosters, clock).available + purchasedBoosters,
+      ),
+    );
   };
 
   const onCutValidated = useCallback(
@@ -165,18 +204,20 @@ export function OpeningScene({
 
   useEffect(() => {
     if (open?.phase !== "wrapperExit" || !open.batchKinds || reduced) return;
+    const staggerMs = Math.min(
+      wrapperExitTiming.staggerMs,
+      2500 / Math.max(1, open.batchKinds.length - 1),
+    );
     const start = performance.now();
     const timer = window.setInterval(
       () =>
         setCutFrontIndex(
           Math.min(
-            9,
-            Math.floor(
-              (performance.now() - start) / wrapperExitTiming.staggerMs,
-            ),
+            (open.batchKinds?.length ?? 1) - 1,
+            Math.floor((performance.now() - start) / staggerMs),
           ),
         ),
-      wrapperExitTiming.staggerMs,
+      staggerMs,
     );
     return () => window.clearInterval(timer);
   }, [open?.openId, open?.phase, open?.batchKinds, reduced]);
@@ -197,99 +238,98 @@ export function OpeningScene({
   };
 
   const bank = refillBoosters(save.boosters, clock);
+  const available = bank.available + purchasedBoosters;
   const wait = nextBoosterIn(bank, clock);
   const seconds = Math.ceil((wait ?? 0) / 1000);
   const countdown = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+  const chosenQuantity = clampQuantity(quantity, available);
   const unlimited = devUnlimited && canBypassBoosterLimit();
   const boosterStatus = (
     <div className="cards-booster-reserve">
       <div className="cards-reserve-start">
         <p
           className="cards-reserve-quantity"
-          aria-label={`${bank.available} boosters disponibles`}
+          aria-label={`${purchasedBoosters} boosters achetés`}
+        >
+          <PlayingCardsFan aria-hidden="true" />
+          <span>{purchasedBoosters}</span>
+          <span className="cards-reserve-label">achetés</span>
+        </p>
+        <Button variant="primary" size="sm" asChild>
+          <Link
+            href={
+              credits >= 100
+                ? "/boutique?tab=boosters"
+                : "/boutique?tab=credits"
+            }
+          >
+            Obtenir des boosters
+          </Link>
+        </Button>
+      </div>
+      <div className="cards-reserve-free">
+        <p
+          className="cards-reserve-quantity"
+          aria-label={`${bank.available} boosters gratuits`}
         >
           <PlayingCardsFan aria-hidden="true" />
           <span>{bank.available}</span>
+          <span className="cards-reserve-label">gratuits</span>
         </p>
-        <Popover.Root>
-          <Popover.Trigger asChild>
-            <Button variant="primary" size="sm">
-              Obtenir des boosters
-            </Button>
-          </Popover.Trigger>
-          <Popover.Portal>
-            <Popover.Content
-              side="bottom"
-              align="start"
-              sideOffset={8}
-              className="z-50 w-64 rounded-lg border border-border bg-popover p-4 text-sm text-popover-foreground shadow-md outline-none"
+        <div className="cards-reserve-recharge">
+          <Popover.Root>
+            <Popover.Trigger asChild>
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                aria-label="Informations sur les boosters"
+              >
+                <Info aria-hidden="true" />
+              </Button>
+            </Popover.Trigger>
+            <Popover.Portal>
+              <Popover.Content
+                data-cards-theme={scopedTheme}
+                side="bottom"
+                align="end"
+                sideOffset={8}
+                className="z-50 w-64 rounded-lg border border-border bg-popover p-4 text-sm text-popover-foreground shadow-md outline-none"
+              >
+                <p className="font-medium">Ta réserve de boosters</p>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  Tu reçois 1 booster par heure, même hors ligne, jusqu’à{" "}
+                  {BOOSTER_CAPACITY} boosters maximum. La recharge reprend dès
+                  qu’une place se libère.
+                </p>
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
+          <div className="cards-reserve-timer-stack">
+            <div
+              className="cards-recharge-meter"
+              role="progressbar"
+              aria-label="Recharge du prochain booster"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(
+                wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100,
+              )}
+              aria-valuetext={
+                wait === null
+                  ? "Réserve pleine"
+                  : `Prochain booster dans ${countdown}`
+              }
             >
-              <p className="font-medium">Obtenir des boosters</p>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Un booster est offert chaque heure, même hors ligne, jusqu’à{" "}
-                {BOOSTER_CAPACITY} dans ta réserve.
-              </p>
-              <p className="mt-2 text-xs font-medium">
-                {wait === null
-                  ? "Ta réserve est pleine."
-                  : `Prochain booster dans ${countdown}.`}
-              </p>
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
-      </div>
-      <div className="cards-reserve-recharge">
-        <Popover.Root>
-          <Popover.Trigger asChild>
-            <Button
-              variant="secondary"
-              size="icon-sm"
-              aria-label="Informations sur les boosters"
-            >
-              <Info aria-hidden="true" />
-            </Button>
-          </Popover.Trigger>
-          <Popover.Portal>
-            <Popover.Content
-              side="bottom"
-              align="end"
-              sideOffset={8}
-              className="z-50 w-64 rounded-lg border border-border bg-popover p-4 text-sm text-popover-foreground shadow-md outline-none"
-            >
-              <p className="font-medium">Ta réserve de boosters</p>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                Tu reçois 1 booster par heure, même hors ligne, jusqu’à{" "}
-                {BOOSTER_CAPACITY} boosters maximum. La recharge reprend dès
-                qu’une place se libère.
-              </p>
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
-        <div className="cards-reserve-timer-stack">
-          <div
-            className="cards-recharge-meter"
-            role="progressbar"
-            aria-label="Recharge du prochain booster"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={Math.round(
-              wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100,
-            )}
-            aria-valuetext={
-              wait === null
-                ? "Réserve pleine"
-                : `Prochain booster dans ${countdown}`
-            }
-          >
-            <span
-              style={{
-                width: `${wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100}%`,
-              }}
-            />
+              <span
+                style={{
+                  width: `${wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100}%`,
+                }}
+              />
+            </div>
+            <span className="cards-reserve-countdown">
+              {wait === null ? "Réserve pleine" : `+1 dans ${countdown}`}
+            </span>
           </div>
-          <span className="cards-reserve-countdown">
-            {wait === null ? "Réserve pleine" : `+1 dans ${countdown}`}
-          </span>
         </div>
       </div>
     </div>
@@ -303,44 +343,35 @@ export function OpeningScene({
         <BoosterSelector
           collection={collection}
           onOpen={startOpen}
-          canOpen={bank.available > 0 || unlimited}
+          canOpen={available > 0 || unlimited}
           selected={selectedSet}
           onSelect={setSelectedSet}
           reduced={reduced}
         />
         <div className="cards-open-actions">
-          <Button
-            variant="outline"
-            size="lg"
-            disabled={bank.available < 10 && !unlimited}
-            title={
-              bank.available < 10 && !unlimited
-                ? "10 boosters disponibles sont nécessaires"
-                : undefined
-            }
-            onClick={() => {
-              if (starting.current) return;
-              starting.current = true;
-              captureBooster();
-              unlockFeel();
-              controller.openTen({ setId: selectedSet }, unlimited);
-              refresh();
-              starting.current = false;
-            }}
-          >
-            Ouvrir 10 boosters
-            {bank.available < 10 && !unlimited
-              ? ` · ${bank.available}/10 disponibles`
-              : ""}
-          </Button>
+          {startError && (
+            <p role="alert" className="text-sm text-destructive">
+              {startError}
+            </p>
+          )}
+          <QuantityPicker
+            value={chosenQuantity}
+            max={available}
+            onChange={setQuantity}
+            disabled={loading || !ready}
+          />
           <Button
             variant="accent"
             size="lg"
             className="cards-primary-cta min-h-11 w-full max-w-sm"
-            onClick={startOpen}
-            disabled={bank.available === 0 && !unlimited}
+            onClick={() => void start(chosenQuantity)}
+            disabled={loading || !ready || (available === 0 && !unlimited)}
           >
-            Ouvrir un booster
+            {loading
+              ? "Préparation…"
+              : chosenQuantity === 0
+                ? "Aucun booster disponible"
+                : `Ouvrir ${chosenQuantity === 1 ? "un booster" : `${chosenQuantity} boosters`}`}
           </Button>
         </div>
         {process.env.NODE_ENV === "development" && (
@@ -418,7 +449,7 @@ export function OpeningScene({
         </ul>
         <div className="cards-summary-actions">
           <Button
-            variant="primary"
+            variant="secondary"
             size="lg"
             className="min-h-11"
             onClick={() => {
@@ -480,6 +511,12 @@ export function OpeningScene({
     >
       <DialogContent
         className={`cards-opening-immersive cards-surface is-immersive ${entryRect && !reduced ? "cards-scene-entering" : ""}`}
+        data-reveal-gold={
+          (open.phase === "revealing" &&
+            open.discovered?.includes(open.currentIndex) &&
+            RARITY_RANK[open.cards[open.currentIndex]?.rarity] >= 3) ||
+          undefined
+        }
         overlayClassName="cards-opening-overlay"
         style={{ translate: "none" }}
         onPointerDownOutside={(event) => event.preventDefault()}
@@ -562,6 +599,11 @@ export function OpeningScene({
                 open.phase === "cameraZoom" ||
                 open.phase === "revealing"
               }
+              discovered={open.discovered}
+              onDiscover={(index) => {
+                controller.discover(index);
+                refresh();
+              }}
               cards={open.cards}
               currentIndex={open.currentIndex}
               reduced={reduced}

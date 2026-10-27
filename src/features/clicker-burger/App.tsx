@@ -178,7 +178,9 @@ export default function App({
   const notices = useNotices(seenKey);
   const { seen } = notices;
   const { mark: markNotices } = notices;
-  settingsRef.current = settings;
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
   const unlockFeel = () => {
     if (!audio.current) audio.current = new BurgerAudio();
     audio.current.setVolume(settingsRef.current.effectsVolume);
@@ -272,7 +274,9 @@ export default function App({
     particleTimers.current.push(timer);
   };
   const cookRef = useRef(cook);
-  cookRef.current = cook;
+  useEffect(() => {
+    cookRef.current = cook;
+  });
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;

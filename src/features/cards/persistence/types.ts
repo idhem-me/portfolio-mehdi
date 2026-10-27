@@ -37,7 +37,8 @@ export type CardsStats = {
 
 export type ActiveOpen = {
   batchKinds?: PackKind[];
-  /** Persisted 50-card recap for a completed ten-pack opening. */
+  discovered?: number[];
+  /** Persisted recap for a completed multi-pack opening. */
   batchCards?: DrawnCard[];
   openId: string;
   kind: PackKind;

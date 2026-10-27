@@ -1,7 +1,8 @@
 "use client";
 
-import { CloudSaveStatus } from "./cloud-save-status";
-import type { CloudView } from "../persistence/cloud-client";
+import { Personalization } from "../avatar/personalization";
+import { useCardsAccount } from "../account/client";
+
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,19 +27,18 @@ import {
   uniqueOwnedCount,
 } from "../persistence/repository";
 
-export function ProfileScreen({
-  save,
-  cloud,
-}: {
-  save: CardsSave;
-  cloud: CloudView;
-}) {
+export function ProfileScreen({ save }: { save: CardsSave }) {
+  const account = useCardsAccount();
   const [ratesOpen, setRatesOpen] = useState(false);
   const progress = catalogProgress(save);
 
   return (
     <div className="cards-profile space-y-6">
-      <CloudSaveStatus cloud={cloud} showDialog={false} />
+      <p className="text-sm text-muted-foreground">
+        {account.data?.user.anonymous
+          ? "Progression enregistrée dans ta session invité."
+          : "Progression sauvegardée avec Google."}
+      </p>
 
       <section className="space-y-3">
         <h2 className="text-base font-medium">Statistiques</h2>
@@ -79,17 +79,18 @@ export function ProfileScreen({
         </div>
       </section>
 
-      <Separator />
-
       <section className="flex flex-col gap-2">
         <Button
-          variant="outline"
-          className="min-h-11 justify-between"
+          variant="secondary"
+          className="w-fit"
           onClick={() => setRatesOpen(true)}
         >
           Probabilités
         </Button>
       </section>
+
+      <Personalization />
+      <Separator />
 
       <Dialog open={ratesOpen} onOpenChange={setRatesOpen}>
         <DialogContent className="max-w-sm">
@@ -120,8 +121,7 @@ export function ProfileScreen({
               rareté (1 sur 100 000).
             </p>
             <p className="text-xs text-muted-foreground">
-              Tirage côté client — non sécurisé contre la triche. Une future
-              version serveur validera les boosters.
+              Tirages et progression validés par le serveur.
             </p>
           </div>
         </DialogContent>

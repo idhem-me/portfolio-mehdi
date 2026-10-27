@@ -20,6 +20,8 @@ import { stackLayout, swipeGesture, releaseAction } from "./gesture-config";
 
 type Props = {
   cards: DrawnCard[];
+  discovered?: number[];
+  onDiscover?: (index: number) => void;
   currentIndex: number;
   enabled: boolean;
   visible: boolean;
@@ -95,6 +97,8 @@ function FrontCard({
   consumed,
   depth,
   interactive,
+  discovered,
+  onDiscover,
 }: Props & {
   front: DrawnCard;
   active: boolean;
@@ -103,10 +107,21 @@ function FrontCard({
   depth: number;
   interactive: boolean;
 }) {
-  const [faceUp, setFaceUp] = useState(false);
+  const wasDiscovered = discovered?.includes(currentIndex) ?? false;
+  const [faceUp, setFaceUp] = useState(wasDiscovered);
+  const revealedOnce = useRef(wasDiscovered);
+  const discoveryCallback = useRef(onDiscover);
+  useEffect(() => {
+    discoveryCallback.current = onDiscover;
+  }, [onDiscover]);
+  const wowY = useMotionValue(0);
+  const wowZoom = useMotionValue(1);
+  const wowOpacity = useMotionValue(1);
+  const wow = ["legendary", "gold", "diamond"].includes(front.rarity);
   const [special, setSpecial] = useState(false);
-  const locked = useRef(true);
+  const locked = useRef(!wasDiscovered);
   const alive = useRef(false);
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pointer = useRef<{
     id: number;
     x: number;
@@ -125,19 +140,37 @@ function FrontCard({
     return () => {
       alive.current = false;
       animation.current?.stop();
+      if (settleTimer.current) clearTimeout(settleTimer.current);
       pointer.current = null;
     };
   }, []);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || revealedOnce.current) return;
     const token = front.shiny
       ? shinyRevealTiming
       : openingEffectTokens[front.rarity];
     const exceptional = Boolean(front.shiny) || isSpecialRarity(front.rarity);
     const reveal = window.setTimeout(
       () => {
+        revealedOnce.current = true;
         setFaceUp(true);
+        discoveryCallback.current?.(currentIndex);
+        if (reduced) {
+          wowOpacity.set(0);
+          void animate(wowOpacity, 1, { duration: 0.18 });
+        }
+        if (wow && !reduced) {
+          void animate(wowY, [0, 180, 360], {
+            duration: 1.4,
+            ease: [0.22, 0.8, 0.25, 1],
+          });
+          void animate(wowZoom, [1, 1.2, 1.035, 1], {
+            duration: 1.4,
+            times: [0, 0.4, 0.8, 1],
+            ease: "easeOut",
+          });
+        }
         if (document.activeElement === target.current?.parentElement)
           target.current?.focus();
         setSpecial(exceptional && !reduced);
@@ -150,19 +183,37 @@ function FrontCard({
           settings,
           iosSwitch.current,
         );
-        locked.current = false;
+        settleTimer.current = setTimeout(
+          () => {
+            setSpecial(false);
+            locked.current = false;
+          },
+          wow && !reduced
+            ? 1400
+            : reduced
+              ? 0
+              : token.revealMs + token.settleMs,
+        );
       },
       reduced ? 0 : exceptional ? token.tensionMs : 60,
     );
-    const settle = window.setTimeout(
-      () => setSpecial(false),
-      reduced ? 0 : token.tensionMs + token.revealMs + token.settleMs,
-    );
     return () => {
       window.clearTimeout(reveal);
-      window.clearTimeout(settle);
     };
-  }, [enabled, front.rarity, front.shiny, reduced, settings, audio, iosSwitch]);
+  }, [
+    enabled,
+    front.rarity,
+    front.shiny,
+    reduced,
+    settings,
+    audio,
+    iosSwitch,
+    currentIndex,
+    wow,
+    wowY,
+    wowZoom,
+    wowOpacity,
+  ]);
 
   const eject = async (direction: 1 | -1) => {
     if (locked.current || !interactive || !faceUp) return;
@@ -282,14 +333,23 @@ function FrontCard({
         }
       }}
     >
-      <div className="cards-stack-loaded-face">
-        <CardFace
-          card={card}
-          shiny={front.shiny}
-          effectActive={faceUp && !reduced}
-          className="cards-stack-face"
-        />
-      </div>
+      <motion.div
+        className="cards-stack-loaded-face cards-wow-visual"
+        style={{ rotateY: wowY, scale: wowZoom, opacity: wowOpacity }}
+      >
+        <div className="cards-wow-front">
+          <CardFace
+            card={card}
+            faceDown={!faceUp}
+            shiny={front.shiny}
+            effectActive={faceUp && !reduced}
+            className="cards-stack-face"
+          />
+        </div>
+        <div className="cards-wow-back">
+          <CardFace card={card} faceDown className="cards-stack-face" />
+        </div>
+      </motion.div>
       <SpecialReveal
         rarity={front.rarity}
         shiny={front.shiny}

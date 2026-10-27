@@ -20,6 +20,7 @@ export type OpeningController = {
   openTen(options?: DrawOptions, bypassLimit?: boolean): ActiveOpen | null;
   /** Dev-only simulation — never credits. */
   startSimulation(options: DrawOptions): ActiveOpen | null;
+  discover(index: number): void;
   setPhase(phase: OpeningPhase): void;
   setCutDirection(direction: CutDirection): void;
   /**
@@ -158,17 +159,29 @@ export function createOpeningController(
       }
       const pack = drawPack(options);
       const open = packToActive(pack, createOpenId(), true);
-      if (options.batchSize === 10) {
+      if (options.batchSize && options.batchSize > 1) {
         const packs = [
           pack,
-          ...Array.from({ length: 9 }, () => drawPack(options)),
+          ...Array.from({ length: Math.floor(options.batchSize!) - 1 }, () => drawPack(options)),
         ];
         open.cards = packs.flatMap((result) => result.cards);
         open.batchKinds = packs.map((result) => result.kind);
-        open.revealed = Array(50).fill(false);
+        open.revealed = Array(packs.length * 5).fill(false);
       }
       persist({ ...save, activeOpen: open });
       return open;
+    },
+
+    discover(index) {
+      const open = save.activeOpen;
+      if (
+        !open ||
+        open.phase !== "revealing" ||
+        index !== open.currentIndex ||
+        open.discovered?.includes(index)
+      )
+        return;
+      patchOpen({ discovered: [...(open.discovered ?? []), index] });
     },
 
     setPhase(phase) {

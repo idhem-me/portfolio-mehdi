@@ -37,6 +37,7 @@ type Props = {
 export function BoosterCutStage({
   entryRect,
   stackIndex = 0,
+  batchCount = 1,
   setId,
   frontIndex = 0,
   phase,
@@ -48,6 +49,10 @@ export function BoosterCutStage({
   onCutValidated,
   onWrapperExitDone,
 }: Props) {
+  const staggerMs = Math.min(
+    wrapperExitTiming.staggerMs,
+    2500 / Math.max(1, batchCount - 1),
+  );
   const [progress, setProgress] = useState(0);
   const [committed, setCommitted] = useState(false);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
@@ -129,7 +134,7 @@ export function BoosterCutStage({
 
   useEffect(() => {
     if (phase !== "wrapperExit") return;
-    const delayMs = reduced ? 0 : stackIndex * wrapperExitTiming.staggerMs;
+    const delayMs = reduced ? 0 : stackIndex * staggerMs;
     const feedbackTimer = window.setTimeout(() => {
       if (settings.sound) {
         if (stackIndex > 0) audio.current?.emit("tear");
@@ -177,6 +182,7 @@ export function BoosterCutStage({
   }, [
     phase,
     stackIndex,
+    staggerMs,
     settings,
     iosSwitch,
     cutDirection,
@@ -280,13 +286,13 @@ export function BoosterCutStage({
       className="cards-cut-stage"
       initial={false}
       animate={{
-        y: -depth * 4,
-        scale: 1 - depth * (0.075 / 9),
+        y: -depth * (36 / Math.max(1, batchCount - 1)),
+        scale: 1 - depth * (0.075 / Math.max(1, batchCount - 1)),
         opacity: entering && stackIndex > 0 ? 0 : 1,
       }}
       transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.8, 0.25, 1] }}
       style={{
-        zIndex: 30 - stackIndex,
+        zIndex: batchCount + 1 - stackIndex,
         pointerEvents: stackIndex > 0 ? "none" : undefined,
         transformOrigin: "50% 0%",
       }}
@@ -342,9 +348,7 @@ export function BoosterCutStage({
           }}
           transition={{
             duration: reduced ? 0 : wrapperExitTiming.stripMs / 1000,
-            delay: reduced
-              ? 0
-              : (stackIndex * wrapperExitTiming.staggerMs) / 1000,
+            delay: reduced ? 0 : (stackIndex * staggerMs) / 1000,
             ease: "easeOut",
           }}
           aria-hidden

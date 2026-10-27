@@ -13,12 +13,15 @@ export function useSettings() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setSettings(loadSettings());
-    setReady(true);
+    const frame = requestAnimationFrame(() => {
+      setSettings(loadSettings());
+      setReady(true);
+    });
     const sync = () => setSettings(loadSettings());
     window.addEventListener("storage", sync);
     window.addEventListener(EVENT, sync);
     return () => {
+      cancelAnimationFrame(frame);
       window.removeEventListener("storage", sync);
       window.removeEventListener(EVENT, sync);
     };
@@ -34,7 +37,9 @@ export function useSettings() {
   }, []);
 
   const toggle = useCallback(
-    (key: keyof Pick<Settings, "sound" | "haptics" | "ios" | "levelPopups">) => {
+    (
+      key: keyof Pick<Settings, "sound" | "haptics" | "ios" | "levelPopups">,
+    ) => {
       setSettings((prev) => {
         const next = { ...prev, [key]: !prev[key] };
         saveSettings(next);

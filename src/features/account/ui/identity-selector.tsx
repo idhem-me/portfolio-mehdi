@@ -210,6 +210,7 @@ export function IdentitySelector({
   dropdown = false,
   connectOnly = false,
   editOnly = false,
+  avatarOverride,
 }: {
   draft?: ScoreDraft;
   disabled?: boolean;
@@ -217,6 +218,7 @@ export function IdentitySelector({
   dropdown?: boolean;
   connectOnly?: boolean;
   editOnly?: boolean;
+  avatarOverride?: React.ReactNode;
 }) {
   const state = useIdentityState();
   const [open, setOpen] = useState(false);
@@ -257,7 +259,9 @@ export function IdentitySelector({
     >
       {profile && (
         <div className="identity-profile">
-          <PlayerAvatar name={profile.name} avatar={profile.avatar} />
+          {avatarOverride ?? (
+            <PlayerAvatar name={profile.name} avatar={profile.avatar} />
+          )}
           <div>
             <strong>{profile.name}</strong>
             <p>{state.kind === "google" ? "Compte Google" : "Pseudo"}</p>

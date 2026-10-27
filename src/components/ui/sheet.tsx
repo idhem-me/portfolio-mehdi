@@ -1,5 +1,6 @@
 "use client"
 
+import { useScopedTheme } from "./scoped-theme"
 import * as React from "react"
 import { cn } from "cn"
 import { Dialog as SheetPrimitive } from "radix-ui"
@@ -57,10 +58,12 @@ function SheetContent({
   showCloseButton?: boolean
   overlayClassName?: string
 }) {
+  const scopedTheme = useScopedTheme()
   return (
     <SheetPortal>
       <SheetOverlay className={overlayClassName} />
       <SheetPrimitive.Content
+        data-cards-theme={scopedTheme}
         data-slot="sheet-content"
         data-side={side}
         className={cn(

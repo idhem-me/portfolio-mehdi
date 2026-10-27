@@ -62,10 +62,10 @@ function sanitizeActiveOpen(raw: unknown): ActiveOpen | null {
   if (
     typeof a.openId !== "string" ||
     !Array.isArray(a.cards) ||
-    ![5, 50].includes(a.cards.length) ||
-    (a.cards.length === 50 &&
+    (a.cards.length < 5 || a.cards.length % 5 !== 0) ||
+    (a.cards.length > 5 &&
       (!Array.isArray(a.batchKinds) ||
-        a.batchKinds.length !== 10 ||
+        a.batchKinds.length !== a.cards.length / 5 ||
         !a.batchKinds.every(
           (kind) => kind === "standard" || kind === "gold_pack",
         ))) ||
@@ -83,12 +83,24 @@ function sanitizeActiveOpen(raw: unknown): ActiveOpen | null {
 
   const open: ActiveOpen = {
     openId: a.openId,
-    batchKinds: a.cards.length === 50 ? a.batchKinds : undefined,
+    discovered: Array.isArray(a.discovered)
+      ? [
+          ...new Set(
+            a.discovered.filter(
+              (index) =>
+                Number.isInteger(index) &&
+                index >= 0 &&
+                index < a.cards!.length,
+            ),
+          ),
+        ]
+      : [],
+    batchKinds: a.cards.length > 5 ? a.batchKinds : undefined,
     batchCards:
       a.finalized &&
       a.phase === "summary" &&
       Array.isArray(a.batchCards) &&
-      a.batchCards.length === 50 &&
+      a.batchCards.length === a.cards.length &&
       a.batchCards.every(isDrawnCard)
         ? a.batchCards.map((card) => ({ ...card, shiny: card.shiny === true }))
         : undefined,

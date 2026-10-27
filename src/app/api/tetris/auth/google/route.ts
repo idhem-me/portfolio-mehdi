@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
       : NextResponse.redirect(new URL(path + "?auth=error", origin), 303);
   if (!googleConfigured()) return fallback();
   const context = authClient(request);
+  const { data: ticket } = await context.client.rpc("cards_prepare_login");
   const { data, error } = await context.client.auth.signInWithOAuth({
     provider: "google",
     options: {
@@ -24,6 +25,14 @@ export async function GET(request: NextRequest) {
   });
   if (error || !data.url) return context.apply(fallback());
   const response = context.apply(NextResponse.redirect(data.url, 303));
+  if (typeof ticket === "string")
+    response.cookies.set("cards-login-ticket", ticket, {
+      path: "/api/tetris",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: request.nextUrl.protocol === "https:",
+      maxAge: 600,
+    });
   response.cookies.set("lava-auth-popup", popup ? "1" : "0", {
     path: "/api/tetris",
     httpOnly: true,

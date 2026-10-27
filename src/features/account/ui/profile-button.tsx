@@ -7,16 +7,21 @@ import type { ScoreDraft } from "../../tetris/auth/draft";
 export function PlayerProfileButton({
   className = "",
   draft,
+  showHelp = true,
+  avatarOverride,
 }: {
   className?: string;
+  showHelp?: boolean;
+  avatarOverride?: React.ReactNode;
   draft?: ScoreDraft;
 }) {
   const profile = usePlayerProfile();
   return (
     <div className="flex items-center gap-2">
-      <ProfileHelpButton />
+      {showHelp && <ProfileHelpButton />}
       <IdentitySelector
         dropdown
+        avatarOverride={avatarOverride}
         draft={draft}
         trigger={
           <Button
@@ -30,7 +35,9 @@ export function PlayerProfileButton({
                 : "Choisir mon identité"
             }
           >
-            <PlayerAvatar name={profile?.name} avatar={profile?.avatar} />
+            {avatarOverride ?? (
+              <PlayerAvatar name={profile?.name} avatar={profile?.avatar} />
+            )}
           </Button>
         }
       />

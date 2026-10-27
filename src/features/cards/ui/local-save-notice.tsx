@@ -33,7 +33,6 @@ export function LocalSaveNotice({
 
   useEffect(() => {
     if (identity.kind !== "google" || dismissed) return;
-    setDismissed(true);
     persistDismissed();
   }, [identity.kind, dismissed]);
 

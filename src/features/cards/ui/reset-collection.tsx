@@ -20,16 +20,16 @@ export function ResetCollection({
         className="min-h-11 w-full"
         onClick={() => setConfirmReset(true)}
       >
-        Réinitialiser la collection locale
+        Réinitialiser la collection
       </Button>
       <Dialog open={confirmReset} onOpenChange={setConfirmReset}>
         <DialogContent className="max-w-sm">
           <div className="space-y-4">
             <DialogTitle>Réinitialiser ?</DialogTitle>
             <DialogDescription>
-              Efface uniquement la collection et les stats de ce jeu sur cet
-              appareil. Le compte, les réglages globaux et les autres jeux sont
-              conservés. La réserve de boosters n’est pas rechargée.
+              Efface la collection et les statistiques de Cartes dans ta sauvegarde.
+              Tes crédits, boosters, cosmétiques et réglages sont conservés.
+              Cette action est définitive.
             </DialogDescription>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
               <Button variant="outline" onClick={() => setConfirmReset(false)}>

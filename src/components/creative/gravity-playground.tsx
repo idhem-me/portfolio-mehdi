@@ -636,7 +636,9 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const [configOpen, setConfigOpen] = useState(false);
   const [impacts, setImpacts] = useState(0);
   const [tuning, setTuning] = useState<PhysicsTuning>(DEFAULT_TUNING);
-  tuningRef.current = tuning;
+  useEffect(() => {
+    tuningRef.current = tuning;
+  }, [tuning]);
 
   const teardown = useCallback(() => {
     if (startTimerRef.current !== null) {

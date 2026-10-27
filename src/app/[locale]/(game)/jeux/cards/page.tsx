@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -34,5 +35,11 @@ async function LocalizedCards({ params }: Props) {
   if (!cardsEnabled) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
-  return <CardsGame backHref="/jeux" />;
+  const theme = (await cookies()).get("cards-theme")?.value;
+  return (
+    <CardsGame
+      backHref="/jeux"
+      initialTheme={theme === "blue" || theme === "red" ? theme : "default"}
+    />
+  );
 }

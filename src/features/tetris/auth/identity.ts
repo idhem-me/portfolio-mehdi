@@ -1,6 +1,6 @@
 export function safeGamePath(value: string | null | undefined) {
   return value &&
-    /^\/(?:fr\/|en\/|zh\/|ar\/|es\/|it\/|de\/)?jeux(?:\/(?:tetris|clicker-burger|cards))?\/?$/.test(
+    /^\/(?:fr\/|en\/|zh\/|ar\/|es\/|it\/|de\/)?(?:jeux(?:\/(?:tetris|clicker-burger|cards))?|boutique)\/?$/.test(
       value,
     )
     ? value

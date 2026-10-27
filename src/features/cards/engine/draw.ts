@@ -25,7 +25,7 @@ export type PackResult = {
 
 export type DrawOptions = {
   /** Dev simulation only. */
-  batchSize?: 10;
+  batchSize?: number;
   setId?: CardSetId;
   rng?: Rng;
   /** Simulation only, never passed to a real opening. */

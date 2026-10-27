@@ -75,7 +75,9 @@ export function GameOver({
     summaryRef = useRef(summary),
     attemptKey = useRef<string | null>(null),
     sawLogin = useRef(false);
-  summaryRef.current = summary;
+  useEffect(() => {
+    summaryRef.current = summary;
+  }, [summary]);
   useEffect(() => {
     if (identity.busy === "login") {
       sawLogin.current = true;
@@ -85,8 +87,11 @@ export function GameOver({
     sawLogin.current = false;
     if (!needsReconnect) return;
     attemptKey.current = null;
-    setNeedsReconnect(false);
-    setRetry((value) => value + 1);
+    const timer = window.setTimeout(() => {
+      setNeedsReconnect(false);
+      setRetry((value) => value + 1);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [identity.busy, needsReconnect]);
   const draft: ScoreDraft | undefined = scoreRun
     ? {

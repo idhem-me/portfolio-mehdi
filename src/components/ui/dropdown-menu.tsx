@@ -1,5 +1,6 @@
 "use client"
 
+import { useScopedTheme } from "./scoped-theme"
 import * as React from "react"
 import { cn } from "cn"
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
@@ -36,9 +37,11 @@ function DropdownMenuContent({
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
+  const scopedTheme = useScopedTheme()
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
+        data-cards-theme={scopedTheme}
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
         align={align}
