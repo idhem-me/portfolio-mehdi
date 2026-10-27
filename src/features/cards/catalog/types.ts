@@ -29,6 +29,7 @@ export const RARITY_RANK: Record<Rarity, number> = {
 };
 
 export type CardDefinition = {
+  setId?: "origins" | "horizons";
   id: string;
   name: string;
   rarity: Rarity;

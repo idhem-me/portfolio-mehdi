@@ -42,7 +42,7 @@ test("cards: empty reserve blocks real openings; local dev bypass is explicit an
     .click();
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await finish(page);
   expect(
     await page.evaluate(
@@ -99,7 +99,7 @@ test("cards: Shiny simulation shows stars/halo and never credits collection or s
   await expect(page.locator('.cards-stack [data-shiny="true"]')).toHaveCount(5);
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await ready(page, 0);
   await expect(
     page.locator(".cards-stack-front .cards-special-shiny"),

@@ -1,4 +1,4 @@
-import { cardsByRarity, getCard } from "../catalog/cards";
+import { cardsByRarity, getCard, type CardSetId } from "../catalog/cards";
 import type { CardDefinition, Rarity } from "../catalog/types";
 import { cryptoRandom, type Rng } from "@/lib/games/rng";
 import {
@@ -24,6 +24,9 @@ export type PackResult = {
 };
 
 export type DrawOptions = {
+  /** Dev simulation only. */
+  batchSize?: 10;
+  setId?: CardSetId;
   rng?: Rng;
   /** Simulation only, never passed to a real opening. */
   forceShiny?: boolean;
@@ -44,8 +47,12 @@ function pickUniform(
   return list[Math.min(index, list.length - 1)]!;
 }
 
-function pickByRarity(rarity: Rarity, rng: Rng): CardDefinition {
-  return pickUniform(cardsByRarity(rarity), rng);
+function pickByRarity(
+  rarity: Rarity,
+  rng: Rng,
+  setId: CardSetId = "origins",
+): CardDefinition {
+  return pickUniform(cardsByRarity(rarity, setId), rng);
 }
 
 function rollFifthRarity(
@@ -81,7 +88,7 @@ export function drawPack(options: DrawOptions = {}): PackResult {
   if (isGoldPack) {
     const cards: DrawnCard[] = [];
     for (let slot = 0; slot < STANDARD_PACK_SIZE; slot++) {
-      cards.push(toDrawn(pickByRarity("legendary", rng), slot));
+      cards.push(toDrawn(pickByRarity("legendary", rng, options.setId), slot));
     }
     return {
       kind: "gold_pack",
@@ -91,10 +98,15 @@ export function drawPack(options: DrawOptions = {}): PackResult {
 
   const cards: DrawnCard[] = [];
   for (let slot = 0; slot < STANDARD_COMMON_SLOTS; slot++) {
-    cards.push(toDrawn(pickByRarity("common", rng), slot));
+    cards.push(toDrawn(pickByRarity("common", rng, options.setId), slot));
   }
   const fifthRarity = rollFifthRarity(rng, options.forceFifthRarity);
-  cards.push(toDrawn(pickByRarity(fifthRarity, rng), STANDARD_COMMON_SLOTS));
+  cards.push(
+    toDrawn(
+      pickByRarity(fifthRarity, rng, options.setId),
+      STANDARD_COMMON_SLOTS,
+    ),
+  );
   return { kind: "standard", cards: rollShiny(cards, rng, options.forceShiny) };
 }
 

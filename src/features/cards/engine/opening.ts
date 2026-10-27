@@ -17,6 +17,7 @@ export type OpeningController = {
   replaceSave(save: CardsSave): void;
   /** Start a real open (credits on finalize). No-op if already opening. */
   startOpen(options?: DrawOptions, bypassLimit?: boolean): ActiveOpen | null;
+  openTen(options?: DrawOptions, bypassLimit?: boolean): ActiveOpen | null;
   /** Dev-only simulation — never credits. */
   startSimulation(options: DrawOptions): ActiveOpen | null;
   setPhase(phase: OpeningPhase): void;
@@ -38,8 +39,8 @@ export type OpeningController = {
 
 function ensureRevealed(open: ActiveOpen): boolean[] {
   const next = [...open.revealed];
-  while (next.length < 5) next.push(false);
-  return next.slice(0, 5);
+  while (next.length < open.cards.length) next.push(false);
+  return next.slice(0, open.cards.length);
 }
 
 function packToActive(
@@ -122,6 +123,31 @@ export function createOpeningController(
       return open;
     },
 
+    openTen(options = {}, bypassLimit = false) {
+      if (isBusy(save.activeOpen)) return null;
+      const boosters = refillBoosters(save.boosters, now());
+      const bypass = bypassLimit && canBypassBoosterLimit();
+      if (!bypass && boosters.available < 10) return null;
+      // Persist all ten draws before starting animation; preserve each five-card group.
+      const packs = Array.from({ length: 10 }, () =>
+        drawPack({ setId: options.setId, rng: options.rng }),
+      );
+      const open: ActiveOpen = {
+        ...packToActive(packs[0], createOpenId(), false),
+        cards: packs.flatMap((pack) => pack.cards),
+        batchKinds: packs.map((pack) => pack.kind),
+        revealed: Array(50).fill(false),
+      };
+      persist({
+        ...save,
+        boosters: bypass
+          ? boosters
+          : { ...boosters, available: boosters.available - 10 },
+        activeOpen: open,
+      });
+      return save.activeOpen;
+    },
+
     startSimulation(options) {
       if (
         isBusy(save.activeOpen) &&
@@ -132,6 +158,15 @@ export function createOpeningController(
       }
       const pack = drawPack(options);
       const open = packToActive(pack, createOpenId(), true);
+      if (options.batchSize === 10) {
+        const packs = [
+          pack,
+          ...Array.from({ length: 9 }, () => drawPack(options)),
+        ];
+        open.cards = packs.flatMap((result) => result.cards);
+        open.batchKinds = packs.map((result) => result.kind);
+        open.revealed = Array(50).fill(false);
+      }
       persist({ ...save, activeOpen: open });
       return open;
     },
@@ -154,23 +189,26 @@ export function createOpeningController(
         return open;
 
       const revealed = ensureRevealed(open);
-      const index = Math.max(0, Math.min(4, open.currentIndex));
+      const index = Math.max(
+        0,
+        Math.min(open.cards.length - 1, open.currentIndex),
+      );
 
       // Already past the end.
-      if (open.currentIndex >= 5) {
+      if (open.currentIndex >= open.cards.length) {
         return controller.complete().activeOpen;
       }
 
       revealed[index] = true;
       const nextIndex = index + 1;
-      const allDone = nextIndex >= 5 || revealed.every(Boolean);
+      const allDone = nextIndex >= open.cards.length || revealed.every(Boolean);
 
       if (allDone) {
         persist(
           finalizeOpen(save, {
             ...open,
             revealed,
-            currentIndex: 5,
+            currentIndex: open.cards.length,
             phase: "summary",
           }),
         );
@@ -187,7 +225,7 @@ export function createOpeningController(
 
     reveal(index) {
       if (!save.activeOpen) return;
-      if (index < 0 || index > 4) return;
+      if (index < 0 || index >= save.activeOpen.cards.length) return;
       const revealed = ensureRevealed(save.activeOpen);
       if (revealed[index]) return;
       revealed[index] = true;
@@ -198,7 +236,7 @@ export function createOpeningController(
         activeOpen: {
           ...save.activeOpen,
           revealed,
-          currentIndex: all ? 5 : nextIndex,
+          currentIndex: all ? save.activeOpen.cards.length : nextIndex,
           phase: all ? "summary" : "revealing",
         },
       });
@@ -211,8 +249,8 @@ export function createOpeningController(
         ...save,
         activeOpen: {
           ...save.activeOpen,
-          revealed: [true, true, true, true, true],
-          currentIndex: 5,
+          revealed: Array(save.activeOpen.cards.length).fill(true),
+          currentIndex: save.activeOpen.cards.length,
           phase: "summary",
         },
       });
@@ -225,7 +263,7 @@ export function createOpeningController(
         ...save.activeOpen,
         revealed: ensureRevealed(save.activeOpen),
         phase: "summary",
-        currentIndex: 5,
+        currentIndex: save.activeOpen.cards.length,
       });
       persist(next);
       return next;

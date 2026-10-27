@@ -1,6 +1,5 @@
 "use client";
 import Image from "next/image";
-import { useTheme } from "next-themes";
 import { useIdentityState } from "@/features/account/client-store";
 import { PlayerProfileButton } from "@/features/account/ui/profile-button";
 import { useSettings } from "./state/usePreferences";
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { LevelUp } from "./components/LevelUp";
 import { GameFeelSettings } from "@/components/games/game-feel-settings";
+import { GameAppearanceSettings } from "@/components/games/game-appearance-settings";
 import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -110,8 +110,6 @@ export default function App({
 }) {
   const account = useIdentityState();
   const saveKey = account.loaded ? accountSaveKey(account.profile) : null;
-  const { resolvedTheme, setTheme } = useTheme();
-  const theme = resolvedTheme ?? "light";
   const { settings, update: updateSettings, toggle: toggleSetting } =
     useSettings();
   const game = useGame(saveKey);
@@ -1173,6 +1171,7 @@ export default function App({
           )}
           {panel === "settings" && (
             <div className="burger-settings">
+              <GameAppearanceSettings />
               <GameFeelSettings
                 className="burger-feel-settings"
                 value={settings}
@@ -1205,20 +1204,7 @@ export default function App({
                   </Badge>
                 </Button>
               </GameFeelSettings>
-              <Button
-                variant="outline"
-                role="switch"
-                aria-label="Thème sombre"
-                aria-checked={theme === "dark"}
-                onClick={() =>
-                  setTheme(theme === "light" ? "dark" : "light")
-                }
-              >
-                Thème sombre
-                <Badge variant={theme === "dark" ? "default" : "secondary"}>
-                  {theme === "dark" ? "Oui" : "Non"}
-                </Badge>
-              </Button>
+
               <GameSettingsOutreach
                 className="burger-settings-actions"
                 gameName="Clicker Burger"

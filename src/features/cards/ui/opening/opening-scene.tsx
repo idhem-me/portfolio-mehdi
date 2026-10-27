@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { BoosterSelector } from "./booster-selector";
+import { cardSet, type CardSetId } from "../../catalog/cards";
 import { getCard } from "../../catalog/cards";
 import type { OpeningController } from "../../engine/opening";
 import type { CardsAudio } from "../../feel/audio";
@@ -26,10 +28,13 @@ import {
   refillBoosters,
   nextBoosterIn,
   BOOSTER_CAPACITY,
+  BOOSTER_INTERVAL_MS,
   canBypassBoosterLimit,
 } from "../../engine/boosters";
-import { cameraZoomTiming } from "./gesture-config";
+import { cameraZoomTiming, wrapperExitTiming } from "./gesture-config";
 import "./opening-motion.css";
+
+const ignoreWrapperExit = () => {};
 
 type Props = {
   controller: OpeningController;
@@ -37,6 +42,7 @@ type Props = {
   audio: React.MutableRefObject<CardsAudio | null>;
   iosSwitch: React.RefObject<HTMLInputElement | null>;
   onSaveChange: () => void;
+  onViewCollection: () => void;
   collection: Record<string, { qty: number }>;
 };
 
@@ -46,11 +52,13 @@ export function OpeningScene({
   audio,
   iosSwitch,
   onSaveChange,
+  onViewCollection,
   collection,
 }: Props) {
   const reduced = usePrefersReducedMotion();
+  const [selectedSet, setSelectedSet] = useState<CardSetId>("origins");
+  const [cutFrontIndex, setCutFrontIndex] = useState(0);
   const [tick, setTick] = useState(0);
-  const [immersiveExit, setImmersiveExit] = useState(false);
   const starting = useRef(false);
   const [clock, setClock] = useState(() => Date.now());
   const [devUnlimited, setDevUnlimited] = useState(false);
@@ -74,9 +82,6 @@ export function OpeningScene({
   }, [onSaveChange]);
 
   useEffect(() => {
-    if (immersiveExit) audio.current?.stop();
-  }, [immersiveExit, audio]);
-  useEffect(() => {
     const instance = audio.current;
     return () => instance?.stop();
   }, [audio]);
@@ -91,10 +96,9 @@ export function OpeningScene({
   const startOpen = () => {
     if (starting.current) return;
     starting.current = true;
-    setImmersiveExit(false);
     unlockFeel();
     cardsHaptic("light", settings, iosSwitch.current);
-    const next = controller.startOpen(undefined, devUnlimited);
+    const next = controller.startOpen({ setId: selectedSet }, devUnlimited);
     if (!next) starting.current = false;
     refresh();
     // Keep the guard until React commits the new opening.
@@ -102,6 +106,7 @@ export function OpeningScene({
 
   const onCutValidated = useCallback(
     (direction: CutDirection) => {
+      setCutFrontIndex(0);
       controller.setCutDirection(direction);
       controller.setPhase("wrapperExit");
       refresh();
@@ -117,7 +122,7 @@ export function OpeningScene({
   }, [controller, refresh]);
 
   useEffect(() => {
-    if (immersiveExit || open?.phase !== "cameraZoom") return;
+    if (open?.phase !== "cameraZoom") return;
     const id = window.setTimeout(
       () => {
         controller.setPhase("revealing");
@@ -126,11 +131,35 @@ export function OpeningScene({
       reduced ? cameraZoomTiming.reducedMs : cameraZoomTiming.durationMs,
     );
     return () => window.clearTimeout(id);
-  }, [open?.openId, open?.phase, immersiveExit, reduced, controller, refresh]);
+  }, [open?.openId, open?.phase, reduced, controller, refresh]);
 
   useEffect(() => {
     starting.current = false;
   }, [open?.openId]);
+
+  const finishOpening = () => {
+    audio.current?.stop();
+    controller.revealAll();
+    refresh();
+  };
+
+  useEffect(() => {
+    if (open?.phase !== "wrapperExit" || !open.batchKinds || reduced) return;
+    const start = performance.now();
+    const timer = window.setInterval(
+      () =>
+        setCutFrontIndex(
+          Math.min(
+            9,
+            Math.floor(
+              (performance.now() - start) / wrapperExitTiming.staggerMs,
+            ),
+          ),
+        ),
+      wrapperExitTiming.staggerMs,
+    );
+    return () => window.clearInterval(timer);
+  }, [open?.openId, open?.phase, open?.batchKinds, reduced]);
 
   const commit = (index: number) => {
     controller.advanceCard(index);
@@ -153,25 +182,36 @@ export function OpeningScene({
   const countdown = `${String(Math.floor(seconds / 3600)).padStart(2, "0")}:${String(Math.floor(seconds / 60) % 60).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
   const unlimited = devUnlimited && canBypassBoosterLimit();
   const boosterStatus = (
-    <div className="cards-booster-reserve text-center space-y-2 mb-4">
-      <p className="text-sm font-medium">
-        {bank.available} / {BOOSTER_CAPACITY} boosters gratuits
-      </p>
-      <p className="text-xs text-muted-foreground">
-        {wait === null
-          ? "Réserve pleine · 1 booster offert par heure"
-          : `Prochain booster dans ${countdown} · 1 par heure`}
-      </p>
-      {canBypassBoosterLimit() && (
-        <Button
-          size="sm"
-          variant={unlimited ? "secondary" : "outline"}
-          aria-pressed={unlimited}
-          onClick={() => setDevUnlimited((value) => !value)}
-        >
-          Mode dev : boosters illimités {unlimited ? "activés" : "désactivés"}
-        </Button>
-      )}
+    <div className="cards-booster-reserve">
+      <div className="cards-reserve-line">
+        <p>
+          {bank.available} / {BOOSTER_CAPACITY} boosters
+        </p>
+        <span title="Un booster offert par heure">
+          {wait === null ? "Réserve pleine" : `+1 dans ${countdown}`}
+        </span>
+      </div>
+      <div
+        className="cards-recharge-meter"
+        role="progressbar"
+        aria-label="Recharge du prochain booster"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(
+          wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100,
+        )}
+        aria-valuetext={
+          wait === null
+            ? "Réserve pleine"
+            : `Prochain booster dans ${countdown}`
+        }
+      >
+        <span
+          style={{
+            width: `${wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100}%`,
+          }}
+        />
+      </div>
     </div>
   );
 
@@ -180,26 +220,57 @@ export function OpeningScene({
     return (
       <div className="cards-opening cards-opening-idle">
         {boosterStatus}
-        <div className="cards-booster-idle" aria-hidden>
-          <div className="cards-booster-pack">
-            <span>Booster</span>
-          </div>
+        <BoosterSelector
+          collection={collection}
+          selected={selectedSet}
+          onSelect={setSelectedSet}
+          reduced={reduced}
+        />
+        <div className="cards-open-actions">
+          <Button
+            variant="outline"
+            size="lg"
+            disabled={bank.available < 10 && !unlimited}
+            title={
+              bank.available < 10 && !unlimited
+                ? "10 boosters disponibles sont nécessaires"
+                : undefined
+            }
+            onClick={() => {
+              if (starting.current) return;
+              starting.current = true;
+              unlockFeel();
+              controller.openTen({ setId: selectedSet }, unlimited);
+              refresh();
+              starting.current = false;
+            }}
+          >
+            Ouvrir 10 boosters
+            {bank.available < 10 && !unlimited
+              ? ` · ${bank.available}/10 disponibles`
+              : ""}
+          </Button>
+          <Button
+            variant="accent"
+            size="lg"
+            className="cards-primary-cta min-h-11 w-full max-w-sm"
+            onClick={startOpen}
+            disabled={bank.available === 0 && !unlimited}
+          >
+            Ouvrir un booster
+          </Button>
         </div>
-        <Button
-          variant="accent"
-          size="lg"
-          className="cards-primary-cta min-h-11 w-full max-w-sm"
-          onClick={startOpen}
-          disabled={bank.available === 0 && !unlimited}
-        >
-          Ouvrir un booster
-        </Button>
         {process.env.NODE_ENV === "development" && (
           <DevPreviewPanel
+            unlimited={unlimited}
+            onToggleUnlimited={
+              canBypassBoosterLimit()
+                ? () => setDevUnlimited((value) => !value)
+                : undefined
+            }
             onSimulate={(opts) => {
               unlockFeel();
-              setImmersiveExit(false);
-              controller.startSimulation(opts);
+              controller.startSimulation({ ...opts, setId: selectedSet });
               refresh();
             }}
             disabled={Boolean(
@@ -215,21 +286,29 @@ export function OpeningScene({
   if (open.phase === "summary") {
     return (
       <div className="cards-opening cards-summary">
-        {boosterStatus}
         {open.simulation && (
           <Badge variant="secondary" className="mb-3">
             Simulation — non ajoutée à la collection
           </Badge>
         )}
         <h2 className="text-lg font-medium">Récapitulatif</h2>
-        <ul className="cards-summary-list">
-          {open.cards.map((drawn, index) => {
+        <ul className="cards-grid cards-summary-list">
+          {(open.batchCards ?? open.cards).map((drawn, index) => {
             const card = getCard(drawn.cardId)!;
-            const before = qtyBefore(drawn.cardId, open);
+            const summaryCards = open.batchCards ?? open.cards;
+            const before = open.batchCards
+              ? Math.max(
+                  0,
+                  (collection[drawn.cardId]?.qty ?? 0) -
+                    summaryCards.filter((card) => card.cardId === drawn.cardId)
+                      .length,
+                )
+              : qtyBefore(drawn.cardId, open);
             const isNew =
               before === 0 &&
               !open.simulation &&
-              open.cards.findIndex((c) => c.cardId === drawn.cardId) === index;
+              summaryCards.findIndex((c) => c.cardId === drawn.cardId) ===
+                index;
             const ownedNow = open.simulation
               ? before
               : (collection[drawn.cardId]?.qty ?? before + 1);
@@ -238,60 +317,55 @@ export function OpeningScene({
                 key={`${open.openId}-sum-${index}`}
                 className="cards-summary-item"
               >
-                <CardFace card={card} compact shiny={drawn.shiny} />
-                <div className="min-w-0">
-                  <Badge variant={isNew ? "default" : "secondary"}>
-                    {open.simulation
-                      ? "Aperçu"
-                      : isNew
-                        ? "Nouvelle"
-                        : `Doublon ×${ownedNow}`}
+                <CardFace
+                  card={card}
+                  compact
+                  shiny={drawn.shiny}
+                  qty={ownedNow}
+                />
+                {isNew && (
+                  <Badge variant="default" className="cards-summary-new">
+                    Nouveau
                   </Badge>
-                </div>
+                )}
               </li>
             );
           })}
         </ul>
-        <div className="mt-4 flex w-full max-w-sm flex-col gap-2">
+        <div className="cards-summary-actions">
+          <Button
+            variant="primary"
+            size="lg"
+            className="min-h-11"
+            onClick={() => {
+              controller.dismissSummary();
+              refresh();
+              onViewCollection();
+            }}
+          >
+            Voir ma collection
+          </Button>
           <Button
             variant="accent"
             size="lg"
-            className="cards-primary-cta min-h-11"
-            onClick={startOpen}
-            disabled={bank.available === 0 && !unlimited}
+            className="min-h-11"
+            onClick={() => {
+              controller.dismissSummary();
+              refresh();
+            }}
           >
-            Ouvrir
+            Ouvrir des boosters
           </Button>
         </div>
         {open.simulation && process.env.NODE_ENV === "development" && (
           <DevPreviewPanel
             onSimulate={(options) => {
-              setImmersiveExit(false);
               unlockFeel();
               controller.startSimulation(options);
               refresh();
             }}
           />
         )}
-      </div>
-    );
-  }
-
-  // Immersive exit: show compact resume without killing activeOpen
-  if (immersiveExit) {
-    return (
-      <div className="cards-opening cards-opening-idle">
-        <p className="mb-3 text-sm text-muted-foreground">
-          Ouverture en cours — {open.currentIndex}/5 cartes parcourues.
-        </p>
-        <Button
-          variant="accent"
-          size="lg"
-          className="cards-primary-cta min-h-11 w-full max-w-sm"
-          onClick={() => setImmersiveExit(false)}
-        >
-          Reprendre
-        </Button>
       </div>
     );
   }
@@ -317,7 +391,7 @@ export function OpeningScene({
     <Dialog
       open={immersive}
       onOpenChange={(value) => {
-        if (!value) setImmersiveExit(true);
+        if (!value) finishOpening();
       }}
     >
       <DialogContent
@@ -334,8 +408,8 @@ export function OpeningScene({
       >
         <DialogTitle className="sr-only">Ouverture du booster</DialogTitle>
         <DialogDescription className="sr-only">
-          Découpez puis touchez ou glissez les cinq cartes. Échap permet de
-          suspendre et reprendre l’ouverture.
+          Découpez puis touchez ou glissez les cartes. Échap termine l’ouverture
+          et affiche le récapitulatif.
         </DialogDescription>
         <div className="cards-immersive-chrome">
           <Button
@@ -343,7 +417,7 @@ export function OpeningScene({
             size="icon"
             className="min-h-11 min-w-11"
             aria-label="Quitter la scène d’ouverture"
-            onClick={() => setImmersiveExit(true)}
+            onClick={finishOpening}
           >
             <X />
           </Button>
@@ -358,17 +432,7 @@ export function OpeningScene({
         <motion.div
           className="cards-opening-stage"
           initial={false}
-          animate={
-            open.phase === "cameraZoom" && !reduced
-              ? {
-                  scale: [1, 1.04, 1.08],
-                  y: [0, -6, -10],
-                  rotate: [0, -0.6, 0],
-                }
-              : open.phase === "revealing"
-                ? { scale: 1, y: 0, rotate: 0 }
-                : { scale: 1, y: 0, rotate: 0 }
-          }
+          animate={{ scale: 1, y: 0, rotate: 0 }}
           transition={{
             duration:
               (reduced
@@ -377,20 +441,29 @@ export function OpeningScene({
             ease: [0.22, 0.8, 0.25, 1],
           }}
         >
-          {cutPhase && (
-            <BoosterCutStage
-              key={`${open.openId}-cut`}
-              kind={open.kind}
-              phase={cutPhase}
-              cutDirection={open.cutDirection}
-              reduced={reduced}
-              settings={settings}
-              audio={audio}
-              iosSwitch={iosSwitch}
-              onCutValidated={onCutValidated}
-              onWrapperExitDone={onWrapperExitDone}
-            />
-          )}
+          {cutPhase &&
+            Array.from({ length: open.batchKinds?.length ?? 1 }, (_, index) => (
+              <BoosterCutStage
+                key={`${open.openId}-cut-${index}`}
+                stackIndex={index}
+                batchCount={open.batchKinds?.length ?? 1}
+                kind={open.batchKinds?.[index] ?? open.kind}
+                setId={cardSet(getCard(open.cards[0].cardId)!)}
+                frontIndex={cutFrontIndex}
+                phase={cutPhase}
+                cutDirection={open.cutDirection}
+                reduced={reduced}
+                settings={settings}
+                audio={audio}
+                iosSwitch={iosSwitch}
+                onCutValidated={onCutValidated}
+                onWrapperExitDone={
+                  index === (open.batchKinds?.length ?? 1) - 1
+                    ? onWrapperExitDone
+                    : ignoreWrapperExit
+                }
+              />
+            ))}
 
           {(cutPhase ||
             open.phase === "cameraZoom" ||
@@ -399,7 +472,7 @@ export function OpeningScene({
               key={open.openId}
               enabled={open.phase === "revealing"}
               visible={
-                open.phase === "wrapperExit" ||
+                (open.phase === "wrapperExit" && !open.batchKinds) ||
                 open.phase === "cameraZoom" ||
                 open.phase === "revealing"
               }
@@ -414,21 +487,6 @@ export function OpeningScene({
             />
           )}
         </motion.div>
-        {cutPhase === "cutting" && (
-          <Button
-            variant="accent"
-            size="lg"
-            className="cards-primary-cta min-h-11"
-            onClick={() => {
-              unlockFeel();
-              audio.current?.emit("tear");
-              cardsHaptic("tear", settings, iosSwitch.current);
-              onCutValidated("right");
-            }}
-          >
-            Découper le booster
-          </Button>
-        )}
       </DialogContent>
     </Dialog>
   );

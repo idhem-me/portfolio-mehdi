@@ -14,7 +14,7 @@ function card(
  * First demo set — exactly 40 cards:
  * 20 common, 10 rare, 6 epic, 2 legendary, 1 gold, 1 diamond.
  */
-export const CATALOG: readonly CardDefinition[] = [
+export const ORIGINAL_CATALOG: readonly CardDefinition[] = [
   // Commons 001–020
   card(1, "common", "Éclat matinal", "Une lueur douce au réveil."),
   card(2, "common", "Brise légère"),
@@ -55,7 +55,12 @@ export const CATALOG: readonly CardDefinition[] = [
   card(35, "epic", "Forge stellaire"),
   card(36, "epic", "Danse des ions"),
   // Legendaries 037–038
-  card(37, "legendary", "Souverain d’aube", "Une présence qui change la table."),
+  card(
+    37,
+    "legendary",
+    "Souverain d’aube",
+    "Une présence qui change la table.",
+  ),
   card(38, "legendary", "Gardien du crépuscule"),
   // Gold 039
   card(39, "gold", "Lingot vivant", "Métal qui chante sous la lumière."),
@@ -63,12 +68,118 @@ export const CATALOG: readonly CardDefinition[] = [
   card(40, "diamond", "Cœur prismatique", "Scintillement cristallin absolu."),
 ] as const;
 
+export type CardSetId = "origins" | "horizons";
+export const CARD_SETS = [
+  {
+    id: "origins",
+    name: "Origines",
+    description: "Les premiers éclats",
+    count: 40,
+  },
+  {
+    id: "horizons",
+    name: "Horizons",
+    description: "Au-delà du monde connu",
+    count: 60,
+  },
+] as const;
+
+const horizonNames = [
+  "Sentier de brume",
+  "Rose des vents",
+  "Herbe haute",
+  "Pierre solaire",
+  "Ruisseau caché",
+  "Poussière d’étoile",
+  "Coquille nacrée",
+  "Vent du large",
+  "Mousse tendre",
+  "Écorce ancienne",
+  "Étincelle bleue",
+  "Pluie d’été",
+  "Dune dorée",
+  "Plume sauvage",
+  "Lichen pâle",
+  "Sillage blanc",
+  "Braise légère",
+  "Fleur de givre",
+  "Racine profonde",
+  "Vague lente",
+  "Rivage calme",
+  "Aile de papier",
+  "Neige fraîche",
+  "Bambou creux",
+  "Pétale volant",
+  "Terre rouge",
+  "Lac tranquille",
+  "Lanterne flottante",
+  "Éclat de silex",
+  "Chemin d’argile",
+  "Lagune céleste",
+  "Arche de corail",
+  "Cascade d’opale",
+  "Jardin suspendu",
+  "Cristal des vents",
+  "Phare des songes",
+  "Boussole astrale",
+  "Forêt de verre",
+  "Source boréale",
+  "Île flottante",
+  "Éclipse d’argent",
+  "Sablier marin",
+  "Récif lumineux",
+  "Pont des nuages",
+  "Oasis secrète",
+  "Cité des aurores",
+  "Dragon des marées",
+  "Sanctuaire du vide",
+  "Phoenix polaire",
+  "Orage de cristal",
+  "Vortex des songes",
+  "Cathédrale d’étoiles",
+  "Léviathan céleste",
+  "Couronne des saisons",
+  "Atlas de l’infini",
+  "Oracle des horizons",
+  "Gardienne des mondes",
+  "Soleil éternel",
+  "Trésor d’Hyperion",
+  "Origine de l’univers",
+];
+export const HORIZONS_CATALOG: readonly CardDefinition[] = horizonNames.map(
+  (name, index) => {
+    const rarity: Rarity =
+      index < 30
+        ? "common"
+        : index < 45
+          ? "rare"
+          : index < 54
+            ? "epic"
+            : index < 57
+              ? "legendary"
+              : index < 59
+                ? "gold"
+                : "diamond";
+    return { ...card(index + 41, rarity, name), setId: "horizons" };
+  },
+);
+export const CATALOG: readonly CardDefinition[] = [
+  ...ORIGINAL_CATALOG,
+  ...HORIZONS_CATALOG,
+];
+export function cardSet(card: CardDefinition): CardSetId {
+  return card.setId ?? "origins";
+}
+
 export const CATALOG_BY_ID: ReadonlyMap<string, CardDefinition> = new Map(
   CATALOG.map((c) => [c.id, c]),
 );
 
-export function cardsByRarity(rarity: Rarity): readonly CardDefinition[] {
-  return CATALOG.filter((c) => c.rarity === rarity);
+export function cardsByRarity(
+  rarity: Rarity,
+  setId: CardSetId = "origins",
+): readonly CardDefinition[] {
+  return CATALOG.filter((c) => c.rarity === rarity && cardSet(c) === setId);
 }
 
 export function getCard(id: string): CardDefinition | undefined {

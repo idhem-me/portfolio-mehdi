@@ -38,7 +38,7 @@ export function CardStack(props: Props) {
   const activeIndex = transitioning ? currentIndex + 1 : currentIndex;
   return (
     <div
-      className={`cards-stack ${enabled ? "" : "cards-stack-waiting"}`}
+      className={`cards-stack ${enabled ? "" : "cards-stack-waiting"} ${visible ? "cards-stack-rising" : "cards-stack-packed"}`}
       style={{
         visibility: visible ? "visible" : "hidden",
         pointerEvents: visible ? undefined : "none",
@@ -46,24 +46,26 @@ export function CardStack(props: Props) {
       aria-hidden={!visible}
     >
       <div className="cards-stack-stage" tabIndex={-1}>
-        {cards.map((front, index) => (
-          <FrontCard
-            key={index}
-            {...props}
-            front={front}
-            currentIndex={index}
-            active={index === activeIndex}
-            departing={transitioning && index === currentIndex}
-            consumed={index < currentIndex}
-            depth={Math.max(0, index - activeIndex)}
-            enabled={enabled && index === activeIndex}
-            interactive={enabled && index === activeIndex && !transitioning}
-            onCommit={(index) => {
-              props.onCommit(index);
-              setDepartingIndex(index);
-            }}
-          />
-        ))}
+        {cards.map((front, index) =>
+          index >= Math.max(0, currentIndex - 1) && index <= activeIndex + 3 ? (
+            <FrontCard
+              key={index}
+              {...props}
+              front={front}
+              currentIndex={index}
+              active={index === activeIndex}
+              departing={transitioning && index === currentIndex}
+              consumed={index < currentIndex}
+              depth={Math.max(0, index - activeIndex)}
+              enabled={enabled && index === activeIndex}
+              interactive={enabled && index === activeIndex && !transitioning}
+              onCommit={(index) => {
+                props.onCommit(index);
+                setDepartingIndex(index);
+              }}
+            />
+          ) : null,
+        )}
       </div>
       <p
         className="text-center text-xs text-muted-foreground"
@@ -71,7 +73,7 @@ export function CardStack(props: Props) {
         aria-live="polite"
       >
         {enabled
-          ? `Carte ${currentIndex + 1} sur 5 · Touchez ou glissez`
+          ? `Carte ${currentIndex + 1} sur ${cards.length} · Touchez ou glissez`
           : "Découpez le booster"}
       </p>
     </div>

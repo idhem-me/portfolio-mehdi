@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { GameAppearanceSettings } from "@/components/games/game-appearance-settings";
 import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
 import {
   Sheet,
@@ -65,7 +66,6 @@ import { GameOver } from "./game-over";
 import { PlayerProfileButton } from "./player-profile";
 import { Separator } from "@/components/ui/separator";
 import { recoverDraft, type ScoreDraft } from "../auth/draft";
-import { useTheme } from "next-themes";
 import "./game.css";
 const controls = [
   ["left", "Gauche", "←", ArrowLeft],
@@ -144,8 +144,6 @@ function TetrisGame({
   const [settings, setSettings] = useState<Settings>(defaults);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
-  const { resolvedTheme, setTheme } = useTheme();
-  const theme = resolvedTheme ?? "light";
   const [best, setBest] = useState(0);
   const [feedback, setFeedback] = useState<{ id: number; e: GameEvent } | null>(
     null,
@@ -705,6 +703,7 @@ function TetrisGame({
             </SheetDescription>
           </SheetHeader>
           <div className="lava-settings">
+            <GameAppearanceSettings />
             {soundEnabled && (
               <Button
                 variant="outline"
@@ -777,18 +776,7 @@ function TetrisGame({
                 </Badge>
               </Button>
             ))}
-            <Button
-              variant="outline"
-              role="switch"
-              aria-label="Thème sombre"
-              aria-checked={theme === "dark"}
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            >
-              Thème sombre
-              <Badge variant={theme === "dark" ? "default" : "secondary"}>
-                {theme === "dark" ? "Oui" : "Non"}
-              </Badge>
-            </Button>
+
             <p className="text-xs text-muted-foreground">
               L’option iOS utilise une astuce non officielle de Safari 18+,
               uniquement sur les impacts forts. Elle peut ne produire aucune

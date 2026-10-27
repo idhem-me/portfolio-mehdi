@@ -2,10 +2,19 @@
 
 import { Button } from "@/components/ui/button";
 import type { DrawOptions } from "../engine/draw";
-import type { Rarity } from "../catalog/types";
-import { RARITY_LABELS } from "../catalog/types";
+import { FlaskConical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
 
 const PREVIEWS: { label: string; options: DrawOptions }[] = [
+  { label: "10 boosters", options: { forceKind: "standard", batchSize: 10 } },
   { label: "Shiny", options: { forceKind: "standard", forceShiny: true } },
   { label: "Standard", options: { forceKind: "standard" } },
   {
@@ -34,45 +43,61 @@ const PREVIEWS: { label: string; options: DrawOptions }[] = [
 export function DevPreviewPanel({
   onSimulate,
   disabled,
+  unlimited,
+  onToggleUnlimited,
 }: {
   onSimulate: (options: DrawOptions) => void;
   disabled?: boolean;
+  unlimited?: boolean;
+  onToggleUnlimited?: () => void;
 }) {
   if (process.env.NODE_ENV !== "development") return null;
 
   return (
-    <section className="cards-dev-preview mt-6 w-full max-w-sm rounded-lg border border-border p-3">
-      <h3 className="text-sm font-medium">Preview dev</h3>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Simulations uniquement — ne modifient pas la collection ni les stats.
-        Probabilités live inchangées.
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {PREVIEWS.map((p) => (
-          <Button
-            key={p.label}
-            type="button"
-            size="sm"
-            variant="secondary"
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="secondary"
+          size="icon"
+          className="cards-simulation-fab"
+          aria-label="Simulation"
+          title="Simulation"
+          disabled={disabled}
+        >
+          <FlaskConical aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        side="top"
+        align="end"
+        sideOffset={8}
+        className="w-64"
+      >
+        <DropdownMenuLabel>Simulation</DropdownMenuLabel>
+        <p className="px-2 pb-2 text-xs text-muted-foreground">
+          Sans effet sur la collection ni les statistiques.
+        </p>
+        {onToggleUnlimited && (
+          <>
+            <DropdownMenuCheckboxItem
+              checked={unlimited}
+              onCheckedChange={onToggleUnlimited}
+            >
+              Boosters illimités (dev)
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        {PREVIEWS.map((preview) => (
+          <DropdownMenuItem
+            key={preview.label}
             disabled={disabled}
-            className="min-h-11"
-            onClick={() => onSimulate(p.options)}
+            onSelect={() => onSimulate(preview.options)}
           >
-            {p.label}
-          </Button>
+            {preview.label}
+          </DropdownMenuItem>
         ))}
-      </div>
-      <p className="sr-only">
-        Raretés :{" "}
-        {(
-          ["rare", "epic", "legendary", "gold", "diamond"] as Exclude<
-            Rarity,
-            "common"
-          >[]
-        )
-          .map((r) => RARITY_LABELS[r])
-          .join(", ")}
-      </p>
-    </section>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

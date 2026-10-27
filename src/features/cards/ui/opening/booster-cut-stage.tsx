@@ -7,10 +7,16 @@ import type { CardsAudio } from "../../feel/audio";
 import type { CardsSettings } from "../../feel/config";
 import { cardsHaptic } from "../../feel/haptics";
 import type { CutDirection } from "../../persistence/types";
+import { BoosterArtwork } from "./booster-artwork";
+import type { CardSetId } from "../../catalog/cards";
 import { cutGesture, wrapperExitTiming, cutRelease } from "./gesture-config";
 
 type Props = {
   kind: PackKind;
+  stackIndex?: number;
+  batchCount?: number;
+  setId: CardSetId;
+  frontIndex?: number;
   phase: "cutting" | "wrapperExit";
   cutDirection?: CutDirection;
   reduced: boolean;
@@ -22,7 +28,9 @@ type Props = {
 };
 
 export function BoosterCutStage({
-  kind,
+  stackIndex = 0,
+  setId,
+  frontIndex = 0,
   phase,
   cutDirection = "right",
   reduced,
@@ -36,6 +44,7 @@ export function BoosterCutStage({
   const [committed, setCommitted] = useState(false);
   const dragStart = useRef<{ x: number; y: number } | null>(null);
   const lastTick = useRef(0);
+  const maxTravel = useRef(0);
   const committedRef = useRef(false);
   const axisLocked = useRef<"h" | "v" | null>(null);
   const stripX = useMotionValue(0);
@@ -83,39 +92,56 @@ export function BoosterCutStage({
 
   useEffect(() => {
     if (phase !== "wrapperExit") return;
-    if (settings.sound) audio.current?.emit("fall");
+    const delayMs = reduced ? 0 : stackIndex * wrapperExitTiming.staggerMs;
+    const feedbackTimer = window.setTimeout(() => {
+      if (settings.sound) {
+        if (stackIndex > 0) audio.current?.emit("tear");
+        audio.current?.emit("fall");
+      }
+      if (stackIndex > 0) cardsHaptic("tear", settings, iosSwitch.current);
+    }, delayMs);
 
     const dir = cutDirection === "left" ? -1 : 1;
     const stripTarget =
-      dir * (typeof window !== "undefined" ? window.innerWidth * 0.75 : 400);
+      dir *
+      (typeof window !== "undefined" ? window.innerWidth * 1.5 + 500 : 1500);
     const bodyTarget =
       typeof window !== "undefined" ? window.innerHeight * 1.15 : 800;
 
     if (reduced) {
       const t = window.setTimeout(() => onWrapperExitDone(), 160);
-      return () => window.clearTimeout(t);
+      return () => {
+        window.clearTimeout(t);
+        window.clearTimeout(feedbackTimer);
+      };
     }
 
     const stripAnimation = animate(stripX, stripTarget, {
       duration: wrapperExitTiming.stripMs / 1000,
+      delay: delayMs / 1000,
       ease: [0.22, 0.8, 0.3, 1],
     });
     const bodyAnimation = animate(bodyY, bodyTarget, {
       duration: wrapperExitTiming.bodyMs / 1000,
+      delay: delayMs / 1000,
       ease: [0.55, 0.06, 0.85, 0.3],
     });
 
     const fallback = window.setTimeout(
       () => onWrapperExitDone(),
-      wrapperExitTiming.fallbackMs,
+      delayMs + wrapperExitTiming.fallbackMs,
     );
     return () => {
       window.clearTimeout(fallback);
+      window.clearTimeout(feedbackTimer);
       stripAnimation.stop();
       bodyAnimation.stop();
     };
   }, [
     phase,
+    stackIndex,
+    settings,
+    iosSwitch,
     cutDirection,
     reduced,
     onWrapperExitDone,
@@ -136,6 +162,7 @@ export function BoosterCutStage({
       return;
     e.currentTarget.setPointerCapture(e.pointerId);
     dragStart.current = { x: e.clientX, y: e.clientY };
+    maxTravel.current = 0;
     axisLocked.current = null;
     lastTick.current = 0;
   };
@@ -145,6 +172,7 @@ export function BoosterCutStage({
       return;
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
+    maxTravel.current = Math.max(maxTravel.current, Math.hypot(dx, dy));
 
     if (!axisLocked.current) {
       if (
@@ -187,7 +215,12 @@ export function BoosterCutStage({
     } catch {
       /* ignore */
     }
-    if (direction && axisLocked.current !== "v") {
+    if (
+      maxTravel.current <= 10 &&
+      Math.hypot(dx, e.clientY - dragStart.current.y) <= 10
+    ) {
+      commit("right");
+    } else if (direction && axisLocked.current !== "v") {
       commit(direction);
     } else if (!committedRef.current) {
       resetCut();
@@ -198,53 +231,86 @@ export function BoosterCutStage({
     if (phase === "cutting" && !committedRef.current) resetCut();
   };
 
-  const gold = kind === "gold_pack";
+  const depth = Math.max(
+    0,
+    stackIndex - (phase === "wrapperExit" ? frontIndex : 0),
+  );
   const stripRotate =
     phase === "wrapperExit" ? (cutDirection === "left" ? -18 : 18) : 0;
 
   return (
-    <div className="cards-cut-stage">
+    <motion.div
+      className="cards-cut-stage"
+      initial={false}
+      animate={{
+        y: -depth * 4,
+        scale: 1 - depth * (0.075 / 9),
+        opacity: 1,
+      }}
+      transition={{ duration: reduced ? 0 : 0.16, ease: [0.22, 0.8, 0.25, 1] }}
+      style={{
+        zIndex: 30 - stackIndex,
+        pointerEvents: stackIndex > 0 ? "none" : undefined,
+        transformOrigin: "50% 0%",
+      }}
+      aria-hidden={stackIndex > 0}
+    >
+      {stackIndex === 0 && phase === "cutting" && !committed && (
+        <p className="cards-cut-hint">Touche ou glisse pour ouvrir</p>
+      )}
       <div
-        className="cards-booster-assembly"
+        className={`cards-booster-assembly ${phase === "wrapperExit" ? "is-exiting" : ""}`}
         style={{ ["--cut-progress" as string]: String(progress) }}
+        role={stackIndex === 0 ? "button" : undefined}
+        tabIndex={stackIndex === 0 && phase === "cutting" ? 0 : -1}
+        aria-label="Découper le booster"
+        aria-disabled={phase !== "cutting" || committed}
+        onKeyDown={(event) => {
+          if (["Enter", " ", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+            event.preventDefault();
+            if (!event.repeat)
+              commit(event.key === "ArrowLeft" ? "left" : "right");
+          }
+        }}
+        onClick={(event) => {
+          if (event.detail === 0) commit("right");
+        }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
       >
-        <motion.div
-          className={`cards-booster-body ${gold ? "cards-booster-gold" : ""}`}
-          style={{ y: bodyY }}
-        >
-          <span className="cards-booster-label">
-            {gold ? "Gold Pack" : "Booster"}
-          </span>
+        <motion.div className="cards-booster-body" style={{ y: bodyY }}>
+          <BoosterArtwork setId={setId} showCollection={false} />
         </motion.div>
 
         <motion.div
           className="cards-booster-strip"
           style={{ x: stripX }}
           animate={{
-            y: phase === "wrapperExit" && !reduced ? -80 : 0,
+            y:
+              phase === "wrapperExit" && !reduced
+                ? -(typeof window !== "undefined" ? window.innerHeight : 1000)
+                : 0,
+            opacity: phase === "wrapperExit" ? 0 : 1,
             rotate: reduced ? 0 : stripRotate,
           }}
           transition={{
             duration: reduced ? 0 : wrapperExitTiming.stripMs / 1000,
+            delay: reduced
+              ? 0
+              : (stackIndex * wrapperExitTiming.staggerMs) / 1000,
             ease: "easeOut",
           }}
           aria-hidden
         >
+          <BoosterArtwork setId={setId} showCollection={false} />
           <span className="cards-cut-line" />
         </motion.div>
+        {stackIndex === 0 && phase === "cutting" && !committed && (
+          <span className="cards-cut-glow" aria-hidden="true" />
+        )}
       </div>
-
-      {phase === "cutting" && !committed && (
-        <div className="mt-4 flex w-full max-w-sm flex-col gap-2 px-4">
-          <p className="text-center text-sm text-muted-foreground">
-            Glisse horizontalement pour découper le haut du booster.
-          </p>
-        </div>
-      )}
-    </div>
+    </motion.div>
   );
 }

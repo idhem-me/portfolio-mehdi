@@ -37,7 +37,7 @@ test("cards: mobile successive packs, modal, resume, summary ratio and touch det
   );
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await ready(page, 0);
   await expect(
     page.getByRole("button", { name: /Carte suivante|Tout révéler|Terminer/ }),
@@ -90,7 +90,7 @@ test("cards: mobile successive packs, modal, resume, summary ratio and touch det
   await summaryButton.dblclick();
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await finish(page);
   expect(
     await page.evaluate(
@@ -129,7 +129,7 @@ test("cards: swipe directions, cancellation, special previews, reduced motion an
   await page.getByRole("button", { name: "5ᵉ Diamant", exact: true }).click();
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await ready(page, 0);
   await expect(page.locator(".cards-special-reveal")).toHaveCount(0);
   const rect = (await front(page).boundingBox())!;
@@ -170,7 +170,7 @@ test("cards: swipe directions, cancellation, special previews, reduced motion an
   await page.getByRole("button", { name: "Ouvrir", exact: true }).click();
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await ready(page, 0);
   await page.keyboard.press("Escape");
   await expect(
@@ -258,7 +258,7 @@ for (const [label, rarity] of [
     await page.getByRole("button", { name: label, exact: true }).click();
     await page
       .getByRole("button", { name: "Découper le booster", exact: true })
-      .click();
+      .press("Enter");
     for (let i = 0; i < 4; i++) {
       await ready(page, i);
       await expect(page.locator(".cards-special-reveal")).toHaveCount(0);
@@ -284,7 +284,7 @@ test("cards: an accepted eject persists before its animation ends", async ({
     .click();
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await ready(page, 0);
   await front(page).press("Enter");
   expect(
@@ -308,7 +308,7 @@ test("cards: all five faces stay mounted and the next face appears during ejecti
   await expect(page.locator(".cards-stack-loaded-face")).toHaveCount(5);
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await ready(page, 0);
   await expect(page.locator(".cards-stack-loaded-face:visible")).toHaveCount(5);
   await front(page).press("Enter");
@@ -332,7 +332,7 @@ test("cards: faces preload on open but stay concealed until the wrapper is torn"
   await expect(page.locator(".cards-stack-loaded-face:visible")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await expect(page.locator(".cards-stack")).toHaveCSS("visibility", "visible");
   await expect(
     page.locator(".cards-stack-front .cards-stack-loaded-face"),
@@ -343,7 +343,7 @@ test("cards: faces preload on open but stay concealed until the wrapper is torn"
   await ready(page, 0);
 });
 
-test("cards: primary CTA stays anchored across opening, cut, resume and summary", async ({
+test("cards: opening controls survive cut, resume and summary", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -370,16 +370,26 @@ test("cards: primary CTA stays anchored across opening, cut, resume and summary"
   await page
     .getByRole("button", { name: "Ouvrir un booster", exact: true })
     .click();
-  await assertAnchor("Découper le booster");
+  await expect(
+    page.locator("button").filter({ hasText: "Découper le booster" }),
+  ).toHaveCount(0);
+  await expect(page.locator(".cards-cut-hint")).toHaveText(
+    "Glisse pour ouvrir",
+  );
+  const pack = (await page.locator(".cards-booster-assembly").boundingBox())!;
+  expect(pack.y).toBeCloseTo(844 * 0.465, 0);
+  const stack = (await page.locator(".cards-stack-stage").boundingBox())!;
+  expect(pack.width).toBeCloseTo(stack.width, 0);
+  expect(pack.height).toBeCloseTo(stack.height, 0);
   await page
     .getByRole("button", { name: "Quitter la scène d’ouverture", exact: true })
     .click();
   await assertAnchor("Reprendre");
   await page.getByRole("button", { name: "Reprendre", exact: true }).click();
-  await assertAnchor("Découper le booster");
+  await expect(page.locator(".cards-cut-hint")).toBeVisible();
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   await finish(page);
   await assertAnchor("Ouvrir");
 });

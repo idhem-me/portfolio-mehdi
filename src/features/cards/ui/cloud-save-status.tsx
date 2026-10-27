@@ -11,15 +11,19 @@ import type { CloudView } from "../persistence/cloud-client";
 export function CloudSaveStatus({
   cloud,
   openingActive = false,
+  showStatus = true,
+  showDialog = true,
 }: {
   cloud: CloudView;
   openingActive?: boolean;
+  showStatus?: boolean;
+  showDialog?: boolean;
 }) {
   return (
     <>
-      {(cloud.status !== "local" || cloud.message) && (
+      {showStatus && (
         <div
-          className="mx-4 mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+          className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
           role="status"
           aria-live="polite"
         >
@@ -30,8 +34,10 @@ export function CloudSaveStatus({
                 ? "Synchronisation de la progression…"
                 : cloud.status === "conflict"
                   ? "Deux progressions sont disponibles"
-                  : cloud.message ||
-                    "Sauvegarde locale · Synchronisation en attente"}
+                  : cloud.status === "local" && !cloud.message
+                    ? "La collection est stockée sur cet appareil uniquement."
+                    : cloud.message ||
+                      "Sauvegarde locale · Synchronisation en attente"}
           </span>
           {(cloud.status === "pending" || cloud.message) && cloud.retry && (
             <Button size="sm" variant="ghost" onClick={cloud.retry}>
@@ -41,7 +47,7 @@ export function CloudSaveStatus({
         </div>
       )}
       <Dialog
-        open={Boolean(cloud.conflict) && !openingActive}
+        open={showDialog && Boolean(cloud.conflict) && !openingActive}
         onOpenChange={(open) => {
           if (!open) cloud.dismiss?.();
         }}

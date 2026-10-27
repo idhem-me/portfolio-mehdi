@@ -222,7 +222,7 @@ test("cards: Google progression syncs new openings automatically after the first
   await expect.poll(() => cloud.save()?.activeOpen?.phase).toBe("cutting");
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   for (let index = 1; index <= 5; index++) {
     await expect(page.locator(".cards-stack-front")).toHaveAttribute(
       "aria-disabled",

@@ -28,13 +28,14 @@ export const swipeGesture = {
 };
 
 export const wrapperExitTiming = {
-  bodyMs: 460,
-  stripMs: 420,
-  fallbackMs: 500,
+  staggerMs: 220,
+  bodyMs: 300,
+  stripMs: 260,
+  fallbackMs: 340,
 };
 
 export const cameraZoomTiming = {
-  durationMs: 240,
+  durationMs: 180,
   reducedMs: 40,
 };
 

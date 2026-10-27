@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { ArrowLeft, Settings2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -12,8 +13,10 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { GameFeelSettings } from "@/components/games/game-feel-settings";
+import { GameAppearanceSettings } from "@/components/games/game-appearance-settings";
 import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
 import { PlayerProfileButton } from "@/features/account/ui/profile-button";
 import { createOpeningController } from "../engine/opening";
@@ -30,6 +33,7 @@ import { CloudSaveStatus } from "./cloud-save-status";
 import { LocalSaveNotice } from "./local-save-notice";
 import { CollectionScreen } from "./collection-screen";
 import { OpeningScene } from "./opening-scene";
+import { ResetCollection } from "./reset-collection";
 import { ProfileScreen } from "./profile-screen";
 
 function readClientSettings(): CardsSettings {
@@ -46,6 +50,12 @@ export default function CardsApp({ backHref }: { backHref: string }) {
   const [settings, setSettings] = useState<CardsSettings>(readClientSettings);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [tab, setTab] = useState("open");
+  const reducedMotion = useReducedMotion();
+  const navigation = [
+    { value: "collection", label: "Collection" },
+    { value: "open", label: "Ouvrir" },
+    { value: "profile", label: "Profil" },
+  ];
   const audio = useRef<CardsAudio | null>(null);
   const iosSwitch = useRef<HTMLInputElement | null>(null);
 
@@ -121,6 +131,7 @@ export default function CardsApp({ backHref }: { backHref: string }) {
       <LocalSaveNotice boostersOpened={save.stats.boostersOpened} />
       <CloudSaveStatus
         cloud={cloud}
+        showStatus={false}
         openingActive={Boolean(
           save.activeOpen &&
           !["summary", "closed", "idle"].includes(save.activeOpen.phase),
@@ -128,70 +139,113 @@ export default function CardsApp({ backHref }: { backHref: string }) {
       />
 
       <Tabs value={tab} onValueChange={setTab} className="cards-tabs">
-        <TabsList className="cards-tabs-list w-full">
-          <TabsTrigger value="collection" className="flex-1 min-h-11">
-            Collection
-          </TabsTrigger>
-          <TabsTrigger value="open" className="flex-1 min-h-11">
-            Ouvrir
-          </TabsTrigger>
-          <TabsTrigger value="profile" className="flex-1 min-h-11">
-            Profil
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="collection" className="cards-tab-panel">
-          <CollectionScreen save={save} />
-        </TabsContent>
-        <TabsContent value="open" className="cards-tab-panel">
-          <OpeningScene
-            controller={controller}
-            settings={settings}
-            audio={audio}
-            iosSwitch={iosSwitch}
-            collection={save.collection}
-            onSaveChange={notify}
-          />
-        </TabsContent>
-        <TabsContent value="profile" className="cards-tab-panel">
-          <ProfileScreen
-            save={save}
-            onOpenSettings={() => setSettingsOpen(true)}
-            onResetLocal={() => {
-              controller.resetLocal();
-              setSaveVersion((v) => v + 1);
-            }}
-          />
-        </TabsContent>
+        <motion.div
+          key={tab}
+          className="cards-tab-transition"
+          initial={reducedMotion ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.22, ease: [0.22, 0.8, 0.25, 1] }}
+        >
+          <TabsContent value="collection" className="cards-tab-panel">
+            <CollectionScreen save={save} />
+          </TabsContent>
+          <TabsContent value="open" className="cards-tab-panel">
+            <OpeningScene
+              controller={controller}
+              settings={settings}
+              audio={audio}
+              iosSwitch={iosSwitch}
+              collection={save.collection}
+              onSaveChange={notify}
+              onViewCollection={() => setTab("collection")}
+            />
+          </TabsContent>
+          <TabsContent value="profile" className="cards-tab-panel">
+            <ProfileScreen save={save} cloud={cloud} />
+          </TabsContent>
+        </motion.div>
+        <div className="cards-navigation-dock">
+          <TabsList className="cards-tabs-list" aria-label="Navigation du jeu">
+            {navigation.map(({ value, label }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                aria-label={label}
+                className="cards-navigation-tab"
+              >
+                {tab === value && (
+                  <motion.span
+                    className="cards-navigation-indicator"
+                    layoutId="cards-navigation-indicator"
+                    transition={
+                      reducedMotion
+                        ? { duration: 0 }
+                        : { type: "spring", stiffness: 440, damping: 35 }
+                    }
+                  />
+                )}
+                <span
+                  aria-hidden="true"
+                  className="cards-navigation-icon"
+                  style={{
+                    maskImage: `url(/img/cards/navigation/${value}${tab === value ? "-active" : ""}.svg)`,
+                  }}
+                />
+                <span className="cards-navigation-label" aria-hidden="true">
+                  {label}
+                </span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
       </Tabs>
 
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         <SheetContent
           side="right"
-          className="w-full sm:max-w-md overflow-y-auto"
+          className="cards-settings-sheet w-full sm:max-w-md overflow-y-auto"
         >
           <SheetHeader>
             <SheetTitle>Réglages</SheetTitle>
+            <SheetDescription>
+              Personnalise l’apparence et les sensations du jeu.
+            </SheetDescription>
           </SheetHeader>
-          <div className="cards-settings mt-4 px-4 pb-4">
-            <GameFeelSettings
-              className="cards-feel-settings"
-              value={settings}
-              volumeInputId="cards-effects-volume"
-              volumeDescription="Déchirure, flips et révélations"
-              onUnlockAudio={unlockFeel}
-              onToggleSound={() => updateSettings({ sound: !settings.sound })}
-              onToggleHaptics={() =>
-                updateSettings({ haptics: !settings.haptics })
-              }
-              onToggleIos={() => updateSettings({ ios: !settings.ios })}
-              onEffectsVolume={(effectsVolume) => {
-                updateSettings({ effectsVolume });
-                audio.current?.setVolume(effectsVolume);
-              }}
-              onPreviewEffects={() => audio.current?.emit("flip")}
-            />
+          <div className="cards-settings px-4 pb-6">
+            <GameAppearanceSettings />
+            <section
+              className="cards-settings-section"
+              aria-labelledby="cards-feel-title"
+            >
+              <h2 id="cards-feel-title">Son et vibrations</h2>
+              <GameFeelSettings
+                className="cards-feel-settings"
+                value={settings}
+                volumeInputId="cards-effects-volume"
+                volumeDescription="Déchirure, flips et révélations"
+                onUnlockAudio={unlockFeel}
+                onToggleSound={() => updateSettings({ sound: !settings.sound })}
+                onToggleHaptics={() =>
+                  updateSettings({ haptics: !settings.haptics })
+                }
+                onToggleIos={() => updateSettings({ ios: !settings.ios })}
+                onEffectsVolume={(effectsVolume) => {
+                  updateSettings({ effectsVolume });
+                  audio.current?.setVolume(effectsVolume);
+                }}
+                onPreviewEffects={() => audio.current?.emit("flip")}
+              />
+            </section>
+            <section className="cards-settings-section" aria-label="Sauvegarde">
+              <h2>Sauvegarde</h2>
+              <ResetCollection
+                onResetLocal={() => {
+                  controller.resetLocal();
+                  notify();
+                }}
+              />
+            </section>
             <GameSettingsOutreach
-              className="mt-6"
               gameName="Cartes"
               shareText="Viens ouvrir des boosters sur mon portfolio."
             />

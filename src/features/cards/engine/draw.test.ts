@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   CATALOG,
+  ORIGINAL_CATALOG,
+  HORIZONS_CATALOG,
   EXPECTED_RARITY_COUNTS,
   cardsByRarity,
 } from "../catalog/cards";
@@ -17,7 +19,8 @@ import {
 import { emptySave, type ActiveOpen } from "../persistence/types";
 
 test("catalog has exactly 40 cards with required rarity counts", () => {
-  assert.equal(CATALOG.length, 40);
+  assert.equal(ORIGINAL_CATALOG.length, 40);
+  assert.equal(CATALOG.length, 100);
   for (const rarity of RARITIES) {
     assert.equal(
       cardsByRarity(rarity).length,
@@ -153,7 +156,10 @@ test("simulation finalize does not credit collection", () => {
 
 test("parseSave recovers from invalid data", () => {
   assert.equal(parseSave(null).schemaVersion, 1);
-  assert.equal(parseSave({ collection: { bad: true } }).collection["bad"], undefined);
+  assert.equal(
+    parseSave({ collection: { bad: true } }).collection["bad"],
+    undefined,
+  );
 });
 
 test("local repository round-trip", () => {
@@ -182,4 +188,36 @@ test("local repository round-trip", () => {
 
 test("gold pack probability constant matches 1/20000 scale", () => {
   assert.ok(Math.abs(GOLD_PACK_PROBABILITY - 1 / 20000) < 1e-12);
+});
+
+test("Horizons has 60 distinct cards and the same draw rarity rules", () => {
+  assert.equal(HORIZONS_CATALOG.length, 60);
+  assert.equal(new Set(CATALOG.map((card) => card.id)).size, 100);
+  const counts = [30, 15, 9, 3, 2, 1];
+  RARITIES.forEach((rarity, index) =>
+    assert.equal(cardsByRarity(rarity, "horizons").length, counts[index]),
+  );
+  for (const rarity of [
+    "rare",
+    "epic",
+    "legendary",
+    "gold",
+    "diamond",
+  ] as const) {
+    const pack = drawPack({
+      setId: "horizons",
+      rng: createSeededRng(17),
+      forceKind: "standard",
+      forceFifthRarity: rarity,
+    });
+    assert.ok(
+      pack.cards.every((card) =>
+        HORIZONS_CATALOG.some((entry) => entry.id === card.cardId),
+      ),
+    );
+    assert.deepEqual(
+      pack.cards.map((card) => card.rarity),
+      ["common", "common", "common", "common", rarity],
+    );
+  }
 });

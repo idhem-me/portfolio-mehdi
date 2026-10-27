@@ -62,7 +62,13 @@ function sanitizeActiveOpen(raw: unknown): ActiveOpen | null {
   if (
     typeof a.openId !== "string" ||
     !Array.isArray(a.cards) ||
-    a.cards.length !== 5 ||
+    ![5, 50].includes(a.cards.length) ||
+    (a.cards.length === 50 &&
+      (!Array.isArray(a.batchKinds) ||
+        a.batchKinds.length !== 10 ||
+        !a.batchKinds.every(
+          (kind) => kind === "standard" || kind === "gold_pack",
+        ))) ||
     !a.cards.every(isDrawnCard)
   ) {
     return null;
@@ -77,12 +83,21 @@ function sanitizeActiveOpen(raw: unknown): ActiveOpen | null {
 
   const open: ActiveOpen = {
     openId: a.openId,
+    batchKinds: a.cards.length === 50 ? a.batchKinds : undefined,
+    batchCards:
+      a.finalized &&
+      a.phase === "summary" &&
+      Array.isArray(a.batchCards) &&
+      a.batchCards.length === 50 &&
+      a.batchCards.every(isDrawnCard)
+        ? a.batchCards.map((card) => ({ ...card, shiny: card.shiny === true }))
+        : undefined,
     kind: a.kind === "gold_pack" ? "gold_pack" : "standard",
     cards: a.cards.map((card) => ({ ...card, shiny: card.shiny === true })),
     phase,
     revealed: Array.isArray(a.revealed)
-      ? a.revealed.map(Boolean).slice(0, 5)
-      : [false, false, false, false, false],
+      ? a.revealed.map(Boolean).slice(0, a.cards.length)
+      : Array(a.cards.length).fill(false),
     currentIndex:
       typeof a.currentIndex === "number" && Number.isFinite(a.currentIndex)
         ? a.currentIndex
@@ -219,7 +234,7 @@ export function finalizeOpen(
         ...open,
         phase: "summary",
         finalized: true,
-        currentIndex: 5,
+        currentIndex: open.cards.length,
       },
     };
   }
@@ -230,7 +245,7 @@ export function finalizeOpen(
         ...open,
         phase: "summary",
         finalized: true,
-        currentIndex: 5,
+        currentIndex: open.cards.length,
       },
     };
   }
@@ -268,8 +283,12 @@ export function finalizeOpen(
     }
   }
 
-  stats.boostersOpened += 1;
-  if (open.kind === "gold_pack") stats.goldPacksOpened += 1;
+  stats.boostersOpened += open.batchKinds?.length ?? 1;
+  stats.goldPacksOpened += open.batchKinds
+    ? open.batchKinds.filter((kind) => kind === "gold_pack").length
+    : open.kind === "gold_pack"
+      ? 1
+      : 0;
 
   return {
     ...save,
@@ -280,7 +299,7 @@ export function finalizeOpen(
       ...open,
       phase: "summary",
       finalized: true,
-      currentIndex: 5,
+      currentIndex: open.cards.length,
     },
   };
 }

@@ -36,6 +36,9 @@ export type CardsStats = {
 };
 
 export type ActiveOpen = {
+  batchKinds?: PackKind[];
+  /** Persisted 50-card recap for a completed ten-pack opening. */
+  batchCards?: DrawnCard[];
   openId: string;
   kind: PackKind;
   cards: DrawnCard[];
@@ -95,15 +98,16 @@ export function normalizeActiveOpenPhase(open: ActiveOpen): ActiveOpen {
   if (phase === "preparing") phase = "cutting";
   if (phase === "tearing") phase = "cutting";
 
+  const count = open.cards.length;
   const revealed = [...open.revealed];
-  while (revealed.length < 5) revealed.push(false);
-  const revealed5 = revealed.slice(0, 5);
+  while (revealed.length < count) revealed.push(false);
+  const revealed5 = revealed.slice(0, count);
 
   let currentIndex =
     typeof open.currentIndex === "number" && Number.isFinite(open.currentIndex)
-      ? Math.max(0, Math.min(5, Math.floor(open.currentIndex)))
+      ? Math.max(0, Math.min(count, Math.floor(open.currentIndex)))
       : revealed5.findIndex((r) => !r);
-  if (currentIndex < 0) currentIndex = 5;
+  if (currentIndex < 0) currentIndex = count;
 
   // Resume: never replay a partial cut / exit / zoom.
   if (
@@ -121,7 +125,7 @@ export function normalizeActiveOpenPhase(open: ActiveOpen): ActiveOpen {
 
   if (open.finalized || phase === "summary") {
     phase = "summary";
-    currentIndex = 5;
+    currentIndex = count;
   }
 
   return {

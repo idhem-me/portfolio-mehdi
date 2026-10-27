@@ -1,5 +1,7 @@
 "use client";
 
+import { CloudSaveStatus } from "./cloud-save-status";
+import type { CloudView } from "../persistence/cloud-client";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,25 +28,20 @@ import {
 
 export function ProfileScreen({
   save,
-  onOpenSettings,
-  onResetLocal,
+  cloud,
 }: {
   save: CardsSave;
-  onOpenSettings: () => void;
-  onResetLocal: () => void;
+  cloud: CloudView;
 }) {
-  const [confirmReset, setConfirmReset] = useState(false);
   const [ratesOpen, setRatesOpen] = useState(false);
   const progress = catalogProgress(save);
 
   return (
     <div className="cards-profile space-y-6">
-      <p className="text-xs text-muted-foreground">
-        La collection est stockée sur cet appareil uniquement.
-      </p>
+      <CloudSaveStatus cloud={cloud} showDialog={false} />
 
       <section className="space-y-3">
-        <h2 className="text-base font-medium">Statistiques locales</h2>
+        <h2 className="text-base font-medium">Statistiques</h2>
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <Stat label="Boosters ouverts" value={save.stats.boostersOpened} />
           <Stat label="Gold Packs" value={save.stats.goldPacksOpened} />
@@ -88,23 +85,9 @@ export function ProfileScreen({
         <Button
           variant="outline"
           className="min-h-11 justify-between"
-          onClick={onOpenSettings}
-        >
-          Réglages
-        </Button>
-        <Button
-          variant="outline"
-          className="min-h-11 justify-between"
           onClick={() => setRatesOpen(true)}
         >
           Probabilités
-        </Button>
-        <Button
-          variant="destructive"
-          className="min-h-11"
-          onClick={() => setConfirmReset(true)}
-        >
-          Réinitialiser la collection locale
         </Button>
       </section>
 
@@ -140,33 +123,6 @@ export function ProfileScreen({
               Tirage côté client — non sécurisé contre la triche. Une future
               version serveur validera les boosters.
             </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={confirmReset} onOpenChange={setConfirmReset}>
-        <DialogContent className="max-w-sm">
-          <div className="space-y-4">
-            <DialogTitle>Réinitialiser ?</DialogTitle>
-            <DialogDescription>
-              Efface uniquement la collection et les stats de ce jeu sur cet
-              appareil. Le compte, les réglages globaux et les autres jeux sont
-              conservés. La réserve de boosters n’est pas rechargée.
-            </DialogDescription>
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-              <Button variant="outline" onClick={() => setConfirmReset(false)}>
-                Annuler
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  onResetLocal();
-                  setConfirmReset(false);
-                }}
-              >
-                Réinitialiser
-              </Button>
-            </div>
           </div>
         </DialogContent>
       </Dialog>

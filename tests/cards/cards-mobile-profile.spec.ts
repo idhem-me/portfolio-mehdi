@@ -11,7 +11,7 @@ test("cards: mobile browser smoke, reduced motion, ratio and profile", async ({
     .click();
   await page
     .getByRole("button", { name: "Découper le booster", exact: true })
-    .click();
+    .press("Enter");
   for (let i = 1; i <= 5; i++) {
     await expect(page.getByRole("status")).toContainText(`Carte ${i} sur 5`);
     const card = page.locator(".cards-stack-front");

@@ -1,11 +1,7 @@
 import { SiteAccountProvider } from "@/features/account/provider";
 import type { Metadata } from "next";
-import {
-  Geist_Mono,
-  Google_Sans,
-  Noto_Sans_Arabic,
-  Noto_Sans_SC,
-} from "next/font/google";
+import { Geist_Mono, Google_Sans, Noto_Sans_SC } from "next/font/google";
+import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { AnalyticsRoot } from "@/lib/analytics/analytics-root";
@@ -33,9 +29,9 @@ const notoSansSc = Noto_Sans_SC({
   display: "swap",
 });
 
-const notoSansArabic = Noto_Sans_Arabic({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
+const notoSansArabic = localFont({
+  src: "./fonts/NotoSansArabic.ttf",
+  weight: "100 900",
   variable: "--font-arabic",
   display: "swap",
 });

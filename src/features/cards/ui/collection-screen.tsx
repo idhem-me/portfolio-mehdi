@@ -1,6 +1,6 @@
 "use client";
 
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,15 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-import { CATALOG } from "../catalog/cards";
+import { CATALOG, CARD_SETS, cardSet, type CardSetId } from "../catalog/cards";
 import {
   RARITIES,
   RARITY_LABELS,
@@ -33,6 +40,8 @@ type SortKey = "number" | "rarity" | "recent";
 
 export function CollectionScreen({ save }: { save: CardsSave }) {
   const reduced = usePrefersReducedMotion();
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [setFilter, setSetFilter] = useState<CardSetId | "all">("all");
   const [query, setQuery] = useState("");
   const [rarity, setRarity] = useState<Rarity | "all">("all");
   const [own, setOwn] = useState<OwnFilter>("all");
@@ -48,7 +57,9 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
   const uniques = uniqueOwnedCount(save);
 
   const rows = useMemo(() => {
-    let list = [...CATALOG];
+    let list = CATALOG.filter(
+      (card) => setFilter === "all" || cardSet(card) === setFilter,
+    );
     const q = query.trim().toLowerCase();
     if (q) {
       list = list.filter(
@@ -77,7 +88,7 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
       return tb - ta || a.number - b.number;
     });
     return list;
-  }, [query, rarity, own, sort, shinyOnly, save.collection]);
+  }, [query, rarity, own, sort, shinyOnly, setFilter, save.collection]);
 
   const detailShiny = Boolean(
     detail &&
@@ -92,6 +103,52 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
     if (next) setDetail(next);
   };
 
+  const activeFilters: { key: string; label: string; clear: () => void }[] = [];
+  if (setFilter !== "all")
+    activeFilters.push({
+      key: "set",
+      label: CARD_SETS.find((set) => set.id === setFilter)!.name,
+      clear: () => setSetFilter("all"),
+    });
+  if (query.trim())
+    activeFilters.push({
+      key: "query",
+      label: `Recherche : ${query.trim()}`,
+      clear: () => setQuery(""),
+    });
+  if (own !== "all")
+    activeFilters.push({
+      key: "own",
+      label: own === "owned" ? "Possédées" : "Manquantes",
+      clear: () => setOwn("all"),
+    });
+  if (rarity !== "all")
+    activeFilters.push({
+      key: "rarity",
+      label: RARITY_LABELS[rarity],
+      clear: () => setRarity("all"),
+    });
+  if (shinyOnly)
+    activeFilters.push({
+      key: "shiny",
+      label: "Shiny",
+      clear: () => setShinyOnly(false),
+    });
+  if (sort !== "number")
+    activeFilters.push({
+      key: "sort",
+      label: sort === "rarity" ? "Tri : rareté" : "Tri : récentes",
+      clear: () => setSort("number"),
+    });
+  const clearFilters = () => {
+    setSetFilter("all");
+    setQuery("");
+    setOwn("all");
+    setRarity("all");
+    setShinyOnly(false);
+    setSort("number");
+  };
+
   return (
     <div className="cards-collection">
       <div className="cards-stats-row">
@@ -103,92 +160,182 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
         </Badge>
       </div>
 
-      <Input
-        type="search"
-        placeholder="Rechercher une carte…"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="mt-3"
-        aria-label="Rechercher par nom"
-      />
-
-      <div className="cards-filter-row mt-3">
+      <div className="cards-collection-toolbar">
+        <p role="status" className="text-xs text-muted-foreground">
+          {rows.length} carte{rows.length > 1 ? "s" : ""}
+        </p>
         <Button
-          size="sm"
-          variant={own === "all" ? "default" : "outline"}
+          variant="outline"
           className="min-h-11"
-          onClick={() => setOwn("all")}
+          onClick={() => setFiltersOpen(true)}
         >
-          Toutes
-        </Button>
-        <Button
-          size="sm"
-          variant={own === "owned" ? "default" : "outline"}
-          className="min-h-11"
-          onClick={() => setOwn("owned")}
-        >
-          Possédées
-        </Button>
-        <Button
-          size="sm"
-          variant={own === "missing" ? "default" : "outline"}
-          className="min-h-11"
-          onClick={() => setOwn("missing")}
-        >
-          Manquantes
+          <SlidersHorizontal aria-hidden="true" /> Filtrer
+          {activeFilters.length > 0 && (
+            <Badge variant="secondary">{activeFilters.length}</Badge>
+          )}
         </Button>
       </div>
-
-      <div className="cards-filter-row mt-2">
-        <Button
-          size="sm"
-          variant={shinyOnly ? "secondary" : "outline"}
-          aria-pressed={shinyOnly}
-          className="min-h-11"
-          onClick={() => setShinyOnly((value) => !value)}
+      {activeFilters.length > 0 && (
+        <div className="cards-active-filters" aria-label="Filtres actifs">
+          {activeFilters.map((filter) => (
+            <Button
+              key={filter.key}
+              size="sm"
+              variant="secondary"
+              className="min-h-9"
+              aria-label={`Retirer le filtre ${filter.label}`}
+              onClick={filter.clear}
+            >
+              {filter.label}
+              <X aria-hidden="true" />
+            </Button>
+          ))}
+        </div>
+      )}
+      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <SheetContent
+          side="right"
+          className="cards-filter-sheet w-full sm:max-w-md overflow-y-auto"
         >
-          Shiny uniquement
-        </Button>
-        <Button
-          size="sm"
-          variant={rarity === "all" ? "secondary" : "outline"}
-          className="min-h-11"
-          onClick={() => setRarity("all")}
-        >
-          Rareté
-        </Button>
-        {RARITIES.map((r) => (
-          <Button
-            key={r}
-            size="sm"
-            variant={rarity === r ? "secondary" : "outline"}
-            className="min-h-11"
-            onClick={() => setRarity(r)}
-          >
-            {RARITY_LABELS[r]}
-          </Button>
-        ))}
-      </div>
+          <SheetHeader>
+            <SheetTitle>Filtrer la collection</SheetTitle>
+            <SheetDescription>Affiner les cartes affichées.</SheetDescription>
+          </SheetHeader>
+          <div className="cards-filter-controls px-4 pb-4">
+            <fieldset className="cards-set-filter">
+              <legend>Collection</legend>
+              <div className="cards-set-options">
+                {[
+                  {
+                    id: "all",
+                    name: "Toutes les collections",
+                    count: CATALOG.length,
+                  },
+                  ...CARD_SETS,
+                ].map((set) => (
+                  <label key={set.id} className="cards-set-option">
+                    <input
+                      type="radio"
+                      name="cards-collection-filter"
+                      value={set.id}
+                      checked={setFilter === set.id}
+                      onChange={() => setSetFilter(set.id as CardSetId | "all")}
+                    />
+                    <span>{set.name}</span>
+                    <span className="cards-set-option-count">
+                      {set.count} cartes
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+            <Input
+              type="search"
+              placeholder="Rechercher une carte…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="mt-3"
+              aria-label="Rechercher par nom"
+            />
 
-      <div className="cards-filter-row mt-2">
-        {(
-          [
-            ["number", "N°"],
-            ["rarity", "Rareté"],
-            ["recent", "Récentes"],
-          ] as const
-        ).map(([key, label]) => (
-          <Button
-            key={key}
-            size="sm"
-            variant={sort === key ? "default" : "outline"}
-            className="min-h-11"
-            onClick={() => setSort(key)}
-          >
-            {label}
-          </Button>
-        ))}
-      </div>
+            <div className="cards-filter-row mt-3">
+              <Button
+                size="sm"
+                aria-pressed={own === "all"}
+                variant={own === "all" ? "default" : "outline"}
+                className="min-h-11"
+                onClick={() => setOwn("all")}
+              >
+                Toutes
+              </Button>
+              <Button
+                size="sm"
+                aria-pressed={own === "owned"}
+                variant={own === "owned" ? "default" : "outline"}
+                className="min-h-11"
+                onClick={() => setOwn("owned")}
+              >
+                Possédées
+              </Button>
+              <Button
+                size="sm"
+                aria-pressed={own === "missing"}
+                variant={own === "missing" ? "default" : "outline"}
+                className="min-h-11"
+                onClick={() => setOwn("missing")}
+              >
+                Manquantes
+              </Button>
+            </div>
+
+            <div className="cards-filter-row mt-2">
+              <Button
+                size="sm"
+                variant={shinyOnly ? "secondary" : "outline"}
+                aria-pressed={shinyOnly}
+                className="min-h-11"
+                onClick={() => setShinyOnly((value) => !value)}
+              >
+                Shiny uniquement
+              </Button>
+              <Button
+                size="sm"
+                aria-pressed={rarity === "all"}
+                variant={rarity === "all" ? "secondary" : "outline"}
+                className="min-h-11"
+                onClick={() => setRarity("all")}
+              >
+                Rareté
+              </Button>
+              {RARITIES.map((r) => (
+                <Button
+                  key={r}
+                  size="sm"
+                  aria-pressed={rarity === r}
+                  variant={rarity === r ? "secondary" : "outline"}
+                  className="min-h-11"
+                  onClick={() => setRarity(r)}
+                >
+                  {RARITY_LABELS[r]}
+                </Button>
+              ))}
+            </div>
+
+            <div className="cards-filter-row mt-2">
+              {(
+                [
+                  ["number", "N°"],
+                  ["rarity", "Rareté"],
+                  ["recent", "Récentes"],
+                ] as const
+              ).map(([key, label]) => (
+                <Button
+                  key={key}
+                  size="sm"
+                  aria-pressed={sort === key}
+                  variant={sort === key ? "default" : "outline"}
+                  className="min-h-11"
+                  onClick={() => setSort(key)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="cards-filter-footer">
+            <Button
+              variant="ghost"
+              disabled={activeFilters.length === 0}
+              onClick={clearFilters}
+            >
+              Tout effacer
+            </Button>
+            <Button variant="primary" onClick={() => setFiltersOpen(false)}>
+              Voir {rows.length} carte{rows.length > 1 ? "s" : ""}
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {rows.length === 0 ? (
         <p className="mt-8 text-center text-sm text-muted-foreground">

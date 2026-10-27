@@ -3,6 +3,8 @@ import { test } from "node:test";
 import { createSeededRng } from "@/lib/games/rng";
 import { createLocalCardsRepository } from "../persistence/repository";
 import { normalizeActiveOpenPhase } from "../persistence/types";
+import { validateCloudSave } from "../server/validation";
+import { drawPack } from "./draw";
 import { createOpeningController } from "./opening";
 
 function memoryRepo() {
@@ -183,3 +185,134 @@ test("an interrupted legacy summary credits on load once", () => {
   assert.equal(recovered.getSave().stats.boostersOpened, 1);
   assert.equal(createOpeningController(repo).getSave().stats.boostersOpened, 1);
 });
+
+test("ten boosters persist ordered draws, resume at any card, and credit once after card 50", () => {
+  const { repo } = memoryRepo();
+  const controller = createOpeningController(repo);
+  const result = controller.openTen({
+    setId: "horizons",
+    rng: createSeededRng(42),
+  })!;
+  assert.equal(result.cards.length, 50);
+  assert.equal(result.batchKinds?.length, 10);
+  assert.equal(result.phase, "cutting");
+  assert.equal(controller.getSave().boosters.available, 0);
+  assert.equal(controller.getSave().stats.boostersOpened, 0);
+  const expectedRng = createSeededRng(42);
+  const expected = Array.from({ length: 10 }, () =>
+    drawPack({ setId: "horizons", rng: expectedRng }),
+  );
+  assert.deepEqual(
+    result.cards,
+    expected.flatMap((pack) => pack.cards),
+  );
+  assert.deepEqual(
+    result.batchKinds,
+    expected.map((pack) => pack.kind),
+  );
+  const resumed = createOpeningController(repo);
+  assert.deepEqual(resumed.getSave().activeOpen?.cards, result.cards);
+  assert.equal(resumed.getSave().activeOpen?.phase, "revealing");
+  for (let index = 0; index < 7; index++) resumed.advanceCard(index);
+  const afterReload = createOpeningController(repo);
+  assert.equal(afterReload.getSave().activeOpen?.currentIndex, 7);
+  afterReload.advanceCard(6); // stale events cannot skip cards
+  assert.equal(afterReload.getSave().activeOpen?.currentIndex, 7);
+  for (let index = 7; index < 49; index++) afterReload.advanceCard(index);
+  assert.equal(afterReload.getSave().activeOpen?.phase, "revealing");
+  assert.equal(afterReload.getSave().stats.boostersOpened, 0);
+  afterReload.advanceCard(49);
+  const save = afterReload.getSave();
+  assert.equal(save.activeOpen?.phase, "summary");
+  assert.equal(save.stats.boostersOpened, 10);
+  assert.equal(
+    Object.values(save.collection).reduce((sum, card) => sum + card.qty, 0),
+    50,
+  );
+  assert.ok(
+    Object.keys(save.collection).every((id) => Number(id.slice(5)) > 40),
+  );
+  afterReload.complete();
+  assert.equal(
+    createOpeningController(repo).getSave().stats.boostersOpened,
+    10,
+  );
+  assert.equal(afterReload.openTen(), null);
+});
+
+test("gold batch preserves ten gold packs and credits 50 legendary cards", () => {
+  const { repo } = memoryRepo();
+  const controller = createOpeningController(repo);
+  const batch = controller.openTen({ rng: () => 0 })!;
+  assert.ok(batch.cards.every((card) => card.rarity === "legendary"));
+  controller.revealAll();
+  assert.equal(controller.getSave().stats.boostersOpened, 10);
+  assert.equal(controller.getSave().stats.goldPacksOpened, 10);
+  assert.equal(controller.getSave().stats.copiesByRarity.legendary, 50);
+});
+
+test("ten boosters cannot replace an unfinished single opening", () => {
+  const { repo } = memoryRepo();
+  const controller = createOpeningController(repo);
+  controller.startOpen({ rng: createSeededRng(7) });
+  assert.equal(controller.openTen(), null);
+  assert.equal(controller.getSave().boosters.available, 9);
+});
+
+test("batch progress round-trips through cloud validation and simulation never spends or credits", () => {
+  const { repo } = memoryRepo();
+  const controller = createOpeningController(repo);
+  const batch = controller.openTen({ rng: createSeededRng(84) })!;
+  const validated = validateCloudSave(controller.getSave());
+  assert.equal(validated.activeOpen?.cards.length, 50);
+  assert.equal(validated.activeOpen?.batchKinds?.length, 10);
+  assert.deepEqual(validated.activeOpen?.cards, batch.cards);
+  const malformed = {
+    ...controller.getSave(),
+    activeOpen: { ...batch, batchKinds: undefined },
+  };
+  assert.throws(() => validateCloudSave(malformed));
+  const simulation = createOpeningController(memoryRepo().repo);
+  simulation.startSimulation({
+    batchSize: 10,
+    rng: createSeededRng(84),
+    forceKind: "standard",
+  });
+  assert.equal(simulation.getSave().activeOpen?.cards.length, 50);
+  simulation.revealAll();
+  assert.equal(simulation.getSave().boosters.available, 10);
+  assert.equal(simulation.getSave().stats.boostersOpened, 0);
+  assert.deepEqual(simulation.getSave().collection, {});
+});
+
+for (const phase of [
+  "cutting",
+  "wrapperExit",
+  "cameraZoom",
+  "revealing",
+] as const) {
+  test(`leaving a ten-pack opening during ${phase} credits all cards once and shows summary`, () => {
+    const { repo } = memoryRepo();
+    const controller = createOpeningController(repo);
+    const drawn = controller.openTen({ rng: createSeededRng(44) })!.cards;
+    controller.setPhase(phase);
+    controller.revealAll();
+    const save = controller.getSave();
+    assert.equal(save.activeOpen?.phase, "summary");
+    assert.equal(save.activeOpen?.currentIndex, 50);
+    assert.equal(save.activeOpen?.revealed.every(Boolean), true);
+    assert.deepEqual(save.activeOpen?.cards, drawn);
+    assert.equal(save.stats.boostersOpened, 10);
+    assert.equal(
+      Object.values(save.collection).reduce((sum, entry) => sum + entry.qty, 0),
+      50,
+    );
+    controller.revealAll();
+    assert.equal(controller.getSave().stats.boostersOpened, 10);
+    assert.equal(
+      createOpeningController(repo).getSave().stats.boostersOpened,
+      10,
+    );
+    assert.equal(save.boosters.available, 0);
+  });
+}
