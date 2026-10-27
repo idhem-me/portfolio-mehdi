@@ -30,12 +30,34 @@ const CHIP_PAD_PX = 10;
 const CHIP_COMPACT_PAD_PX = 6;
 const CHIP_COMPACT_FONT_PX = 12;
 const WALL_THICKNESS = 80;
+/** Extra radius beyond the inscribed circle so touch/pointer grabs feel forgiving. */
+const CIRCLE_HIT_PADDING_PX = 14;
+/** Matter circle tessellation — smoother grab edges than the default. */
+const CIRCLE_SIDES = 28;
+
+type PhysicsTuning = {
+  gravity: number;
+  restitution: number;
+  friction: number;
+  frictionAir: number;
+  grabStiffness: number;
+};
+
+const DEFAULT_TUNING: PhysicsTuning = {
+  gravity: 1.35,
+  restitution: 0.22,
+  friction: 0.35,
+  frictionAir: 0.012,
+  grabStiffness: 0.2,
+};
 
 type PhysicsPair = {
   body: Matter.Body;
   el: HTMLElement;
   width: number;
   height: number;
+  /** Circular collision / grab shape (avatar). */
+  circle?: boolean;
 };
 
 type SpawnTarget = {
@@ -235,10 +257,11 @@ function applyTypography(el: HTMLElement, computed: CSSStyleDeclaration) {
 function spawnChipElement(
   target: SpawnTarget,
   layerEl: HTMLElement,
-): { el: HTMLElement; width: number; height: number; cx: number; cy: number } {
+): ChipSpawn {
   const { source, anchor, lineText } = target;
   const isButton = source.hasAttribute("data-physics-button");
   const isExact = source.hasAttribute("data-physics-exact");
+  const isCircle = source.hasAttribute("data-physics-circle");
   const isCompact = source.hasAttribute("data-physics-compact");
   const chipPadPx = isCompact ? CHIP_COMPACT_PAD_PX : CHIP_PAD_PX;
   const computed = window.getComputedStyle(source);
@@ -269,6 +292,7 @@ function spawnChipElement(
     el.removeAttribute("data-physics-item");
     el.removeAttribute("data-physics-button");
     el.removeAttribute("data-physics-exact");
+    el.removeAttribute("data-physics-circle");
     el.className = [source.className, "fixed z-[6] m-0"].filter(Boolean).join(" ");
     el.style.left = "0";
     el.style.top = "0";
@@ -285,7 +309,7 @@ function spawnChipElement(
     el.style.visibility = "visible";
     el.setAttribute("aria-hidden", "true");
     layerEl.appendChild(el);
-    return { el, width, height, cx, cy };
+    return { el, width, height, cx, cy, circle: isCircle };
   }
 
   if (pureText) {
@@ -348,14 +372,14 @@ function spawnChipElement(
   cx = anchor.left + anchor.width / 2;
   cy = anchor.top + anchor.height / 2;
 
-  return { el, width, height, cx, cy };
+  return { el, width, height, cx, cy, circle: isCircle };
 }
 
 /** Rebuild Touche-moi from a pre-click snapshot (exact look + box). */
 function spawnPlaySnapshot(
   snapshot: PlaySnapshot,
   layerEl: HTMLElement,
-): { el: HTMLElement; width: number; height: number; cx: number; cy: number } {
+): ChipSpawn {
   const el = document.createElement("button");
   el.type = "button";
   el.textContent = snapshot.text;
@@ -385,24 +409,49 @@ function spawnPlaySnapshot(
   };
 }
 
-/** Shared body recipe — identical for every chip (no chamfer = no tunneling). */
+type ChipSpawn = {
+  el: HTMLElement;
+  width: number;
+  height: number;
+  cx: number;
+  cy: number;
+  /** Round Matter body aligned to the visual (avatar). */
+  circle?: boolean;
+};
+
+function bodyOptions(tuning: PhysicsTuning): Matter.IChamferableBodyDefinition {
+  return {
+    restitution: tuning.restitution,
+    friction: tuning.friction,
+    frictionStatic: 0.5,
+    frictionAir: tuning.frictionAir,
+    density: 0.004,
+    slop: 0.01,
+  };
+}
+
+/** Shared body recipe — rectangles for chips; padded circle for avatar hitbox. */
 function addFallingBody(
   Bodies: typeof Matter.Bodies,
   Body: typeof Matter.Body,
   World: typeof Matter.World,
   engine: Matter.Engine,
   pairs: PhysicsPair[],
-  chip: { el: HTMLElement; width: number; height: number; cx: number; cy: number },
+  chip: ChipSpawn,
+  tuning: PhysicsTuning,
 ) {
-  const { el, width, height, cx, cy } = chip;
-  const body = Bodies.rectangle(cx, cy, width, height, {
-    restitution: 0.22,
-    friction: 0.35,
-    frictionStatic: 0.5,
-    frictionAir: 0.012,
-    density: 0.004,
-    slop: 0.01,
-  });
+  const { el, width, height, cx, cy, circle } = chip;
+  const opts = bodyOptions(tuning);
+
+  let body: Matter.Body;
+  if (circle) {
+    // Inscribed circle + padding: matches the round face and enlarges the grab target.
+    const radius = Math.min(width, height) / 2 + CIRCLE_HIT_PADDING_PX;
+    body = Bodies.circle(cx, cy, radius, opts, CIRCLE_SIDES);
+  } else {
+    body = Bodies.rectangle(cx, cy, width, height, opts);
+  }
+
   // Mild random kick — same distribution for every body
   Body.setVelocity(body, {
     x: (Math.random() - 0.5) * 5,
@@ -410,7 +459,7 @@ function addFallingBody(
   });
   Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.06);
   World.add(engine.world, body);
-  pairs.push({ body, el, width, height });
+  pairs.push({ body, el, width, height, circle: Boolean(circle) });
 }
 
 function createWalls(vw: number, vh: number): Walls {
@@ -444,9 +493,13 @@ function replaceWalls(session: Session, vw: number, vh: number) {
 }
 
 function clampBodiesToViewport(pairs: PhysicsPair[], vw: number, vh: number) {
-  for (const { body, width, height } of pairs) {
-    const halfW = width / 2;
-    const halfH = height / 2;
+  for (const { body, width, height, circle } of pairs) {
+    const halfW = circle
+      ? Math.min(width, height) / 2 + CIRCLE_HIT_PADDING_PX
+      : width / 2;
+    const halfH = circle
+      ? Math.min(width, height) / 2 + CIRCLE_HIT_PADDING_PX
+      : height / 2;
     const minX = halfW;
     const maxX = Math.max(halfW, vw - halfW);
     const minY = halfH;
@@ -463,6 +516,75 @@ function clampBodiesToViewport(pairs: PhysicsPair[], vw: number, vh: number) {
   }
 }
 
+type TuningKey = keyof PhysicsTuning;
+
+const TUNING_SLIDERS: {
+  key: TuningKey;
+  labelKey:
+    | "gravityTuneGravity"
+    | "gravityTuneBounce"
+    | "gravityTuneFriction"
+    | "gravityTuneAir"
+    | "gravityTuneGrab";
+  min: number;
+  max: number;
+  step: number;
+}[] = [
+  {
+    key: "gravity",
+    labelKey: "gravityTuneGravity",
+    min: 0.2,
+    max: 2.8,
+    step: 0.05,
+  },
+  {
+    key: "restitution",
+    labelKey: "gravityTuneBounce",
+    min: 0,
+    max: 0.9,
+    step: 0.01,
+  },
+  {
+    key: "friction",
+    labelKey: "gravityTuneFriction",
+    min: 0,
+    max: 1,
+    step: 0.01,
+  },
+  {
+    key: "frictionAir",
+    labelKey: "gravityTuneAir",
+    min: 0,
+    max: 0.08,
+    step: 0.001,
+  },
+  {
+    key: "grabStiffness",
+    labelKey: "gravityTuneGrab",
+    min: 0.05,
+    max: 0.95,
+    step: 0.01,
+  },
+];
+
+function formatTuningValue(key: TuningKey, value: number): string {
+  if (key === "frictionAir") return value.toFixed(3);
+  if (key === "gravity" || key === "restitution" || key === "grabStiffness") {
+    return value.toFixed(2);
+  }
+  return value.toFixed(2);
+}
+
+function applyTuningToSession(session: Session, tuning: PhysicsTuning) {
+  session.engine.gravity.y = tuning.gravity;
+  for (const { body } of session.pairs) {
+    body.restitution = tuning.restitution;
+    body.friction = tuning.friction;
+    body.frictionAir = tuning.frictionAir;
+  }
+  session.mouseConstraint.constraint.stiffness = tuning.grabStiffness;
+}
+
 export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const t = useTranslations("home");
   const reducedMotion = usePrefersReducedMotion();
@@ -473,8 +595,11 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const playSnapshotRef = useRef<PlaySnapshot | null>(null);
   const sessionRef = useRef<Session | null>(null);
   const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tuningRef = useRef<PhysicsTuning>(DEFAULT_TUNING);
   const [active, setActive] = useState(false);
   const [impacts, setImpacts] = useState(0);
+  const [tuning, setTuning] = useState<PhysicsTuning>(DEFAULT_TUNING);
+  tuningRef.current = tuning;
 
   const teardown = useCallback(() => {
     if (startTimerRef.current !== null) {
@@ -485,6 +610,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     const session = sessionRef.current;
     if (!session) {
       setActive(false);
+      setTuning(DEFAULT_TUNING);
       return;
     }
 
@@ -501,6 +627,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     });
     sessionRef.current = null;
     setImpacts(0);
+    setTuning(DEFAULT_TUNING);
     setActive(false);
   }, []);
 
@@ -520,9 +647,10 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     const targets = collectSpawnTargets(sources);
     const { Engine, Bodies, World, Runner, Mouse, MouseConstraint, Body, Events } =
       Matter;
+    const tuningNow = tuningRef.current;
 
     const engine = Engine.create({
-      gravity: { x: 0, y: 1.35, scale: 0.001 },
+      gravity: { x: 0, y: tuningNow.gravity, scale: 0.001 },
     });
     engine.positionIterations = 12;
     engine.velocityIterations = 10;
@@ -540,8 +668,11 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
 
     const mouseEl = document.createElement("div");
     mouseEl.setAttribute("aria-hidden", "true");
-    // Below HUD (z-[100]) so Reset stays clickable
+    // Below HUD (z-[9]) so Reset + sliders stay clickable
     mouseEl.className = "fixed inset-0 z-[5]";
+    // Prevent scroll/zoom from stealing touches while dragging chips
+    mouseEl.style.touchAction = "none";
+    mouseEl.style.userSelect = "none";
     document.body.appendChild(mouseEl);
 
     const pairs: PhysicsPair[] = [];
@@ -555,6 +686,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
         engine,
         pairs,
         spawnPlaySnapshot(playSnapshot, layerEl),
+        tuningNow,
       );
     }
 
@@ -566,6 +698,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
         engine,
         pairs,
         spawnChipElement(target, layerEl),
+        tuningNow,
       );
       hiddenSources.add(target.source);
     }
@@ -575,11 +708,12 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     });
 
     const mouse = Mouse.create(mouseEl);
+    // CSS-pixel space matches getBoundingClientRect spawns
     mouse.pixelRatio = 1;
     const mouseConstraint = MouseConstraint.create(engine, {
       mouse,
       constraint: {
-        stiffness: 0.2,
+        stiffness: tuningNow.grabStiffness,
         damping: 0.05,
         render: { visible: false },
       },
@@ -691,6 +825,13 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("resize", onResize);
   }, [active]);
 
+  useEffect(() => {
+    if (!active) return;
+    const session = sessionRef.current;
+    if (!session) return;
+    applyTuningToSession(session, tuning);
+  }, [active, tuning]);
+
   if (reducedMotion) {
     return (
       <GravityActiveContext.Provider value={false}>
@@ -733,6 +874,49 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
               >
                 {t("gravityImpacts", { count: impacts })}
               </p>
+              <fieldset
+                className="pointer-events-auto mt-2 w-[min(100%,14rem)] rounded-xl border border-border/60 bg-background/80 px-3 py-2.5 shadow-sm backdrop-blur-sm"
+                aria-label={t("gravityTuneLabel")}
+              >
+                <legend className="px-1 text-[11px] font-medium tracking-wide text-muted-foreground">
+                  {t("gravityTuneLabel")}
+                </legend>
+                <div className="flex flex-col gap-2.5">
+                  {TUNING_SLIDERS.map(({ key, labelKey, min, max, step }) => {
+                    const id = `gravity-tune-${key}`;
+                    const value = tuning[key];
+                    return (
+                      <div key={key} className="flex flex-col gap-1">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <label
+                            htmlFor={id}
+                            className="text-[11px] text-muted-foreground"
+                          >
+                            {t(labelKey)}
+                          </label>
+                          <span className="text-[11px] tabular-nums text-foreground/70">
+                            {formatTuningValue(key, value)}
+                          </span>
+                        </div>
+                        <input
+                          id={id}
+                          type="range"
+                          min={min}
+                          max={max}
+                          step={step}
+                          value={value}
+                          aria-valuetext={formatTuningValue(key, value)}
+                          className="h-7 w-full cursor-pointer appearance-none bg-transparent accent-accent touch-manipulation [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-thumb]:-mt-1.5 [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent [&::-moz-range-track]:h-1 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-muted [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-accent"
+                          onChange={(event) => {
+                            const next = Number(event.target.value);
+                            setTuning((prev) => ({ ...prev, [key]: next }));
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </fieldset>
             </>
           ) : (
             <Button

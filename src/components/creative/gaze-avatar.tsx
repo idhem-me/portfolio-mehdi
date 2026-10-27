@@ -332,9 +332,11 @@ export function GazeAvatar() {
       style={{ colorScheme: "only light" }}
       data-physics-item
       data-physics-exact
+      data-physics-circle
       aria-hidden
       className={cn(
-        "relative inline-block size-36 shrink-0 select-none",
+        // size-36 visual + generous touch/pointer target (min 44px already; pad for grab)
+        "relative inline-flex size-36 shrink-0 select-none items-center justify-center",
         // Soft lift via --foreground: gris léger en light, proche du blanc en dark
         "drop-shadow-[0_2px_6px_color-mix(in_oklch,var(--foreground),transparent_88%)]",
         "dark:drop-shadow-[0_2px_8px_color-mix(in_oklch,var(--foreground),transparent_72%)]",

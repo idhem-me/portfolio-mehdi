@@ -27,7 +27,13 @@
     "productDesignerAtWorldline": "Worldline 产品设计师",
     "gravityPlay": "点我",
     "gravityReset": "重置",
-    "gravityImpacts": "{count} 次碰撞"
+    "gravityImpacts": "{count} 次碰撞",
+    "gravityTuneLabel": "物理",
+    "gravityTuneGravity": "重力",
+    "gravityTuneBounce": "弹性",
+    "gravityTuneFriction": "摩擦",
+    "gravityTuneAir": "空气",
+    "gravityTuneGrab": "抓取"
   },
   "contact": {
     "email": "邮箱",

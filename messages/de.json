@@ -27,7 +27,13 @@
     "productDesignerAtWorldline": "Product Designer bei Worldline",
     "gravityPlay": "Berühr mich",
     "gravityReset": "Reset",
-    "gravityImpacts": "{count, plural, =0 {0 Impacts} one {# Impact} other {# Impacts}}"
+    "gravityImpacts": "{count, plural, =0 {0 Impacts} one {# Impact} other {# Impacts}}",
+    "gravityTuneLabel": "Physik",
+    "gravityTuneGravity": "Schwerkraft",
+    "gravityTuneBounce": "Bounce",
+    "gravityTuneFriction": "Reibung",
+    "gravityTuneAir": "Luft",
+    "gravityTuneGrab": "Griff"
   },
   "contact": {
     "email": "E-Mail",

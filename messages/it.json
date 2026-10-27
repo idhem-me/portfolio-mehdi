@@ -27,7 +27,13 @@
     "productDesignerAtWorldline": "Product Designer presso Worldline",
     "gravityPlay": "Toccami",
     "gravityReset": "Reset",
-    "gravityImpacts": "{count, plural, =0 {0 impatti} one {# impatto} other {# impatti}}"
+    "gravityImpacts": "{count, plural, =0 {0 impatti} one {# impatto} other {# impatti}}",
+    "gravityTuneLabel": "Fisica",
+    "gravityTuneGravity": "Gravità",
+    "gravityTuneBounce": "Rimbalzo",
+    "gravityTuneFriction": "Attrito",
+    "gravityTuneAir": "Aria",
+    "gravityTuneGrab": "Presa"
   },
   "contact": {
     "email": "Email",
