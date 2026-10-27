@@ -5,7 +5,8 @@ import { createOpeningController } from "./opening";
 import { emptySave } from "../persistence/types";
 import { parseSave } from "../persistence/repository";
 test("quantity stays within available inventory", () => {
-  assert.equal(clampQuantity(20, 12), 12);
+  assert.equal(clampQuantity(20, 12), 10);
+  assert.equal(clampQuantity(100, 500), 10);
   assert.equal(clampQuantity(0, 12), 1);
   assert.equal(clampQuantity(NaN, 12), 1);
   assert.equal(clampQuantity(3.9, 12), 3);

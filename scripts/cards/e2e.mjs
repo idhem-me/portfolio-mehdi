@@ -41,13 +41,21 @@ try {
   assert.equal(result.profile.credits, 50000);
   result = await action("grant_credits", { id: "credits-50000" }, id);
   assert.equal(result.profile.credits, 50000);
-  result = await action("buy_boosters", { id: "boosters-500" });
-  assert.equal(result.profile.credits, 0);
-  assert.equal(result.profile.boosters_to_open, 500);
+  assert.equal(result.profile.free_boosters, 4);
   await action("buy_boosters", { id: "boosters-1" }, crypto.randomUUID(), 400);
-  result = await action("consume_booster", { setId: "horizons", quantity: 10 });
+  await action(
+    "consume_booster",
+    { setId: "horizons", quantity: 100 },
+    crypto.randomUUID(),
+    400,
+  );
+  result = await action("consume_booster", {
+    setId: "horizons",
+    quantity: 10,
+    maxGemCost: 600,
+  });
   assert.equal(result.profile.free_boosters, 0);
-  assert.equal(result.profile.boosters_to_open, 500);
+  assert.equal(result.profile.credits, 49400);
   assert.equal(result.save.activeOpen.cards.length, 50);
   for (let i = 0; i < 10; i++) {
     const cards = result.save.activeOpen.cards.slice(i * 5, i * 5 + 5);
@@ -110,13 +118,14 @@ try {
   assert.equal(metadata.height, 512);
   assert.equal(metadata.format, "webp");
   assert.equal(metadata.exif, undefined);
-  await action("grant_credits", { id: "credits-50000" });
+  await action("dismiss", { openId });
+  const creditsBefore = (await request({ action: "state" })).profile.credits;
   const competing = await Promise.all(
     [1, 2].map(() =>
       request(
         {
-          action: "buy_boosters",
-          payload: { id: "boosters-500" },
+          action: "consume_booster",
+          payload: { setId: "origins", quantity: 10, maxGemCost: 1000 },
           requestId: crypto.randomUUID(),
         },
         null,
@@ -128,8 +137,7 @@ try {
     [200, 400],
   );
   const afterRace = await request({ action: "state" });
-  assert.equal(afterRace.profile.boosters_to_open, 1000);
-  assert(afterRace.profile.credits >= 0);
+  assert.equal(afterRace.profile.credits, creditsBefore - 1000);
   const outsider = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY,
@@ -167,7 +175,7 @@ try {
     await admin.auth.admin.deleteUser(outsiderId);
   }
   console.log(
-    "OK: session invité, achats, idempotence, solde, 10 boosters ordonnés, récapitulatif, reprise, cosmétiques, thème et avatar privé WebP 512.",
+    "OK: session invité, gems, gratuits prioritaires, limite 10, achats, idempotence, solde, 10 boosters ordonnés, récapitulatif, reprise, cosmétiques, thème et avatar privé WebP 512.",
   );
 } finally {
   if (user) {

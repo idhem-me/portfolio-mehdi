@@ -19,7 +19,6 @@ export type CardsAccount = {
   legacyProcessed?: boolean;
   profile: {
     credits: number;
-    boosters_to_open: number;
     free_boosters: number;
     theme: "default" | "blue" | "red";
     equipped_avatar_frame: string | null;

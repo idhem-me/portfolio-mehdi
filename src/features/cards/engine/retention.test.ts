@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  BOOSTER_INTERVAL_MS as HOUR,
+  BOOSTER_INTERVAL_MS as INTERVAL,
+  BOOSTER_CAPACITY,
   initialBoosterBank,
   refillBoosters,
   nextBoosterIn,
@@ -26,31 +27,32 @@ function repository() {
   } as unknown as Storage);
 }
 
-test("hourly rewards preserve partial hours, cap at ten and discard overflow", () => {
+test("six-hour rewards preserve partial time, cap at four and discard overflow", () => {
   const start = 1_000;
-  const bank = { available: 2, updatedAt: start };
-  assert.deepEqual(refillBoosters(bank, start + HOUR - 1), bank);
-  assert.deepEqual(refillBoosters(bank, start + HOUR * 2 + 123), {
-    available: 4,
-    updatedAt: start + HOUR * 2,
+  const bank = { available: 1, updatedAt: start };
+  assert.deepEqual(refillBoosters(bank, start + INTERVAL - 1), bank);
+  assert.deepEqual(refillBoosters(bank, start + INTERVAL * 2 + 123), {
+    available: 3,
+    updatedAt: start + INTERVAL * 2,
   });
-  assert.equal(nextBoosterIn(bank, start + HOUR * 2 + 123), HOUR - 123);
-  const full = refillBoosters(bank, start + HOUR * 20);
-  assert.deepEqual(full, { available: 10, updatedAt: start + HOUR * 20 });
-  assert.equal(nextBoosterIn(full, start + HOUR * 20), null);
+  assert.equal(nextBoosterIn(bank, start + INTERVAL * 2 + 123), INTERVAL - 123);
+  const full = refillBoosters(bank, start + INTERVAL * 20);
+  assert.deepEqual(full, { available: 4, updatedAt: start + INTERVAL * 20 });
+  assert.equal(nextBoosterIn(full, start + INTERVAL * 20), null);
   assert.equal(
-    refillBoosters({ ...full, available: 9 }, start + HOUR * 20 + 1).available,
-    9,
+    refillBoosters({ ...full, available: 3 }, start + INTERVAL * 20 + 1)
+      .available,
+    3,
   );
   assert.deepEqual(refillBoosters(bank, start - 100), bank);
 });
 
-test("ten packs exhaust reserve, rejected start does not draw, one hour grants one", () => {
+test("four packs exhaust reserve, rejected start does not draw, six hours grants one", () => {
   const repo = repository();
   let now = Date.now();
   repo.save({ ...emptySave(), boosters: initialBoosterBank(now) });
   const controller = createOpeningController(repo, () => now);
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < BOOSTER_CAPACITY; i++) {
     const open = controller.startOpen();
     assert.ok(open);
     const remaining = controller.getSave().boosters.available;
@@ -70,7 +72,7 @@ test("ten packs exhaust reserve, rejected start does not draw, one hour grants o
   );
   assert.equal(draws, 0);
   assert.equal(controller.startOpen(undefined, true), null); // no bypass outside local dev
-  now = controller.getSave().boosters.updatedAt + HOUR;
+  now = controller.getSave().boosters.updatedAt + INTERVAL;
   assert.ok(controller.startOpen());
   assert.equal(controller.getSave().boosters.available, 0);
   const resumed = createOpeningController(repo, () => now);
@@ -85,7 +87,7 @@ test("simulations neither spend boosters nor credit Shiny copies", () => {
   controller.startSimulation({ forceShiny: true, forceKind: "standard" });
   assert.ok(controller.getSave().activeOpen!.cards.every((card) => card.shiny));
   controller.revealAll();
-  assert.equal(controller.getSave().boosters.available, 10);
+  assert.equal(controller.getSave().boosters.available, 4);
   assert.deepEqual(controller.getSave().collection, {});
   assert.equal(canBypassBoosterLimit(), false);
 });
@@ -144,7 +146,7 @@ test("Shiny copies credit once, survive storage/reload, and old saves migrate sa
       "card-001": { qty: 3, firstAcquiredAt: 1, lastAcquiredAt: 1 },
     },
   });
-  assert.equal(old.boosters.available, 10);
+  assert.equal(old.boosters.available, 4);
   assert.equal(old.collection["card-001"]!.shinyQty, 0);
   const before = JSON.stringify(repo.load().activeOpen!.cards);
   createOpeningController(repo).complete();
@@ -156,9 +158,9 @@ test("resetting the collection does not refill the booster reserve", () => {
   const controller = createOpeningController(repo);
   controller.startOpen();
   controller.revealAll();
-  assert.equal(controller.getSave().boosters.available, 9);
+  assert.equal(controller.getSave().boosters.available, 3);
   controller.resetLocal();
   assert.deepEqual(controller.getSave().collection, {});
-  assert.equal(controller.getSave().boosters.available, 9);
-  assert.equal(createOpeningController(repo).getSave().boosters.available, 9);
+  assert.equal(controller.getSave().boosters.available, 3);
+  assert.equal(createOpeningController(repo).getSave().boosters.available, 3);
 });

@@ -63,7 +63,7 @@ export function SaveChoiceDialog() {
                     </h3>
                     <p className="text-sm">
                       {formatCredits(preview.cards)} cartes ·{" "}
-                      {formatCredits(preview.credits)} crédits
+                      {formatCredits(preview.credits)} gems
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(preview.lastPlayedAt).toLocaleString("fr-FR", {

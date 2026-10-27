@@ -99,11 +99,24 @@ export function createAccountController(
     dismissSummary: () => perform("dismiss", {}, () => engine.dismissSummary()),
     resetLocal: () => perform("reset", {}, () => engine.resetLocal()),
   };
-  const start = async (setId: string, quantity: number) => {
+  const start = async (setId: string, quantity: number, maxGemCost: number) => {
     await queue;
-    const result = await cardsRequest("consume_booster", { setId, quantity });
-    engine.replaceSave(result.save);
-    notify();
+    try {
+      const result = await cardsRequest("consume_booster", {
+        setId,
+        quantity,
+        maxGemCost,
+      });
+      engine.replaceSave(result.save);
+      notify();
+    } catch (error) {
+      try {
+        const fresh = await cardsRequest();
+        engine.replaceSave(fresh.save);
+        notify();
+      } catch {}
+      throw error;
+    }
   };
   return { controller, start };
 }

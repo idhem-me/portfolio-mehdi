@@ -1,12 +1,18 @@
 "use client";
-import { clampQuantity } from "../../engine/quantity";
+import { clampQuantity, MAX_OPENING_BOOSTERS } from "../../engine/quantity";
+import {
+  affordableBoosters,
+  openingCost,
+  boosterCountdown,
+} from "../../engine/economy";
+import { formatCredits } from "../../shop/catalog";
 import { QuantityPicker } from "./quantity-picker";
 import { useScopedTheme } from "@/components/ui/scoped-theme";
 import { Link } from "@/i18n/navigation";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { X, PlayingCardsFan, Info } from "lucide-react";
+import { X, PlayingCardsFan, Info, Gem } from "lucide-react";
 import { Popover } from "radix-ui";
 import {
   Dialog,
@@ -44,9 +50,12 @@ const ignoreWrapperExit = () => {};
 
 type Props = {
   controller: OpeningController;
-  onStart: (setId: CardSetId, quantity: number) => Promise<void>;
+  onStart: (
+    setId: CardSetId,
+    quantity: number,
+    maxGemCost: number,
+  ) => Promise<void>;
   credits: number;
-  purchasedBoosters: number;
   ready: boolean;
   settings: CardsSettings;
   audio: React.MutableRefObject<CardsAudio | null>;
@@ -60,7 +69,6 @@ export function OpeningScene({
   controller,
   onStart,
   credits,
-  purchasedBoosters,
   ready,
   settings,
   audio,
@@ -127,10 +135,21 @@ export function OpeningScene({
     }
   };
 
+  const [summaryLimit, setSummaryLimit] = useState(50);
   const [startError, setStartError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const start = async (quantity: number) => {
     if (starting.current || !ready) return;
+    if (
+      !Number.isInteger(quantity) ||
+      quantity < 1 ||
+      quantity > MAX_OPENING_BOOSTERS
+    ) {
+      setStartError(
+        `Ouvre au maximum ${MAX_OPENING_BOOSTERS} boosters à la fois.`,
+      );
+      return;
+    }
     starting.current = true;
     setLoading(true);
     setStartError(null);
@@ -143,7 +162,13 @@ export function OpeningScene({
           setId: selectedSet,
           batchSize: quantity > 1 ? quantity : undefined,
         });
-      else await onStart(selectedSet, quantity);
+      else
+        await onStart(
+          selectedSet,
+          quantity,
+          openingCost(quantity, refillBoosters(save.boosters, clock).available)
+            .gems,
+        );
       refresh();
     } catch (error) {
       setStartError(
@@ -158,7 +183,10 @@ export function OpeningScene({
     void start(
       clampQuantity(
         quantity,
-        refillBoosters(save.boosters, clock).available + purchasedBoosters,
+        affordableBoosters(
+          refillBoosters(save.boosters, clock).available,
+          credits,
+        ),
       ),
     );
   };
@@ -203,7 +231,13 @@ export function OpeningScene({
   };
 
   useEffect(() => {
-    if (open?.phase !== "wrapperExit" || !open.batchKinds || reduced) return;
+    if (
+      open?.phase !== "wrapperExit" ||
+      !open.batchKinds ||
+      open.batchKinds.length > MAX_OPENING_BOOSTERS ||
+      reduced
+    )
+      return;
     const staggerMs = Math.min(
       wrapperExitTiming.staggerMs,
       2500 / Math.max(1, open.batchKinds.length - 1),
@@ -238,98 +272,82 @@ export function OpeningScene({
   };
 
   const bank = refillBoosters(save.boosters, clock);
-  const available = bank.available + purchasedBoosters;
-  const wait = nextBoosterIn(bank, clock);
-  const seconds = Math.ceil((wait ?? 0) / 1000);
-  const countdown = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
-  const chosenQuantity = clampQuantity(quantity, available);
   const unlimited = devUnlimited && canBypassBoosterLimit();
+  const available = unlimited
+    ? MAX_OPENING_BOOSTERS
+    : affordableBoosters(bank.available, credits);
+  const wait = nextBoosterIn(bank, clock);
+  const countdown = boosterCountdown(wait ?? 0);
+  const chosenQuantity = clampQuantity(quantity, available);
+  const cost = openingCost(chosenQuantity, bank.available);
   const boosterStatus = (
     <div className="cards-booster-reserve">
       <div className="cards-reserve-start">
         <p
           className="cards-reserve-quantity"
-          aria-label={`${purchasedBoosters} boosters achetés`}
+          aria-label={`${bank.available} boosters gratuits sur ${BOOSTER_CAPACITY}`}
         >
           <PlayingCardsFan aria-hidden="true" />
-          <span>{purchasedBoosters}</span>
-          <span className="cards-reserve-label">achetés</span>
-        </p>
-        <Button variant="primary" size="sm" asChild>
-          <Link
-            href={
-              credits >= 100
-                ? "/boutique?tab=boosters"
-                : "/boutique?tab=credits"
-            }
-          >
-            Obtenir des boosters
-          </Link>
-        </Button>
-      </div>
-      <div className="cards-reserve-free">
-        <p
-          className="cards-reserve-quantity"
-          aria-label={`${bank.available} boosters gratuits`}
-        >
-          <PlayingCardsFan aria-hidden="true" />
-          <span>{bank.available}</span>
+          <span>
+            {bank.available} / {BOOSTER_CAPACITY}
+          </span>
           <span className="cards-reserve-label">gratuits</span>
         </p>
-        <div className="cards-reserve-recharge">
-          <Popover.Root>
-            <Popover.Trigger asChild>
-              <Button
-                variant="secondary"
-                size="icon-sm"
-                aria-label="Informations sur les boosters"
-              >
-                <Info aria-hidden="true" />
-              </Button>
-            </Popover.Trigger>
-            <Popover.Portal>
-              <Popover.Content
-                data-cards-theme={scopedTheme}
-                side="bottom"
-                align="end"
-                sideOffset={8}
-                className="z-50 w-64 rounded-lg border border-border bg-popover p-4 text-sm text-popover-foreground shadow-md outline-none"
-              >
-                <p className="font-medium">Ta réserve de boosters</p>
-                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                  Tu reçois 1 booster par heure, même hors ligne, jusqu’à{" "}
-                  {BOOSTER_CAPACITY} boosters maximum. La recharge reprend dès
-                  qu’une place se libère.
-                </p>
-              </Popover.Content>
-            </Popover.Portal>
-          </Popover.Root>
-          <div className="cards-reserve-timer-stack">
-            <div
-              className="cards-recharge-meter"
-              role="progressbar"
-              aria-label="Recharge du prochain booster"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(
-                wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100,
-              )}
-              aria-valuetext={
-                wait === null
-                  ? "Réserve pleine"
-                  : `Prochain booster dans ${countdown}`
-              }
+      </div>
+      <div className="cards-reserve-recharge">
+        <Popover.Root>
+          <Popover.Trigger asChild>
+            <Button
+              variant="secondary"
+              size="icon-sm"
+              aria-label="Informations sur les boosters"
             >
-              <span
-                style={{
-                  width: `${wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100}%`,
-                }}
-              />
-            </div>
-            <span className="cards-reserve-countdown">
-              {wait === null ? "Réserve pleine" : `+1 dans ${countdown}`}
-            </span>
+              <Info aria-hidden="true" />
+            </Button>
+          </Popover.Trigger>
+          <Popover.Portal>
+            <Popover.Content
+              data-cards-theme={scopedTheme}
+              side="bottom"
+              align="end"
+              sideOffset={8}
+              className="z-50 w-64 rounded-lg border border-border bg-popover p-4 text-sm text-popover-foreground shadow-md outline-none"
+            >
+              <p className="font-medium">Ta réserve de boosters</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                Tu reçois 1 booster toutes les 6 heures, même hors ligne,
+                jusqu’à {BOOSTER_CAPACITY} boosters maximum. La recharge reprend
+                dès qu’une place se libère. Les gratuits sont utilisés en
+                priorité ; chaque booster supplémentaire coûte 100 gems.
+              </p>
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
+        <div className="cards-reserve-timer-stack">
+          <div
+            className="cards-recharge-meter"
+            role="progressbar"
+            aria-label="Recharge du prochain booster"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(
+              wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100,
+            )}
+            aria-valuetext={
+              wait === null
+                ? "Réserve pleine"
+                : `Prochain booster dans ${countdown}`
+            }
+          >
+            <span
+              style={{
+                width: `${wait === null ? 100 : (1 - wait / BOOSTER_INTERVAL_MS) * 100}%`,
+              }}
+            />
           </div>
+          <span className="cards-reserve-countdown">
+            {wait === null ? "Réserve pleine" : `+1 dans ${countdown}`}
+          </span>
         </div>
       </div>
     </div>
@@ -356,23 +374,57 @@ export function OpeningScene({
           )}
           <QuantityPicker
             value={chosenQuantity}
-            max={available}
+            max={Math.min(MAX_OPENING_BOOSTERS, available)}
             onChange={setQuantity}
             disabled={loading || !ready}
           />
-          <Button
-            variant="accent"
-            size="lg"
-            className="cards-primary-cta min-h-11 w-full max-w-sm"
-            onClick={() => void start(chosenQuantity)}
-            disabled={loading || !ready || (available === 0 && !unlimited)}
-          >
-            {loading
-              ? "Préparation…"
-              : chosenQuantity === 0
-                ? "Aucun booster disponible"
-                : `Ouvrir ${chosenQuantity === 1 ? "un booster" : `${chosenQuantity} boosters`}`}
-          </Button>
+          {unlimited ? (
+            <p className="cards-opening-price text-sm text-muted-foreground">
+              Simulation
+            </p>
+          ) : (
+            chosenQuantity > 0 && (
+              <p
+                className="cards-opening-price text-sm text-muted-foreground"
+                aria-live="polite"
+              >
+                {cost.freeUsed > 0
+                  ? `${cost.freeUsed} gratuit${cost.freeUsed > 1 ? "s" : ""}`
+                  : null}
+                {cost.freeUsed > 0 && cost.gems > 0 ? " + " : null}
+                {cost.gems > 0 ? (
+                  <>
+                    <Gem aria-hidden="true" size={14} />
+                    {formatCredits(cost.gems)} gems
+                  </>
+                ) : null}
+              </p>
+            )
+          )}
+          {ready && available === 0 ? (
+            <Button
+              variant="accent"
+              size="lg"
+              asChild
+              className="cards-primary-cta min-h-11 w-full max-w-sm"
+            >
+              <Link href="/boutique?tab=credits">Obtenir des gems</Link>
+            </Button>
+          ) : (
+            <Button
+              variant="accent"
+              size="lg"
+              className="cards-primary-cta min-h-11 w-full max-w-sm"
+              onClick={() => void start(chosenQuantity)}
+              disabled={loading || !ready || (available === 0 && !unlimited)}
+            >
+              {loading
+                ? "Préparation…"
+                : chosenQuantity === 0
+                  ? "Aucun booster disponible"
+                  : `Ouvrir ${chosenQuantity === 1 ? "un booster" : `${chosenQuantity} boosters`}`}
+            </Button>
+          )}
         </div>
         {process.env.NODE_ENV === "development" && (
           <DevPreviewPanel
@@ -397,6 +449,32 @@ export function OpeningScene({
     );
   }
 
+  if (
+    (open.batchKinds?.length ?? 1) > MAX_OPENING_BOOSTERS &&
+    ["cutting", "wrapperExit", "cameraZoom"].includes(open.phase)
+  ) {
+    return (
+      <div className="cards-opening space-y-4 py-8">
+        <h2 className="text-lg font-medium">Ton ouverture est sauvegardée</h2>
+        <p className="text-sm text-muted-foreground">
+          Ce grand lot dépasse la nouvelle limite d’animation. Tu peux découvrir
+          ses cartes ou accéder directement au récapitulatif.
+        </p>
+        <Button
+          onClick={() => {
+            controller.setPhase("revealing");
+            refresh();
+          }}
+        >
+          Découvrir les cartes
+        </Button>
+        <Button variant="secondary" onClick={finishOpening}>
+          Voir le récapitulatif
+        </Button>
+      </div>
+    );
+  }
+
   // —— Summary ——
   if (open.phase === "summary") {
     return (
@@ -408,45 +486,56 @@ export function OpeningScene({
         )}
         <h2 className="text-lg font-medium">Récapitulatif</h2>
         <ul className="cards-grid cards-summary-list">
-          {(open.batchCards ?? open.cards).map((drawn, index) => {
-            const card = getCard(drawn.cardId)!;
-            const summaryCards = open.batchCards ?? open.cards;
-            const before = open.batchCards
-              ? Math.max(
-                  0,
-                  (collection[drawn.cardId]?.qty ?? 0) -
-                    summaryCards.filter((card) => card.cardId === drawn.cardId)
-                      .length,
-                )
-              : qtyBefore(drawn.cardId, open);
-            const isNew =
-              before === 0 &&
-              !open.simulation &&
-              summaryCards.findIndex((c) => c.cardId === drawn.cardId) ===
-                index;
-            const ownedNow = open.simulation
-              ? before
-              : (collection[drawn.cardId]?.qty ?? before + 1);
-            return (
-              <li
-                key={`${open.openId}-sum-${index}`}
-                className="cards-summary-item"
-              >
-                <CardFace
-                  card={card}
-                  compact
-                  shiny={drawn.shiny}
-                  qty={ownedNow}
-                />
-                {isNew && (
-                  <Badge variant="default" className="cards-summary-new">
-                    Nouveau
-                  </Badge>
-                )}
-              </li>
-            );
-          })}
+          {(open.batchCards ?? open.cards)
+            .slice(0, summaryLimit)
+            .map((drawn, index) => {
+              const card = getCard(drawn.cardId)!;
+              const summaryCards = open.batchCards ?? open.cards;
+              const before = open.batchCards
+                ? Math.max(
+                    0,
+                    (collection[drawn.cardId]?.qty ?? 0) -
+                      summaryCards.filter(
+                        (card) => card.cardId === drawn.cardId,
+                      ).length,
+                  )
+                : qtyBefore(drawn.cardId, open);
+              const isNew =
+                before === 0 &&
+                !open.simulation &&
+                summaryCards.findIndex((c) => c.cardId === drawn.cardId) ===
+                  index;
+              const ownedNow = open.simulation
+                ? before
+                : (collection[drawn.cardId]?.qty ?? before + 1);
+              return (
+                <li
+                  key={`${open.openId}-sum-${index}`}
+                  className="cards-summary-item"
+                >
+                  <CardFace
+                    card={card}
+                    compact
+                    shiny={drawn.shiny}
+                    qty={ownedNow}
+                  />
+                  {isNew && (
+                    <Badge variant="default" className="cards-summary-new">
+                      Nouveau
+                    </Badge>
+                  )}
+                </li>
+              );
+            })}
         </ul>
+        {(open.batchCards ?? open.cards).length > summaryLimit && (
+          <Button
+            variant="secondary"
+            onClick={() => setSummaryLimit((n) => n + 50)}
+          >
+            Afficher les 50 cartes suivantes
+          </Button>
+        )}
         <div className="cards-summary-actions">
           <Button
             variant="secondary"

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useIdentityState } from "@/features/account/client-store";
 import type { OpeningController } from "../engine/opening";
+import { BOOSTER_CAPACITY } from "../engine/boosters";
 import { emptySave, type CardsSave } from "./types";
 import { parseSave } from "./repository";
 
@@ -46,7 +47,9 @@ export function progressSignature(save: CardsSave): string {
       boosters: {
         ...clean.boosters,
         updatedAt:
-          clean.boosters.available === 10 ? 0 : clean.boosters.updatedAt,
+          clean.boosters.available === BOOSTER_CAPACITY
+            ? 0
+            : clean.boosters.updatedAt,
       },
     }),
   );

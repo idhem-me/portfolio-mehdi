@@ -1,4 +1,5 @@
 "use client";
+import { MAX_OPENING_BOOSTERS } from "../../engine/quantity";
 import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,8 @@ export function QuantityPicker({
           <SheetHeader>
             <SheetTitle>Combien de boosters ?</SheetTitle>
             <SheetDescription>
-              {max} disponibles, gratuits et achetés confondus.
+              Limite : {MAX_OPENING_BOOSTERS} par ouverture. Tes gratuits et tes
+              gems permettent d’en ouvrir {max}.
             </SheetDescription>
           </SheetHeader>
           <form

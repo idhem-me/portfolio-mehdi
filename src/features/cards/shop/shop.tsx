@@ -22,7 +22,6 @@ import {
   loadCardsAccount,
 } from "../account/client";
 import {
-  BOOSTER_PACKS,
   CREDIT_PACKS,
   COSMETICS,
   SHOP_TABS,
@@ -67,23 +66,16 @@ export function Shop() {
     tab === "credits"
       ? CREDIT_PACKS.map((p) => ({
           id: p.id,
-          title: `${formatCredits(p.amount)} crédits`,
+          title: `${formatCredits(p.amount)} gems`,
           price: 0,
           action: "grant_credits",
         }))
-      : tab === "boosters"
-        ? BOOSTER_PACKS.map((p) => ({
-            id: p.id,
-            title: `${p.amount} booster${p.amount > 1 ? "s" : ""}`,
-            price: p.price,
-            action: "buy_boosters",
-          }))
-        : COSMETICS.map((p) => ({
-            id: p.id,
-            title: p.name,
-            price: p.price,
-            action: "buy_cosmetic",
-          }));
+      : COSMETICS.map((p) => ({
+          id: p.id,
+          title: p.name,
+          price: p.price,
+          action: "buy_cosmetic",
+        }));
   return (
     <div className="cards-shop-content">
       <div className="space-y-6">
@@ -156,7 +148,7 @@ export function Shop() {
                             ? "Possédé"
                             : item.price === 0
                               ? "Gratuit"
-                              : `${formatCredits(item.price)} crédits`}
+                              : `${formatCredits(item.price)} gems`}
                         </p>
                         {owned ? (
                           <Button
@@ -181,12 +173,12 @@ export function Shop() {
                         {!owned && insufficient && (
                           <p className="text-sm text-muted-foreground">
                             Il vous manque {formatCredits(item.price - balance)}{" "}
-                            crédits.{" "}
+                            gems.{" "}
                             <Link
                               className="underline"
                               href="/boutique?tab=credits"
                             >
-                              Obtenir des crédits
+                              Obtenir des gems
                             </Link>
                           </p>
                         )}
@@ -210,13 +202,13 @@ export function Shop() {
             <DialogTitle>
               Acheter {purchase?.title}
               {purchase?.price
-                ? ` pour ${formatCredits(purchase.price)} crédits`
+                ? ` pour ${formatCredits(purchase.price)} gems`
                 : ""}{" "}
               ?
             </DialogTitle>
             <DialogDescription>
               {purchase?.price
-                ? "Les crédits seront déduits de ton solde."
+                ? "Les gems seront déduits de ton solde."
                 : "Ce pack est gratuit. Aucun paiement n’est nécessaire."}
             </DialogDescription>
           </DialogHeader>

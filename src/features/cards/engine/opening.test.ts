@@ -4,6 +4,9 @@ import { createSeededRng } from "@/lib/games/rng";
 import { createLocalCardsRepository } from "../persistence/repository";
 import { normalizeActiveOpenPhase } from "../persistence/types";
 import { validateCloudSave } from "../server/validation";
+import type { DrawOptions } from "./draw";
+import type { OpeningController } from "./opening";
+import type { ActiveOpen } from "../persistence/types";
 import { drawPack } from "./draw";
 import { createOpeningController } from "./opening";
 
@@ -19,6 +22,29 @@ function memoryRepo() {
     },
   } as Storage;
   return { repo: createLocalCardsRepository(storage), mem };
+}
+
+/** Canonical server fixture: payment is covered by RPC integration tests. */
+function serverBatch(controller: OpeningController, options: DrawOptions) {
+  const packs = Array.from({ length: 10 }, () => drawPack(options));
+  const open: ActiveOpen = {
+    openId: "server-batch",
+    kind: packs[0].kind,
+    cards: packs.flatMap((p) => p.cards),
+    batchKinds: packs.map((p) => p.kind),
+    phase: "cutting",
+    revealed: Array(50).fill(false),
+    currentIndex: 0,
+    createdAt: Date.now(),
+    finalized: false,
+  };
+  const save = controller.getSave();
+  controller.replaceSave({
+    ...save,
+    boosters: { ...save.boosters, available: 0 },
+    activeOpen: open,
+  });
+  return open;
 }
 
 test("resume does not redraw pack", () => {
@@ -189,7 +215,7 @@ test("an interrupted legacy summary credits on load once", () => {
 test("ten boosters persist ordered draws, resume at any card, and credit once after card 50", () => {
   const { repo } = memoryRepo();
   const controller = createOpeningController(repo);
-  const result = controller.openTen({
+  const result = serverBatch(controller, {
     setId: "horizons",
     rng: createSeededRng(42),
   })!;
@@ -243,7 +269,7 @@ test("ten boosters persist ordered draws, resume at any card, and credit once af
 test("gold batch preserves ten gold packs and credits 50 legendary cards", () => {
   const { repo } = memoryRepo();
   const controller = createOpeningController(repo);
-  const batch = controller.openTen({ rng: () => 0 })!;
+  const batch = serverBatch(controller, { rng: () => 0 })!;
   assert.ok(batch.cards.every((card) => card.rarity === "legendary"));
   controller.revealAll();
   assert.equal(controller.getSave().stats.boostersOpened, 10);
@@ -256,13 +282,13 @@ test("ten boosters cannot replace an unfinished single opening", () => {
   const controller = createOpeningController(repo);
   controller.startOpen({ rng: createSeededRng(7) });
   assert.equal(controller.openTen(), null);
-  assert.equal(controller.getSave().boosters.available, 9);
+  assert.equal(controller.getSave().boosters.available, 3);
 });
 
 test("batch progress round-trips through cloud validation and simulation never spends or credits", () => {
   const { repo } = memoryRepo();
   const controller = createOpeningController(repo);
-  const batch = controller.openTen({ rng: createSeededRng(84) })!;
+  const batch = serverBatch(controller, { rng: createSeededRng(84) })!;
   const validated = validateCloudSave(controller.getSave());
   assert.equal(validated.activeOpen?.cards.length, 50);
   assert.equal(validated.activeOpen?.batchKinds?.length, 10);
@@ -280,7 +306,7 @@ test("batch progress round-trips through cloud validation and simulation never s
   });
   assert.equal(simulation.getSave().activeOpen?.cards.length, 50);
   simulation.revealAll();
-  assert.equal(simulation.getSave().boosters.available, 10);
+  assert.equal(simulation.getSave().boosters.available, 4);
   assert.equal(simulation.getSave().stats.boostersOpened, 0);
   assert.deepEqual(simulation.getSave().collection, {});
 });
@@ -294,7 +320,7 @@ for (const phase of [
   test(`leaving a ten-pack opening during ${phase} credits all cards once and shows summary`, () => {
     const { repo } = memoryRepo();
     const controller = createOpeningController(repo);
-    const drawn = controller.openTen({ rng: createSeededRng(44) })!.cards;
+    const drawn = serverBatch(controller, { rng: createSeededRng(44) })!.cards;
     controller.setPhase(phase);
     controller.revealAll();
     const save = controller.getSave();

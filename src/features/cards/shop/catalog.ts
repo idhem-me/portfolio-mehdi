@@ -3,11 +3,6 @@ export const CREDIT_PACKS = [100, 500, 1000, 10000, 50000].map((amount) => ({
   id: `credits-${amount}`,
   amount,
 }));
-export const BOOSTER_PACKS = [1, 5, 10, 100, 500].map((amount) => ({
-  id: `boosters-${amount}`,
-  amount,
-  price: amount * 100,
-}));
 export const COSMETICS = [
   {
     id: "custom-avatar",
@@ -42,10 +37,9 @@ export const COSMETICS = [
 export type CosmeticId = (typeof COSMETICS)[number]["id"];
 export const formatCredits = (value: number) =>
   new Intl.NumberFormat("fr-FR").format(value);
-export type ShopTab = "credits" | "boosters" | "cosmetiques" | "abonnements";
+export type ShopTab = "credits" | "cosmetiques" | "abonnements";
 export const SHOP_TABS: { id: ShopTab; label: string }[] = [
-  { id: "credits", label: "Crédits" },
-  { id: "boosters", label: "Boosters" },
+  { id: "credits", label: "Gems" },
   { id: "cosmetiques", label: "Cosmétiques" },
   { id: "abonnements", label: "Abonnements" },
 ];

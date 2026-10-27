@@ -27,9 +27,9 @@ export function ResetCollection({
           <div className="space-y-4">
             <DialogTitle>Réinitialiser ?</DialogTitle>
             <DialogDescription>
-              Efface la collection et les statistiques de Cartes dans ta sauvegarde.
-              Tes crédits, boosters, cosmétiques et réglages sont conservés.
-              Cette action est définitive.
+              Efface la collection et les statistiques de Cartes dans ta
+              sauvegarde. Tes gems, boosters, cosmétiques et réglages sont
+              conservés. Cette action est définitive.
             </DialogDescription>
             <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
               <Button variant="outline" onClick={() => setConfirmReset(false)}>

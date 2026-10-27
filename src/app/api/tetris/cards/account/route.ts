@@ -6,7 +6,12 @@ import { resolveCardsChoice } from "@/features/cards/server/save-choice";
 import { accountGate } from "@/features/account/server/http";
 
 const messages: Record<string, string> = {
-  INSUFFICIENT_CREDITS: "Crédits insuffisants.",
+  INVALID_PRICE_QUOTE: "Le coût de l’ouverture est invalide. Recharge le jeu.",
+  PRICE_CHANGED: "La réserve gratuite a changé. Vérifie le coût puis réessaie.",
+  BOOSTER_SHOP_RETIRED:
+    "Les boosters s’ouvrent maintenant directement avec des gratuits ou des gems.",
+  OPENING_LIMIT: "Tu peux ouvrir de 1 à 10 boosters à la fois.",
+  INSUFFICIENT_CREDITS: "Gems insuffisantes.",
   INSUFFICIENT_BOOSTERS: "Pas assez de boosters disponibles.",
   ALREADY_OWNED: "Ce cosmétique est déjà possédé.",
   NOT_OWNED: "Achète ce cosmétique avant de l’équiper.",
@@ -16,7 +21,6 @@ const messages: Record<string, string> = {
 };
 const actions = new Set([
   "grant_credits",
-  "buy_boosters",
   "buy_cosmetic",
   "consume_booster",
   "phase",

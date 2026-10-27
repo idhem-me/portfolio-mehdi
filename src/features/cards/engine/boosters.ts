@@ -1,6 +1,6 @@
-/** Local prototype economy: one free booster per elapsed hour, up to ten. */
-export const BOOSTER_CAPACITY = 10;
-export const BOOSTER_INTERVAL_MS = 60 * 60 * 1000;
+/** One free booster per six elapsed hours, capped at four. */
+export const BOOSTER_CAPACITY = 4;
+export const BOOSTER_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export type BoosterBank = { available: number; updatedAt: number };
 export function initialBoosterBank(now = Date.now()): BoosterBank {
   return { available: BOOSTER_CAPACITY, updatedAt: now };

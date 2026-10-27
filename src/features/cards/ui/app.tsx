@@ -150,7 +150,7 @@ export default function CardsApp({
               <Button
                 variant="ghost"
                 asChild
-                aria-label={`Crédits : ${formatCredits(account.data?.profile.credits ?? 0)} – ouvrir la boutique`}
+                aria-label={`Gems : ${formatCredits(account.data?.profile.credits ?? 0)} – ouvrir la boutique`}
               >
                 <Link href="/boutique?tab=credits">
                   <Gem aria-hidden="true" />
@@ -196,7 +196,6 @@ export default function CardsApp({
                 controller={controller}
                 onStart={session.start}
                 credits={account.data?.profile.credits ?? 0}
-                purchasedBoosters={account.data?.profile.boosters_to_open ?? 0}
                 ready={!!account.data}
                 settings={settings}
                 audio={audio}

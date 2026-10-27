@@ -70,3 +70,18 @@ Les avertissements Supabase sur les tables privées sans policy sont intentionne
 - Profil : Probabilités après les exemplaires par rareté ; résumé des personnalisations actives seulement, réglage des achats possédés dans un panneau dédié et lien vers les cosmétiques. Aucun produit verrouillé dans ce panneau.
 - Palette des cartes indépendante du thème UI, y compris dans les fenêtres de détail. Grilles et largeur desktop élargies ; seuil mobile confirmé dans `globals.css` : moins de 768 px.
 - Vérifications : typecheck, lint sans erreur et build ; tests moteur/validation/catalogue ; transaction SQL annulée vérifiant quantité 12 (60 cartes), refus de 0 et de 16 pour un stock de 15, débit idempotent et récapitulatif. Dans le navigateur : boutique et header commun, profil allégé, quantité 7 et refus de dépassement.
+
+## Sécurité des gros lots
+- Nouvelles ouvertures limitées à 10 boosters dans le sélecteur et dans la RPC. Un dépassement est refusé avant tirage et débit.
+- Les grands tirages déjà enregistrés restent accessibles par un écran de reprise : découverte des cartes ou récapitulatif, sans monter toute la pile en animation. Récapitulatif affiché par tranches de 50 cartes.
+- Migration appliquée : `20261027201222_cards_opening_safety_limit.sql`. Transaction SQL annulée : ouverture de 100 refusée sans modifier les inventaires ; ouverture de 10 conservée.
+- Décision finale : réserve de 4 gratuits maximum, rechargée de 1 toutes les 6 heures ; les ouvertures supplémentaires sont payées en gems.
+
+## Économie finale — gems et recharge continue
+- Réserve de 4 gratuits maximum, remplie au départ, puis +1 toutes les 6 heures écoulées. La recharge s’arrête au plafond ; aucune recharge horaire ni remise à zéro à minuit.
+- Chaque ouverture utilise d’abord les gratuits, puis 100 gems par booster restant. Quantité bornée au budget disponible et à 10 par ouverture. Le coût est affiché avant le CTA et envoyé comme plafond de dépense ; un changement de réserve ne peut pas entraîner un coût supérieur à celui affiché.
+- Le header affiche les gems ; l’écran d’ouverture n’affiche qu’une réserve gratuite avec sa jauge et un chrono HH:MM:SS. La boutique ne contient plus l’onglet Boosters. L’ancien achat est refusé côté serveur également.
+- Migration `20261027201930_cards_gem_openings.sql` appliquée : conversion des stocks achetés à 100 gems par booster, compensation de l’excédent gratuit au-delà de 4, journal privé de conversion, nouveau plafond et nouveau rythme. Les cartes et ouvertures déjà tirées sont conservées.
+- Migration `20261027203151_cards_confirm_opening_cost.sql` appliquée : une ancienne version du client ne peut pas déclencher une dépense en gems sans coût annoncé. Le client actualise l’état après un refus de prix ou de solde.
+- Contrôles : 63 tests moteur, économie, identité, validation et catalogue ; lint sans erreur, typecheck et build. Parcours HTTP avec invité temporaire : 4 gratuits, ouverture de 10 pour 600 gems, répétition sans double débit, concurrence, plafond, cosmétiques, avatar et RLS.
+- Transactions SQL annulées : limites à 6 h moins/plus 1 seconde, conservation du temps partiel, plafond après plusieurs jours, priorité des gratuits, tarif mixte, refus de solde insuffisant et de coût non annoncé, refus de 100 boosters. Un ancien lot de 100 conserve bien ses 500 cartes et se finalise une seule fois.
