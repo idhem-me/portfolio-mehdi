@@ -27,7 +27,13 @@
     "productDesignerAtWorldline": "مصمم منتجات في Worldline",
     "gravityPlay": "المسني",
     "gravityReset": "إعادة",
-    "gravityImpacts": "{count, plural, =0 {0 اصطدام} one {اصطدام #} other {# اصطدامات}}"
+    "gravityImpacts": "{count, plural, =0 {0 اصطدام} one {اصطدام #} other {# اصطدامات}}",
+    "gravityTuneLabel": "الفيزياء",
+    "gravityTuneGravity": "الجاذبية",
+    "gravityTuneBounce": "الارتداد",
+    "gravityTuneFriction": "الاحتكاك",
+    "gravityTuneAir": "الهواء",
+    "gravityTuneGrab": "الإمساك"
   },
   "contact": {
     "email": "البريد الإلكتروني",
