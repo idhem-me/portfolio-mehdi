@@ -22,6 +22,11 @@
         "dark": "/img/tetris/cover-dark.png",
         "alt": "Tetris — leuchtende, flüssige Steine"
       }
+    },
+    {
+      "title": "Karten",
+      "status": "Sammlungs-Prototyp",
+      "slug": "cards"
     }
   ]
 }

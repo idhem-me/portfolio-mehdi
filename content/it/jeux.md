@@ -22,6 +22,11 @@
         "dark": "/img/tetris/cover-dark.png",
         "alt": "Tetris — mattoncini luminosi e liquidi"
       }
+    },
+    {
+      "title": "Carte",
+      "status": "Prototipo collezione",
+      "slug": "cards"
     }
   ]
 }

@@ -1,0 +1,299 @@
+/* Scoped opening motion — does not alter portfolio global theme */
+
+.cards-opening-immersive {
+  position: relative;
+  width: 100%;
+  min-height: 55svh;
+}
+
+.cards-opening-immersive.is-immersive {
+  min-height: 100dvh;
+  min-height: 100svh;
+  margin-inline: calc(-1rem);
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  padding-top: env(safe-area-inset-top);
+  background: var(--background);
+}
+
+.cards-immersive-chrome {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  position: relative;
+  z-index: 5;
+}
+
+.cards-opening-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: calc(100dvh - 4.5rem);
+  min-height: calc(100svh - 4.5rem);
+  width: 100%;
+  transform-origin: 50% 45%;
+}
+
+/* —— Cut assembly —— */
+
+.cards-cut-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.cards-booster-assembly {
+  position: relative;
+  width: min(12rem, 72vw);
+  aspect-ratio: 3 / 4;
+  touch-action: none;
+  user-select: none;
+  margin-bottom: 0.5rem;
+}
+
+.cards-booster-inner-cards {
+  position: absolute;
+  inset: 12% 10% 8%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.cards-mini-stack {
+  width: 70%;
+  aspect-ratio: 3 / 4;
+  position: relative;
+}
+
+.cards-mini-stack span {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--muted) 80%, var(--accent) 12%);
+}
+
+.cards-mini-stack span:nth-child(1) {
+  transform: translateY(6px) scale(0.94);
+}
+.cards-mini-stack span:nth-child(2) {
+  transform: translateY(3px) scale(0.97);
+}
+.cards-mini-stack span:nth-child(3) {
+  transform: none;
+}
+
+.cards-booster-body {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: var(--radius-lg, var(--radius));
+  border: 1px solid var(--border);
+  background: color-mix(in oklch, var(--card) 80%, var(--accent) 12%);
+  display: grid;
+  place-items: center;
+  clip-path: inset(calc(18% * (1 - var(--cut-progress, 0) * 0.15)) 0 0 0);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+
+.cards-booster-label {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-top: 10%;
+}
+
+.cards-booster-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 18%;
+  z-index: 3;
+  border-radius: var(--radius-lg, var(--radius)) var(--radius-lg, var(--radius))
+    0 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  background: color-mix(in oklch, var(--card) 70%, var(--foreground) 8%);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+
+.cards-cut-line {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--foreground) 35%, transparent),
+    transparent
+  );
+  opacity: calc(0.35 + var(--cut-progress, 0) * 0.65);
+  transform: scaleX(var(--cut-progress, 0));
+  transform-origin: center;
+}
+
+.cards-booster-gold.cards-booster-body,
+.cards-booster-assembly .cards-booster-gold {
+  background: color-mix(in oklch, var(--card) 50%, var(--cards-effect-gold) 40%);
+}
+
+/* —— Tinder stack —— */
+
+.cards-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0 1rem 1rem;
+}
+
+.cards-stack-stage {
+  position: relative;
+  width: min(18rem, calc(100vw - 2.5rem));
+  aspect-ratio: 3 / 4;
+  max-height: min(62dvh, 28rem);
+}
+
+.cards-stack-card {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  touch-action: none;
+  cursor: grab;
+}
+
+.cards-stack-card:active {
+  cursor: grabbing;
+}
+
+.cards-stack-face {
+  max-width: none !important;
+  width: 100%;
+  height: 100%;
+}
+
+.cards-stack-face .cards-card-art {
+  flex: 1;
+}
+
+.cards-stack-actions {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 22rem;
+}
+
+/* —— Special reveals —— */
+
+.cards-special-reveal {
+  position: absolute;
+  inset: -8%;
+  pointer-events: none;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.cards-special-wave {
+  position: absolute;
+  inset: 20%;
+  border-radius: 999px;
+  border: 2px solid color-mix(in oklch, white 50%, transparent);
+  animation: cards-special-wave 0.55s ease-out forwards;
+}
+
+.cards-special-legendary {
+  box-shadow: 0 0 40px color-mix(in oklch, var(--cards-effect-legendary) 45%, transparent);
+}
+.cards-special-gold {
+  box-shadow: 0 0 44px color-mix(in oklch, var(--cards-effect-gold) 50%, transparent);
+  background: linear-gradient(
+    125deg,
+    transparent 40%,
+    color-mix(in oklch, var(--cards-effect-gold) 35%, transparent) 50%,
+    transparent 60%
+  );
+  background-size: 200% 200%;
+  animation: cards-gold-shine 0.7s ease-out;
+}
+.cards-special-diamond {
+  box-shadow: 0 0 48px color-mix(in oklch, var(--cards-effect-diamond) 55%, transparent);
+  background: conic-gradient(
+    from 0deg,
+    transparent,
+    color-mix(in oklch, var(--cards-effect-diamond) 40%, transparent),
+    transparent,
+    color-mix(in oklch, white 30%, transparent),
+    transparent
+  );
+  opacity: 0.55;
+  animation: cards-diamond-spin 0.9s linear;
+}
+
+.cards-special-particle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: color-mix(in oklch, white 70%, transparent);
+  transform: rotate(calc(var(--i) * (360deg / var(--n))))
+    translateY(-40%) scale(0.4);
+  animation: cards-particle-out 0.55s ease-out forwards;
+  animation-delay: calc(var(--i) * 12ms);
+}
+
+@keyframes cards-special-wave {
+  from {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes cards-gold-shine {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes cards-diamond-spin {
+  to {
+    transform: rotate(90deg);
+  }
+}
+
+@keyframes cards-particle-out {
+  to {
+    transform: rotate(calc(var(--i) * (360deg / var(--n)))) translateY(-120%)
+      scale(0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cards-special-wave,
+  .cards-special-gold,
+  .cards-special-diamond,
+  .cards-special-particle {
+    animation: none !important;
+  }
+  .cards-cut-line {
+    transition: none;
+  }
+}

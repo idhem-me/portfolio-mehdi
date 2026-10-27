@@ -1,3 +1,4 @@
+import { cardsEnabled } from "@/features/cards/flags";
 import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 import fs from "node:fs";
 import path from "node:path";
@@ -239,6 +240,7 @@ export function getGames(locale: string): RealisationsContent {
     caseStudies: page.caseStudies.filter((study) => {
       if (study.slug === "tetris") return tetrisEnabled;
       if (study.slug === "clicker-burger") return clickerBurgerEnabled;
+      if (study.slug === "cards") return cardsEnabled;
       return true;
     }),
   };

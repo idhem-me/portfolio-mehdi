@@ -22,6 +22,11 @@
         "dark": "/img/tetris/cover-dark.png",
         "alt": "Tetris — ladrillos luminosos y líquidos"
       }
+    },
+    {
+      "title": "Cartas",
+      "status": "Prototipo de colección",
+      "slug": "cards"
     }
   ]
 }

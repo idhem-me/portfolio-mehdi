@@ -1,0 +1,128 @@
+import type { Rarity } from "../catalog/types";
+import type { DrawnCard, PackKind } from "../engine/draw";
+
+export const SAVE_KEY = "cards.save.v1";
+export const SCHEMA_VERSION = 1;
+
+export type CutDirection = "left" | "right";
+
+export type OpeningPhase =
+  | "closed"
+  | "cutting"
+  | "wrapperExit"
+  | "cameraZoom"
+  | "revealing"
+  | "summary"
+  /** @deprecated migrated on load */
+  | "idle"
+  | "preparing"
+  | "tearing";
+
+export type OwnedEntry = {
+  qty: number;
+  firstAcquiredAt: number;
+  lastAcquiredAt: number;
+};
+
+export type CardsStats = {
+  boostersOpened: number;
+  goldPacksOpened: number;
+  bestRarity: Rarity | null;
+  /** Counts of copies obtained per rarity (lifetime). */
+  copiesByRarity: Record<Rarity, number>;
+};
+
+export type ActiveOpen = {
+  openId: string;
+  kind: PackKind;
+  cards: DrawnCard[];
+  phase: OpeningPhase;
+  revealed: boolean[];
+  /** Index of the front card in the Tinder stack (0–5; 5 = all done). */
+  currentIndex: number;
+  cutDirection?: CutDirection;
+  createdAt: number;
+  /** True once collection credited. */
+  finalized: boolean;
+  /** Dev simulation — never credits collection. */
+  simulation?: boolean;
+};
+
+export type CardsSave = {
+  schemaVersion: number;
+  collection: Record<string, OwnedEntry>;
+  stats: CardsStats;
+  /** Finalized open ids (idempotency + short history). */
+  finalizedOpenIds: string[];
+  activeOpen: ActiveOpen | null;
+};
+
+export function emptyStats(): CardsStats {
+  return {
+    boostersOpened: 0,
+    goldPacksOpened: 0,
+    bestRarity: null,
+    copiesByRarity: {
+      common: 0,
+      rare: 0,
+      epic: 0,
+      legendary: 0,
+      gold: 0,
+      diamond: 0,
+    },
+  };
+}
+
+export function emptySave(): CardsSave {
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    collection: {},
+    stats: emptyStats(),
+    finalizedOpenIds: [],
+    activeOpen: null,
+  };
+}
+
+/** Normalize legacy phases and resume mid-cut into a stable revealing scene. */
+export function normalizeActiveOpenPhase(open: ActiveOpen): ActiveOpen {
+  let phase = open.phase;
+  if (phase === "idle") phase = "closed";
+  if (phase === "preparing") phase = "cutting";
+  if (phase === "tearing") phase = "cutting";
+
+  const revealed = [...open.revealed];
+  while (revealed.length < 5) revealed.push(false);
+  const revealed5 = revealed.slice(0, 5);
+
+  let currentIndex =
+    typeof open.currentIndex === "number" && Number.isFinite(open.currentIndex)
+      ? Math.max(0, Math.min(5, Math.floor(open.currentIndex)))
+      : revealed5.findIndex((r) => !r);
+  if (currentIndex < 0) currentIndex = 5;
+
+  // Resume: never replay a partial cut / exit / zoom.
+  if (
+    phase === "cutting" ||
+    phase === "wrapperExit" ||
+    phase === "cameraZoom"
+  ) {
+    if (!open.finalized) {
+      phase = "revealing";
+      if (currentIndex === 0 && !revealed5[0]) {
+        // First card becomes front after zoom; keep face to reveal on enter.
+      }
+    }
+  }
+
+  if (open.finalized || phase === "summary") {
+    phase = "summary";
+    currentIndex = 5;
+  }
+
+  return {
+    ...open,
+    phase,
+    revealed: revealed5,
+    currentIndex,
+  };
+}

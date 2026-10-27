@@ -22,6 +22,11 @@
         "dark": "/img/tetris/cover-dark.png",
         "alt": "Tetris — luminous, liquid bricks"
       }
+    },
+    {
+      "title": "Cards",
+      "status": "Collection prototype",
+      "slug": "cards"
     }
   ]
 }

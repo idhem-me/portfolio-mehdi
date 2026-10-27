@@ -25,6 +25,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LevelUp } from "./components/LevelUp";
+import { GameFeelSettings } from "@/components/games/game-feel-settings";
 import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1172,97 +1173,38 @@ export default function App({
           )}
           {panel === "settings" && (
             <div className="burger-settings">
-              <Button
-                variant="outline"
-                role="switch"
-                aria-label="Son"
-                aria-checked={settings.sound}
-                onClick={() => {
-                  unlockFeel();
-                  toggleSetting("sound");
+              <GameFeelSettings
+                className="burger-feel-settings"
+                value={settings}
+                volumeInputId="burger-effects-volume"
+                volumeDescription="Clics, nouveautés et niveaux"
+                onUnlockAudio={unlockFeel}
+                onToggleSound={() => toggleSetting("sound")}
+                onToggleHaptics={() => toggleSetting("haptics")}
+                onToggleIos={() => toggleSetting("ios")}
+                onEffectsVolume={(value) => {
+                  updateSettings({ effectsVolume: value });
+                  audio.current?.setVolume(value);
                 }}
+                onPreviewEffects={() => audio.current?.emit("cook")}
               >
-                Son
-                <Badge variant={settings.sound ? "default" : "secondary"}>
-                  {settings.sound ? "Oui" : "Non"}
-                </Badge>
-              </Button>
-              {settings.sound && (
-                <fieldset className="burger-audio-mixer">
-                  <legend className="sr-only">Volume des effets</legend>
-                  <div>
-                    <div className="burger-audio-heading">
-                      <label htmlFor="burger-effects-volume">
-                        Effets sonores
-                      </label>
-                      <span aria-hidden="true">{settings.effectsVolume} %</span>
-                    </div>
-                    <p id="burger-effects-volume-description">
-                      Clics, nouveautés et niveaux
-                    </p>
-                    <input
-                      id="burger-effects-volume"
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={5}
-                      value={settings.effectsVolume}
-                      aria-valuetext={`${settings.effectsVolume} %`}
-                      aria-describedby="burger-effects-volume-description"
-                      onChange={(event) => {
-                        const value = Number(event.target.value);
-                        updateSettings({ effectsVolume: value });
-                        unlockFeel();
-                        audio.current?.setVolume(value);
-                        audio.current?.emit("cook");
-                      }}
-                    />
-                  </div>
-                </fieldset>
-              )}
-              <Button
-                variant="outline"
-                role="switch"
-                aria-checked={settings.haptics}
-                onClick={() => toggleSetting("haptics")}
-              >
-                Haptiques
-                <Badge variant={settings.haptics ? "default" : "secondary"}>
-                  {settings.haptics ? "Oui" : "Non"}
-                </Badge>
-              </Button>
-              <Button
-                variant="outline"
-                role="switch"
-                aria-checked={settings.ios}
-                onClick={() => toggleSetting("ios")}
-              >
-                Haptiques iOS expérimentales
-                <Badge variant={settings.ios ? "default" : "secondary"}>
-                  {settings.ios ? "Oui" : "Non"}
-                </Badge>
-              </Button>
-              <p className="burger-settings-note">
-                L’option iOS utilise une astuce non officielle de Safari 18+,
-                uniquement sur les nouveautés et les niveaux. Elle peut ne
-                produire aucune vibration.
-              </p>
-              <Button
-                variant="outline"
-                role="switch"
-                aria-checked={settings.levelPopups}
-                onClick={() => {
-                  toggleSetting("levelPopups");
-                  if (settings.levelPopups) game.dismissLevel();
-                }}
-              >
-                Popups de félicitation
-                <Badge
-                  variant={settings.levelPopups ? "default" : "secondary"}
+                <Button
+                  variant="outline"
+                  role="switch"
+                  aria-checked={settings.levelPopups}
+                  onClick={() => {
+                    toggleSetting("levelPopups");
+                    if (settings.levelPopups) game.dismissLevel();
+                  }}
                 >
-                  {settings.levelPopups ? "Oui" : "Non"}
-                </Badge>
-              </Button>
+                  Popups de félicitation
+                  <Badge
+                    variant={settings.levelPopups ? "default" : "secondary"}
+                  >
+                    {settings.levelPopups ? "Oui" : "Non"}
+                  </Badge>
+                </Button>
+              </GameFeelSettings>
               <Button
                 variant="outline"
                 role="switch"

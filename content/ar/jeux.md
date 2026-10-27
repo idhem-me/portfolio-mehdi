@@ -22,6 +22,11 @@
         "dark": "/img/tetris/cover-dark.png",
         "alt": "Tetris — مكعبات مضيئة وسائلة"
       }
+    },
+    {
+      "title": "Cards",
+      "status": "نموذج أولي للجمع",
+      "slug": "cards"
     }
   ]
 }

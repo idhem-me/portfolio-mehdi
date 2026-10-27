@@ -22,6 +22,11 @@
         "dark": "/img/tetris/cover-dark.png",
         "alt": "Tetris — des briques lumineuses et liquides"
       }
+    },
+    {
+      "title": "Cartes",
+      "status": "Prototype collection",
+      "slug": "cards"
     }
   ]
 }

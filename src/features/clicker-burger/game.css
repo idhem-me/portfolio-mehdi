@@ -1165,7 +1165,21 @@
 .clicker-burger .burger-settings [data-slot="badge"] {
   flex-shrink: 0;
 }
-.clicker-burger .burger-audio-mixer {
+.clicker-burger .burger-feel-settings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--burger-sheet-padding, calc(var(--spacing) * 6));
+}
+.clicker-burger .burger-feel-settings > [data-slot="button"] {
+  justify-content: space-between;
+  min-height: 4rem;
+  padding: calc(var(--spacing) * 4);
+  gap: calc(var(--spacing) * 4);
+  white-space: normal;
+  text-align: start;
+  height: auto;
+}
+.clicker-burger .game-feel-audio-mixer {
   display: grid;
   gap: calc(var(--spacing) * 5);
   min-width: 0;
@@ -1173,7 +1187,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
-.clicker-burger .burger-audio-heading {
+.clicker-burger .game-feel-audio-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1181,16 +1195,16 @@
   font-size: 0.875rem;
   font-weight: 500;
 }
-.clicker-burger .burger-audio-heading span {
+.clicker-burger .game-feel-audio-heading span {
   color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
 }
-.clicker-burger .burger-audio-mixer p {
+.clicker-burger .game-feel-audio-mixer p {
   margin: 0;
   color: var(--muted-foreground);
   font-size: 0.75rem;
 }
-.clicker-burger .burger-audio-mixer input[type="range"] {
+.clicker-burger .game-feel-audio-mixer input[type="range"] {
   display: block;
   width: 100%;
   height: 2.75rem;
@@ -1198,6 +1212,7 @@
   cursor: pointer;
   accent-color: var(--primary);
 }
+.clicker-burger .game-feel-settings-note,
 .clicker-burger .burger-settings-note {
   margin: 0;
   font-size: 0.75rem;

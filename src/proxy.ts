@@ -1,3 +1,4 @@
+import { cardsEnabled } from "@/features/cards/flags";
 import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 import createMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
@@ -66,8 +67,15 @@ export default async function proxy(request: NextRequest) {
   const hiddenTetris = !tetrisEnabled &&
     ["/jeux/tetris", "/realisations/tetris"].includes(gamePath);
   const hiddenBurger = !clickerBurgerEnabled && gamePath === "/jeux/clicker-burger";
-  const hiddenGames = !tetrisEnabled && !clickerBurgerEnabled && gamePath === "/jeux";
-  if (hiddenTetris || hiddenBurger || hiddenGames) {
+  const hiddenCards =
+    !cardsEnabled &&
+    (gamePath === "/jeux/cards" || gamePath === "/cards");
+  const hiddenGames =
+    !tetrisEnabled &&
+    !clickerBurgerEnabled &&
+    !cardsEnabled &&
+    gamePath === "/jeux";
+  if (hiddenTetris || hiddenBurger || hiddenCards || hiddenGames) {
     return new NextResponse("Not Found", {
       status: 404,
       headers: { "X-Robots-Tag": "noindex" },

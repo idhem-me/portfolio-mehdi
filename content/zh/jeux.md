@@ -22,6 +22,11 @@
         "dark": "/img/tetris/cover-dark.png",
         "alt": "Tetris — 发光的流体方块"
       }
+    },
+    {
+      "title": "Cards",
+      "status": "收集原型",
+      "slug": "cards"
     }
   ]
 }

@@ -1,3 +1,4 @@
+import { cardsEnabled } from "@/features/cards/flags";
 import {
   clickerBurgerEnabled,
   clickerBurgerPublic,
@@ -21,7 +22,7 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  if (!tetrisEnabled && !clickerBurgerEnabled) notFound();
+  if (!tetrisEnabled && !clickerBurgerEnabled && !cardsEnabled) notFound();
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "metadata" });
   const page = getGames(locale);
@@ -42,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GamesPage({ params }: Props) {
-  if (!tetrisEnabled && !clickerBurgerEnabled) notFound();
+  if (!tetrisEnabled && !clickerBurgerEnabled && !cardsEnabled) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
   const page = getGames(locale);

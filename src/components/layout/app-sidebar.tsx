@@ -1,4 +1,5 @@
 "use client";
+import { cardsEnabled } from "@/features/cards/flags";
 import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 
 import { Home, Layers, UserRound, Gamepad2 } from "lucide-react";
@@ -55,7 +56,7 @@ export function AppSidebar() {
       icon: Layers,
       match: (path: string) => path.startsWith("/realisations"),
     },
-    ...(tetrisEnabled || clickerBurgerEnabled
+    ...(tetrisEnabled || clickerBurgerEnabled || cardsEnabled
       ? [{
           href: "/jeux",
           label: t("games"),
