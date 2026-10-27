@@ -37,6 +37,8 @@ const CIRCLE_SIDES = 28;
 
 type PhysicsTuning = {
   gravity: number;
+  /** Degrees: 0 = down, 90 = right, 180 = up, 270 = left. */
+  gravityAngle: number;
   restitution: number;
   friction: number;
   frictionAir: number;
@@ -45,11 +47,24 @@ type PhysicsTuning = {
 
 const DEFAULT_TUNING: PhysicsTuning = {
   gravity: 1.35,
+  gravityAngle: 0,
   restitution: 0.22,
   friction: 0.35,
   frictionAir: 0.012,
   grabStiffness: 0.2,
 };
+
+const RANGE_CLASS =
+  "h-6 w-full min-w-0 flex-1 cursor-pointer appearance-none border-0 bg-transparent accent-accent outline-none touch-manipulation [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-thumb]:-mt-1.5 [&::-webkit-slider-thumb]:size-3.5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:bg-accent [&::-moz-range-track]:h-1 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-muted [&::-moz-range-thumb]:size-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-accent";
+
+function gravityVector(tuning: PhysicsTuning): { x: number; y: number } {
+  const g = tuning.gravity;
+  const rad = (tuning.gravityAngle * Math.PI) / 180;
+  return {
+    x: Math.sin(rad) * g,
+    y: Math.cos(rad) * g,
+  };
+}
 
 type PhysicsPair = {
   body: Matter.Body;
@@ -70,6 +85,7 @@ type SpawnTarget = {
 
 type Walls = {
   ground: Matter.Body;
+  ceiling: Matter.Body;
   left: Matter.Body;
   right: Matter.Body;
 };
@@ -473,6 +489,13 @@ function createWalls(vw: number, vh: number): Walls {
       t,
       wallOpts,
     ),
+    ceiling: Matter.Bodies.rectangle(
+      vw / 2,
+      -t / 2,
+      vw + t * 2,
+      t,
+      wallOpts,
+    ),
     left: Matter.Bodies.rectangle(-t / 2, vh / 2, t, vh * 2, wallOpts),
     right: Matter.Bodies.rectangle(vw + t / 2, vh / 2, t, vh * 2, wallOpts),
   };
@@ -481,12 +504,14 @@ function createWalls(vw: number, vh: number): Walls {
 function replaceWalls(session: Session, vw: number, vh: number) {
   Matter.World.remove(session.engine.world, [
     session.walls.ground,
+    session.walls.ceiling,
     session.walls.left,
     session.walls.right,
   ]);
   session.walls = createWalls(vw, vh);
   Matter.World.add(session.engine.world, [
     session.walls.ground,
+    session.walls.ceiling,
     session.walls.left,
     session.walls.right,
   ]);
@@ -516,11 +541,12 @@ function clampBodiesToViewport(pairs: PhysicsPair[], vw: number, vh: number) {
   }
 }
 
-type TuningKey = keyof PhysicsTuning;
+type TuningSliderKey = keyof PhysicsTuning;
 
 const TUNING_SLIDERS: {
-  key: TuningKey;
+  key: TuningSliderKey;
   labelKey:
+    | "gravityTuneAngle"
     | "gravityTuneGravity"
     | "gravityTuneBounce"
     | "gravityTuneFriction"
@@ -530,6 +556,13 @@ const TUNING_SLIDERS: {
   max: number;
   step: number;
 }[] = [
+  {
+    key: "gravityAngle",
+    labelKey: "gravityTuneAngle",
+    min: 0,
+    max: 360,
+    step: 1,
+  },
   {
     key: "gravity",
     labelKey: "gravityTuneGravity",
@@ -567,7 +600,8 @@ const TUNING_SLIDERS: {
   },
 ];
 
-function formatTuningValue(key: TuningKey, value: number): string {
+function formatTuningValue(key: TuningSliderKey, value: number): string {
+  if (key === "gravityAngle") return `${Math.round(value)}°`;
   if (key === "frictionAir") return value.toFixed(3);
   if (key === "gravity" || key === "restitution" || key === "grabStiffness") {
     return value.toFixed(2);
@@ -576,7 +610,9 @@ function formatTuningValue(key: TuningKey, value: number): string {
 }
 
 function applyTuningToSession(session: Session, tuning: PhysicsTuning) {
-  session.engine.gravity.y = tuning.gravity;
+  const { x, y } = gravityVector(tuning);
+  session.engine.gravity.x = x;
+  session.engine.gravity.y = y;
   for (const { body } of session.pairs) {
     body.restitution = tuning.restitution;
     body.friction = tuning.friction;
@@ -597,6 +633,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tuningRef = useRef<PhysicsTuning>(DEFAULT_TUNING);
   const [active, setActive] = useState(false);
+  const [configOpen, setConfigOpen] = useState(false);
   const [impacts, setImpacts] = useState(0);
   const [tuning, setTuning] = useState<PhysicsTuning>(DEFAULT_TUNING);
   tuningRef.current = tuning;
@@ -610,6 +647,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     const session = sessionRef.current;
     if (!session) {
       setActive(false);
+      setConfigOpen(false);
       setTuning(DEFAULT_TUNING);
       return;
     }
@@ -628,6 +666,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     sessionRef.current = null;
     setImpacts(0);
     setTuning(DEFAULT_TUNING);
+    setConfigOpen(false);
     setActive(false);
   }, []);
 
@@ -649,8 +688,9 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       Matter;
     const tuningNow = tuningRef.current;
 
+    const g0 = gravityVector(tuningNow);
     const engine = Engine.create({
-      gravity: { x: 0, y: tuningNow.gravity, scale: 0.001 },
+      gravity: { x: g0.x, y: g0.y, scale: 0.001 },
     });
     engine.positionIterations = 12;
     engine.velocityIterations = 10;
@@ -659,7 +699,12 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const walls = createWalls(vw, vh);
-    World.add(engine.world, [walls.ground, walls.left, walls.right]);
+    World.add(engine.world, [
+      walls.ground,
+      walls.ceiling,
+      walls.left,
+      walls.right,
+    ]);
 
     const layerEl = document.createElement("div");
     layerEl.setAttribute("aria-hidden", "true");
@@ -859,64 +904,76 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
         >
           {active ? (
             <>
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="pointer-events-auto"
-                onClick={teardown}
-              >
-                {t("gravityReset")}
-              </Button>
+              <div className="pointer-events-auto flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={teardown}
+                >
+                  {t("gravityReset")}
+                </Button>
+                <Button
+                  type="button"
+                  variant={configOpen ? "secondary" : "outline"}
+                  size="sm"
+                  aria-expanded={configOpen}
+                  aria-controls="gravity-tune-panel"
+                  onClick={() => setConfigOpen((open) => !open)}
+                >
+                  {t("gravityConfig")}
+                </Button>
+              </div>
               <p
                 className="text-xs tabular-nums text-muted-foreground"
                 aria-live="polite"
               >
                 {t("gravityImpacts", { count: impacts })}
               </p>
-              <fieldset
-                className="pointer-events-auto mt-2 w-[min(100%,14rem)] rounded-xl border border-border/60 bg-background/80 px-3 py-2.5 shadow-sm backdrop-blur-sm"
-                aria-label={t("gravityTuneLabel")}
-              >
-                <legend className="px-1 text-[11px] font-medium tracking-wide text-muted-foreground">
-                  {t("gravityTuneLabel")}
-                </legend>
-                <div className="flex flex-col gap-2.5">
-                  {TUNING_SLIDERS.map(({ key, labelKey, min, max, step }) => {
-                    const id = `gravity-tune-${key}`;
-                    const value = tuning[key];
-                    return (
-                      <div key={key} className="flex flex-col gap-1">
-                        <div className="flex items-baseline justify-between gap-2">
+              {configOpen ? (
+                <fieldset
+                  id="gravity-tune-panel"
+                  className="pointer-events-auto mt-1 w-[min(100%,16rem)] rounded-lg bg-background/70 px-2.5 py-2 backdrop-blur-sm"
+                  aria-label={t("gravityTuneLabel")}
+                >
+                  <legend className="px-0.5 text-[11px] font-medium tracking-wide text-muted-foreground">
+                    {t("gravityTuneLabel")}
+                  </legend>
+                  <div className="flex flex-col gap-1">
+                    {TUNING_SLIDERS.map(({ key, labelKey, min, max, step }) => {
+                      const id = `gravity-tune-${key}`;
+                      const value = tuning[key];
+                      return (
+                        <div
+                          key={key}
+                          className="flex items-center gap-2"
+                        >
                           <label
                             htmlFor={id}
-                            className="text-[11px] text-muted-foreground"
+                            className="w-14 shrink-0 text-[11px] text-muted-foreground"
                           >
                             {t(labelKey)}
                           </label>
-                          <span className="text-[11px] tabular-nums text-foreground/70">
-                            {formatTuningValue(key, value)}
-                          </span>
+                          <input
+                            id={id}
+                            type="range"
+                            min={min}
+                            max={max}
+                            step={step}
+                            value={value}
+                            aria-valuetext={formatTuningValue(key, value)}
+                            className={RANGE_CLASS}
+                            onChange={(event) => {
+                              const next = Number(event.target.value);
+                              setTuning((prev) => ({ ...prev, [key]: next }));
+                            }}
+                          />
                         </div>
-                        <input
-                          id={id}
-                          type="range"
-                          min={min}
-                          max={max}
-                          step={step}
-                          value={value}
-                          aria-valuetext={formatTuningValue(key, value)}
-                          className="h-7 w-full cursor-pointer appearance-none bg-transparent accent-accent touch-manipulation [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:rounded-full [&::-webkit-slider-runnable-track]:bg-muted [&::-webkit-slider-thumb]:-mt-1.5 [&::-webkit-slider-thumb]:size-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-accent [&::-moz-range-track]:h-1 [&::-moz-range-track]:rounded-full [&::-moz-range-track]:bg-muted [&::-moz-range-thumb]:size-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:bg-accent"
-                          onChange={(event) => {
-                            const next = Number(event.target.value);
-                            setTuning((prev) => ({ ...prev, [key]: next }));
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </fieldset>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+              ) : null}
             </>
           ) : (
             <Button
