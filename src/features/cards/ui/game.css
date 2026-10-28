@@ -1735,15 +1735,27 @@
 .cards-summary-content {
   width: 100%;
   max-width: 40rem;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  justify-content: center;
   gap: 1rem;
   padding-block: 0.5rem 1rem;
 }
 .cards-summary .cards-summary-list {
   width: 100%;
   margin: 0;
+}
+.cards-summary-empty {
+  margin: 0;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--muted-foreground);
 }
 .cards-summary-actions {
   flex-shrink: 0;

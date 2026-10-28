@@ -49,7 +49,7 @@ test("cards: mobile successive packs, modal, resume, summary ratio and touch det
     page.locator(".cards-stack-cover, .cards-card-back-mark"),
   ).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Défiler les cartes automatiquement" }),
+    page.getByRole("button", { name: "Passer au récapitulatif" }),
   ).toBeVisible();
   const saved = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("cards.save.v1")!),
@@ -372,7 +372,7 @@ test("cards: opening controls survive cut, resume and summary", async ({
     page.locator("button").filter({ hasText: "Découper le booster" }),
   ).toHaveCount(0);
   await expect(page.locator(".cards-cut-hint")).toHaveText(
-    "Glisse pour ouvrir",
+    "Touche ou glisse pour ouvrir",
   );
   const pack = (await page.locator(".cards-booster-assembly").boundingBox())!;
   expect(pack.y).toBeCloseTo(844 * 0.465, 0);
@@ -383,7 +383,7 @@ test("cards: opening controls survive cut, resume and summary", async ({
     .getByRole("button", { name: "Découper le booster", exact: true })
     .press("Enter");
   await expect(
-    page.getByRole("button", { name: "Défiler les cartes automatiquement" }),
+    page.getByRole("button", { name: "Passer au récapitulatif" }),
   ).toBeVisible();
   await finish(page);
   await assertAnchor("Ouvrir");
@@ -449,4 +449,60 @@ test("cards: unowned detail shows a disabled back and no possession footer", asy
     .getByRole("button", { name: "Carte suivante", exact: true })
     .click();
   await expect(dialog.getByRole("heading")).toHaveText("Brise légère");
+});
+
+test("cards: skip jumps to summary without revealing cards", async ({
+  page,
+}) => {
+  await page.goto("/jeux/cards");
+  await page
+    .getByRole("button", { name: "Ouvrir un booster", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Passer au récapitulatif" }),
+  ).toBeVisible();
+  await expect(page.locator(".cards-booster-assembly")).toBeVisible();
+  await page.getByRole("button", { name: "Passer au récapitulatif" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Récapitulatif" }),
+  ).toBeVisible();
+  await expect(page.locator(".cards-booster-assembly")).toHaveCount(0);
+  await expect(page.locator(".cards-stack-front")).toHaveCount(0);
+});
+
+test("cards: summary always shows segments and empty placeholders", async ({
+  page,
+}) => {
+  await page.goto("/jeux/cards");
+  await page.getByRole("button", { name: "Simulation", exact: true }).click();
+  await page.getByRole("menuitem", { name: "10 boosters", exact: true }).click();
+  await page.getByRole("button", { name: "Passer au récapitulatif" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Récapitulatif" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("tablist", { name: "Filtrer le récapitulatif" }),
+  ).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Nouvelles/ })).toBeVisible();
+  await expect(page.getByRole("tab", { name: /Doublons/ })).toBeVisible();
+  await page.getByRole("tab", { name: /Doublons/ }).click();
+  await expect(page.locator(".cards-summary-item").first()).toBeVisible();
+  await page.getByRole("button", { name: "OK", exact: true }).click();
+
+  await page
+    .getByRole("button", { name: "Ouvrir un booster", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Passer au récapitulatif" }).click();
+  await expect(
+    page.getByRole("tablist", { name: "Filtrer le récapitulatif" }),
+  ).toBeVisible();
+  await page.getByRole("tab", { name: /Doublons/ }).click();
+  const dupCount = await page
+    .getByRole("tab", { name: /Doublons/ })
+    .innerText();
+  if (dupCount.includes("(0)")) {
+    await expect(page.getByRole("status")).toHaveText("Aucun doublon.");
+  } else {
+    await expect(page.locator(".cards-summary-item").first()).toBeVisible();
+  }
 });

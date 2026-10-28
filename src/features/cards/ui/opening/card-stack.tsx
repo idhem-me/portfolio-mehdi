@@ -31,13 +31,9 @@ type Props = {
   iosSwitch: React.RefObject<HTMLInputElement | null>;
   onCommit: (index: number) => void;
   onSettled: () => void;
-  /** When true, cards advance on their own after each reveal settles. */
-  autoPlay?: boolean;
   /** Increment to request advancing the front card (tap outside). */
   advanceRequest?: number;
 };
-
-const AUTO_PLAY_HOLD_MS = 520;
 
 export function CardStack(props: Props) {
   const { cards, currentIndex, enabled, visible } = props;
@@ -105,7 +101,6 @@ function FrontCard({
   interactive,
   discovered,
   onDiscover,
-  autoPlay = false,
   advanceRequest = 0,
 }: Props & {
   front: DrawnCard;
@@ -255,19 +250,6 @@ function FrontCard({
       onSettled();
     }
   };
-
-  useEffect(() => {
-    if (!autoPlay || !interactive || !settled || !faceUp) return;
-    const timer = window.setTimeout(
-      () => {
-        void eject(1);
-      },
-      reduced ? 120 : AUTO_PLAY_HOLD_MS,
-    );
-    return () => window.clearTimeout(timer);
-    // eject closes over the latest interactive/settled card; index identity is enough.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPlay, interactive, settled, faceUp, currentIndex, reduced]);
 
   useEffect(() => {
     if (advanceRequest === lastAdvanceRequest.current) return;

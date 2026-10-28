@@ -139,13 +139,11 @@ export function OpeningScene({
   const [summaryFilter, setSummaryFilter] = useState<"new" | "dup">("new");
   const [startError, setStartError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [autoPlay, setAutoPlay] = useState(false);
   const [advanceRequest, setAdvanceRequest] = useState(0);
 
   useEffect(() => {
     setSummaryLimit(50);
     setSummaryFilter("new");
-    setAutoPlay(false);
     setAdvanceRequest(0);
   }, [open?.openId]);
   const start = async (quantity: number) => {
@@ -487,12 +485,11 @@ export function OpeningScene({
     }));
     const nouvelles = summaryItems.filter((item) => item.isNew);
     const doublons = summaryItems.filter((item) => !item.isNew);
-    const showSegments = nouvelles.length > 0 && doublons.length > 0;
-    const visibleItems = showSegments
-      ? summaryFilter === "new"
-        ? nouvelles
-        : doublons
-      : summaryItems;
+    const visibleItems = summaryFilter === "new" ? nouvelles : doublons;
+    const emptyCopy =
+      summaryFilter === "new"
+        ? "Aucune nouvelle carte."
+        : "Aucun doublon.";
     const closeSummary = () => {
       controller.dismissSummary();
       refresh();
@@ -530,51 +527,50 @@ export function OpeningScene({
             <DialogDescription className="sr-only">
               Cartes obtenues pendant cette ouverture. OK ferme le récapitulatif.
             </DialogDescription>
-            {showSegments && (
-              <Tabs
-                value={summaryFilter}
-                onValueChange={(value) => {
-                  setSummaryFilter(value as "new" | "dup");
-                  setSummaryLimit(50);
-                }}
-                className="cards-summary-segments"
+            <Tabs
+              value={summaryFilter}
+              onValueChange={(value) => {
+                setSummaryFilter(value as "new" | "dup");
+                setSummaryLimit(50);
+              }}
+              className="cards-summary-segments"
+            >
+              <TabsList
+                aria-label="Filtrer le récapitulatif"
+                className="w-full"
               >
-                <TabsList
-                  aria-label="Filtrer le récapitulatif"
-                  className="w-full"
-                >
-                  <TabsTrigger value="new" className="flex-1">
-                    Nouvelles ({nouvelles.length})
-                  </TabsTrigger>
-                  <TabsTrigger value="dup" className="flex-1">
-                    Doublons ({doublons.length})
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            )}
+                <TabsTrigger value="new" className="flex-1">
+                  Nouvelles ({nouvelles.length})
+                </TabsTrigger>
+                <TabsTrigger value="dup" className="flex-1">
+                  Doublons ({doublons.length})
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
           <div className="cards-summary-body">
             <div className="cards-summary-content">
-              <ul className="cards-grid cards-summary-list">
-                {visibleItems.slice(0, summaryLimit).map((item) => (
-                  <li
-                    key={`${open.openId}-sum-${item.index}`}
-                    className="cards-summary-item"
-                  >
-                    <CardFace
-                      card={item.card}
-                      compact
-                      shiny={item.drawn.shiny}
-                      qty={item.ownedNow}
-                    />
-                    {item.isNew && !showSegments && (
-                      <Badge variant="default" className="cards-summary-new">
-                        Nouveau
-                      </Badge>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              {visibleItems.length === 0 ? (
+                <p className="cards-summary-empty" role="status">
+                  {emptyCopy}
+                </p>
+              ) : (
+                <ul className="cards-grid cards-summary-list">
+                  {visibleItems.slice(0, summaryLimit).map((item) => (
+                    <li
+                      key={`${open.openId}-sum-${item.index}`}
+                      className="cards-summary-item"
+                    >
+                      <CardFace
+                        card={item.card}
+                        compact
+                        shiny={item.drawn.shiny}
+                        qty={item.ownedNow}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
               {visibleItems.length > summaryLimit && (
                 <Button
                   variant="secondary"
@@ -657,9 +653,8 @@ export function OpeningScene({
       >
         <DialogTitle className="sr-only">Ouverture du booster</DialogTitle>
         <DialogDescription className="sr-only">
-          Découpez puis touchez n’importe où ou glissez les cartes. Skip fait
-          défiler automatiquement. Échap termine l’ouverture et affiche le
-          récapitulatif.
+          Découpez puis touchez n’importe où ou glissez les cartes. Skip ou
+          Échap termine l’ouverture et affiche le récapitulatif.
         </DialogDescription>
         {(open.simulation ||
           (open.kind === "gold_pack" && open.phase !== "revealing")) && (
@@ -734,32 +729,24 @@ export function OpeningScene({
               iosSwitch={iosSwitch}
               onCommit={commit}
               onSettled={refresh}
-              autoPlay={autoPlay}
               advanceRequest={advanceRequest}
             />
           )}
         </motion.div>
-        {open.phase === "revealing" && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            data-opening-skip=""
-            className="cards-opening-skip min-h-11 min-w-11"
-            aria-label={
-              autoPlay
-                ? "Arrêter le défilement automatique"
-                : "Défiler les cartes automatiquement"
-            }
-            aria-pressed={autoPlay}
-            onClick={(event) => {
-              event.stopPropagation();
-              setAutoPlay((value) => !value);
-            }}
-          >
-            <SkipForward />
-          </Button>
-        )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          data-opening-skip=""
+          className="cards-opening-skip min-h-11 min-w-11"
+          aria-label="Passer au récapitulatif"
+          onClick={(event) => {
+            event.stopPropagation();
+            finishOpening();
+          }}
+        >
+          <SkipForward />
+        </Button>
       </DialogContent>
     </Dialog>
   );

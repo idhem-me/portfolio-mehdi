@@ -38,10 +38,6 @@
   right: max(0.75rem, env(safe-area-inset-right));
   bottom: max(0.75rem, env(safe-area-inset-bottom));
 }
-.cards-opening-skip[aria-pressed="true"] {
-  background: var(--muted);
-  color: var(--foreground);
-}
 
 .cards-opening-stage {
   display: flex;
