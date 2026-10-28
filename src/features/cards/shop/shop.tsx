@@ -128,7 +128,9 @@ export function Shop() {
                   return (
                     <Card key={item.id} className="cards-shop-product">
                       <div className="cards-shop-product-image">
-                        {cosmetic && "asset" in cosmetic ? (
+                        {cosmetic &&
+                        "asset" in cosmetic &&
+                        typeof cosmetic.asset === "string" ? (
                           <Image
                             src={cosmetic.asset}
                             width={80}
