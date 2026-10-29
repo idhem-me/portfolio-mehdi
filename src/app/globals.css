@@ -484,3 +484,44 @@ html.locale-ar body {
     font-weight: 600;
   }
 }
+
+/* Accueil — papier Seyès, ancré au coin supérieur gauche de la surface. */
+:root {
+  --home-paper-line: color-mix(in oklch, var(--muted-foreground) 12%, transparent);
+  --home-paper-rule: color-mix(in oklch, var(--muted-foreground) 23%, transparent);
+  --home-paper-margin: color-mix(in oklch, var(--destructive) 32%, var(--background));
+  --home-paper-cell: 28px;
+  --home-paper-subline: 7px;
+  --home-paper-margin-left: 56px;
+}
+
+.dark {
+  --home-paper-line: color-mix(in oklch, var(--muted-foreground) 9%, transparent);
+  --home-paper-rule: color-mix(in oklch, var(--muted-foreground) 18%, transparent);
+  --home-paper-margin: color-mix(in oklch, var(--destructive) 28%, var(--background));
+}
+
+[data-slot="sidebar-inset"]:has([data-home-paper]) {
+  background-image:
+    linear-gradient(to right,
+      transparent var(--home-paper-margin-left),
+      var(--home-paper-margin) var(--home-paper-margin-left),
+      var(--home-paper-margin) calc(var(--home-paper-margin-left) + 1px),
+      transparent calc(var(--home-paper-margin-left) + 1px)),
+    linear-gradient(to right, var(--home-paper-rule) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--home-paper-rule) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--home-paper-line) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    var(--home-paper-cell) var(--home-paper-cell),
+    var(--home-paper-cell) var(--home-paper-cell),
+    var(--home-paper-subline) var(--home-paper-subline);
+  background-position: left top;
+  background-repeat: no-repeat, repeat, repeat, repeat;
+}
+
+@media (max-width: 767px) {
+  [data-slot="sidebar-inset"]:has([data-home-paper]) {
+    --home-paper-margin-left: 14px;
+  }
+}

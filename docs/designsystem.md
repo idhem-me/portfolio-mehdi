@@ -66,3 +66,14 @@ Le pinceau de l’accueil utilise `primary`, `accent`, `warning`, `success` et
 claires et sombres ainsi que les tokens `warning-foreground` et
 `success-foreground`. Les traits conservent leur rôle sémantique lors du
 changement de thème. Leur épaisseur est fixe : 12 px CSS, extrémités rondes.
+
+### Papier de l’accueil
+
+Le fond de l’accueil reproduit un papier Seyès en CSS : cellules de 28 px et
+interlignes de 7 px, ancrés en haut à gauche de la surface principale, y compris
+pendant le chargement. `--home-paper-line` et `--home-paper-rule` dérivent du gris
+`--muted-foreground`. `--home-paper-margin` dérive du token danger
+`--destructive`, mélangé au fond pour être clair en light et sombre en dark.
+La marge rouge est à 56 px du bord gauche sur desktop, 14 px sous 768 px ; le
+quadrillage conserve sa taille sur mobile. Ces tokens sont indépendants du
+papier des aperçus de projets (`--paper-grid`).

@@ -36,7 +36,7 @@ function IntroWords({ text }: { text: string }) {
 
 function HomeFallback() {
   return (
-    <main className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
+    <main data-home-paper className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
       <div className="flex flex-col gap-8">
         <div className="space-y-4">
           <div className="h-4 w-64 max-w-full animate-pulse rounded bg-muted" />
@@ -65,7 +65,7 @@ async function HomeContent({ params }: Props) {
   const home = getHome(locale);
 
   return (
-    <main className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
+    <main data-home-paper className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
       <HomeInteractionTracker />
       <GravityPlayground>
         <section className="flex flex-col gap-8">
