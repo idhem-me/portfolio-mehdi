@@ -15,7 +15,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <SidebarProvider defaultOpen>
         <AppSidebar />
         <SidebarInset className="min-w-0">
-          <MobileMenuButton />
+          <header
+            className="shrink-0 md:hidden"
+            style={{
+              height:
+                "calc(max(1rem, env(safe-area-inset-top)) + var(--control-height-icon) + 1rem)",
+            }}
+          >
+            <MobileMenuButton />
+          </header>
           <div className="min-w-0 flex-1">{children}</div>
         </SidebarInset>
         <ConsentBanner />
