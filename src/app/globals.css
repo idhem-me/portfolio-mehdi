@@ -525,3 +525,20 @@ html.locale-ar body {
     --home-paper-margin-left: 14px;
   }
 }
+
+.home-paper-content {
+  gap: 24px;
+}
+
+.home-paper-copy > * {
+  margin-block: 0;
+}
+
+.home-paper-copy > * + * {
+  margin-top: 8px;
+}
+
+.home-paper-ctas {
+  flex-direction: row;
+  gap: 8px;
+}

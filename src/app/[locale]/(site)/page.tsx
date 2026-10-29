@@ -14,7 +14,7 @@ function IntroWords({ text }: { text: string }) {
   const parts = text.split(/(\s+)/);
 
   return (
-    <p className="max-w-prose text-base leading-relaxed text-muted-foreground sm:text-lg">
+    <p className="home-paper-intro max-w-prose text-base leading-relaxed text-muted-foreground sm:text-lg">
       {parts.map((part, i) => {
         if (/^\s+$/.test(part)) {
           return <span key={i}>{part}</span>;
@@ -68,15 +68,15 @@ async function HomeContent({ params }: Props) {
     <main data-home-paper className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
       <HomeInteractionTracker />
       <GravityPlayground>
-        <section className="flex flex-col gap-8">
-          <div className="space-y-4">
+        <section className="home-paper-content flex flex-col gap-6">
+          <div className="home-paper-copy space-y-2">
             <div className="flex w-fit flex-col items-center gap-2">
               <GazeAvatar />
             </div>
 
             <HomeStatus />
 
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            <h1 className="home-paper-title text-3xl font-semibold tracking-tight sm:text-4xl">
               <span
                 data-physics-item
                 data-physics-split-lines

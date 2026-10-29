@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
   TrackedAnchor,
@@ -47,7 +46,7 @@ export function HomeStatus() {
   const t = useTranslations("home");
 
   return (
-    <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+    <p className="home-paper-status flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
       <span data-physics-item className="inline-block rounded-lg">
         {t("freelanceOn")}
       </span>
@@ -88,7 +87,7 @@ export function HomeCtas() {
   const tHome = useTranslations("home");
 
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className="home-paper-ctas flex flex-wrap items-start gap-2">
       <span
         data-physics-item
         data-physics-button
@@ -104,8 +103,7 @@ export function HomeCtas() {
             event={AnalyticsEvents.home_cta}
             eventProps={{ href: "/realisations", label: "realisations" }}
           >
-            {t("realisations")}
-            <ArrowRight data-icon="inline-end" />
+            <span>{t("realisations")}</span>
           </TrackedLink>
         </Button>
       </span>
@@ -124,7 +122,7 @@ export function HomeCtas() {
             event={AnalyticsEvents.home_cta}
             eventProps={{ href: "/jeux", label: "jeux" }}
           >
-            {tHome("ctaPlay")}
+            <span>{tHome("ctaPlay")}</span>
           </TrackedLink>
         </Button>
       </span>
