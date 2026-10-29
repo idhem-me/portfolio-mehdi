@@ -78,3 +78,44 @@ test("touch drawing remains available with an explicit exit button", async ({
   await expect(page.locator("html")).not.toHaveCSS("overflow", "hidden");
   await context.close();
 });
+
+test("fast release and interrupted gestures preserve painted pixels", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Refuser", exact: true }).click();
+  await page.getByRole("button", { name: "Pinceau", exact: true }).click();
+  const mode = page.locator("[data-paint-mode]");
+  const strokes = page.locator("[data-paint-stroke]");
+
+  for (const end of ["pointerup", "pointercancel", "lostpointercapture", "blur", "Escape"]) {
+    await page.mouse.move(700, 320);
+    await page.mouse.down();
+    await page.mouse.move(850, 390);
+    const before = await strokes.last().locator("path").getAttribute("d");
+    const count = await strokes.count();
+    if (end === "Escape") {
+      await page.keyboard.press("Escape");
+    } else if (end === "blur") {
+      await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+    } else {
+      await mode.dispatchEvent(end, {
+        pointerId: 1, pointerType: "mouse", isPrimary: true,
+        clientX: 900, clientY: 410, button: 0, buttons: 0,
+      });
+    }
+    await page.mouse.up();
+    await expect(strokes).toHaveCount(count);
+    if (end === "pointerup") {
+      await expect(strokes.last().locator("path")).toHaveAttribute("d", /L900,410$/);
+    } else {
+      await expect(strokes.last().locator("path")).toHaveAttribute("d", before!);
+    }
+    await expect(page.locator("html")).not.toHaveCSS("overflow", "hidden");
+    if (end === "blur" || end === "Escape") {
+      await page.getByRole("button", { name: "Pinceau", exact: true }).click();
+    }
+  }
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(strokes).toHaveCount(4);
+});

@@ -1,6 +1,7 @@
 "use client";
 import {
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
   type RefObject,
@@ -164,15 +165,11 @@ export function PaintTool({
       window.removeEventListener("resize", align);
     };
   }, [paintMode]);
+  const finishOnLeave = useEffectEvent(() => commitGesture());
   useEffect(() => {
     if (!paintMode) return;
     function leave() {
-      const g = gestureRef.current;
-      if (g) {
-        g.el?.remove();
-        document.documentElement.style.overflow = g.scroll;
-        gestureRef.current = null;
-      }
+      finishOnLeave();
       setPaintMode(false);
       trackHomeInteraction("paint_exit");
     }
@@ -319,17 +316,19 @@ export function PaintTool({
     if (!g.el) g.el = renderStroke(preview, g.color);
     else updatePath(g.el, preview);
   }
-  function finish(e: ReactPointerEvent<HTMLElement>, cancel = false) {
-    const g = gestureRef.current;
-    if (!g || g.id !== e.pointerId) return;
-    gestureRef.current = null;
-    document.documentElement.style.overflow = g.scroll;
+  function finish(e: ReactPointerEvent<HTMLElement>) {
+    if (gestureRef.current?.id !== e.pointerId) return;
+    // A fast release can arrive before the final pointermove.
+    if (e.type === "pointerup") move(e);
+    commitGesture();
     if (e.currentTarget.hasPointerCapture(e.pointerId))
       e.currentTarget.releasePointerCapture(e.pointerId);
-    if (cancel) {
-      g.el?.remove();
-      return;
-    }
+  }
+  function commitGesture() {
+    const g = gestureRef.current;
+    if (!g) return;
+    gestureRef.current = null;
+    document.documentElement.style.overflow = g.scroll;
     if (!g.el || !g.points.length) return;
     if (g.endpoint && g.points.at(-1) !== g.endpoint) g.points.push(g.endpoint);
     updatePath(g.el, g.points);
@@ -402,7 +401,7 @@ export function PaintTool({
                       ),
                     1000,
                   );
-                  if (gestureRef.current) finish(e, true);
+                  if (gestureRef.current) finish(e);
                   setPaintMode(false);
                   trackHomeInteraction("paint_exit");
                   return;
@@ -424,8 +423,8 @@ export function PaintTool({
                 move(e);
               }}
               onPointerUp={(e) => finish(e)}
-              onPointerCancel={(e) => finish(e, true)}
-              onLostPointerCapture={(e) => finish(e, true)}
+              onPointerCancel={(e) => finish(e)}
+              onLostPointerCapture={(e) => finish(e)}
             >
               <div
                 data-paint-cursor
