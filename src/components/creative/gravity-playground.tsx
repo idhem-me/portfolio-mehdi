@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import Matter from "matter-js";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
 import { Button } from "@/components/ui/button";
@@ -30,11 +31,6 @@ const CHIP_PAD_PX = 10;
 const CHIP_COMPACT_PAD_PX = 6;
 const CHIP_COMPACT_FONT_PX = 12;
 const WALL_THICKNESS = 80;
-/** Extra radius beyond the inscribed circle so touch/pointer grabs feel forgiving. */
-const CIRCLE_HIT_PADDING_PX = 14;
-/** Matter circle tessellation — smoother grab edges than the default. */
-const CIRCLE_SIDES = 28;
-
 type PhysicsTuning = {
   gravity: number;
   /** Degrees: 0 = down, 90 = right, 180 = up, 270 = left. */
@@ -71,8 +67,9 @@ type PhysicsPair = {
   el: HTMLElement;
   width: number;
   height: number;
-  /** Circular collision / grab shape (avatar). */
-  circle?: boolean;
+  visualScale?: number;
+  offset?: { x: number; y: number };
+  silhouette?: Matter.Body[];
 };
 
 type SpawnTarget = {
@@ -109,6 +106,7 @@ type Session = {
   sources: HTMLElement[];
   walls: Walls;
   raf: number;
+  onAfterUpdate: () => void;
   onCollision: (event: Matter.IEventCollision<Matter.Engine>) => void;
 };
 
@@ -277,7 +275,7 @@ function spawnChipElement(
   const { source, anchor, lineText } = target;
   const isButton = source.hasAttribute("data-physics-button");
   const isExact = source.hasAttribute("data-physics-exact");
-  const isCircle = source.hasAttribute("data-physics-circle");
+  const isAvatar = source.hasAttribute("data-avatar");
   const isCompact = source.hasAttribute("data-physics-compact");
   const chipPadPx = isCompact ? CHIP_COMPACT_PAD_PX : CHIP_PAD_PX;
   const computed = window.getComputedStyle(source);
@@ -309,7 +307,10 @@ function spawnChipElement(
     el.removeAttribute("data-physics-button");
     el.removeAttribute("data-physics-exact");
     el.removeAttribute("data-physics-circle");
-    el.className = [source.className, "fixed z-[6] m-0"].filter(Boolean).join(" ");
+    el.className = [source.className, "fixed z-[6] m-0"]
+      .filter(Boolean)
+      .join(" ");
+    el.style.position = "fixed";
     el.style.left = "0";
     el.style.top = "0";
     el.style.margin = "0";
@@ -325,7 +326,17 @@ function spawnChipElement(
     el.style.visibility = "visible";
     el.setAttribute("aria-hidden", "true");
     layerEl.appendChild(el);
-    return { el, width, height, cx, cy, circle: isCircle };
+    return {
+      el,
+      width,
+      height,
+      cx,
+      cy,
+
+      silhouette: isAvatar
+        ? avatarParts(source, width, height, cx, cy)
+        : undefined,
+    };
   }
 
   if (pureText) {
@@ -364,6 +375,7 @@ function spawnChipElement(
     el.style.gap = computed.gap || "0.375rem";
   }
 
+  el.style.position = "fixed";
   el.style.left = "0";
   el.style.top = "0";
   el.style.margin = "0";
@@ -388,7 +400,17 @@ function spawnChipElement(
   cx = anchor.left + anchor.width / 2;
   cy = anchor.top + anchor.height / 2;
 
-  return { el, width, height, cx, cy, circle: isCircle };
+  return {
+    el,
+    width,
+    height,
+    cx,
+    cy,
+
+    silhouette: isAvatar
+      ? avatarParts(source, width, height, cx, cy)
+      : undefined,
+  };
 }
 
 /** Rebuild Touche-moi from a pre-click snapshot (exact look + box). */
@@ -399,7 +421,10 @@ function spawnPlaySnapshot(
   const el = document.createElement("button");
   el.type = "button";
   el.textContent = snapshot.text;
-  el.className = [snapshot.className, "fixed z-[6] m-0"].filter(Boolean).join(" ");
+  el.className = [snapshot.className, "fixed z-[6] m-0"]
+    .filter(Boolean)
+    .join(" ");
+  el.style.position = "fixed";
   el.style.left = "0";
   el.style.top = "0";
   el.style.margin = "0";
@@ -431,9 +456,56 @@ type ChipSpawn = {
   height: number;
   cx: number;
   cy: number;
-  /** Round Matter body aligned to the visual (avatar). */
-  circle?: boolean;
+  visualScale?: number;
+  offset?: { x: number; y: number };
+  silhouette?: Matter.Body[];
 };
+
+/** Sample the visible SVG alpha into thin, non-overlapping collision strips. */
+function avatarParts(
+  source: HTMLElement,
+  width: number,
+  height: number,
+  cx: number,
+  cy: number,
+) {
+  const images = Array.from(source.querySelectorAll("img"));
+  const image = images.sort(
+    (a, b) =>
+      Number(getComputedStyle(b).opacity) - Number(getComputedStyle(a).opacity),
+  )[0];
+  if (!image?.complete || !image.naturalWidth) return undefined;
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.ceil(width);
+  canvas.height = Math.ceil(height);
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return undefined;
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  const { data } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const parts: Matter.Body[] = [];
+  for (let y = 0; y < canvas.height; y += 2) {
+    let left = canvas.width,
+      right = -1;
+    for (let row = y; row < Math.min(y + 2, canvas.height); row++) {
+      for (let x = 0; x < canvas.width; x++) {
+        if (data[(row * canvas.width + x) * 4 + 3]! > 127) {
+          left = Math.min(left, x);
+          right = Math.max(right, x);
+        }
+      }
+    }
+    if (right >= left)
+      parts.push(
+        Matter.Bodies.rectangle(
+          cx - width / 2 + (left + right + 1) / 2,
+          cy - height / 2 + y + 1,
+          right - left + 1,
+          Math.min(2, canvas.height - y),
+        ),
+      );
+  }
+  return parts.length ? parts : undefined;
+}
 
 function bodyOptions(tuning: PhysicsTuning): Matter.IChamferableBodyDefinition {
   return {
@@ -442,11 +514,12 @@ function bodyOptions(tuning: PhysicsTuning): Matter.IChamferableBodyDefinition {
     frictionStatic: 0.5,
     frictionAir: tuning.frictionAir,
     density: 0.004,
-    slop: 0.01,
+    slop: 0.05,
+    sleepThreshold: 45,
   };
 }
 
-/** Shared body recipe — rectangles for chips; padded circle for avatar hitbox. */
+/** Rectangles for chips and a compound silhouette for the avatar. */
 function addFallingBody(
   Bodies: typeof Matter.Bodies,
   Body: typeof Matter.Body,
@@ -456,17 +529,16 @@ function addFallingBody(
   chip: ChipSpawn,
   tuning: PhysicsTuning,
 ) {
-  const { el, width, height, cx, cy, circle } = chip;
+  const { el, width, height, cx, cy, silhouette } = chip;
   const opts = bodyOptions(tuning);
 
   let body: Matter.Body;
-  if (circle) {
-    // Inscribed circle + padding: matches the round face and enlarges the grab target.
-    const radius = Math.min(width, height) / 2 + CIRCLE_HIT_PADDING_PX;
-    body = Bodies.circle(cx, cy, radius, opts, CIRCLE_SIDES);
+  if (silhouette) {
+    body = Body.create({ ...opts, parts: silhouette });
   } else {
     body = Bodies.rectangle(cx, cy, width, height, opts);
   }
+  const offset = { x: cx - body.position.x, y: cy - body.position.y };
 
   // Mild random kick — same distribution for every body
   Body.setVelocity(body, {
@@ -475,29 +547,57 @@ function addFallingBody(
   });
   Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.06);
   World.add(engine.world, body);
-  pairs.push({ body, el, width, height, circle: Boolean(circle) });
+  pairs.push({ body, el, width, height, offset });
+}
+
+function playBounds() {
+  const surface = document.querySelector<HTMLElement>(
+    '[data-slot="sidebar-container"]',
+  );
+  const sidebar = surface?.getBoundingClientRect();
+  const header = document.querySelector("header")?.getBoundingClientRect();
+  const left = sidebar && sidebar.left <= 0 ? Math.max(0, sidebar.right) : 0;
+  return {
+    left: left + 8,
+    top: Math.max(0, header?.bottom ?? 0) + 8,
+    right: window.innerWidth - 8,
+    bottom: window.innerHeight - 8,
+  };
 }
 
 function createWalls(vw: number, vh: number): Walls {
   const wallOpts = { isStatic: true, render: { visible: false } };
   const t = WALL_THICKNESS;
+  const bounds = playBounds();
   return {
     ground: Matter.Bodies.rectangle(
       vw / 2,
-      vh + t / 2,
+      bounds.bottom + t / 2,
       vw + t * 2,
       t,
       wallOpts,
     ),
     ceiling: Matter.Bodies.rectangle(
       vw / 2,
-      -t / 2,
+      bounds.top - t / 2,
       vw + t * 2,
       t,
       wallOpts,
     ),
-    left: Matter.Bodies.rectangle(-t / 2, vh / 2, t, vh * 2, wallOpts),
-    right: Matter.Bodies.rectangle(vw + t / 2, vh / 2, t, vh * 2, wallOpts),
+    left: Matter.Bodies.rectangle(
+      bounds.left - t / 2,
+      vh / 2,
+      t,
+      vh * 2,
+      wallOpts,
+    ),
+    right: Matter.Bodies.rectangle(
+      bounds.right + t / 2,
+      vh / 2,
+      t,
+      vh * 2,
+      wallOpts,
+    ),
   };
 }
 
@@ -517,25 +617,45 @@ function replaceWalls(session: Session, vw: number, vh: number) {
   ]);
 }
 
-function clampBodiesToViewport(pairs: PhysicsPair[], vw: number, vh: number) {
-  for (const { body, width, height, circle } of pairs) {
-    const halfW = circle
-      ? Math.min(width, height) / 2 + CIRCLE_HIT_PADDING_PX
-      : width / 2;
-    const halfH = circle
-      ? Math.min(width, height) / 2 + CIRCLE_HIT_PADDING_PX
-      : height / 2;
-    const minX = halfW;
-    const maxX = Math.max(halfW, vw - halfW);
-    const minY = halfH;
-    const maxY = Math.max(halfH, vh - halfH);
-    const x = Math.min(Math.max(body.position.x, minX), maxX);
-    const y = Math.min(Math.max(body.position.y, minY), maxY);
-    if (x !== body.position.x || y !== body.position.y) {
-      Matter.Body.setPosition(body, { x, y });
+function clampBodiesToViewport(pairs: PhysicsPair[]) {
+  const bounds = playBounds();
+  for (const pair of pairs) {
+    const { body } = pair;
+    // Fit the full diagonal so rotation cannot make a large chip exceed the arena.
+    const available = Math.min(
+      bounds.right - bounds.left,
+      bounds.bottom - bounds.top,
+    );
+    const diagonal = Math.hypot(pair.width, pair.height);
+    if (diagonal > available) {
+      const scale = available / diagonal;
+      Matter.Body.scale(body, scale, scale);
+      pair.width *= scale;
+      pair.height *= scale;
+      if (pair.offset) {
+        pair.offset.x *= scale;
+        pair.offset.y *= scale;
+      }
+      pair.visualScale = (pair.visualScale ?? 1) * scale;
+    }
+    const { min, max } = body.bounds;
+    const dx =
+      min.x < bounds.left
+        ? bounds.left - min.x
+        : max.x > bounds.right
+          ? bounds.right - max.x
+          : 0;
+    const dy =
+      min.y < bounds.top
+        ? bounds.top - min.y
+        : max.y > bounds.bottom
+          ? bounds.bottom - max.y
+          : 0;
+    if (dx || dy) {
+      Matter.Body.translate(body, { x: dx, y: dy });
       Matter.Body.setVelocity(body, {
-        x: body.velocity.x * 0.5,
-        y: Math.min(body.velocity.y, 0),
+        x: dx ? 0 : body.velocity.x,
+        y: dy ? 0 : body.velocity.y,
       });
     }
   }
@@ -570,34 +690,6 @@ const TUNING_SLIDERS: {
     max: 2.8,
     step: 0.05,
   },
-  {
-    key: "restitution",
-    labelKey: "gravityTuneBounce",
-    min: 0,
-    max: 0.9,
-    step: 0.01,
-  },
-  {
-    key: "friction",
-    labelKey: "gravityTuneFriction",
-    min: 0,
-    max: 1,
-    step: 0.01,
-  },
-  {
-    key: "frictionAir",
-    labelKey: "gravityTuneAir",
-    min: 0,
-    max: 0.08,
-    step: 0.001,
-  },
-  {
-    key: "grabStiffness",
-    labelKey: "gravityTuneGrab",
-    min: 0.05,
-    max: 0.95,
-    step: 0.01,
-  },
 ];
 
 function formatTuningValue(key: TuningSliderKey, value: number): string {
@@ -614,6 +706,7 @@ function applyTuningToSession(session: Session, tuning: PhysicsTuning) {
   session.engine.gravity.x = x;
   session.engine.gravity.y = y;
   for (const { body } of session.pairs) {
+    Matter.Sleeping.set(body, false);
     body.restitution = tuning.restitution;
     body.friction = tuning.friction;
     body.frictionAir = tuning.frictionAir;
@@ -632,6 +725,13 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const sessionRef = useRef<Session | null>(null);
   const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tuningRef = useRef<PhysicsTuning>(DEFAULT_TUNING);
+  const [launchSlot, setLaunchSlot] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setLaunchSlot(
+      rootRef.current?.querySelector<HTMLElement>("[data-gravity-launch]") ??
+        null,
+    );
+  }, []);
   const [active, setActive] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [impacts, setImpacts] = useState(0);
@@ -656,6 +756,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
 
     cancelAnimationFrame(session.raf);
     Matter.Events.off(session.engine, "collisionStart", session.onCollision);
+    Matter.Events.off(session.engine, "afterUpdate", session.onAfterUpdate);
     Matter.Runner.stop(session.runner);
     Matter.World.remove(session.engine.world, session.mouseConstraint);
     Matter.World.clear(session.engine.world, false);
@@ -686,12 +787,21 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     if (sources.length === 0 && !playSnapshot) return;
 
     const targets = collectSpawnTargets(sources);
-    const { Engine, Bodies, World, Runner, Mouse, MouseConstraint, Body, Events } =
-      Matter;
+    const {
+      Engine,
+      Bodies,
+      World,
+      Runner,
+      Mouse,
+      MouseConstraint,
+      Body,
+      Events,
+    } = Matter;
     const tuningNow = tuningRef.current;
 
     const g0 = gravityVector(tuningNow);
     const engine = Engine.create({
+      enableSleeping: true,
       gravity: { x: g0.x, y: g0.y, scale: 0.001 },
     });
     engine.positionIterations = 12;
@@ -761,7 +871,8 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       mouse,
       constraint: {
         stiffness: tuningNow.grabStiffness,
-        damping: 0.05,
+        damping: 0.15,
+        ...{ angularStiffness: 0 },
         render: { visible: false },
       },
     });
@@ -780,13 +891,48 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     };
     Events.on(engine, "collisionStart", onCollision);
 
+    const quietFrames = new Map<Matter.Body, number>();
+    const onAfterUpdate = () => {
+      clampBodiesToViewport(pairs);
+      const touching = new Set<Matter.Body>();
+      for (const contact of engine.pairs.list) {
+        if (!contact.isActive) continue;
+        touching.add(contact.bodyA.parent);
+        touching.add(contact.bodyB.parent);
+      }
+      for (const { body } of pairs) {
+        if (body.isSleeping || mouseConstraint.body === body) {
+          quietFrames.delete(body);
+          continue;
+        }
+        const quiet =
+          touching.has(body) && body.speed < 0.5 && body.angularSpeed < 0.015;
+        const frames = quiet ? (quietFrames.get(body) ?? 0) + 1 : 0;
+        quietFrames.set(body, frames);
+        if (frames >= 45) Matter.Sleeping.set(body, true);
+      }
+    };
+    Events.on(engine, "afterUpdate", onAfterUpdate);
+    clampBodiesToViewport(pairs);
     const runner = Runner.create();
     Runner.run(runner, engine);
 
     const sync = () => {
-      for (const { body, el, width, height } of pairs) {
-        const { x, y } = body.position;
-        el.style.transform = `translate(${x - width / 2}px, ${y - height / 2}px) rotate(${body.angle}rad)`;
+      for (const {
+        body,
+        el,
+        width,
+        height,
+        offset,
+        visualScale = 1,
+      } of pairs) {
+        const cos = Math.cos(body.angle),
+          sin = Math.sin(body.angle);
+        const x =
+          body.position.x + (offset?.x ?? 0) * cos - (offset?.y ?? 0) * sin;
+        const y =
+          body.position.y + (offset?.x ?? 0) * sin + (offset?.y ?? 0) * cos;
+        el.style.transform = `translate(${x - width / visualScale / 2}px, ${y - height / visualScale / 2}px) rotate(${body.angle}rad) scale(${visualScale})`;
       }
       const session = sessionRef.current;
       if (session) {
@@ -806,6 +952,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       walls,
       raf: requestAnimationFrame(sync),
       onCollision,
+      onAfterUpdate,
     };
   }, []);
 
@@ -865,7 +1012,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       replaceWalls(session, vw, vh);
-      clampBodiesToViewport(session.pairs, vw, vh);
+      clampBodiesToViewport(session.pairs);
     };
 
     window.addEventListener("resize", onResize);
@@ -946,10 +1093,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
                       const id = `gravity-tune-${key}`;
                       const value = tuning[key];
                       return (
-                        <div
-                          key={key}
-                          className="flex items-center gap-2"
-                        >
+                        <div key={key} className="flex items-center gap-2">
                           <label
                             htmlFor={id}
                             className="w-14 shrink-0 text-[11px] text-muted-foreground"
@@ -977,23 +1121,26 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
                 </fieldset>
               ) : null}
             </>
-          ) : (
-            <Button
-              ref={playButtonRef}
-              type="button"
-              variant="accent"
-              size="sm"
-              className="pointer-events-auto"
-              onClick={() => {
-                setAvatarWink(null);
-                start();
-              }}
-              onMouseEnter={() => setAvatarWink("AD-clin")}
-              onMouseLeave={() => setAvatarWink(null)}
-            >
-              {t("gravityPlay")}
-            </Button>
-          )}
+          ) : launchSlot ? (
+            createPortal(
+              <Button
+                ref={playButtonRef}
+                type="button"
+                variant="accent"
+                size="sm"
+                className="pointer-events-auto"
+                onClick={() => {
+                  setAvatarWink(null);
+                  start();
+                }}
+                onMouseEnter={() => setAvatarWink("AD-clin")}
+                onMouseLeave={() => setAvatarWink(null)}
+              >
+                {t("gravityPlay")}
+              </Button>,
+              launchSlot,
+            )
+          ) : null}
         </div>
         {children}
       </div>

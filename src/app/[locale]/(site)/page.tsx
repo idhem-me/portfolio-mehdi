@@ -68,7 +68,10 @@ async function HomeContent({ params }: Props) {
       <GravityPlayground>
         <section className="flex flex-col gap-8">
           <div className="space-y-4">
-            <GazeAvatar />
+            <div className="flex w-fit flex-col items-center gap-2">
+              <GazeAvatar />
+              <div data-gravity-launch />
+            </div>
 
             <HomeStatus />
 
@@ -79,8 +82,7 @@ async function HomeContent({ params }: Props) {
                 className="inline-block max-w-full whitespace-normal break-words rounded-lg text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
               >
                 {home.title}
-              </span>
-              {" "}
+              </span>{" "}
               <span
                 data-physics-item
                 data-physics-split-lines
