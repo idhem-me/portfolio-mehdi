@@ -86,7 +86,7 @@ export default async function ContactPage({ params }: Props) {
       <section className="space-y-6">
         <BrowserWindow>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Card className="h-full flex-row items-center gap-4 p-3 sm:gap-5 sm:p-4">
+            <Card className="h-full min-h-[120px] flex-row items-center gap-4 p-3 sm:gap-5 sm:p-4">
               <div className="relative w-14 shrink-0 self-stretch overflow-hidden rounded-lg ring-1 ring-foreground/5 sm:w-16">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img

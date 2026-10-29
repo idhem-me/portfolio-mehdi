@@ -1,5 +1,8 @@
 {
   "nav": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menu": "Navigation",
     "home": "Home",
     "productDesigner": "Product designer",
     "about": "About me",

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { MobileMenuButton } from "@/components/layout/mobile-menu-button";
 import { MobileBrandBar } from "@/components/layout/mobile-brand-bar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { AnalyticsEvents } from "@/lib/analytics/events";
@@ -71,6 +72,49 @@ export function AppSidebar() {
       match: (path: string) => path.startsWith("/a-propos"),
     },
   ] as const;
+
+  if (isMobile) {
+    const mobileItems = [...navItems, {
+      href: "/contact",
+      label: t("contact"),
+      icon: UserRound,
+      match: (path: string) => path.startsWith("/contact"),
+    }];
+
+    return (
+      <Sidebar>
+        <MobileMenuButton close />
+        <div className="mobile-navigation-body">
+          <nav aria-label={t("menu")} className="mobile-navigation-links">
+            <SidebarMenu className="gap-4">
+              {mobileItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton asChild isActive={item.match(pathname)} className="mobile-navigation-tile">
+                    <TrackedLink
+                      href={item.href}
+                      aria-current={item.match(pathname) ? "page" : undefined}
+                      event={AnalyticsEvents.nav_click}
+                      eventProps={{ href: item.href, label: item.label }}
+                      onClick={closeMobilePanel}
+                    >
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </TrackedLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </nav>
+          <div className="mobile-navigation-settings">
+            <SidebarMenu className="gap-4 [&_[data-slot=sidebar-menu-button]]:min-h-12">
+              <LanguageSwitcher />
+              <ThemeToggle />
+            </SidebarMenu>
+          </div>
+        </div>
+      </Sidebar>
+    );
+  }
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">

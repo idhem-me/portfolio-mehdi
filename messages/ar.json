@@ -1,5 +1,8 @@
 {
   "nav": {
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق القائمة",
+    "menu": "التنقل",
     "home": "الرئيسية",
     "productDesigner": "مصمم منتجات",
     "about": "نبذة عني",
