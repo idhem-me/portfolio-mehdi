@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import Matter from "matter-js";
-import { createPortal } from "react-dom";
+import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
 import { Button } from "@/components/ui/button";
@@ -727,18 +727,6 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const paintBridge = useRef<PaintBridge | null>(null);
   const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tuningRef = useRef<PhysicsTuning>(DEFAULT_TUNING);
-  const [paintSlot, setPaintSlot] = useState<HTMLElement | null>(null);
-  const [launchSlot, setLaunchSlot] = useState<HTMLElement | null>(null);
-  useEffect(() => {
-    setPaintSlot(
-      rootRef.current?.querySelector<HTMLElement>("[data-paint-launch]") ??
-        null,
-    );
-    setLaunchSlot(
-      rootRef.current?.querySelector<HTMLElement>("[data-gravity-launch]") ??
-        null,
-    );
-  }, []);
   const [active, setActive] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [impacts, setImpacts] = useState(0);
@@ -920,6 +908,9 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       },
     });
     World.add(engine.world, mouseConstraint);
+    Events.on(mouseConstraint, "startdrag", () =>
+      trackHomeInteraction("physics_grab", { target: "content" }),
+    );
 
     const onCollision = (event: Matter.IEventCollision<Matter.Engine>) => {
       const hits = new Set<string>();
@@ -1085,7 +1076,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       <div ref={rootRef} className="relative">
         {/* HUD in content column only — below sidebar (z-10), above physics (z-6). */}
         <div
-          className="pointer-events-none fixed top-12 z-[9] flex flex-col items-center gap-1.5 py-8 md:top-0 md:py-16 end-0"
+          className="pointer-events-none fixed top-[calc(max(1rem,env(safe-area-inset-top))+6.5rem)] z-[9] flex flex-col items-center gap-1.5 end-0"
           style={
             isMobile
               ? { left: 0 }
@@ -1104,6 +1095,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
                   type="button"
                   variant="secondary"
                   size="sm"
+                  data-analytics-action="gravity_reset"
                   onClick={teardown}
                 >
                   {t("gravityReset")}
@@ -1113,6 +1105,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
                   variant={configOpen ? "secondary" : "outline"}
                   size="sm"
                   aria-expanded={configOpen}
+                  data-analytics-action="gravity_config"
                   aria-controls="gravity-tune-panel"
                   onClick={() => setConfigOpen((open) => !open)}
                 >
@@ -1148,6 +1141,8 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
                           </label>
                           <input
                             id={id}
+                            data-analytics-action="gravity_tune"
+                            data-analytics-value={key}
                             type="range"
                             min={min}
                             max={max}
@@ -1167,42 +1162,47 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
                 </fieldset>
               ) : null}
             </>
-          ) : launchSlot ? (
-            createPortal(
-              <Button
-                ref={playButtonRef}
-                type="button"
-                variant="accent"
-                size="sm"
-                className="pointer-events-auto"
-                onClick={() => {
-                  setAvatarWink(null);
-                  start();
-                }}
-                onMouseEnter={() => setAvatarWink("AD-clin")}
-                onMouseLeave={() => setAvatarWink(null)}
-              >
-                {t("gravityPlay")}
-              </Button>,
-              launchSlot,
-            )
-          ) : null}
+          ) : (
+            <Button
+              data-analytics-action="gravity_play"
+              ref={playButtonRef}
+              type="button"
+              variant="accent"
+              size="sm"
+              className="pointer-events-auto"
+              onClick={() => {
+                setAvatarWink(null);
+                start();
+              }}
+              onMouseEnter={() => setAvatarWink("AD-clin")}
+              onMouseLeave={() => setAvatarWink(null)}
+            >
+              {t("gravityPlay")}
+            </Button>
+          )}
         </div>
-        {paintSlot
-          ? createPortal(
-              <PaintTool
-                bridgeRef={paintBridge}
-                isPlaying={active}
-                bounds={playBounds}
-                getSession={() => {
-                  runPhysics(true);
-                  return sessionRef.current!;
-                }}
-                options={() => bodyOptions(tuningRef.current)}
-              />,
-              paintSlot,
-            )
-          : null}
+        <div
+          data-paint-toolbar
+          className="pointer-events-none fixed top-[max(1rem,env(safe-area-inset-top))] end-2 md:end-0 z-[11] flex justify-center"
+          style={{
+            left: isMobile
+              ? "3.75rem"
+              : state === "collapsed"
+                ? "var(--sidebar-width-icon)"
+                : "var(--sidebar-width)",
+          }}
+        >
+          <PaintTool
+            bridgeRef={paintBridge}
+            isPlaying={active}
+            bounds={playBounds}
+            getSession={() => {
+              runPhysics(true);
+              return sessionRef.current!;
+            }}
+            options={() => bodyOptions(tuningRef.current)}
+          />
+        </div>
         {children}
       </div>
     </GravityActiveContext.Provider>

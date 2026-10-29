@@ -17,7 +17,10 @@ export function ConsentBanner() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => { setStatus(getConsent()); setMounted(true); });
+    const frame = requestAnimationFrame(() => {
+      setStatus(getConsent());
+      setMounted(true);
+    });
     return () => cancelAnimationFrame(frame);
   }, []);
 
@@ -60,10 +63,22 @@ export function ConsentBanner() {
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <Button type="button" variant="ghost" size="sm" onClick={deny}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={deny}
+            data-analytics-action="consent_deny"
+          >
             {t("deny")}
           </Button>
-          <Button type="button" variant="accent" size="sm" onClick={accept}>
+          <Button
+            type="button"
+            variant="accent"
+            size="sm"
+            onClick={accept}
+            data-analytics-action="consent_accept"
+          >
             {t("accept")}
           </Button>
         </div>

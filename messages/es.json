@@ -27,7 +27,7 @@
   "home": {
     "paint": {
       "brush": "Pincel",
-      "hint": "Arrastra el pincel para dibujar",
+      "hint": "Activa el pincel · Mantén el botón izquierdo para dibujar · Clic derecho para salir",
       "palette": "Color del trazo",
       "primary": "Principal",
       "accent": "Acento",
@@ -36,7 +36,8 @@
       "danger": "Peligro",
       "undo": "Deshacer",
       "clear": "Borrar todo",
-      "count": "{count} trazos"
+      "count": "{count} trazos",
+      "exit": "Salir del pincel"
     },
     "ctaPlay": "Jugar",
     "freelanceOn": "Freelance en",

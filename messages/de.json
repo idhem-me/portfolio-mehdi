@@ -27,7 +27,7 @@
   "home": {
     "paint": {
       "brush": "Pinsel",
-      "hint": "Ziehe den Pinsel zum Zeichnen",
+      "hint": "Pinsel aktivieren · Linke Maustaste zum Zeichnen halten · Rechtsklick zum Beenden",
       "palette": "Strichfarbe",
       "primary": "Primär",
       "accent": "Akzent",
@@ -36,7 +36,8 @@
       "danger": "Gefahr",
       "undo": "Rückgängig",
       "clear": "Alles löschen",
-      "count": "{count} Striche"
+      "count": "{count} Striche",
+      "exit": "Pinsel verlassen"
     },
     "ctaPlay": "Spielen",
     "freelanceOn": "Freelance auf",

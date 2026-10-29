@@ -26,6 +26,7 @@ export function CopyEmailButton({ className }: { className?: string }) {
 
   return (
     <Button
+      data-analytics-action="copy_email"
       type="button"
       variant="secondary"
       size="sm"
@@ -34,9 +35,7 @@ export function CopyEmailButton({ className }: { className?: string }) {
       onMouseEnter={() => setAvatarWink("AD-clin")}
       onMouseLeave={() => setAvatarWink(null)}
       aria-label={
-        copied
-          ? t("emailCopied")
-          : t("copyEmail", { email: profileMeta.email })
+        copied ? t("emailCopied") : t("copyEmail", { email: profileMeta.email })
       }
     >
       {copied ? (

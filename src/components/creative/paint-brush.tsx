@@ -1,8 +1,8 @@
-export function PaintBrush() {
+export function PaintBrush({ size = 44 }: { size?: number }) {
   return (
     <svg
-      width="80"
-      height="80"
+      width={size}
+      height={size}
       aria-hidden="true"
       viewBox="0 0 160 160"
       fill="none"

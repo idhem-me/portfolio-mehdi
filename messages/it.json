@@ -27,7 +27,7 @@
   "home": {
     "paint": {
       "brush": "Pennello",
-      "hint": "Trascina il pennello per disegnare",
+      "hint": "Attiva il pennello · Tieni premuto il tasto sinistro per disegnare · Clic destro per uscire",
       "palette": "Colore del tratto",
       "primary": "Principale",
       "accent": "Accento",
@@ -36,7 +36,8 @@
       "danger": "Pericolo",
       "undo": "Annulla",
       "clear": "Cancella tutto",
-      "count": "{count} tratti"
+      "count": "{count} tratti",
+      "exit": "Esci dal pennello"
     },
     "ctaPlay": "Gioca",
     "freelanceOn": "Freelance su",

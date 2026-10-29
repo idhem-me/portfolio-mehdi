@@ -1,3 +1,4 @@
+import { HomeInteractionTracker } from "@/components/analytics/home-interaction-tracker";
 import { Suspense } from "react";
 import { setRequestLocale } from "next-intl/server";
 import { HomeCtas, HomeStatus } from "@/components/analytics/home-ctas";
@@ -65,15 +66,12 @@ async function HomeContent({ params }: Props) {
 
   return (
     <main className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20">
+      <HomeInteractionTracker />
       <GravityPlayground>
         <section className="flex flex-col gap-8">
           <div className="space-y-4">
             <div className="flex w-fit flex-col items-center gap-2">
-              <div className="flex items-center gap-4">
-                <GazeAvatar />
-                <div data-paint-launch />
-              </div>
-              <div data-gravity-launch />
+              <GazeAvatar />
             </div>
 
             <HomeStatus />

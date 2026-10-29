@@ -27,7 +27,7 @@
   "home": {
     "paint": {
       "brush": "Pinceau",
-      "hint": "Attrape le pinceau pour dessiner",
+      "hint": "Cliquer pour activer le pinceau · Maintenir le clic gauche pour dessiner · Clic droit pour quitter",
       "palette": "Couleur du trait",
       "primary": "Principale",
       "accent": "Accent",
@@ -36,7 +36,8 @@
       "danger": "Danger",
       "undo": "Annuler",
       "clear": "Tout effacer",
-      "count": "{count} traits"
+      "count": "{count} traits",
+      "exit": "Quitter le pinceau"
     },
     "ctaPlay": "Jouer",
     "freelanceOn": "Freelance sur",

@@ -12,6 +12,7 @@ export function MobileMenuButton({ close = false }: { close?: boolean }) {
 
   return (
     <Button
+      data-analytics-action={close ? "menu_close" : "menu_open"}
       id={close ? undefined : "mobile-menu-trigger"}
       variant="secondary"
       size="icon"

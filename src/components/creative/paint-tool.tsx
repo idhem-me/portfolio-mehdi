@@ -6,7 +6,10 @@ import {
   type RefObject,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { Undo2, BrushCleaning } from "lucide-react";
+import { createPortal } from "react-dom";
 import Matter from "matter-js";
+import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { PaintBrush } from "./paint-brush";
@@ -92,6 +95,9 @@ export function PaintTool({
   const t = useTranslations("home.paint");
   const [color, setColor] = useState<string>("primary");
   const [position, setPosition] = useState<PaintPoint | null>(null);
+  const [paintMode, setPaintMode] = useState(false);
+  const [exitPosition, setExitPosition] = useState({ x: 0, y: 0 });
+  const paletteRef = useRef<HTMLDivElement>(null);
   const [count, setCount] = useState(0);
   const strokesRef = useRef<Stroke[]>([]);
   const gestureRef = useRef<{
@@ -142,18 +148,44 @@ export function PaintTool({
     };
   }, [bridgeRef]);
   useEffect(() => {
-    const fit = () =>
-      setPosition((p) =>
-        p
-          ? {
-              x: Math.max(0, Math.min(p.x, window.innerWidth - 80)),
-              y: Math.max(0, Math.min(p.y, window.innerHeight - 80)),
-            }
-          : p,
-      );
-    window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
-  }, []);
+    if (!paintMode) return;
+    const palette = paletteRef.current;
+    if (!palette) return;
+    const align = () => {
+      const rect = palette.getBoundingClientRect();
+      setExitPosition({ x: rect.left + rect.width / 2, y: rect.bottom + 8 });
+    };
+    align();
+    const observer = new ResizeObserver(align);
+    observer.observe(palette.closest("[data-paint-toolbar]") ?? palette);
+    window.addEventListener("resize", align);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", align);
+    };
+  }, [paintMode]);
+  useEffect(() => {
+    if (!paintMode) return;
+    function leave() {
+      const g = gestureRef.current;
+      if (g) {
+        g.el?.remove();
+        document.documentElement.style.overflow = g.scroll;
+        gestureRef.current = null;
+      }
+      setPaintMode(false);
+      trackHomeInteraction("paint_exit");
+    }
+    function key(event: KeyboardEvent) {
+      if (event.key === "Escape") leave();
+    }
+    window.addEventListener("keydown", key);
+    window.addEventListener("blur", leave);
+    return () => {
+      window.removeEventListener("keydown", key);
+      window.removeEventListener("blur", leave);
+    };
+  }, [paintMode]);
   function addBodies() {
     const session = latestRef.current.getSession();
     for (const stroke of strokesRef.current) {
@@ -189,6 +221,10 @@ export function PaintTool({
           length: 0,
           stiffness: session.mouseConstraint.constraint.stiffness,
           damping: 0.15,
+        });
+        trackHomeInteraction("physics_grab", {
+          target: "drawing",
+          input: event.pointerType,
         });
         body.plugin.paintDragging = true;
         Matter.Sleeping.set(body, false);
@@ -253,19 +289,14 @@ export function PaintTool({
       return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
     });
   }
-  function move(e: ReactPointerEvent<HTMLButtonElement>) {
+  function move(e: ReactPointerEvent<HTMLElement>) {
     const g = gestureRef.current;
     if (!g || e.pointerId !== g.id) return;
     e.preventDefault();
-    const x = Math.max(
-      0,
-      Math.min(window.innerWidth - 80, e.clientX - g.offset.x),
-    );
-    const y = Math.max(
-      0,
-      Math.min(window.innerHeight - 80, e.clientY - g.offset.y),
-    );
-    const point = { x: x + 8.5, y: y + 68.5 };
+    const point = {
+      x: e.clientX - g.offset.x + 4.675,
+      y: e.clientY - g.offset.y + 37.675,
+    };
     if (!pointAt(point.x, point.y)) return;
     const previous = g.points.at(-1);
     if (previous) {
@@ -282,14 +313,13 @@ export function PaintTool({
           return;
       }
     }
-    setPosition({ x, y });
     samplePaintPoint(g.points, point);
     g.endpoint = point;
     const preview = g.points.at(-1) === point ? g.points : [...g.points, point];
     if (!g.el) g.el = renderStroke(preview, g.color);
     else updatePath(g.el, preview);
   }
-  function finish(e: ReactPointerEvent<HTMLButtonElement>, cancel = false) {
+  function finish(e: ReactPointerEvent<HTMLElement>, cancel = false) {
     const g = gestureRef.current;
     if (!g || g.id !== e.pointerId) return;
     gestureRef.current = null;
@@ -303,6 +333,11 @@ export function PaintTool({
     if (!g.el || !g.points.length) return;
     if (g.endpoint && g.points.at(-1) !== g.endpoint) g.points.push(g.endpoint);
     updatePath(g.el, g.points);
+    trackHomeInteraction("paint_stroke", {
+      color: g.color,
+      point_count: g.points.length,
+      playing: latestRef.current.isPlaying,
+    });
     strokesRef.current.push({ points: g.points, el: g.el });
     setCount(strokesRef.current.length);
     if (latestRef.current.isPlaying) addBodies();
@@ -311,87 +346,165 @@ export function PaintTool({
     <button
       ref={brushRef}
       type="button"
+      data-analytics-gesture="paint_brush"
       data-paint-brush
       aria-label={t("brush")}
       title={t("hint")}
-      className="pointer-events-auto touch-none cursor-grab active:cursor-grabbing rounded-lg focus-visible:outline-2 focus-visible:outline-ring"
-      style={
-        position
-          ? { position: "fixed", left: position.x, top: position.y, zIndex: 40 }
-          : { width: 80, height: 80 }
-      }
-      onPointerDown={(e) => {
-        if (gestureRef.current || !e.isPrimary || e.button !== 0) return;
-        e.preventDefault();
-        const r = e.currentTarget.getBoundingClientRect();
-        gestureRef.current = {
-          id: e.pointerId,
-          offset: { x: e.clientX - r.left, y: e.clientY - r.top },
-          points: [],
-          color,
-          scroll: document.documentElement.style.overflow,
-        };
-        document.documentElement.style.overflow = "hidden";
-        e.currentTarget.setPointerCapture(e.pointerId);
-        move(e);
+      className="pointer-events-auto touch-none cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-ring"
+      style={{
+        width: 44,
+        height: 44,
+        visibility: paintMode ? "hidden" : "visible",
       }}
-      onPointerMove={move}
-      onPointerUp={(e) => finish(e)}
-      onPointerCancel={(e) => finish(e, true)}
-      onLostPointerCapture={(e) => finish(e, true)}
+      onClick={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        setPosition({
+          x: e.detail ? e.clientX - 4.675 : rect.left,
+          y: e.detail ? e.clientY - 37.675 : rect.top,
+        });
+        setPaintMode(true);
+        trackHomeInteraction("paint_grab", { color });
+      }}
     >
       <PaintBrush />
     </button>
   );
   return (
-    <div className="pointer-events-auto relative z-[40] flex flex-col items-center gap-2">
-      <div className="h-20 w-20">{brushButton}</div>
-      <div className="fixed right-4 top-[max(1rem,env(safe-area-inset-top))] z-40 flex flex-col items-center gap-1">
-        <div
-          data-paint-controls
-          role="group"
-          aria-label={t("palette")}
-          className="flex gap-1 rounded-full border bg-background p-1"
-        >
-          {COLORS.map((c) => (
-            <button
-              key={c}
-              type="button"
-              aria-label={t(c)}
-              aria-pressed={color === c}
-              onClick={() => setColor(c)}
-              className="size-8 rounded-full p-1 focus-visible:outline-2 focus-visible:outline-ring"
-              style={{
-                outline:
-                  color === c ? "2px solid var(--foreground)" : undefined,
-                outlineOffset: -2,
+    <div className="pointer-events-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+      <div className="size-11 shrink-0">{brushButton}</div>
+      {paintMode && position
+        ? createPortal(
+            <div
+              data-paint-mode
+              data-analytics-gesture="paint_mode"
+              className="fixed inset-0 z-[45] touch-none cursor-none"
+              onContextMenu={(e) => e.preventDefault()}
+              onPointerMove={(e) => {
+                setPosition({ x: e.clientX - 4.675, y: e.clientY - 37.675 });
+                move(e);
               }}
+              onPointerDown={(e) => {
+                if (!e.isPrimary) return;
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.pointerType === "mouse" && e.button === 2) {
+                  const preventMenu = (event: Event) => event.preventDefault();
+                  document.addEventListener("contextmenu", preventMenu, {
+                    capture: true,
+                    once: true,
+                  });
+                  window.setTimeout(
+                    () =>
+                      document.removeEventListener(
+                        "contextmenu",
+                        preventMenu,
+                        true,
+                      ),
+                    1000,
+                  );
+                  if (gestureRef.current) finish(e, true);
+                  setPaintMode(false);
+                  trackHomeInteraction("paint_exit");
+                  return;
+                }
+                if (
+                  gestureRef.current ||
+                  (e.pointerType === "mouse" && e.button !== 0)
+                )
+                  return;
+                gestureRef.current = {
+                  id: e.pointerId,
+                  offset: { x: 4.675, y: 37.675 },
+                  points: [],
+                  color,
+                  scroll: document.documentElement.style.overflow,
+                };
+                document.documentElement.style.overflow = "hidden";
+                e.currentTarget.setPointerCapture(e.pointerId);
+                move(e);
+              }}
+              onPointerUp={(e) => finish(e)}
+              onPointerCancel={(e) => finish(e, true)}
+              onLostPointerCapture={(e) => finish(e, true)}
             >
-              <span
-                className="block size-full rounded-full border border-foreground/15"
-                style={{ background: token(c) }}
-              />
-            </button>
-          ))}
-        </div>
-        <div data-paint-controls className="flex gap-1">
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={!count}
-            onClick={() => removeLast()}
+              <div
+                data-paint-cursor
+                className="pointer-events-none fixed"
+                style={{ left: position.x, top: position.y }}
+              >
+                <PaintBrush />
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                className="fixed -translate-x-1/2 cursor-pointer whitespace-nowrap"
+                style={{ left: exitPosition.x, top: exitPosition.y }}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={() => {
+                  setPaintMode(false);
+                  trackHomeInteraction("paint_exit");
+                }}
+              >
+                {t("exit")}
+              </Button>
+            </div>,
+            document.body,
+          )
+        : null}
+      <div
+        ref={paletteRef}
+        data-paint-controls
+        role="group"
+        aria-label={t("palette")}
+        className="flex gap-1 rounded-full border bg-background p-1"
+      >
+        {COLORS.map((c) => (
+          <button
+            key={c}
+            type="button"
+            data-analytics-action="paint_color"
+            data-analytics-value={c}
+            aria-label={t(c)}
+            aria-pressed={color === c}
+            onClick={() => setColor(c)}
+            className="size-7 sm:size-8 rounded-full p-1 focus-visible:outline-2 focus-visible:outline-ring"
+            style={{
+              outline: color === c ? "2px solid var(--foreground)" : undefined,
+              outlineOffset: -2,
+            }}
           >
-            {t("undo")}
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            disabled={!count}
-            onClick={() => removeLast(true)}
-          >
-            {t("clear")}
-          </Button>
-        </div>
+            <span
+              className="block size-full rounded-full border border-foreground/15"
+              style={{ background: token(c) }}
+            />
+          </button>
+        ))}
+      </div>
+      <div data-paint-controls className="flex gap-1">
+        <Button
+          size="icon"
+          variant="outline"
+          className="size-10 shrink-0"
+          disabled={!count}
+          aria-label={t("undo")}
+          title={t("undo")}
+          data-analytics-action="paint_undo"
+          onClick={() => removeLast()}
+        >
+          <Undo2 aria-hidden="true" />
+        </Button>
+        <Button
+          size="icon"
+          variant="outline"
+          className="size-10 shrink-0"
+          disabled={!count}
+          aria-label={t("clear")}
+          title={t("clear")}
+          data-analytics-action="paint_clear"
+          onClick={() => removeLast(true)}
+        >
+          <BrushCleaning aria-hidden="true" />
+        </Button>
       </div>
       <span className="sr-only" aria-live="polite">
         {t("count", { count })}

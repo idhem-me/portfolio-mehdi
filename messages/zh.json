@@ -27,7 +27,7 @@
   "home": {
     "paint": {
       "brush": "画笔",
-      "hint": "拖动画笔绘画",
+      "hint": "点击启用画笔 · 按住左键绘画 · 右键退出",
       "palette": "线条颜色",
       "primary": "主色",
       "accent": "强调色",
@@ -36,7 +36,8 @@
       "danger": "危险",
       "undo": "撤销",
       "clear": "全部清除",
-      "count": "{count} 条线"
+      "count": "{count} 条线",
+      "exit": "退出画笔"
     },
     "ctaPlay": "开始游戏",
     "freelanceOn": "自由职业平台",

@@ -27,7 +27,7 @@
   "home": {
     "paint": {
       "brush": "Paintbrush",
-      "hint": "Drag the brush to draw",
+      "hint": "Click to enable brush · Hold left click to draw · Right click to exit",
       "palette": "Stroke color",
       "primary": "Primary",
       "accent": "Accent",
@@ -36,7 +36,8 @@
       "danger": "Danger",
       "undo": "Undo",
       "clear": "Clear all",
-      "count": "{count} strokes"
+      "count": "{count} strokes",
+      "exit": "Exit brush"
     },
     "ctaPlay": "Play",
     "freelanceOn": "Freelance on",

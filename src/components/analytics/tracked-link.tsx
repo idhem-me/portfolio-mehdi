@@ -18,6 +18,10 @@ export function TrackedLink({
   return (
     <Link
       {...props}
+      data-analytics-action={event}
+      data-analytics-value={
+        typeof eventProps?.label === "string" ? eventProps.label : undefined
+      }
       onClick={(e) => {
         track(event, eventProps);
         onClick?.(e);
@@ -40,6 +44,10 @@ export function TrackedAnchor({
   return (
     <a
       {...props}
+      data-analytics-action={event}
+      data-analytics-value={
+        typeof eventProps?.label === "string" ? eventProps.label : undefined
+      }
       onClick={(e) => {
         track(event, eventProps);
         onClick?.(e);

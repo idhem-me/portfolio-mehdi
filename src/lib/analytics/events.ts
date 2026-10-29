@@ -18,6 +18,7 @@ export const AnalyticsEvents = {
   copy_email: "copy_email",
   contact_cta: "contact_cta",
   home_cta: "home_cta",
+  home_interaction: "home_interaction",
   consent_updated: "consent_updated",
   game_feedback: "game_feedback",
   game_share: "game_share",
@@ -35,6 +36,7 @@ export function track(
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
   void import("posthog-js")
     .then(({ default: posthog }) => {
+      if (getConsent() !== "granted") return;
       posthog.capture(event, properties);
     })
     .catch(() => {

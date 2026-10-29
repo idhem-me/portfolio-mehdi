@@ -33,12 +33,8 @@ export function LanguageSwitcher() {
   return (
     <SidebarMenuItem>
       <DropdownMenu>
-        <SidebarMenuButton
-          asChild
-          tooltip={t("label")}
-          aria-label={t("label")}
-        >
-          <DropdownMenuTrigger>
+        <SidebarMenuButton asChild tooltip={t("label")} aria-label={t("label")}>
+          <DropdownMenuTrigger data-analytics-action="language_open">
             <Languages />
             <span>{localeNames[locale]}</span>
           </DropdownMenuTrigger>
@@ -51,7 +47,12 @@ export function LanguageSwitcher() {
         >
           <DropdownMenuRadioGroup value={locale} onValueChange={onChange}>
             {routing.locales.map((code) => (
-              <DropdownMenuRadioItem key={code} value={code}>
+              <DropdownMenuRadioItem
+                key={code}
+                value={code}
+                data-analytics-action="language_select"
+                data-analytics-value={code}
+              >
                 {localeNames[code]}
               </DropdownMenuRadioItem>
             ))}

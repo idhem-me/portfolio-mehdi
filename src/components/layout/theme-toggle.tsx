@@ -4,10 +4,7 @@ import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
 export function ThemeToggle() {
   const t = useTranslations("theme");
@@ -32,6 +29,8 @@ export function ThemeToggle() {
     <SidebarMenuItem>
       <SidebarMenuButton
         type="button"
+        data-analytics-action="theme_toggle"
+        data-analytics-value={isDark ? "light" : "dark"}
         tooltip={label}
         aria-label={label}
         disabled={!mounted}

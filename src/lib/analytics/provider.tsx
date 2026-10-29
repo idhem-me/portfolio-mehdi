@@ -3,11 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
-import {
-  getConsent,
-  subscribeConsent,
-  type ConsentStatus,
-} from "./consent";
+import { getConsent, subscribeConsent, type ConsentStatus } from "./consent";
 
 function getPosthogHost() {
   return (
@@ -27,6 +23,9 @@ function initPosthog() {
     capture_pageview: false,
     capture_pageleave: true,
     autocapture: true,
+    // Explicit opt-in for intercepted browser tests; production still filters bots.
+    opt_out_useragent_filter:
+      process.env.NEXT_PUBLIC_POSTHOG_TEST_CAPTURE === "true",
   });
   return true;
 }
@@ -47,9 +46,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     function captureCurrentPageview() {
-      const url =
-        window.location.pathname +
-        (window.location.search || "");
+      const url = window.location.pathname + (window.location.search || "");
       posthog.capture("$pageview", {
         $current_url: window.location.origin + url,
       });
@@ -89,7 +86,9 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       pathname +
       (searchParams?.toString() ? `?${searchParams.toString()}` : "");
 
-    posthog.capture("$pageview", { $current_url: window.location.origin + url });
+    posthog.capture("$pageview", {
+      $current_url: window.location.origin + url,
+    });
   }, [pathname, searchParams]);
 
   return children;
