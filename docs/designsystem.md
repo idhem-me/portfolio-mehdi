@@ -57,3 +57,12 @@ Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, 
 ## Button — variante `primary`
 
 `primary` est un alias explicite et compatible de `default` : mêmes tokens `--primary` / `--primary-foreground`, hover, focus, active et disabled. Il sert notamment à Enregistrer dans Profil joueur. `accent` reste réservé aux actions utilisant la couleur de marque ; les boutons photo utilisent `secondary` avec la taille `sm`, en conservant les cibles tactiles mobiles.
+
+
+### Couleurs sémantiques du pinceau
+
+Le pinceau de l’accueil utilise `primary`, `accent`, `warning`, `success` et
+`destructive` (libellé « Danger »). `warning` et `success` possèdent des variantes
+claires et sombres ainsi que les tokens `warning-foreground` et
+`success-foreground`. Les traits conservent leur rôle sémantique lors du
+changement de thème. Leur épaisseur est fixe : 12 px CSS, extrémités rondes.

@@ -25,6 +25,19 @@
     "career": "المسار المهني"
   },
   "home": {
+    "paint": {
+      "brush": "فرشاة",
+      "hint": "اسحب الفرشاة للرسم",
+      "palette": "لون الخط",
+      "primary": "أساسي",
+      "accent": "تمييز",
+      "warning": "تحذير",
+      "success": "نجاح",
+      "danger": "خطر",
+      "undo": "تراجع",
+      "clear": "مسح الكل",
+      "count": "{count} خطوط"
+    },
     "ctaPlay": "العب",
     "freelanceOn": "عمل حر عبر",
     "productDesignerAtWorldline": "مصمم منتجات في Worldline",

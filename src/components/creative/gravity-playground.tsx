@@ -14,7 +14,8 @@ import { useTranslations } from "next-intl";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
-import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+
+import { PaintTool, type PaintBridge } from "./paint-tool";
 
 const GravityActiveContext = createContext(false);
 
@@ -44,9 +45,9 @@ type PhysicsTuning = {
 const DEFAULT_TUNING: PhysicsTuning = {
   gravity: 1.35,
   gravityAngle: 0,
-  restitution: 0.22,
-  friction: 0.35,
-  frictionAir: 0.012,
+  restitution: 0.08,
+  friction: 0.6,
+  frictionAir: 0.035,
   grabStiffness: 0.2,
 };
 
@@ -70,6 +71,7 @@ type PhysicsPair = {
   visualScale?: number;
   offset?: { x: number; y: number };
   silhouette?: Matter.Body[];
+  drawing?: boolean;
 };
 
 type SpawnTarget = {
@@ -627,7 +629,7 @@ function clampBodiesToViewport(pairs: PhysicsPair[]) {
       bounds.bottom - bounds.top,
     );
     const diagonal = Math.hypot(pair.width, pair.height);
-    if (diagonal > available) {
+    if (diagonal > available && !pair.drawing) {
       const scale = available / diagonal;
       Matter.Body.scale(body, scale, scale);
       pair.width *= scale;
@@ -716,17 +718,22 @@ function applyTuningToSession(session: Session, tuning: PhysicsTuning) {
 
 export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const t = useTranslations("home");
-  const reducedMotion = usePrefersReducedMotion();
   const { open, setOpen, isMobile, openMobile, setOpenMobile, state } =
     useSidebar();
   const rootRef = useRef<HTMLDivElement>(null);
   const playButtonRef = useRef<HTMLButtonElement>(null);
   const playSnapshotRef = useRef<PlaySnapshot | null>(null);
   const sessionRef = useRef<Session | null>(null);
+  const paintBridge = useRef<PaintBridge | null>(null);
   const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tuningRef = useRef<PhysicsTuning>(DEFAULT_TUNING);
+  const [paintSlot, setPaintSlot] = useState<HTMLElement | null>(null);
   const [launchSlot, setLaunchSlot] = useState<HTMLElement | null>(null);
   useEffect(() => {
+    setPaintSlot(
+      rootRef.current?.querySelector<HTMLElement>("[data-paint-launch]") ??
+        null,
+    );
     setLaunchSlot(
       rootRef.current?.querySelector<HTMLElement>("[data-gravity-launch]") ??
         null,
@@ -746,6 +753,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       startTimerRef.current = null;
     }
     playSnapshotRef.current = null;
+    paintBridge.current?.reset();
     const session = sessionRef.current;
     if (!session) {
       setActive(false);
@@ -773,10 +781,44 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     setActive(false);
   }, []);
 
-  const runPhysics = useCallback(() => {
+  const runPhysics = useCallback((drawingsOnly = false) => {
     const root = rootRef.current;
     const playSnapshot = playSnapshotRef.current;
-    if (!root || sessionRef.current) return;
+    if (!root) return;
+    const existing = sessionRef.current;
+    if (existing) {
+      if (!drawingsOnly && existing.sources.length === 0) {
+        const sources = Array.from(
+          root.querySelectorAll<HTMLElement>("[data-physics-item]"),
+        );
+        for (const target of collectSpawnTargets(sources)) {
+          addFallingBody(
+            Matter.Bodies,
+            Matter.Body,
+            Matter.World,
+            existing.engine,
+            existing.pairs,
+            spawnChipElement(target, existing.layerEl),
+            tuningRef.current,
+          );
+          target.source.style.visibility = "hidden";
+          if (!existing.sources.includes(target.source))
+            existing.sources.push(target.source);
+        }
+        if (playSnapshot)
+          addFallingBody(
+            Matter.Bodies,
+            Matter.Body,
+            Matter.World,
+            existing.engine,
+            existing.pairs,
+            spawnPlaySnapshot(playSnapshot, existing.layerEl),
+            tuningRef.current,
+          );
+        existing.mouseEl.style.pointerEvents = "auto";
+      }
+      return;
+    }
 
     const sources = Array.from(
       root.querySelectorAll<HTMLElement>("[data-physics-item]"),
@@ -786,7 +828,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     });
     if (sources.length === 0 && !playSnapshot) return;
 
-    const targets = collectSpawnTargets(sources);
+    const targets = drawingsOnly ? [] : collectSpawnTargets(sources);
     const {
       Engine,
       Bodies,
@@ -829,13 +871,14 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     mouseEl.className = "fixed inset-0 z-[5]";
     // Prevent scroll/zoom from stealing touches while dragging chips
     mouseEl.style.touchAction = "none";
+    if (drawingsOnly) mouseEl.style.pointerEvents = "none";
     mouseEl.style.userSelect = "none";
     document.body.appendChild(mouseEl);
 
     const pairs: PhysicsPair[] = [];
     const hiddenSources = new Set<HTMLElement>();
 
-    if (playSnapshot) {
+    if (playSnapshot && !drawingsOnly) {
       addFallingBody(
         Bodies,
         Body,
@@ -879,15 +922,19 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     World.add(engine.world, mouseConstraint);
 
     const onCollision = (event: Matter.IEventCollision<Matter.Engine>) => {
-      let hits = 0;
+      const hits = new Set<string>();
       for (const pair of event.pairs) {
-        if (!pair.bodyA.isStatic && !pair.bodyB.isStatic) {
-          hits += 1;
+        const a = pair.bodyA.parent,
+          b = pair.bodyB.parent;
+        const relativeSpeed = Math.hypot(
+          a.velocity.x - b.velocity.x,
+          a.velocity.y - b.velocity.y,
+        );
+        if (!a.isStatic && !b.isStatic && relativeSpeed > 1) {
+          hits.add([a.id, b.id].sort((x, y) => x - y).join(":"));
         }
       }
-      if (hits > 0) {
-        setImpacts((n) => n + hits);
-      }
+      if (hits.size > 0) setImpacts((n) => n + hits.size);
     };
     Events.on(engine, "collisionStart", onCollision);
 
@@ -901,15 +948,23 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
         touching.add(contact.bodyB.parent);
       }
       for (const { body } of pairs) {
-        if (body.isSleeping || mouseConstraint.body === body) {
+        if (
+          body.isSleeping ||
+          mouseConstraint.body === body ||
+          body.plugin.paintDragging
+        ) {
           quietFrames.delete(body);
           continue;
         }
         const quiet =
-          touching.has(body) && body.speed < 0.5 && body.angularSpeed < 0.015;
+          touching.has(body) && body.speed < 0.8 && body.angularSpeed < 0.025;
         const frames = quiet ? (quietFrames.get(body) ?? 0) + 1 : 0;
         quietFrames.set(body, frames);
-        if (frames >= 45) Matter.Sleeping.set(body, true);
+        if (frames >= 20) {
+          Matter.Body.setVelocity(body, { x: 0, y: 0 });
+          Matter.Body.setAngularVelocity(body, 0);
+          Matter.Sleeping.set(body, true);
+        }
       }
     };
     Events.on(engine, "afterUpdate", onAfterUpdate);
@@ -957,7 +1012,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   }, []);
 
   const start = useCallback(() => {
-    if (sessionRef.current || startTimerRef.current !== null || active) return;
+    if (startTimerRef.current !== null || active) return;
 
     const playBtn = playButtonRef.current;
     if (!playBtn) return;
@@ -986,6 +1041,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     const launch = () => {
       startTimerRef.current = null;
       runPhysics();
+      paintBridge.current?.resume();
     };
 
     if (needsCollapse) {
@@ -1004,8 +1060,6 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   }, [teardown]);
 
   useEffect(() => {
-    if (!active) return;
-
     const onResize = () => {
       const session = sessionRef.current;
       if (!session) return;
@@ -1025,14 +1079,6 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     if (!session) return;
     applyTuningToSession(session, tuning);
   }, [active, tuning]);
-
-  if (reducedMotion) {
-    return (
-      <GravityActiveContext.Provider value={false}>
-        <div ref={rootRef}>{children}</div>
-      </GravityActiveContext.Provider>
-    );
-  }
 
   return (
     <GravityActiveContext.Provider value={active}>
@@ -1142,6 +1188,21 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
             )
           ) : null}
         </div>
+        {paintSlot
+          ? createPortal(
+              <PaintTool
+                bridgeRef={paintBridge}
+                isPlaying={active}
+                bounds={playBounds}
+                getSession={() => {
+                  runPhysics(true);
+                  return sessionRef.current!;
+                }}
+                options={() => bodyOptions(tuningRef.current)}
+              />,
+              paintSlot,
+            )
+          : null}
         {children}
       </div>
     </GravityActiveContext.Provider>

@@ -25,6 +25,19 @@
     "career": "Percorso"
   },
   "home": {
+    "paint": {
+      "brush": "Pennello",
+      "hint": "Trascina il pennello per disegnare",
+      "palette": "Colore del tratto",
+      "primary": "Principale",
+      "accent": "Accento",
+      "warning": "Avviso",
+      "success": "Successo",
+      "danger": "Pericolo",
+      "undo": "Annulla",
+      "clear": "Cancella tutto",
+      "count": "{count} tratti"
+    },
     "ctaPlay": "Gioca",
     "freelanceOn": "Freelance su",
     "productDesignerAtWorldline": "Product Designer presso Worldline",

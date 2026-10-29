@@ -25,6 +25,19 @@
     "career": "Background"
   },
   "home": {
+    "paint": {
+      "brush": "Paintbrush",
+      "hint": "Drag the brush to draw",
+      "palette": "Stroke color",
+      "primary": "Primary",
+      "accent": "Accent",
+      "warning": "Warning",
+      "success": "Success",
+      "danger": "Danger",
+      "undo": "Undo",
+      "clear": "Clear all",
+      "count": "{count} strokes"
+    },
     "ctaPlay": "Play",
     "freelanceOn": "Freelance on",
     "productDesignerAtWorldline": "Product Designer at Worldline",

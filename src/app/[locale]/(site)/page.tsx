@@ -69,7 +69,10 @@ async function HomeContent({ params }: Props) {
         <section className="flex flex-col gap-8">
           <div className="space-y-4">
             <div className="flex w-fit flex-col items-center gap-2">
-              <GazeAvatar />
+              <div className="flex items-center gap-4">
+                <GazeAvatar />
+                <div data-paint-launch />
+              </div>
               <div data-gravity-launch />
             </div>
 

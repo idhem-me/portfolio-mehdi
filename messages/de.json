@@ -25,6 +25,19 @@
     "career": "Werdegang"
   },
   "home": {
+    "paint": {
+      "brush": "Pinsel",
+      "hint": "Ziehe den Pinsel zum Zeichnen",
+      "palette": "Strichfarbe",
+      "primary": "Primär",
+      "accent": "Akzent",
+      "warning": "Warnung",
+      "success": "Erfolg",
+      "danger": "Gefahr",
+      "undo": "Rückgängig",
+      "clear": "Alles löschen",
+      "count": "{count} Striche"
+    },
     "ctaPlay": "Spielen",
     "freelanceOn": "Freelance auf",
     "productDesignerAtWorldline": "Product Designer bei Worldline",

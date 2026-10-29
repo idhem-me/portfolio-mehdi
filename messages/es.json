@@ -25,6 +25,19 @@
     "career": "Trayectoria"
   },
   "home": {
+    "paint": {
+      "brush": "Pincel",
+      "hint": "Arrastra el pincel para dibujar",
+      "palette": "Color del trazo",
+      "primary": "Principal",
+      "accent": "Acento",
+      "warning": "Advertencia",
+      "success": "Éxito",
+      "danger": "Peligro",
+      "undo": "Deshacer",
+      "clear": "Borrar todo",
+      "count": "{count} trazos"
+    },
     "ctaPlay": "Jugar",
     "freelanceOn": "Freelance en",
     "productDesignerAtWorldline": "Product Designer en Worldline",
