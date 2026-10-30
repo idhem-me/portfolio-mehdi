@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 
 import { PaintTool, type PaintBridge } from "./paint-tool";
+import { tearPage } from "./page-tear";
 
 const GravityActiveContext = createContext(false);
 
@@ -725,6 +726,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const playSnapshotRef = useRef<PlaySnapshot | null>(null);
   const sessionRef = useRef<Session | null>(null);
   const paintBridge = useRef<PaintBridge | null>(null);
+  const tearRef = useRef<(() => void) | null>(null);
   const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tuningRef = useRef<PhysicsTuning>(DEFAULT_TUNING);
   const [active, setActive] = useState(false);
@@ -768,6 +770,22 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     setConfigOpen(false);
     setActive(false);
   }, []);
+
+  const resetWithTear = useCallback(() => {
+    if (tearRef.current) return;
+    // Set the guard before snapshot/teardown; cleanup remains synchronous on unmount.
+    tearRef.current = () => {};
+    try {
+      const cancel = tearPage(teardown, () => {
+        tearRef.current = null;
+        playButtonRef.current?.focus({ preventScroll: true });
+      });
+      if (tearRef.current) tearRef.current = cancel;
+    } catch {
+      tearRef.current = null;
+      teardown();
+    }
+  }, [teardown]);
 
   const runPhysics = useCallback((drawingsOnly = false) => {
     const root = rootRef.current;
@@ -1046,6 +1064,8 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     return () => {
+      tearRef.current?.();
+      tearRef.current = null;
       teardown();
     };
   }, [teardown]);
@@ -1096,7 +1116,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
                   variant="secondary"
                   size="sm"
                   data-analytics-action="gravity_reset"
-                  onClick={teardown}
+                  onClick={resetWithTear}
                 >
                   {t("gravityReset")}
                 </Button>
@@ -1194,6 +1214,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
         >
           <PaintTool
             bridgeRef={paintBridge}
+            onClear={resetWithTear}
             isPlaying={active}
             bounds={playBounds}
             getSession={() => {

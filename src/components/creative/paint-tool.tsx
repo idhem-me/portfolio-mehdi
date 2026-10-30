@@ -82,12 +82,14 @@ function updatePath(el: HTMLElement, points: PaintPoint[]) {
 }
 export function PaintTool({
   bridgeRef,
+  onClear,
   isPlaying,
   getSession,
   bounds,
   options,
 }: {
   bridgeRef: RefObject<PaintBridge | null>;
+  onClear: () => void;
   isPlaying: boolean;
   getSession: () => PaintSession;
   bounds: () => { left: number; right: number; top: number; bottom: number };
@@ -128,6 +130,13 @@ export function PaintTool({
     bridgeRef.current = {
       resume: () => addBodies(),
       reset: () => {
+        const gesture = gestureRef.current;
+        if (gesture) {
+          gestureRef.current = null;
+          gesture.el?.remove();
+          document.documentElement.style.overflow = gesture.scroll;
+        }
+        setPaintMode(false);
         for (const stroke of strokesRef.current) {
           detach(stroke);
           stroke.el.remove();
@@ -253,10 +262,8 @@ export function PaintTool({
       };
     }
   }
-  function removeLast(all = false) {
-    const removed = all
-      ? strokesRef.current.splice(0)
-      : strokesRef.current.splice(-1);
+  function removeLast() {
+    const removed = strokesRef.current.splice(-1);
     for (const stroke of removed) {
       if (stroke.pair) {
         const session = latestRef.current.getSession();
@@ -496,11 +503,11 @@ export function PaintTool({
           size="icon"
           variant="outline"
           className="size-10 shrink-0"
-          disabled={!count}
+          disabled={!count && !isPlaying}
           aria-label={t("clear")}
           title={t("clear")}
           data-analytics-action="paint_clear"
-          onClick={() => removeLast(true)}
+          onClick={onClear}
         >
           <BrushCleaning aria-hidden="true" />
         </Button>

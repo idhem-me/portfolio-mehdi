@@ -1,0 +1,63 @@
+.page-tear-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  overflow: hidden;
+  isolation: isolate;
+  perspective: 1600px;
+  perspective-origin: 75% 50%;
+  touch-action: none;
+  cursor: wait;
+}
+
+.page-tear-sheet {
+  position: absolute;
+  inset: 0;
+  transform-origin: 85% 35%;
+  transform: translateZ(0);
+  filter: drop-shadow(-2px 3px 2px rgb(0 0 0 / .12)) drop-shadow(-4px 6px 6px rgb(0 0 0 / .1));
+  will-change: transform;
+}
+
+.page-tear-surface {
+  position: absolute;
+  inset: 0;
+}
+
+.page-tear-paper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--background);
+  /* Establish the viewport for the copy's fixed toolbar, sidebar and strokes. */
+  transform: translateZ(0);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.page-tear-paper > :first-child *,
+.page-tear-paper > :first-child *::before,
+.page-tear-paper > :first-child *::after {
+  animation: none !important;
+  transition: none !important;
+  caret-color: transparent !important;
+}
+
+.page-tear-curl {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(115deg, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.3) 24%, rgb(0 0 0 / 0.14) 46%, transparent 72%);
+  mix-blend-mode: soft-light;
+}
+
+/* Broad light and shade travel across the bowed surface, including its content. */
+.page-tear-lighting {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(155deg, transparent 15%, rgb(255 255 255 / .42) 32%, rgb(0 0 0 / .2) 48%, rgb(255 255 255 / .2) 63%, transparent 80%);
+  background-size: 150% 150%;
+}
