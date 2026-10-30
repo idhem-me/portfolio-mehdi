@@ -501,7 +501,7 @@ html.locale-ar body {
   --home-paper-margin: color-mix(in oklch, var(--destructive) 28%, var(--background));
 }
 
-[data-slot="sidebar-inset"]:has([data-home-paper]) {
+.home-paper-background {
   background-image:
     linear-gradient(to right,
       transparent var(--home-paper-margin-left),
@@ -521,7 +521,7 @@ html.locale-ar body {
 }
 
 @media (max-width: 767px) {
-  [data-slot="sidebar-inset"]:has([data-home-paper]) {
+  .home-paper-background {
     --home-paper-margin-left: 14px;
   }
 }
