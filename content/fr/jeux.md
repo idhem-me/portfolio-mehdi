@@ -24,7 +24,7 @@
       }
     },
     {
-      "title": "Cartes",
+      "title": "Ouverture de cartes",
       "status": "Work in progress",
       "slug": "cards"
     }

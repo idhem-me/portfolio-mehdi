@@ -24,7 +24,7 @@
       }
     },
     {
-      "title": "Cards",
+      "title": "Card opening",
       "status": "Work in progress",
       "slug": "cards"
     }
