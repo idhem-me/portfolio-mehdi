@@ -1,12 +1,13 @@
 "use client";
-import { useState, useSyncExternalStore } from "react";
+import { useId, useState, useSyncExternalStore } from "react";
+import { useReducedMotion } from "motion/react";
+import { Activity, ArrowDownRight, ArrowUpRight } from "lucide-react";
 import useSWR from "swr";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AreaChart,
   Area,
-  BarChart,
-  Bar,
+  CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
@@ -69,11 +70,45 @@ export function Dashboard() {
     "clicks",
     "games_played",
   ];
+  const reducedMotion = useReducedMotion();
+  const gradientId = useId().replaceAll(":", "");
+  const chartColors = [
+    "var(--primary)",
+    "var(--chart-2)",
+    "var(--chart-3)",
+    "var(--chart-4)",
+  ];
+  const tooltipStyle = {
+    background: "var(--popover)",
+    color: "var(--popover-foreground)",
+    border: "1px solid var(--border)",
+    borderRadius: 8,
+    fontSize: 12,
+  };
+  const dateLabel = (label: string) => {
+    const date = new Date(label);
+    return Number.isNaN(date.getTime())
+      ? label
+      : new Intl.DateTimeFormat(
+          locale,
+          range === "24h"
+            ? { hour: "2-digit" }
+            : { day: "numeric", month: "short" },
+        ).format(date);
+  };
   return (
-    <div className="space-y-6">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl font-semibold">{t("title")}</h1>
-        <div className="w-36">
+    <div className="space-y-4">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {t("dashboard")}
+        </h1>
+        <div className="flex w-36 flex-col items-end gap-1.5">
+          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="size-1.5 rounded-full bg-primary" aria-hidden />
+            <span className="tabular-nums">
+              {data?.online ?? "—"} {t("online")}
+            </span>
+          </span>
           <Select
             label={t("period")}
             value={range}
@@ -84,14 +119,11 @@ export function Dashboard() {
             }))}
           />
         </div>
-        <span className="text-sm">
-          ● {data?.online || 0} {t("online")}
-        </span>
       </header>
       {error ? (
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-4 text-sm"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3 text-sm"
         >
           {t("error")}{" "}
           <Button variant="outline" onClick={() => mutate()}>
@@ -99,172 +131,338 @@ export function Dashboard() {
           </Button>
         </div>
       ) : !data ? (
-        <div className="h-48 animate-pulse rounded-xl bg-muted" />
+        <div className="grid gap-3" role="status" aria-label={t("dashboard")}>
+          <div className="h-28 animate-pulse rounded-xl bg-muted" />
+          <div className="h-56 animate-pulse rounded-xl bg-muted" />
+        </div>
       ) : null}
-      <Card className="border-primary/40 bg-primary/5">
-        <CardHeader>
-          <CardTitle>{t("mine")}</CardTitle>
-          <p className="text-sm text-muted-foreground">{t("since")}</p>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 gap-6 lg:grid-cols-3">
-          {[
-            "mouse_px",
-            "clicks",
-            "active_ms",
-            "pages",
-            "games_played",
-            "brush_strokes",
-          ].map((k) => (
-            <div key={k}>
-              <p className="text-sm text-muted-foreground">{t(k)}</p>
-              <p className="text-2xl font-semibold">
-                {value(
-                  k,
-                  (me?.[k] || 0) +
-                    Math.max(0, (live[k] || 0) - (me?.localSnapshot?.[k] || 0)),
-                )}
-              </p>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-      {data && me && data.current.mouse_px > 0 && data.current.sessions > 0 && (
-        <p className="text-sm text-muted-foreground">
-          {t("comparison", {
-            ratio: new Intl.NumberFormat(locale, {
-              maximumFractionDigits: 1,
-            }).format(
-              (me.mouse_px || 0) /
-                (data.current.mouse_px / data.current.sessions),
-            ),
-          })}
-        </p>
-      )}
       {data && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {metrics.map((k) => {
-              const prev = data.previous?.[k],
-                delta = prev ? ((data.current[k] - prev) / prev) * 100 : null;
-              return (
-                <Card key={k}>
-                  <CardHeader>
-                    <CardTitle className="text-sm">{t(k)}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-2xl font-semibold">
+          <Card size="sm" className="gap-0 py-0">
+            <div className="grid grid-cols-2 divide-border sm:grid-cols-3 xl:grid-cols-6">
+              {metrics.map((k) => {
+                const prev = data.previous?.[k];
+                const delta = prev
+                  ? ((data.current[k] - prev) / prev) * 100
+                  : null;
+                const Trend =
+                  delta !== null && delta < 0 ? ArrowDownRight : ArrowUpRight;
+                return (
+                  <div
+                    key={k}
+                    className="min-w-0 border-b border-r p-4 xl:border-b-0 last:border-r-0"
+                  >
+                    <p
+                      className="truncate text-xs text-muted-foreground"
+                      title={t(k)}
+                    >
+                      {t(k)}
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">
                       {value(k, data.current[k])}
                     </p>
-                    <p
-                      className={
-                        delta !== null && delta >= 0
-                          ? "text-green-600"
-                          : "text-muted-foreground"
-                      }
+                    {delta !== null ? (
+                      <p className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <Trend className="size-3" aria-hidden />
+                        <span className="tabular-nums">
+                          {number(Math.abs(delta))}%
+                        </span>
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+          <div className="grid gap-3 lg:grid-cols-3">
+            <Card size="sm" className="min-w-0 lg:col-span-2">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>{t("sessions")}</CardTitle>
+                <span className="text-xs text-muted-foreground">
+                  {t("ranges." + range)}
+                </span>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className="h-[190px] min-w-0"
+                  role="img"
+                  aria-label={t("sessions")}
+                >
+                  {data.series.length ? (
+                    <ResponsiveContainer
+                      width="100%"
+                      height="100%"
+                      minWidth={0}
                     >
-                      {delta === null
-                        ? t("history")
-                        : (delta >= 0 ? "↑ " : "↓ ") +
-                          number(Math.abs(delta)) +
-                          "%"}
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-          <div className="grid gap-4 lg:grid-cols-2">
-            {(["series", "pages", "devices", "countries"] as const).map(
-              (key) => (
-                <Card key={key}>
-                  <CardHeader>
-                    <CardTitle>
-                      {t(key === "series" ? "sessions" : key)}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-64">
-                      {key === "countries" ? (
-                        <ul className="space-y-3">
-                          {data.countries.map((p) => (
-                            <li key={p.label}>
-                              {p.label}{" "}
-                              <span className="float-right">
-                                {number(p.value)}
-                              </span>
-                              <progress
-                                className="w-full accent-primary"
-                                value={p.value}
-                                max={Math.max(
-                                  1,
-                                  ...data.countries.map((c) => c.value),
-                                )}
+                      <AreaChart
+                        data={data.series}
+                        margin={{ top: 12, right: 8, bottom: 0, left: -18 }}
+                      >
+                        <defs>
+                          <linearGradient
+                            id={gradientId}
+                            x1="0"
+                            y1="0"
+                            x2="0"
+                            y2="1"
+                          >
+                            <stop
+                              offset="0%"
+                              stopColor="var(--primary)"
+                              stopOpacity={0.2}
+                            />
+                            <stop
+                              offset="100%"
+                              stopColor="var(--primary)"
+                              stopOpacity={0.01}
+                            />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid
+                          vertical={false}
+                          stroke="var(--border)"
+                          strokeDasharray="3 4"
+                        />
+                        <XAxis
+                          dataKey="label"
+                          tickFormatter={dateLabel}
+                          minTickGap={36}
+                          tick={{
+                            fill: "var(--muted-foreground)",
+                            fontSize: 10,
+                          }}
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis
+                          allowDecimals={false}
+                          tick={{
+                            fill: "var(--muted-foreground)",
+                            fontSize: 10,
+                          }}
+                          tickLine={false}
+                          axisLine={false}
+                          width={44}
+                        />
+                        <Tooltip
+                          contentStyle={tooltipStyle}
+                          labelFormatter={(label) => dateLabel(String(label))}
+                          formatter={(n) => [number(Number(n)), t("sessions")]}
+                          cursor={{
+                            stroke: "var(--muted-foreground)",
+                            strokeDasharray: "3 4",
+                          }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="value"
+                          name={t("sessions")}
+                          stroke="var(--primary)"
+                          strokeWidth={2.5}
+                          fill={`url(#${gradientId})`}
+                          dot={false}
+                          activeDot={{
+                            r: 4,
+                            stroke: "var(--background)",
+                            strokeWidth: 2,
+                          }}
+                          isAnimationActive={!reducedMotion}
+                          animationDuration={650}
+                          animationEasing="ease-out"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <EmptyState label={t("none")} />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            <Card size="sm" className="min-w-0">
+              <CardHeader>
+                <CardTitle>{t("devices")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {data.devices.some((device) => device.value > 0) ? (
+                  <>
+                    <div
+                      className="h-[135px]"
+                      role="img"
+                      aria-label={t("devices")}
+                    >
+                      <ResponsiveContainer
+                        width="100%"
+                        height="100%"
+                        minWidth={0}
+                      >
+                        <PieChart>
+                          <Tooltip
+                            contentStyle={tooltipStyle}
+                            formatter={(n) => number(Number(n))}
+                          />
+                          <Pie
+                            data={data.devices.map((device) => ({
+                              ...device,
+                              label: ["desktop", "mobile", "tablet"].includes(
+                                device.label,
+                              )
+                                ? t("deviceLabels." + device.label)
+                                : device.label,
+                            }))}
+                            dataKey="value"
+                            nameKey="label"
+                            innerRadius={43}
+                            outerRadius={61}
+                            paddingAngle={3}
+                            cornerRadius={3}
+                            stroke="var(--card)"
+                            isAnimationActive={!reducedMotion}
+                            animationDuration={650}
+                          >
+                            {data.devices.map((device, i) => (
+                              <Cell
+                                key={device.label}
+                                fill={chartColors[i % chartColors.length]}
                               />
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <ResponsiveContainer width="100%" height="100%">
-                          {key === "series" ? (
-                            <AreaChart data={data.series}>
-                              <XAxis dataKey="label" hide />
-                              <Tooltip />
-                              <Area
-                                dataKey="value"
-                                stroke="var(--primary)"
-                                fill="var(--primary)"
-                                fillOpacity={0.15}
-                              />
-                            </AreaChart>
-                          ) : key === "pages" ? (
-                            <BarChart
-                              data={data.pages}
-                              layout="vertical"
-                              margin={{ left: 60 }}
-                            >
-                              <XAxis type="number" hide />
-                              <YAxis
-                                dataKey="label"
-                                type="category"
-                                width={100}
-                              />
-                              <Tooltip />
-                              <Bar dataKey="value" fill="var(--primary)" />
-                            </BarChart>
-                          ) : (
-                            <PieChart>
-                              <Tooltip />
-                              <Pie
-                                data={data.devices}
-                                dataKey="value"
-                                nameKey="label"
-                                innerRadius={55}
-                              >
-                                {data.devices.map((p, i) => (
-                                  <Cell
-                                    key={p.label}
-                                    fill={
-                                      [
-                                        "var(--primary)",
-                                        "var(--muted-foreground)",
-                                        "var(--border)",
-                                      ][i % 3]
-                                    }
-                                  />
-                                ))}
-                              </Pie>
-                            </PieChart>
-                          )}
-                        </ResponsiveContainer>
-                      )}
+                            ))}
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
                     </div>
-                  </CardContent>
-                </Card>
-              ),
-            )}
+                    <ul className="space-y-1.5">
+                      {data.devices.map((device, i) => (
+                        <li
+                          key={device.label}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          <span
+                            className="size-1.5 rounded-full"
+                            style={{
+                              background: chartColors[i % chartColors.length],
+                            }}
+                            aria-hidden
+                          />
+                          <span className="text-muted-foreground">
+                            {["desktop", "mobile", "tablet"].includes(
+                              device.label,
+                            )
+                              ? t("deviceLabels." + device.label)
+                              : device.label}
+                          </span>
+                          <span className="ml-auto tabular-nums">
+                            {number(device.value)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <div className="h-[190px]">
+                    <EmptyState label={t("none")} />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            {(["pages", "countries"] as const).map((key) => (
+              <Card size="sm" key={key} className="min-w-0">
+                <CardHeader>
+                  <CardTitle>{t(key)}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[205px] overflow-y-auto">
+                    {data[key].length ? (
+                      <ul className="divide-y divide-border">
+                        {data[key].map((point) => (
+                          <li key={point.label} className="py-2 first:pt-0">
+                            <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
+                              <span className="truncate" title={point.label}>
+                                {point.label || t("unknown")}
+                              </span>
+                              <span className="shrink-0 tabular-nums text-muted-foreground">
+                                {number(point.value)}
+                              </span>
+                            </div>
+                            <div className="h-0.5 rounded-full bg-muted">
+                              <div
+                                className="h-full rounded-full bg-primary"
+                                style={{
+                                  width: `${(Math.max(0, point.value) / Math.max(1, ...data[key].map((item) => item.value))) * 100}%`,
+                                }}
+                              />
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <EmptyState label={t("none")} />
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            <Card size="sm" className="min-w-0">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>{t("mine")}</CardTitle>
+                <Activity
+                  className="size-4 text-muted-foreground"
+                  aria-hidden
+                />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+                  {[
+                    "mouse_px",
+                    "clicks",
+                    "active_ms",
+                    "pages",
+                    "games_played",
+                    "brush_strokes",
+                  ].map((k) => (
+                    <div key={k}>
+                      <dt className="text-[11px] text-muted-foreground">
+                        {t(k)}
+                      </dt>
+                      <dd className="mt-0.5 text-lg font-semibold tabular-nums">
+                        {value(
+                          k,
+                          (me?.[k] || 0) +
+                            Math.max(
+                              0,
+                              (live[k] || 0) - (me?.localSnapshot?.[k] || 0),
+                            ),
+                        )}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="border-t pt-2 text-[10px] leading-relaxed text-muted-foreground">
+                  {t("since")}
+                </p>
+                {me &&
+                  data.current.mouse_px > 0 &&
+                  data.current.sessions > 0 && (
+                    <p className="text-[11px] text-muted-foreground">
+                      {t("comparison", {
+                        ratio: number(
+                          (me.mouse_px || 0) /
+                            (data.current.mouse_px / data.current.sessions),
+                        ),
+                      })}
+                    </p>
+                  )}
+              </CardContent>
+            </Card>
           </div>
         </>
       )}
     </div>
+  );
+}
+
+function EmptyState({ label }: { label: string }) {
+  return (
+    <p className="flex h-full items-center justify-center text-xs text-muted-foreground">
+      {label}
+    </p>
   );
 }

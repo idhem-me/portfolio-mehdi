@@ -172,7 +172,7 @@ export function AppSidebar() {
                         eventProps={{ href: item.href, label: item.label }}
                         onClick={closeMobilePanel}
                       >
-                        <item.icon />
+                        {item.icon ? <item.icon /> : null}
                         <span>{item.label}</span>
                       </TrackedLink>
                     </SidebarMenuButton>

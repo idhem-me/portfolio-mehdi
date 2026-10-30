@@ -269,6 +269,8 @@
     "mine": "Your stats",
     "since": "Since you accepted cookies · 90-day retention",
     "online": "Online",
+    "offline": "offline",
+    "status": "Status",
     "visitors": "Visitors",
     "active_ms": "Active time",
     "mouse_px": "Mouse distance",
@@ -294,7 +296,6 @@
     "yes": "Yes",
     "no": "No",
     "close": "Close",
-    "history": "Insufficient history",
     "comparison": "Your mouse has travelled {ratio}× the average",
     "unknown": "Unknown",
     "key_presses": "Key presses",
@@ -309,6 +310,7 @@
       "30d": "30 days",
       "90d": "90 days"
     },
+    "date": "Date",
     "fromDate": "From",
     "toDate": "To",
     "allCountries": "All countries",
@@ -320,8 +322,9 @@
       "mobile": "Mobile",
       "tablet": "Tablet"
     },
-    "previousPage": "Previous page",
-    "nextPage": "Next page",
+    "loadMore": "Load more results",
+    "resultsCount": "{count, plural, =0 {No results} =1 {1 result} other {# results}}",
+    "clearDates": "Clear dates",
     "cookies": "Cookies"
   }
 }

@@ -60,7 +60,8 @@ test("atomic deltas, idempotency, privacy permissions and revocation", async () 
 test("distance thresholds and tracking stays inert without consent", async () => {
   const { distance } = await import("../src/components/backoffice/data");
   const { track } = await import("../src/lib/tracking/client");
-  assert.match(distance(0, "fr"), /^≈ 0 cm$/);
+  assert.match(distance(0, "fr"), /^0 cm$/);
+  assert.match(distance(3780, "en"), /^1 m$/);
   assert.match(distance(378000, "en"), /100 m$/);
   assert.match(distance(3780000, "en"), /1 km$/);
   track.increment("clicks");

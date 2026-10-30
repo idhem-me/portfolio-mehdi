@@ -19,6 +19,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -28,7 +35,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DateRangeSelect } from "@/components/ui/date-range-select";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -39,7 +48,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Toast } from "@/components/ui/toast";
 import {
   Tooltip,
   TooltipContent,
@@ -79,6 +91,13 @@ function Section({
 
 export default function PlaygroundPage() {
   const [density, setDensity] = useState<Density>("desktop");
+  const [selectValue, setSelectValue] = useState("mehdi");
+  const [chipValue, setChipValue] = useState("all");
+  const [switchOn, setSwitchOn] = useState(true);
+  const [sliderValue, setSliderValue] = useState([40]);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [dateFrom, setDateFrom] = useState("2026-10-01");
+  const [dateTo, setDateTo] = useState("2026-10-30");
 
   useEffect(() => {
     document.documentElement.dataset.density = density;
@@ -86,6 +105,11 @@ export default function PlaygroundPage() {
       delete document.documentElement.dataset.density;
     };
   }, [density]);
+
+  const dateSummary =
+    dateFrom || dateTo
+      ? [dateFrom, dateTo].filter(Boolean).join(" → ")
+      : undefined;
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-12 px-6 py-12">
@@ -387,6 +411,138 @@ export default function PlaygroundPage() {
           <Input disabled placeholder="Disabled" />
           <Input type="email" defaultValue="exemple@email.com" />
         </div>
+      </Section>
+
+      <Separator />
+
+      <Section
+        title="Select"
+        description="Variantes default (plein largeur) et chip (filtres). Radius DS : rounded-lg."
+      >
+        <div className="space-y-4">
+          <div className="max-w-sm">
+            <Select
+              label="Design system"
+              value={selectValue}
+              onValueChange={setSelectValue}
+              options={[
+                { value: "mehdi", label: "Mehdi" },
+                { value: "github", label: "GitHub" },
+                { value: "adobe", label: "Adobe" },
+              ]}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              variant="chip"
+              label="Pays"
+              placeholder="all"
+              value={chipValue}
+              onValueChange={setChipValue}
+              options={[
+                { value: "all", label: "Tous les pays" },
+                { value: "FR", label: "France" },
+                { value: "DE", label: "Allemagne" },
+              ]}
+            />
+            <Select
+              variant="chip"
+              label="Appareil"
+              placeholder="all"
+              value="all"
+              onValueChange={() => undefined}
+              options={[
+                { value: "all", label: "Tous" },
+                { value: "desktop", label: "Ordinateur" },
+                { value: "mobile", label: "Mobile" },
+              ]}
+            />
+          </div>
+        </div>
+      </Section>
+
+      <Separator />
+
+      <Section
+        title="DateRangeSelect"
+        description="Calendrier range dans un dropdown (tokens shadcn)."
+      >
+        <DateRangeSelect
+          label="Date"
+          fromLabel="Du"
+          toLabel="Au"
+          clearLabel="Effacer les dates"
+          locale="fr"
+          from={dateFrom}
+          to={dateTo}
+          summary={dateSummary}
+          onFromChange={setDateFrom}
+          onToChange={setDateTo}
+        />
+      </Section>
+
+      <Separator />
+
+      <Section title="Switch" description="On / off">
+        <div className="flex items-center gap-3">
+          <Switch
+            checked={switchOn}
+            onCheckedChange={setSwitchOn}
+            aria-label="Notifications"
+          />
+          <span className="text-sm text-muted-foreground">
+            {switchOn ? "Activé" : "Désactivé"}
+          </span>
+        </div>
+      </Section>
+
+      <Separator />
+
+      <Section title="Slider">
+        <div className="max-w-sm space-y-2">
+          <Slider
+            aria-label="Volume"
+            value={sliderValue}
+            onValueChange={setSliderValue}
+            max={100}
+            step={1}
+          />
+          <p className="text-xs text-muted-foreground">{sliderValue[0]} %</p>
+        </div>
+      </Section>
+
+      <Separator />
+
+      <Section title="Dialog">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline">Ouvrir le Dialog</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Titre du dialog</DialogTitle>
+            <DialogDescription>
+              Exemple de boîte de dialogue modale Shadcn.
+            </DialogDescription>
+            <p className="text-sm text-muted-foreground">
+              Contenu principal du dialog.
+            </p>
+          </DialogContent>
+        </Dialog>
+      </Section>
+
+      <Separator />
+
+      <Section title="Toast" description="Notification temporaire">
+        <Button
+          variant="outline"
+          onClick={() => setToastMessage("Action enregistrée.")}
+        >
+          Afficher un toast
+        </Button>
+        <Toast
+          message={toastMessage}
+          onDismiss={() => setToastMessage(null)}
+        />
       </Section>
 
       <Separator />

@@ -31,7 +31,7 @@ export async function GET(r: Request) {
   const { data, error, count } = await q
     .order(sort, { ascending: p.get("order") === "asc" })
     .order("id")
-    .range((page - 1) * 20, page * 20 - 1);
+    .range((page - 1) * 15, page * 15 - 1);
   if (error) return Response.json({ error: "Unavailable" }, { status: 503 });
   const { data: options } = await db().rpc("backoffice_filter_options");
   return Response.json(

@@ -34,16 +34,14 @@ export async function fetcher(url: string) {
     unsubscribe();
   }
 }
+/** Convert tracked mouse pixels to a readable length (96 CSS px ≈ 2.54 cm). */
 export function distance(px: number, locale: string) {
   const cm = px / 37.8;
-  return (
-    "≈ " +
-    new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(
-      cm >= 100000 ? cm / 100000 : cm >= 10000 ? cm / 100 : cm,
-    ) +
-    " " +
-    (cm >= 100000 ? "km" : cm >= 10000 ? "m" : "cm")
-  );
+  const format = (value: number) =>
+    new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(value);
+  if (cm >= 100_000) return format(cm / 100_000) + " km";
+  if (cm >= 100) return format(cm / 100) + " m";
+  return format(cm) + " cm";
 }
 export type Row = {
   id: string;

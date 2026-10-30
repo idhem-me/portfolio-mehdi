@@ -269,6 +269,8 @@
     "mine": "Your stats",
     "since": "Since you accepted cookies · 90-day retention",
     "online": "Online",
+    "offline": "غير متصل",
+    "status": "الحالة",
     "visitors": "Visitors",
     "active_ms": "Active time",
     "mouse_px": "Mouse distance",
@@ -294,7 +296,6 @@
     "yes": "Yes",
     "no": "No",
     "close": "Close",
-    "history": "Insufficient history",
     "comparison": "Your mouse has travelled {ratio}× the average",
     "unknown": "Unknown",
     "key_presses": "Key presses",
@@ -309,6 +310,7 @@
       "30d": "30 days",
       "90d": "90 days"
     },
+    "date": "التاريخ",
     "fromDate": "From",
     "toDate": "To",
     "allCountries": "All countries",
@@ -320,8 +322,9 @@
       "mobile": "Mobile",
       "tablet": "Tablet"
     },
-    "previousPage": "Previous page",
-    "nextPage": "Next page",
+    "loadMore": "تحميل المزيد من النتائج",
+    "resultsCount": "{count, plural, =0 {لا نتائج} =1 {نتيجة واحدة} other {# نتائج}}",
+    "clearDates": "مسح التواريخ",
     "cookies": "Cookies"
   }
 }

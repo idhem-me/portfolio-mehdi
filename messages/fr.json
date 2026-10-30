@@ -257,8 +257,8 @@
     "logoError": "Choisissez une image PNG, JPEG ou WEBP valide de 10 Mo maximum."
   },
   "backoffice": {
-    "title": "Backoffice",
-    "dashboard": "Dashboard",
+    "title": "Tableau de bord",
+    "dashboard": "Tableau de bord",
     "sessions": "Sessions",
     "emptyTitle": "Ici, c'est vous la data.",
     "emptyText": "Cet espace affiche en direct ce que vous faites sur le site : les kilomètres parcourus par votre souris, vos clics, vos parties jouées… et vous compare aux autres visiteurs.",
@@ -268,7 +268,9 @@
     "withdraw": "Retirer mon consentement",
     "mine": "Vos stats",
     "since": "Depuis votre arrivée sur le site · conservation de 90 jours",
-    "online": "En ligne",
+    "online": "en ligne",
+    "offline": "hors ligne",
+    "status": "Statut",
     "visitors": "Visiteurs",
     "active_ms": "Temps actif",
     "mouse_px": "Distance souris",
@@ -294,7 +296,6 @@
     "yes": "Oui",
     "no": "Non",
     "close": "Fermer",
-    "history": "Historique insuffisant",
     "comparison": "Votre souris a parcouru {ratio}× la moyenne",
     "unknown": "Inconnu",
     "key_presses": "Touches pressées",
@@ -309,6 +310,7 @@
       "30d": "30 jours",
       "90d": "90 jours"
     },
+    "date": "Date",
     "fromDate": "Du",
     "toDate": "Au",
     "allCountries": "Tous les pays",
@@ -320,8 +322,9 @@
       "mobile": "Mobile",
       "tablet": "Tablette"
     },
-    "previousPage": "Page précédente",
-    "nextPage": "Page suivante",
+    "loadMore": "Charger plus de résultats",
+    "resultsCount": "{count, plural, =0 {Aucun résultat} =1 {1 résultat} other {# résultats}}",
+    "clearDates": "Effacer les dates",
     "cookies": "Cookies"
   }
 }

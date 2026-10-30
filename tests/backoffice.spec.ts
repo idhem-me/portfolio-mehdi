@@ -92,10 +92,7 @@ test("sessions detail opens on desktop and mobile", async ({ page }) => {
     }),
   );
   await page.goto("/backoffice/sessions");
-  await page
-    .getByRole("button", { name: /Visiteur #ABC123/ })
-    .first()
-    .click();
+  await page.getByRole("button", { name: /#ABC123/ }).first().click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Session précédente" }),
@@ -103,10 +100,7 @@ test("sessions detail opens on desktop and mobile", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
-  await page
-    .getByRole("button", { name: /Visiteur #ABC123/ })
-    .last()
-    .click();
+  await page.getByRole("button", { name: /#ABC123/ }).last().click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.screenshot({ path: "/tmp/backoffice-mobile.png" });
 });
