@@ -2,7 +2,7 @@
 import { cardsEnabled } from "@/features/cards/flags";
 import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 
-import { Home, Layers, UserRound, Gamepad2 } from "lucide-react";
+import { Home, Layers, UserRound, Gamepad2, Wrench } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
@@ -56,6 +56,12 @@ export function AppSidebar() {
       label: t("realisations"),
       icon: Layers,
       match: (path: string) => path.startsWith("/realisations"),
+    },
+    {
+      href: "/outils",
+      label: t("tools"),
+      icon: Wrench,
+      match: (path: string) => path.startsWith("/outils"),
     },
     ...(tetrisEnabled || clickerBurgerEnabled || cardsEnabled
       ? [{

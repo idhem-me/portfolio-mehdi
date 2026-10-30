@@ -9,7 +9,8 @@
     "contact": "Contattami",
     "photoAlt": "Foto di {name}",
     "realisations": "Realizzazioni",
-    "games": "Giochi"
+    "games": "Giochi",
+    "tools": "Strumenti"
   },
   "theme": {
     "enableLight": "Attiva la modalità chiara",
@@ -88,5 +89,32 @@
     "helpLabel": "Informazioni sul profilo giocatore",
     "helpTitle": "Profilo giocatore",
     "helpBody": "Un nickname o un account Google ti dà un’identità comune tra i giochi. Su questo dispositivo, progressi e punteggi sono collegati automaticamente a quel profilo."
+  },
+  "tools": {
+    "title": "Strumenti",
+    "intro": "Strumenti semplici per le attività quotidiane.",
+    "mergeTitle": "Unisci PDF",
+    "mergeDescription": "Combina più PDF in un documento, nell’ordine che preferisci.",
+    "back": "Tutti gli strumenti",
+    "privacy": "I file restano sul tuo dispositivo. Nessun documento viene inviato a un server.",
+    "add": "Aggiungi PDF",
+    "drop": "Trascina qui i PDF o scegli i file.",
+    "reading": "Lettura dei file…",
+    "merging": "Unione in corso…",
+    "merge": "Unisci e scarica",
+    "clear": "Rimuovi tutto",
+    "remove": "Rimuovi {name}",
+    "up": "Sposta {name} in alto",
+    "down": "Sposta {name} in basso",
+    "pages": "{count, plural, one {# pagina} other {# pagine}}",
+    "summary": "{count} file · {pages} pagine",
+    "needTwo": "Aggiungi almeno due PDF per unirli.",
+    "success": "Il PDF è pronto. Il download è iniziato.",
+    "invalid": "Questo file non è un PDF valido.",
+    "empty": "Questo PDF è vuoto.",
+    "encrypted": "Questo PDF è crittografato. Aggiungi una versione senza protezione.",
+    "failed": "Unione non riuscita. Riprova o rimuovi i documenti interessati.",
+    "readFailed": "Impossibile leggere il file. Prova ad aggiungerlo di nuovo.",
+    "list": "Documenti da unire"
   }
 }

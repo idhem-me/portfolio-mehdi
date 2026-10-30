@@ -9,7 +9,8 @@
     "contact": "Contact me",
     "photoAlt": "Photo of {name}",
     "realisations": "Work",
-    "games": "Games"
+    "games": "Games",
+    "tools": "Tools"
   },
   "theme": {
     "enableLight": "Enable light mode",
@@ -88,5 +89,32 @@
     "helpLabel": "About the player profile",
     "helpTitle": "Player profile",
     "helpBody": "A nickname or Google account gives you one identity across games. On this device, your progress and scores are linked to it automatically."
+  },
+  "tools": {
+    "title": "Tools",
+    "intro": "Simple tools for everyday tasks.",
+    "mergeTitle": "Merge PDFs",
+    "mergeDescription": "Combine PDF files into one document, in your preferred order.",
+    "back": "All tools",
+    "privacy": "Your files stay on your device. No documents are sent to a server.",
+    "add": "Add PDFs",
+    "drop": "Drop your PDFs here or choose files.",
+    "reading": "Reading files…",
+    "merging": "Merging…",
+    "merge": "Merge and download",
+    "clear": "Clear all",
+    "remove": "Remove {name}",
+    "up": "Move {name} up",
+    "down": "Move {name} down",
+    "pages": "{count, plural, one {# page} other {# pages}}",
+    "summary": "{count} files · {pages} pages",
+    "needTwo": "Add at least two PDFs to merge them.",
+    "success": "Your PDF is ready. The download has started.",
+    "invalid": "This file is not a valid PDF.",
+    "empty": "This PDF is empty.",
+    "encrypted": "This PDF is encrypted. Add an unprotected version.",
+    "failed": "Merging failed. Try again or remove the affected documents.",
+    "readFailed": "Unable to read this file. Try adding it again.",
+    "list": "Documents to merge"
   }
 }

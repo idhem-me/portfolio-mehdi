@@ -9,7 +9,8 @@
     "contact": "联系我",
     "photoAlt": "{name}的照片",
     "realisations": "作品",
-    "games": "游戏"
+    "games": "游戏",
+    "tools": "工具"
   },
   "theme": {
     "enableLight": "启用浅色模式",
@@ -88,5 +89,32 @@
     "helpLabel": "关于玩家资料",
     "helpTitle": "玩家资料",
     "helpBody": "昵称或 Google 账号会为你提供跨游戏的统一身份。在本设备上，你的进度和分数会自动关联到该资料。"
+  },
+  "tools": {
+    "title": "工具",
+    "intro": "轻松处理日常任务的实用工具。",
+    "mergeTitle": "合并 PDF",
+    "mergeDescription": "按您选择的顺序将多个 PDF 合并为一个文档。",
+    "back": "所有工具",
+    "privacy": "文件仅在您的设备上处理，不会上传到服务器。",
+    "add": "添加 PDF",
+    "drop": "将 PDF 拖到此处或选择文件。",
+    "reading": "正在读取文件…",
+    "merging": "正在合并…",
+    "merge": "合并并下载",
+    "clear": "全部清除",
+    "remove": "移除 {name}",
+    "up": "上移 {name}",
+    "down": "下移 {name}",
+    "pages": "{count} 页",
+    "summary": "{count} 个文件 · {pages} 页",
+    "needTwo": "请至少添加两个 PDF。",
+    "success": "PDF 已准备好，下载已开始。",
+    "invalid": "此文件不是有效的 PDF。",
+    "empty": "此 PDF 为空。",
+    "encrypted": "此 PDF 已加密，请添加未加密的版本。",
+    "failed": "合并失败，请重试或移除相关文档。",
+    "readFailed": "无法读取此文件，请尝试重新添加。",
+    "list": "待合并的文档"
   }
 }

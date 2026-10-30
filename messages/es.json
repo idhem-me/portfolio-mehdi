@@ -9,7 +9,8 @@
     "contact": "Contactarme",
     "photoAlt": "Foto de {name}",
     "realisations": "Realizaciones",
-    "games": "Juegos"
+    "games": "Juegos",
+    "tools": "Herramientas"
   },
   "theme": {
     "enableLight": "Activar el modo claro",
@@ -88,5 +89,32 @@
     "helpLabel": "Acerca del perfil de jugador",
     "helpTitle": "Perfil de jugador",
     "helpBody": "Un apodo o una cuenta de Google te da una identidad común en los juegos. En este dispositivo, tu progreso y tus puntuaciones se vinculan automáticamente a ese perfil."
+  },
+  "tools": {
+    "title": "Herramientas",
+    "intro": "Herramientas sencillas para las tareas del día a día.",
+    "mergeTitle": "Unir PDF",
+    "mergeDescription": "Combina varios PDF en un documento, en el orden que prefieras.",
+    "back": "Todas las herramientas",
+    "privacy": "Tus archivos permanecen en tu dispositivo. No se envían documentos a ningún servidor.",
+    "add": "Añadir PDF",
+    "drop": "Arrastra tus PDF aquí o selecciona archivos.",
+    "reading": "Leyendo archivos…",
+    "merging": "Uniendo…",
+    "merge": "Unir y descargar",
+    "clear": "Eliminar todo",
+    "remove": "Quitar {name}",
+    "up": "Subir {name}",
+    "down": "Bajar {name}",
+    "pages": "{count, plural, one {# página} other {# páginas}}",
+    "summary": "{count} archivos · {pages} páginas",
+    "needTwo": "Añade al menos dos PDF para unirlos.",
+    "success": "Tu PDF está listo. La descarga ha comenzado.",
+    "invalid": "Este archivo no es un PDF válido.",
+    "empty": "Este PDF está vacío.",
+    "encrypted": "Este PDF está cifrado. Añade una versión sin protección.",
+    "failed": "No se pudieron unir. Inténtalo de nuevo o quita los documentos afectados.",
+    "readFailed": "No se pudo leer el archivo. Intenta añadirlo de nuevo.",
+    "list": "Documentos para unir"
   }
 }

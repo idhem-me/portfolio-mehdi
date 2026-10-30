@@ -9,7 +9,8 @@
     "contact": "Kontakt",
     "photoAlt": "Foto von {name}",
     "realisations": "Arbeiten",
-    "games": "Spiele"
+    "games": "Spiele",
+    "tools": "Werkzeuge"
   },
   "theme": {
     "enableLight": "Hellen Modus aktivieren",
@@ -88,5 +89,32 @@
     "helpLabel": "Über das Spielerprofil",
     "helpTitle": "Spielerprofil",
     "helpBody": "Ein Spitzname oder ein Google-Konto gibt dir eine gemeinsame Identität über die Spiele hinweg. Auf diesem Gerät werden Fortschritt und Punkte automatisch damit verknüpft."
+  },
+  "tools": {
+    "title": "Werkzeuge",
+    "intro": "Einfache Werkzeuge für alltägliche Aufgaben.",
+    "mergeTitle": "PDFs zusammenführen",
+    "mergeDescription": "Verbinden Sie mehrere PDFs in der gewünschten Reihenfolge.",
+    "back": "Alle Werkzeuge",
+    "privacy": "Ihre Dateien bleiben auf Ihrem Gerät. Keine Dokumente werden an einen Server gesendet.",
+    "add": "PDFs hinzufügen",
+    "drop": "PDFs hier ablegen oder Dateien auswählen.",
+    "reading": "Dateien werden gelesen…",
+    "merging": "PDFs werden zusammengeführt…",
+    "merge": "Zusammenführen und herunterladen",
+    "clear": "Alle entfernen",
+    "remove": "{name} entfernen",
+    "up": "{name} nach oben",
+    "down": "{name} nach unten",
+    "pages": "{count, plural, one {# Seite} other {# Seiten}}",
+    "summary": "{count} Dateien · {pages} Seiten",
+    "needTwo": "Fügen Sie mindestens zwei PDFs hinzu.",
+    "success": "Ihr PDF ist bereit. Der Download wurde gestartet.",
+    "invalid": "Diese Datei ist kein gültiges PDF.",
+    "empty": "Dieses PDF ist leer.",
+    "encrypted": "Dieses PDF ist verschlüsselt. Fügen Sie eine ungeschützte Version hinzu.",
+    "failed": "Zusammenführen fehlgeschlagen. Erneut versuchen oder betroffene Dokumente entfernen.",
+    "readFailed": "Datei konnte nicht gelesen werden. Fügen Sie sie erneut hinzu.",
+    "list": "Zusammenzuführende Dokumente"
   }
 }

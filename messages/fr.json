@@ -9,7 +9,8 @@
     "contact": "Me contacter",
     "photoAlt": "Photo de {name}",
     "realisations": "Réalisations",
-    "games": "Jeux"
+    "games": "Jeux",
+    "tools": "Outils"
   },
   "theme": {
     "enableLight": "Activer le mode clair",
@@ -88,5 +89,32 @@
     "helpLabel": "À propos du profil joueur",
     "helpTitle": "Profil joueur",
     "helpBody": "Un pseudo ou un compte Google te donne une identité commune aux jeux. Sur cet appareil, ta progression et tes scores y sont rattachés automatiquement."
+  },
+  "tools": {
+    "title": "Outils",
+    "intro": "Des outils simples pour vos tâches du quotidien.",
+    "mergeTitle": "Fusionner des PDF",
+    "mergeDescription": "Réunissez plusieurs PDF en un seul document, dans l’ordre de votre choix.",
+    "back": "Tous les outils",
+    "privacy": "Vos fichiers restent sur votre appareil. Aucun document n’est envoyé à un serveur.",
+    "add": "Ajouter des PDF",
+    "drop": "Glissez vos PDF ici ou choisissez des fichiers.",
+    "reading": "Lecture des fichiers…",
+    "merging": "Fusion en cours…",
+    "merge": "Fusionner et télécharger",
+    "clear": "Tout effacer",
+    "remove": "Retirer {name}",
+    "up": "Monter {name}",
+    "down": "Descendre {name}",
+    "pages": "{count, plural, one {# page} other {# pages}}",
+    "summary": "{count} fichiers · {pages} pages",
+    "needTwo": "Ajoutez au moins deux PDF pour les fusionner.",
+    "success": "Votre PDF est prêt. Le téléchargement a été lancé.",
+    "invalid": "Ce fichier n’est pas un PDF valide.",
+    "empty": "Ce PDF est vide.",
+    "encrypted": "Ce PDF est chiffré. Ajoutez une version sans protection.",
+    "failed": "La fusion a échoué. Réessayez ou retirez les documents concernés.",
+    "readFailed": "Impossible de lire ce fichier. Réessayez de l’ajouter.",
+    "list": "Documents à fusionner"
   }
 }
