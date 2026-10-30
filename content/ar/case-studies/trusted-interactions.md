@@ -20,11 +20,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/showcase-light.png",
           "alt": "واجهة المستشار Trusted Interactions",
-          "theme": "any",
           "caption": "واجهة المستشار",
-          "placeholder": true,
-          "browser": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/showcase-dark.png",
+          "alt": "واجهة المستشار Trusted Interactions",
+          "caption": "واجهة المستشار",
+          "theme": "dark"
         }
       ]
     },
@@ -38,10 +43,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/conv-debut-light.png",
           "alt": "خلاصة تدقيق Trusted Interactions",
-          "theme": "any",
           "caption": "خلاصة التدقيق",
-          "placeholder": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/conv-debut-dark.png",
+          "alt": "خلاصة تدقيق Trusted Interactions",
+          "caption": "خلاصة التدقيق",
+          "theme": "dark"
         }
       ]
     },
@@ -54,10 +65,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/journey-light.png",
           "alt": "رحلة المستخدم والسيناريو المستهدف لـ Trusted Interactions",
-          "theme": "any",
           "caption": "الرحلة والسيناريو",
-          "placeholder": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/journey-dark.png",
+          "alt": "رحلة المستخدم والسيناريو المستهدف لـ Trusted Interactions",
+          "caption": "الرحلة والسيناريو",
+          "theme": "dark"
         }
       ]
     },
@@ -70,10 +87,10 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/maquette.png",
           "alt": "نموذج المسار المستهدف لـ Trusted Interactions",
-          "theme": "any",
           "caption": "نموذج",
-          "placeholder": true
+          "theme": "any"
         }
       ]
     },
@@ -86,10 +103,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/resultats-light.png",
           "alt": "نتائج اختبارات المستخدمين لـ Trusted Interactions",
-          "theme": "any",
           "caption": "نتائج الاختبارات",
-          "placeholder": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/resultats-dark.png",
+          "alt": "نتائج اختبارات المستخدمين لـ Trusted Interactions",
+          "caption": "نتائج الاختبارات",
+          "theme": "dark"
         }
       ]
     },
@@ -110,11 +133,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/conv-fi-light.png",
           "alt": "قائمة محادثات Trusted Interactions",
-          "theme": "any",
           "caption": "المحادثات",
-          "placeholder": true,
-          "browser": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/conv-fi-dark.png",
+          "alt": "قائمة محادثات Trusted Interactions",
+          "caption": "المحادثات",
+          "theme": "dark"
         }
       ]
     },
@@ -149,6 +177,10 @@
     "WCAG 2.1 AA": "مرجع دولي لإتاحة الويب؛ المستوى AA هو الهدف الأكثر شيوعًا في الإنتاج.",
     "المسار السعيد": "السيناريو الاسمي الذي يسير فيه كل شيء بسلاسة، بلا أخطاء ولا حالات حدّية.",
     "قوالب": "هياكل شاشات قابلة لإعادة الاستخدام (قائمة، تفاصيل، نموذج…) تضمن الاتساق."
+  },
+  "themeToggle": {
+    "light": "الوضع الفاتح",
+    "dark": "الوضع الداكن"
   }
 }
 ---

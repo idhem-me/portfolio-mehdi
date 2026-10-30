@@ -20,11 +20,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/showcase-light.png",
           "alt": "Trusted Interactions 顾问界面",
-          "theme": "any",
           "caption": "顾问界面",
-          "placeholder": true,
-          "browser": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/showcase-dark.png",
+          "alt": "Trusted Interactions 顾问界面",
+          "caption": "顾问界面",
+          "theme": "dark"
         }
       ]
     },
@@ -38,10 +43,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/conv-debut-light.png",
           "alt": "Trusted Interactions 审计综合",
-          "theme": "any",
           "caption": "审计综合",
-          "placeholder": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/conv-debut-dark.png",
+          "alt": "Trusted Interactions 审计综合",
+          "caption": "审计综合",
+          "theme": "dark"
         }
       ]
     },
@@ -54,10 +65,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/journey-light.png",
           "alt": "Trusted Interactions 用户旅程与目标场景",
-          "theme": "any",
           "caption": "旅程与场景",
-          "placeholder": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/journey-dark.png",
+          "alt": "Trusted Interactions 用户旅程与目标场景",
+          "caption": "旅程与场景",
+          "theme": "dark"
         }
       ]
     },
@@ -70,10 +87,10 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/maquette.png",
           "alt": "Trusted Interactions 目标路径稿",
-          "theme": "any",
           "caption": "稿面",
-          "placeholder": true
+          "theme": "any"
         }
       ]
     },
@@ -86,10 +103,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/resultats-light.png",
           "alt": "Trusted Interactions 用户测试结果",
-          "theme": "any",
           "caption": "测试结果",
-          "placeholder": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/resultats-dark.png",
+          "alt": "Trusted Interactions 用户测试结果",
+          "caption": "测试结果",
+          "theme": "dark"
         }
       ]
     },
@@ -110,11 +133,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/conv-fi-light.png",
           "alt": "Trusted Interactions 会话列表",
-          "theme": "any",
           "caption": "会话列表",
-          "placeholder": true,
-          "browser": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/conv-fi-dark.png",
+          "alt": "Trusted Interactions 会话列表",
+          "caption": "会话列表",
+          "theme": "dark"
         }
       ]
     },
@@ -149,6 +177,10 @@
     "WCAG 2.1 AA": "国际无障碍标准；AA 级是生产环境最常见目标。",
     "happy path": "一切顺利、无错误与边界情况的理想路径。",
     "模板": "可复用的屏幕结构（列表、详情、表单等），保证体验一致。"
+  },
+  "themeToggle": {
+    "light": "浅色模式",
+    "dark": "深色模式"
   }
 }
 ---

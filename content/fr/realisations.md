@@ -16,7 +16,12 @@
     {
       "title": "Trusted Interactions",
       "status": "Étude de cas",
-      "slug": "trusted-interactions"
+      "slug": "trusted-interactions",
+      "cover": {
+        "light": "/img/photos/trusted-interactions/minia-light.png",
+        "dark": "/img/photos/trusted-interactions/minia-dark.png",
+        "alt": "Trusted Interactions"
+      }
     }
   ]
 }

@@ -2,7 +2,7 @@
 {
   "slug": "trusted-interactions",
   "title": "Trusted Interactions",
-  "tagline": "Refondre une messagerie bancaire critique pour rendre le design utile là où il n’existait pas.",
+  "tagline": "Refondre une messagerie bancaire pour clarifier le traitement des conversations et guider les conseillers.",
   "backLabel": "Réalisations",
   "meta": {
     "role": "Product design",
@@ -32,16 +32,21 @@
       "title": "Une messagerie sous contrainte",
       "body": [
         "Trusted Interactions, c’est la messagerie sécurisée des banques. Créée en 2015. Des centaines de milliers de messages, des dizaines de milliers d’agents.",
-        "Zéro designer. Plus de trente développeurs. Un environnement rigide, sans culture [[UX]].",
+        "Plus de trente développeurs, aucun designer dédié : le projet démarre dans un environnement technique contraint, sans pratique [[UX]] structurée.",
         "Chez Worldline, mon rôle : intégrer le Design sans tout casser — transformer l’audit en produit clair, testé, industrialisable."
       ],
       "images": [
         {
-          "alt": "Interface conseiller Trusted Interactions",
-          "theme": "any",
-          "caption": "Interface conseiller",
-          "placeholder": true,
-          "browser": true
+          "src": "/img/photos/trusted-interactions/showcase-light.png",
+          "alt": "La liste de conversations, avant et après la refonte",
+          "caption": "La liste de conversations, avant et après la refonte",
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/showcase-dark.png",
+          "alt": "La liste de conversations, avant et après la refonte",
+          "caption": "La liste de conversations, avant et après la refonte",
+          "theme": "dark"
         }
       ]
     },
@@ -55,10 +60,16 @@
       ],
       "images": [
         {
-          "alt": "Synthèse de l’audit Trusted Interactions",
-          "theme": "any",
-          "caption": "Synthèse audit",
-          "placeholder": true
+          "src": "/img/photos/trusted-interactions/conv-debut-light.png",
+          "alt": "L’interface initiale : une liste dense, difficile à parcourir",
+          "caption": "L’interface initiale : une liste dense, difficile à parcourir",
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/conv-debut-dark.png",
+          "alt": "L’interface initiale : une liste dense, difficile à parcourir",
+          "caption": "L’interface initiale : une liste dense, difficile à parcourir",
+          "theme": "dark"
         }
       ]
     },
@@ -71,10 +82,16 @@
       ],
       "images": [
         {
-          "alt": "User journey et scénario cible Trusted Interactions",
-          "theme": "any",
-          "caption": "Journey & scénario",
-          "placeholder": true
+          "src": "/img/photos/trusted-interactions/journey-light.png",
+          "alt": "Le parcours du conseiller et les points de friction",
+          "caption": "Le parcours du conseiller et les points de friction",
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/journey-dark.png",
+          "alt": "Le parcours du conseiller et les points de friction",
+          "caption": "Le parcours du conseiller et les points de friction",
+          "theme": "dark"
         }
       ]
     },
@@ -82,15 +99,15 @@
       "id": "prototypes",
       "title": "Rendre palpable",
       "body": [
-        "Maquettes du parcours cible.",
+        "Un prototype relie les écrans du parcours cible pour rendre les enchaînements et les décisions visibles.",
         "Hiérarchie visuelle, [[progressive disclosure]], feedback immédiat. On voit les frictions avant d’écrire une ligne de code métier."
       ],
       "images": [
         {
-          "alt": "Maquette du parcours cible Trusted Interactions",
-          "theme": "any",
-          "caption": "Maquette",
-          "placeholder": true
+          "src": "/img/photos/trusted-interactions/maquette.png",
+          "alt": "Les écrans et les enchaînements du prototype",
+          "caption": "Les écrans et les enchaînements du prototype",
+          "theme": "any"
         }
       ]
     },
@@ -103,10 +120,16 @@
       ],
       "images": [
         {
-          "alt": "Résultats des tests utilisateurs Trusted Interactions",
-          "theme": "any",
-          "caption": "Résultats des tests",
-          "placeholder": true
+          "src": "/img/photos/trusted-interactions/resultats-light.png",
+          "alt": "Synthèse des retours et résultats des tests",
+          "caption": "Synthèse des retours et résultats des tests",
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/resultats-dark.png",
+          "alt": "Synthèse des retours et résultats des tests",
+          "caption": "Synthèse des retours et résultats des tests",
+          "theme": "dark"
         }
       ]
     },
@@ -127,11 +150,16 @@
       ],
       "images": [
         {
-          "alt": "Liste de conversations Trusted Interactions",
-          "theme": "any",
-          "caption": "Conversations",
-          "placeholder": true,
-          "browser": true
+          "src": "/img/photos/trusted-interactions/conv-fi-light.png",
+          "alt": "La liste de conversations après la refonte",
+          "caption": "La liste de conversations après la refonte",
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/conv-fi-dark.png",
+          "alt": "La liste de conversations après la refonte",
+          "caption": "La liste de conversations après la refonte",
+          "theme": "dark"
         }
       ]
     },
@@ -142,13 +170,17 @@
         "Livrables posés. Passation faite. Maturité [[UX]] du pôle améliorée."
       ],
       "cta": {
-        "label": "Retours aux réalisations",
+        "label": "Retour aux réalisations",
         "href": "/realisations",
         "variant": "secondary",
         "size": "default",
         "align": "center"
       }
     }
-  ]
+  ],
+  "themeToggle": {
+    "light": "Mode clair",
+    "dark": "Mode sombre"
+  }
 }
 ---

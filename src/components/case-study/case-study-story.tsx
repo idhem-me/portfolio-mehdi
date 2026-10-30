@@ -141,7 +141,7 @@ export function CaseStudyStory({ study, children }: CaseStudyStoryProps) {
                   </div>
                 );
               })()
-            ) : section.id === "user-tests" ? (
+            ) : section.id === "user-tests" && !section.images.some((image) => image.theme === "light" || image.theme === "dark") ? (
               <div className="space-y-4">
                 <ScrollReveal delayMs={80}>
                   <ThemeImage image={section.images[0]!} />

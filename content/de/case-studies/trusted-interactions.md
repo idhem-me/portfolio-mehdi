@@ -20,11 +20,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/showcase-light.png",
           "alt": "Trusted Interactions Berater-Interface",
-          "theme": "any",
           "caption": "Berater-Interface",
-          "placeholder": true,
-          "browser": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/showcase-dark.png",
+          "alt": "Trusted Interactions Berater-Interface",
+          "caption": "Berater-Interface",
+          "theme": "dark"
         }
       ]
     },
@@ -38,10 +43,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/conv-debut-light.png",
           "alt": "Trusted Interactions Audit-Synthese",
-          "theme": "any",
           "caption": "Audit-Synthese",
-          "placeholder": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/conv-debut-dark.png",
+          "alt": "Trusted Interactions Audit-Synthese",
+          "caption": "Audit-Synthese",
+          "theme": "dark"
         }
       ]
     },
@@ -54,10 +65,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/journey-light.png",
           "alt": "Trusted Interactions User Journey und Ziel-Szenario",
-          "theme": "any",
           "caption": "Journey & Szenario",
-          "placeholder": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/journey-dark.png",
+          "alt": "Trusted Interactions User Journey und Ziel-Szenario",
+          "caption": "Journey & Szenario",
+          "theme": "dark"
         }
       ]
     },
@@ -70,10 +87,10 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/maquette.png",
           "alt": "Trusted Interactions Mockup der Ziel-Journey",
-          "theme": "any",
           "caption": "Mockup",
-          "placeholder": true
+          "theme": "any"
         }
       ]
     },
@@ -86,10 +103,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/resultats-light.png",
           "alt": "Trusted Interactions Ergebnisse der Nutzertests",
-          "theme": "any",
           "caption": "Testergebnisse",
-          "placeholder": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/resultats-dark.png",
+          "alt": "Trusted Interactions Ergebnisse der Nutzertests",
+          "caption": "Testergebnisse",
+          "theme": "dark"
         }
       ]
     },
@@ -110,11 +133,16 @@
       ],
       "images": [
         {
+          "src": "/img/photos/trusted-interactions/conv-fi-light.png",
           "alt": "Trusted Interactions Gesprächsliste",
-          "theme": "any",
           "caption": "Gespräche",
-          "placeholder": true,
-          "browser": true
+          "theme": "light"
+        },
+        {
+          "src": "/img/photos/trusted-interactions/conv-fi-dark.png",
+          "alt": "Trusted Interactions Gesprächsliste",
+          "caption": "Gespräche",
+          "theme": "dark"
         }
       ]
     },
@@ -149,6 +177,10 @@
     "WCAG 2.1 AA": "Internationaler Accessibility-Standard; AA ist das übliche Produktionsziel.",
     "Happy Path": "Nominales Szenario, in dem alles glatt läuft – ohne Fehler oder Grenzfälle.",
     "Templates": "Wiederverwendbare Bildschirmstrukturen (Liste, Detail, Formular…), die Konsistenz sichern."
+  },
+  "themeToggle": {
+    "light": "Hellmodus",
+    "dark": "Dunkelmodus"
   }
 }
 ---
