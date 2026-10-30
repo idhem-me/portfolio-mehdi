@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { track as usage } from "@/lib/tracking/client";
 import { Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
@@ -35,7 +36,10 @@ export function ThemeToggle() {
         tooltip={label}
         aria-label={label}
         disabled={!mounted}
-        onClick={() => setTheme(isDark ? "light" : "dark")}
+        onClick={() => {
+          usage.increment("theme_toggles");
+          setTheme(isDark ? "light" : "dark");
+        }}
         suppressHydrationWarning
       >
         {!mounted || !isDark ? <Moon /> : <Sun />}

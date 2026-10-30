@@ -1,4 +1,5 @@
 "use client";
+import { track as usage } from "@/lib/tracking/client";
 
 import "./paint-tool.css";
 import {
@@ -351,6 +352,8 @@ export function PaintTool({
       point_count: g.points.length,
       playing: latestRef.current.isPlaying,
     });
+    usage.increment("brush_strokes");
+    usage.color(color);
     strokesRef.current.push({ points: g.points, el: g.el });
     setCount(strokesRef.current.length);
     if (latestRef.current.isPlaying) addBodies();

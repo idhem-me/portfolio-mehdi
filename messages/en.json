@@ -1,5 +1,7 @@
 {
-  "designSystem": { "label": "Design system" },
+  "designSystem": {
+    "label": "Design system"
+  },
   "nav": {
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -11,7 +13,8 @@
     "photoAlt": "Photo of {name}",
     "realisations": "Work",
     "games": "Games",
-    "tools": "Tools"
+    "tools": "Tools",
+    "backoffice": "Backoffice"
   },
   "theme": {
     "enableLight": "Enable light mode",
@@ -252,5 +255,72 @@
     "copyError": "Could not copy the SVG. Allow clipboard access or download the SVG file.",
     "exportError": "Could not export the QR Code. Try again or remove the logo.",
     "logoError": "Choose a valid PNG, JPEG or WEBP image no larger than 10 MB."
+  },
+  "backoffice": {
+    "title": "Backoffice",
+    "dashboard": "Dashboard",
+    "sessions": "Sessions",
+    "emptyTitle": "Here, you are the data.",
+    "emptyText": "This space shows, live, what you do on the site: how far your mouse has travelled, your clicks, the games you've played… and how you compare to other visitors.",
+    "emptyPrivacy": "To see it, please accept analytics cookies. Nothing can identify you: every session is anonymous.",
+    "accept": "Accept cookies",
+    "preferences": "Manage preferences",
+    "withdraw": "Withdraw consent",
+    "mine": "Your stats",
+    "since": "Since you accepted cookies · 90-day retention",
+    "online": "Online",
+    "visitors": "Visitors",
+    "active_ms": "Active time",
+    "mouse_px": "Mouse distance",
+    "clicks": "Clicks",
+    "games_played": "Games played",
+    "brush_strokes": "Brush strokes",
+    "pages": "Page views",
+    "devices": "Devices",
+    "countries": "Countries",
+    "reset": "Reset filters",
+    "error": "Unable to load statistics.",
+    "retry": "Retry",
+    "none": "No results",
+    "previous": "Previous session",
+    "next": "Next session",
+    "you": "You",
+    "ended": "Ended",
+    "start": "Started",
+    "country": "Country",
+    "device": "Device",
+    "played": "Played",
+    "all": "All",
+    "yes": "Yes",
+    "no": "No",
+    "close": "Close",
+    "history": "Insufficient history",
+    "comparison": "Your mouse has travelled {ratio}× the average",
+    "unknown": "Unknown",
+    "key_presses": "Key presses",
+    "colors_used": "Colors used",
+    "cta_clicks": "Links followed",
+    "theme_toggles": "Theme changes",
+    "lang_changes": "Language changes",
+    "period": "Period",
+    "ranges": {
+      "24h": "24 hours",
+      "7d": "7 days",
+      "30d": "30 days",
+      "90d": "90 days"
+    },
+    "fromDate": "From",
+    "toDate": "To",
+    "allCountries": "All countries",
+    "allDevices": "All devices",
+    "visitedPage": "Visited page",
+    "allPages": "All pages",
+    "deviceLabels": {
+      "desktop": "Desktop",
+      "mobile": "Mobile",
+      "tablet": "Tablet"
+    },
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
   }
 }

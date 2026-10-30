@@ -5,6 +5,7 @@ import { Cookie } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
+  subscribeConsent,
   getConsent,
   setConsent,
   type ConsentStatus,
@@ -21,7 +22,14 @@ export function ConsentBanner() {
       setStatus(getConsent());
       setMounted(true);
     });
-    return () => cancelAnimationFrame(frame);
+    const unsubscribe = subscribeConsent(setStatus);
+    const open = () => setStatus(null);
+    window.addEventListener("analytics-preferences", open);
+    return () => {
+      cancelAnimationFrame(frame);
+      unsubscribe();
+      window.removeEventListener("analytics-preferences", open);
+    };
   }, []);
 
   if (!mounted || status !== null) return null;

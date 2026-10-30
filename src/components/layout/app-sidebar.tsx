@@ -4,6 +4,8 @@ import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 
 import {
   Home,
+  LayoutDashboard,
+  Cookie,
   Layers,
   UserRound,
   Gamepad2,
@@ -31,6 +33,7 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { MobileMenuButton } from "@/components/layout/mobile-menu-button";
 import { MobileBrandBar } from "@/components/layout/mobile-brand-bar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { openAnalyticsPreferences } from "@/lib/analytics/consent";
 import { AnalyticsEvents } from "@/lib/analytics/events";
 import { usePathname } from "@/i18n/navigation";
 
@@ -38,6 +41,7 @@ import { tetrisEnabled } from "@/features/tetris/flags";
 
 export function AppSidebar() {
   const t = useTranslations("nav");
+  const privacy = useTranslations("backoffice");
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
 
@@ -51,6 +55,12 @@ export function AppSidebar() {
       label: t("home"),
       icon: Home,
       match: (path: string) => path === "/",
+    },
+    {
+      href: "/backoffice",
+      label: t("backoffice"),
+      icon: LayoutDashboard,
+      match: (path: string) => path.startsWith("/backoffice"),
     },
     {
       href: "/realisations",
@@ -123,6 +133,15 @@ export function AppSidebar() {
                 <DesignSystemSwitcher />
                 <LanguageSwitcher />
                 <ThemeToggle />
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={openAnalyticsPreferences}
+                    tooltip={privacy("preferences")}
+                  >
+                    <Cookie />
+                    <span>{privacy("preferences")}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </div>
           </div>
@@ -172,6 +191,15 @@ export function AppSidebar() {
             <DesignSystemSwitcher />
             <LanguageSwitcher />
             <ThemeToggle />
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={openAnalyticsPreferences}
+                tooltip={privacy("preferences")}
+              >
+                <Cookie />
+                <span>{privacy("preferences")}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
         <SidebarRail />

@@ -32,6 +32,7 @@ export function track(
   properties?: Record<string, unknown>,
 ) {
   if (typeof window === "undefined") return;
+  if (!["game_played","cta_clicked","brush_used"].includes(event)) return;
   if (getConsent() !== "granted") return;
   if (!process.env.NEXT_PUBLIC_POSTHOG_KEY) return;
   void import("posthog-js")

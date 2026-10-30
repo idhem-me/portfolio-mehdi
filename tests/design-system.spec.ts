@@ -237,7 +237,8 @@ test("Primer QR fields, select, sliders, switch and download remain functional",
   await expect(
     page.locator('[data-component="TextInput"]').first(),
   ).toBeVisible();
-  await page.locator("#qr-level").selectOption("H");
+  await page.locator("#qr-level").click();
+  await page.getByRole("option", { name: "H", exact: true }).click();
   await page.locator("#qr-logo").setInputFiles({
     name: "logo.png",
     mimeType: "image/png",

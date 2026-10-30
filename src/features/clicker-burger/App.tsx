@@ -1,6 +1,10 @@
 "use client";
+import { track as usage } from "@/lib/tracking/client";
 
-import { NativeInput, NativeButton } from "@/components/design-system/native-controls";
+import {
+  NativeInput,
+  NativeButton,
+} from "@/components/design-system/native-controls";
 import Image from "next/image";
 import { useIdentityState } from "@/features/account/client-store";
 import { PlayerProfileButton } from "@/features/account/ui/profile-button";
@@ -262,6 +266,7 @@ export default function App({
   const cook = () => {
     if (!canCook) return;
     unlockFeel();
+    usage.game("clicker-burger");
     game.dispatch({ type: "cook" });
     feedback("cook");
     setPulse((v) => v + 1);

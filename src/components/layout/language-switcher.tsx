@@ -1,5 +1,6 @@
 "use client";
 
+import { track as usage } from "@/lib/tracking/client";
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { DesignSystemChoiceMenu } from "@/components/design-system/choice-menu";
@@ -21,8 +22,10 @@ export function LanguageSwitcher() {
         label: localeNames[code],
       }))}
       onChange={(next) => {
-        if (next !== locale)
+        if (next !== locale) {
+          usage.increment("lang_changes");
           router.replace(pathname, { locale: next as Locale });
+        }
       }}
       analyticsAction="language"
     />

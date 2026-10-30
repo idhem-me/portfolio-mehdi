@@ -1,9 +1,11 @@
 "use client";
-import { Select as PrimerSelect } from "@primer/react";
-import { useDesignSystem } from "@/components/design-system/provider";
+
 import { useLocale } from "next-intl";
 import { Select as Primitive } from "radix-ui";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { useDesignSystemAttributes } from "@/components/design-system/provider";
+import { useScopedTheme } from "./scoped-theme";
+
 export function Select({
   value,
   onValueChange,
@@ -18,23 +20,8 @@ export function Select({
   id?: string;
 }) {
   const locale = useLocale();
-  const { designSystem } = useDesignSystem();
-  if (designSystem === "github")
-    return (
-      <PrimerSelect
-        id={id}
-        aria-label={label}
-        value={value}
-        onChange={(event) => onValueChange(event.target.value)}
-        block
-      >
-        {options.map((option) => (
-          <PrimerSelect.Option key={option.value} value={option.value}>
-            {option.label}
-          </PrimerSelect.Option>
-        ))}
-      </PrimerSelect>
-    );
+  const attributes = useDesignSystemAttributes();
+  const scopedTheme = useScopedTheme();
   return (
     <Primitive.Root
       dir={locale === "ar" ? "rtl" : "ltr"}
@@ -44,33 +31,49 @@ export function Select({
       <Primitive.Trigger
         id={id}
         aria-label={label}
-        className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-slot="select-trigger"
+        className="flex h-(--control-height) w-full min-w-0 items-center justify-between gap-3 rounded-lg border border-input bg-background ps-3 pe-3 text-start text-[length:var(--control-text)] text-foreground outline-none transition-colors hover:bg-muted/40 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 data-[state=open]:border-ring disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Primitive.Value />
-        <Primitive.Icon>
-          <ChevronDown className="size-4" />
+        <span className="min-w-0 flex-1 truncate">
+          <Primitive.Value />
+        </span>
+        <Primitive.Icon className="shrink-0 text-muted-foreground">
+          <ChevronDown className="size-4" aria-hidden />
         </Primitive.Icon>
       </Primitive.Trigger>
       <Primitive.Portal>
         <Primitive.Content
+          {...attributes}
+          data-cards-theme={scopedTheme}
+          data-slot="select-content"
           position="popper"
-          sideOffset={5}
-          className="z-50 max-h-80 min-w-(--radix-select-trigger-width) overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg"
+          align="start"
+          sideOffset={6}
+          collisionPadding={8}
+          className="ds-scope z-50 max-h-[min(20rem,var(--radix-select-content-available-height))] w-(--radix-select-trigger-width) min-w-32 max-w-[calc(100vw-1rem)] overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md"
         >
+          <Primitive.ScrollUpButton className="flex h-6 items-center justify-center bg-popover">
+            <ChevronUp className="size-4" aria-hidden />
+          </Primitive.ScrollUpButton>
           <Primitive.Viewport>
-            {options.map((o) => (
+            {options.map((option) => (
               <Primitive.Item
-                key={o.value}
-                value={o.value}
-                className="relative flex min-h-10 cursor-default items-center rounded-md py-2 ps-8 pe-3 text-sm outline-none data-highlighted:bg-muted"
+                key={option.value}
+                value={option.value}
+                className="relative flex min-h-(--control-height) cursor-pointer items-center rounded-md py-2 ps-3 pe-9 text-[length:var(--control-text)] outline-none select-none data-[state=checked]:bg-muted/60 data-highlighted:bg-muted data-highlighted:text-foreground"
               >
-                <Primitive.ItemIndicator className="absolute start-2">
-                  <Check className="size-4" />
+                <Primitive.ItemText className="break-words">
+                  {option.label}
+                </Primitive.ItemText>
+                <Primitive.ItemIndicator className="absolute end-3 flex items-center">
+                  <Check className="size-4" aria-hidden />
                 </Primitive.ItemIndicator>
-                <Primitive.ItemText>{o.label}</Primitive.ItemText>
               </Primitive.Item>
             ))}
           </Primitive.Viewport>
+          <Primitive.ScrollDownButton className="flex h-6 items-center justify-center bg-popover">
+            <ChevronDown className="size-4" aria-hidden />
+          </Primitive.ScrollDownButton>
         </Primitive.Content>
       </Primitive.Portal>
     </Primitive.Root>

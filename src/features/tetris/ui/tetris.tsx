@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/refs -- Imperative game engine: React HUD is explicitly refreshed at 25 Hz; canvas reads the same engine at frame rate. */
 "use client";
+import { track as usage } from "@/lib/tracking/client";
 
 import { NativeInput } from "@/components/design-system/native-controls";
 import {
@@ -290,6 +291,7 @@ function TetrisGame({
       if (e.type !== "tetris" && e.type !== "combo")
         haptic(e, settingsRef.current, iosSwitch.current);
       if (e.type === "gameOver") {
+        usage.game("tetris", g.score);
         setStatus("over");
         setBest((old) => {
           const value = Math.max(old, g.score);

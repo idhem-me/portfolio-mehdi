@@ -33,6 +33,15 @@ export function subscribeConsent(
     const detail = (event as CustomEvent<"granted" | "denied">).detail;
     listener(detail);
   };
+  const storage = () => listener(getConsent());
+  window.addEventListener("storage", storage);
   window.addEventListener(CONSENT_EVENT, handler);
-  return () => window.removeEventListener(CONSENT_EVENT, handler);
+  return () => {
+    window.removeEventListener(CONSENT_EVENT, handler);
+    window.removeEventListener("storage", storage);
+  };
+}
+
+export function openAnalyticsPreferences() {
+  window.dispatchEvent(new Event("analytics-preferences"));
 }

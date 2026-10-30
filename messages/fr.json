@@ -1,5 +1,7 @@
 {
-  "designSystem": { "label": "Design system" },
+  "designSystem": {
+    "label": "Design system"
+  },
   "nav": {
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu",
@@ -11,7 +13,8 @@
     "photoAlt": "Photo de {name}",
     "realisations": "Réalisations",
     "games": "Jeux",
-    "tools": "Outils"
+    "tools": "Outils",
+    "backoffice": "Backoffice"
   },
   "theme": {
     "enableLight": "Activer le mode clair",
@@ -252,5 +255,72 @@
     "copyError": "Impossible de copier le SVG. Autorisez l’accès au presse-papier ou téléchargez le fichier SVG.",
     "exportError": "Impossible d’exporter le QR Code. Réessayez ou retirez le logo.",
     "logoError": "Choisissez une image PNG, JPEG ou WEBP valide de 10 Mo maximum."
+  },
+  "backoffice": {
+    "title": "Backoffice",
+    "dashboard": "Dashboard",
+    "sessions": "Sessions",
+    "emptyTitle": "Ici, c'est vous la data.",
+    "emptyText": "Cet espace affiche en direct ce que vous faites sur le site : les kilomètres parcourus par votre souris, vos clics, vos parties jouées… et vous compare aux autres visiteurs.",
+    "emptyPrivacy": "Pour ça, il faut accepter les cookies de mesure d'audience. Rien ne permet de vous identifier : chaque session est anonyme.",
+    "accept": "Accepter les cookies",
+    "preferences": "Gérer mes préférences",
+    "withdraw": "Retirer mon consentement",
+    "mine": "Vos stats",
+    "since": "Depuis votre arrivée sur le site · conservation de 90 jours",
+    "online": "En ligne",
+    "visitors": "Visiteurs",
+    "active_ms": "Temps actif",
+    "mouse_px": "Distance souris",
+    "clicks": "Clics",
+    "games_played": "Parties jouées",
+    "brush_strokes": "Coups de pinceau",
+    "pages": "Pages vues",
+    "devices": "Appareils",
+    "countries": "Pays",
+    "reset": "Réinitialiser les filtres",
+    "error": "Impossible de charger les statistiques.",
+    "retry": "Réessayer",
+    "none": "Aucun résultat",
+    "previous": "Session précédente",
+    "next": "Session suivante",
+    "you": "Vous",
+    "ended": "Terminée",
+    "start": "Début",
+    "country": "Pays",
+    "device": "Appareil",
+    "played": "A joué",
+    "all": "Tous",
+    "yes": "Oui",
+    "no": "Non",
+    "close": "Fermer",
+    "history": "Historique insuffisant",
+    "comparison": "Votre souris a parcouru {ratio}× la moyenne",
+    "unknown": "Inconnu",
+    "key_presses": "Touches pressées",
+    "colors_used": "Couleurs utilisées",
+    "cta_clicks": "Liens suivis",
+    "theme_toggles": "Changements de thème",
+    "lang_changes": "Changements de langue",
+    "period": "Période",
+    "ranges": {
+      "24h": "24 heures",
+      "7d": "7 jours",
+      "30d": "30 jours",
+      "90d": "90 jours"
+    },
+    "fromDate": "Du",
+    "toDate": "Au",
+    "allCountries": "Tous les pays",
+    "allDevices": "Tous les appareils",
+    "visitedPage": "Page visitée",
+    "allPages": "Toutes les pages",
+    "deviceLabels": {
+      "desktop": "Ordinateur",
+      "mobile": "Mobile",
+      "tablet": "Tablette"
+    },
+    "previousPage": "Page précédente",
+    "nextPage": "Page suivante"
   }
 }

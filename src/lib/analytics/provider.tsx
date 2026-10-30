@@ -19,6 +19,8 @@ function initPosthog() {
 
   posthog.init(key, {
     api_host: getPosthogHost(),
+    persistence: "memory",
+    opt_out_capturing_by_default: true,
     person_profiles: "identified_only",
     capture_pageview: false,
     capture_pageleave: true,
@@ -64,7 +66,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
           readyRef.current = true;
           captureCurrentPageview();
         }
-      } else if (status === "denied") {
+      } else {
         shutdownPosthog();
         readyRef.current = false;
       }

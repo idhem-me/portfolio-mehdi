@@ -1,5 +1,6 @@
 "use client";
 
+import { TrackingProvider } from "@/lib/tracking/provider";
 import { Suspense } from "react";
 import { ClarityScript } from "./clarity";
 import { PostHogProvider } from "./provider";
@@ -10,6 +11,7 @@ export function AnalyticsRoot({ children }: { children: React.ReactNode }) {
     <>
       <Suspense fallback={null}>
         <PostHogProvider>
+          <TrackingProvider />
           <ClarityScript />
           <VercelAnalytics />
         </PostHogProvider>

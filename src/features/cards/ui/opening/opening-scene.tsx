@@ -1,4 +1,5 @@
 "use client";
+import { track as usage } from "@/lib/tracking/client";
 import { clampQuantity, MAX_OPENING_BOOSTERS } from "../../engine/quantity";
 import {
   affordableBoosters,
@@ -188,6 +189,7 @@ export function OpeningScene({
     }
   };
   const startOpen = () => {
+    usage.game("cards");
     void start(
       clampQuantity(
         quantity,
@@ -475,11 +477,9 @@ export function OpeningScene({
   // —— Summary ——
   if (open.phase === "summary") {
     const summaryCards = open.batchCards ?? open.cards;
-    const summaryItems = classifyOpeningPulls(
-      summaryCards,
-      save.collection,
-      { simulation: open.simulation },
-    ).map((item) => ({
+    const summaryItems = classifyOpeningPulls(summaryCards, save.collection, {
+      simulation: open.simulation,
+    }).map((item) => ({
       ...item,
       card: getCard(item.drawn.cardId)!,
     }));
@@ -487,9 +487,7 @@ export function OpeningScene({
     const doublons = summaryItems.filter((item) => !item.isNew);
     const visibleItems = summaryFilter === "new" ? nouvelles : doublons;
     const emptyCopy =
-      summaryFilter === "new"
-        ? "Aucune nouvelle carte."
-        : "Aucun doublon.";
+      summaryFilter === "new" ? "Aucune nouvelle carte." : "Aucun doublon.";
     const closeSummary = () => {
       controller.dismissSummary();
       refresh();
@@ -525,7 +523,8 @@ export function OpeningScene({
               Récapitulatif
             </DialogTitle>
             <DialogDescription className="sr-only">
-              Cartes obtenues pendant cette ouverture. OK ferme le récapitulatif.
+              Cartes obtenues pendant cette ouverture. OK ferme le
+              récapitulatif.
             </DialogDescription>
             <Tabs
               value={summaryFilter}
