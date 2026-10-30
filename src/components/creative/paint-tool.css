@@ -1,0 +1,23 @@
+/* Painting is a creative tool with its own appearance, including body portals. */
+.paint-original-theme {
+  --background: var(--mehdi-background);
+  --foreground: var(--mehdi-foreground);
+  --primary: var(--mehdi-primary);
+  --primary-foreground: var(--mehdi-primary-foreground);
+  --secondary: var(--mehdi-secondary);
+  --secondary-foreground: var(--mehdi-secondary-foreground);
+  --muted: var(--mehdi-muted);
+  --muted-foreground: var(--mehdi-muted-foreground);
+  --accent: var(--mehdi-accent);
+  --accent-foreground: var(--mehdi-accent-foreground);
+  --warning: var(--mehdi-warning);
+  --success: var(--mehdi-success);
+  --destructive: var(--mehdi-destructive);
+  --border: var(--mehdi-border);
+  --input: var(--mehdi-input);
+  --ring: var(--mehdi-ring);
+  --radius: var(--mehdi-radius);
+  --control-height: var(--mehdi-control-height);
+  --control-text: var(--mehdi-control-text);
+  font-family: var(--font-sans);
+}

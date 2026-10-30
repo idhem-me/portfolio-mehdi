@@ -87,7 +87,9 @@ export function DesignSystemChoiceMenu({
         </ActionMenu>
       ) : (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
+          <DropdownMenuTrigger asChild data-slot="sidebar-menu-button">
+            {trigger}
+          </DropdownMenuTrigger>
           <DropdownMenuContent
             side={state === "collapsed" && !isMobile ? "right" : "top"}
             align="start"

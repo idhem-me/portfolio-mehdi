@@ -10,6 +10,9 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
+// Locale and translations are resolved for this route before rendering.
+export const instant = false;
+
 type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;

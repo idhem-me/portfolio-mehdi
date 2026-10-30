@@ -1,6 +1,6 @@
 "use client";
 
-import { NativeButton } from "@/components/design-system/native-controls";
+import "./paint-tool.css";
 import {
   useEffect,
   useEffectEvent,
@@ -14,7 +14,7 @@ import { createPortal } from "react-dom";
 import Matter from "matter-js";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/design-system/mehdi-button";
 import { PaintBrush } from "./paint-brush";
 import {
   createPaintBody,
@@ -50,7 +50,8 @@ const NS = "http://www.w3.org/2000/svg";
 function renderStroke(points: PaintPoint[], color: string) {
   const el = document.createElement("div");
   el.dataset.paintStroke = "";
-  el.className = "pointer-events-none fixed left-0 top-0 z-[6]";
+  el.className =
+    "paint-original-theme pointer-events-none fixed left-0 top-0 z-[6]";
   const svg = document.createElementNS(NS, "svg");
   svg.setAttribute("width", "1");
   svg.setAttribute("height", "1");
@@ -355,7 +356,7 @@ export function PaintTool({
     if (latestRef.current.isPlaying) addBodies();
   }
   const brushButton = (
-    <NativeButton
+    <button
       ref={brushRef}
       type="button"
       data-analytics-gesture="paint_brush"
@@ -379,7 +380,7 @@ export function PaintTool({
       }}
     >
       <PaintBrush color={token(color)} />
-    </NativeButton>
+    </button>
   );
   const palette = (
     <div
@@ -394,7 +395,7 @@ export function PaintTool({
       }}
     >
       {COLORS.map((c) => (
-        <NativeButton
+        <button
           key={c}
           type="button"
           data-analytics-action="paint_color"
@@ -412,19 +413,19 @@ export function PaintTool({
             className="block size-full rounded-full border border-foreground/15"
             style={{ background: token(c) }}
           />
-        </NativeButton>
+        </button>
       ))}
     </div>
   );
   return (
-    <div className="pointer-events-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+    <div className="paint-original-theme pointer-events-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
       <div className="size-11 shrink-0">{brushButton}</div>
       {paintMode && position
         ? createPortal(
             <div
               data-paint-mode
               data-analytics-gesture="paint_mode"
-              className="fixed inset-0 z-[45] touch-none cursor-none"
+              className="paint-original-theme fixed inset-0 z-[45] touch-none cursor-none"
               onContextMenu={(e) => e.preventDefault()}
               onPointerMove={(e) => {
                 setPosition({ x: e.clientX - 4.675, y: e.clientY - 37.675 });
@@ -477,7 +478,7 @@ export function PaintTool({
               {createPortal(
                 <div
                   data-paint-cursor
-                  className="pointer-events-none fixed z-[47]"
+                  className="paint-original-theme pointer-events-none fixed z-[47]"
                   style={{ left: position.x, top: position.y }}
                 >
                   <PaintBrush color={token(color)} />
@@ -514,7 +515,10 @@ export function PaintTool({
         </div>
         {paintMode
           ? createPortal(
-              <div className="fixed z-[46] cursor-none" style={palettePosition}>
+              <div
+                className="paint-original-theme fixed z-[46] cursor-none"
+                style={palettePosition}
+              >
                 {palette}
               </div>,
               document.body,
