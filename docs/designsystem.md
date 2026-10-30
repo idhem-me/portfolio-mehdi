@@ -65,7 +65,10 @@ Le pinceau de l’accueil utilise `primary`, `accent`, `warning`, `success` et
 `destructive` (libellé « Danger »). `warning` et `success` possèdent des variantes
 claires et sombres ainsi que les tokens `warning-foreground` et
 `success-foreground`. Les traits conservent leur rôle sémantique lors du
-changement de thème. Leur épaisseur est fixe : 12 px CSS, extrémités rondes.
+changement de thème. La palette reste accessible pendant le dessin : changer de
+couleur garde le pinceau actif et applique le token aux poils du curseur et de
+l’outil, sans recolorer les traits existants. Le manche conserve ses couleurs.
+Leur épaisseur est fixe : 12 px CSS, extrémités rondes.
 
 ### Papier de l’accueil
 

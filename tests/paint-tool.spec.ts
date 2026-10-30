@@ -31,7 +31,10 @@ test("brush cursor moves freely, draws with left click and exits with right clic
   await expect(stroke.locator("path")).toHaveAttribute("d", /L850,390$/);
   await expect(stroke).toHaveCSS("transform", "none");
   await page.mouse.move(5, 5);
-  await expect(page.locator("[data-paint-cursor]")).toHaveCSS("left", "0.325px");
+  await expect(page.locator("[data-paint-cursor]")).toHaveCSS(
+    "left",
+    "0.325px",
+  );
   await expect(stroke).toHaveCount(1);
   await page.mouse.click(500, 250, { button: "right" });
   await expect(mode).toHaveCount(0);
@@ -79,7 +82,9 @@ test("touch drawing remains available with an explicit exit button", async ({
   await context.close();
 });
 
-test("fast release and interrupted gestures preserve painted pixels", async ({ page }) => {
+test("fast release and interrupted gestures preserve painted pixels", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/");
   await page.getByRole("button", { name: "Refuser", exact: true }).click();
@@ -87,7 +92,13 @@ test("fast release and interrupted gestures preserve painted pixels", async ({ p
   const mode = page.locator("[data-paint-mode]");
   const strokes = page.locator("[data-paint-stroke]");
 
-  for (const end of ["pointerup", "pointercancel", "lostpointercapture", "blur", "Escape"]) {
+  for (const end of [
+    "pointerup",
+    "pointercancel",
+    "lostpointercapture",
+    "blur",
+    "Escape",
+  ]) {
     await page.mouse.move(700, 320);
     await page.mouse.down();
     await page.mouse.move(850, 390);
@@ -99,16 +110,27 @@ test("fast release and interrupted gestures preserve painted pixels", async ({ p
       await page.evaluate(() => window.dispatchEvent(new Event("blur")));
     } else {
       await mode.dispatchEvent(end, {
-        pointerId: 1, pointerType: "mouse", isPrimary: true,
-        clientX: 900, clientY: 410, button: 0, buttons: 0,
+        pointerId: 1,
+        pointerType: "mouse",
+        isPrimary: true,
+        clientX: 900,
+        clientY: 410,
+        button: 0,
+        buttons: 0,
       });
     }
     await page.mouse.up();
     await expect(strokes).toHaveCount(count);
     if (end === "pointerup") {
-      await expect(strokes.last().locator("path")).toHaveAttribute("d", /L900,410$/);
+      await expect(strokes.last().locator("path")).toHaveAttribute(
+        "d",
+        /L900,410$/,
+      );
     } else {
-      await expect(strokes.last().locator("path")).toHaveAttribute("d", before!);
+      await expect(strokes.last().locator("path")).toHaveAttribute(
+        "d",
+        before!,
+      );
     }
     await expect(page.locator("html")).not.toHaveCSS("overflow", "hidden");
     if (end === "blur" || end === "Escape") {
@@ -119,3 +141,86 @@ test("fast release and interrupted gestures preserve painted pixels", async ({ p
   await page.getByRole("button", { name: "Annuler", exact: true }).click();
   await expect(strokes).toHaveCount(4);
 });
+
+for (const touch of [false, true]) {
+  test(`active brush switches tokens without drawing on the palette (${touch ? "touch" : "mouse"})`, async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport: touch
+        ? { width: 390, height: 844 }
+        : { width: 1280, height: 900 },
+      hasTouch: touch,
+      isMobile: touch,
+    });
+    const page = await context.newPage();
+    const activate = async (name: string) => {
+      const button = page.getByRole("button", { name, exact: true });
+      if (touch) await button.tap();
+      else await button.click();
+    };
+    await page.goto("/");
+    await activate("Refuser");
+    await activate("Pinceau");
+    const draw = async () => {
+      if (touch) {
+        const client = await context.newCDPSession(page);
+        await client.send("Input.dispatchTouchEvent", {
+          type: "touchStart",
+          touchPoints: [{ x: 220, y: 330 }],
+        });
+        await client.send("Input.dispatchTouchEvent", {
+          type: "touchMove",
+          touchPoints: [{ x: 310, y: 370 }],
+        });
+        await client.send("Input.dispatchTouchEvent", {
+          type: "touchEnd",
+          touchPoints: [],
+        });
+        await client.detach();
+      } else {
+        await page.mouse.move(700, 320);
+        await page.mouse.down();
+        await page.mouse.move(850, 390, { steps: 5 });
+        await page.mouse.up();
+      }
+    };
+    const strokes = page.locator("[data-paint-stroke] path");
+    await draw();
+    await expect(strokes).toHaveCount(1);
+    for (const [index, name, token] of [
+      [2, "Succès", "success"],
+      [3, "Danger", "destructive"],
+    ] as const) {
+      await activate(name);
+      await expect(page.locator("[data-paint-mode]")).toBeVisible();
+      await expect(
+        page.getByRole("button", { name, exact: true }),
+      ).toHaveAttribute("aria-pressed", "true");
+      await expect(strokes).toHaveCount(index - 1);
+      await expect(
+        page.locator("[data-paint-cursor] [data-paint-bristles]"),
+      ).toHaveAttribute("fill", `var(--${token})`);
+      await draw();
+      await expect(strokes).toHaveCount(index);
+      await expect(strokes.last()).toHaveAttribute("stroke", `var(--${token})`);
+      await expect(strokes.first()).toHaveAttribute("stroke", "var(--primary)");
+    }
+    await page.setViewportSize(
+      touch ? { width: 430, height: 900 } : { width: 1000, height: 800 },
+    );
+    await page.evaluate(() => window.dispatchEvent(new Event("scroll")));
+    await activate("Succès");
+    await page.evaluate(() => document.documentElement.classList.add("dark"));
+    await expect(
+      page.locator("[data-paint-cursor] [data-paint-bristles]"),
+    ).toHaveAttribute("fill", "var(--success)");
+    await activate("Quitter le pinceau");
+    await expect(page.locator("[data-paint-mode]")).toHaveCount(0);
+    await expect(
+      page.locator("[data-paint-brush] [data-paint-bristles]"),
+    ).toHaveAttribute("fill", "var(--success)");
+    await expect(page.locator("html")).not.toHaveCSS("overflow", "hidden");
+    await context.close();
+  });
+}

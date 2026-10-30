@@ -101,6 +101,7 @@ export function PaintTool({
   const [paintMode, setPaintMode] = useState(false);
   const [exitPosition, setExitPosition] = useState({ x: 0, y: 0 });
   const paletteRef = useRef<HTMLDivElement>(null);
+  const [palettePosition, setPalettePosition] = useState({ left: 0, top: 0 });
   const [count, setCount] = useState(0);
   const strokesRef = useRef<Stroke[]>([]);
   const gestureRef = useRef<{
@@ -164,14 +165,17 @@ export function PaintTool({
     const align = () => {
       const rect = palette.getBoundingClientRect();
       setExitPosition({ x: rect.left + rect.width / 2, y: rect.bottom + 8 });
+      setPalettePosition({ left: rect.left, top: rect.top });
     };
     align();
     const observer = new ResizeObserver(align);
     observer.observe(palette.closest("[data-paint-toolbar]") ?? palette);
     window.addEventListener("resize", align);
+    window.addEventListener("scroll", align, true);
     return () => {
       observer.disconnect();
       window.removeEventListener("resize", align);
+      window.removeEventListener("scroll", align, true);
     };
   }, [paintMode]);
   const finishOnLeave = useEffectEvent(() => commitGesture());
@@ -372,8 +376,43 @@ export function PaintTool({
         trackHomeInteraction("paint_grab", { color });
       }}
     >
-      <PaintBrush />
+      <PaintBrush color={token(color)} />
     </button>
+  );
+  const palette = (
+    <div
+      data-paint-controls
+      role="group"
+      aria-label={t("palette")}
+      className="flex gap-1 rounded-full border bg-background p-1"
+      onPointerDown={(e) => e.stopPropagation()}
+      onPointerMove={(e) => {
+        if (paintMode)
+          setPosition({ x: e.clientX - 4.675, y: e.clientY - 37.675 });
+      }}
+    >
+      {COLORS.map((c) => (
+        <button
+          key={c}
+          type="button"
+          data-analytics-action="paint_color"
+          data-analytics-value={c}
+          aria-label={t(c)}
+          aria-pressed={color === c}
+          onClick={() => setColor(c)}
+          className="size-7 sm:size-8 rounded-full p-1 focus-visible:outline-2 focus-visible:outline-ring"
+          style={{
+            outline: color === c ? "2px solid var(--foreground)" : undefined,
+            outlineOffset: -2,
+          }}
+        >
+          <span
+            className="block size-full rounded-full border border-foreground/15"
+            style={{ background: token(c) }}
+          />
+        </button>
+      ))}
+    </div>
   );
   return (
     <div className="pointer-events-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
@@ -433,13 +472,16 @@ export function PaintTool({
               onPointerCancel={(e) => finish(e)}
               onLostPointerCapture={(e) => finish(e)}
             >
-              <div
-                data-paint-cursor
-                className="pointer-events-none fixed"
-                style={{ left: position.x, top: position.y }}
-              >
-                <PaintBrush />
-              </div>
+              {createPortal(
+                <div
+                  data-paint-cursor
+                  className="pointer-events-none fixed z-[47]"
+                  style={{ left: position.x, top: position.y }}
+                >
+                  <PaintBrush color={token(color)} />
+                </div>,
+                document.body,
+              )}
               <Button
                 type="button"
                 variant="secondary"
@@ -457,34 +499,25 @@ export function PaintTool({
             document.body,
           )
         : null}
-      <div
-        ref={paletteRef}
-        data-paint-controls
-        role="group"
-        aria-label={t("palette")}
-        className="flex gap-1 rounded-full border bg-background p-1"
-      >
-        {COLORS.map((c) => (
-          <button
-            key={c}
-            type="button"
-            data-analytics-action="paint_color"
-            data-analytics-value={c}
-            aria-label={t(c)}
-            aria-pressed={color === c}
-            onClick={() => setColor(c)}
-            className="size-7 sm:size-8 rounded-full p-1 focus-visible:outline-2 focus-visible:outline-ring"
-            style={{
-              outline: color === c ? "2px solid var(--foreground)" : undefined,
-              outlineOffset: -2,
-            }}
-          >
-            <span
-              className="block size-full rounded-full border border-foreground/15"
-              style={{ background: token(c) }}
-            />
-          </button>
-        ))}
+      <div ref={paletteRef} className="relative shrink-0">
+        <div
+          style={{ visibility: paintMode ? "hidden" : "visible" }}
+          inert={paintMode}
+        >
+          {paintMode ? (
+            <div className="h-[38px] w-[166px] sm:h-[42px] sm:w-[186px]" />
+          ) : (
+            palette
+          )}
+        </div>
+        {paintMode
+          ? createPortal(
+              <div className="fixed z-[46] cursor-none" style={palettePosition}>
+                {palette}
+              </div>,
+              document.body,
+            )
+          : null}
       </div>
       <div data-paint-controls className="flex gap-1">
         <Button
