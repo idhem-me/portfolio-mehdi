@@ -6,6 +6,7 @@ import {
   NativeButton,
 } from "@/components/design-system/native-controls";
 import Image from "next/image";
+import Link from "next/link";
 import { useIdentityState } from "@/features/account/client-store";
 import { PlayerProfileButton } from "@/features/account/ui/profile-button";
 import { useSettings } from "./state/usePreferences";
@@ -13,6 +14,11 @@ import { useNotices } from "./state/useNotices";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
+  ChefHat,
+  TrendingUp,
+  Store,
+  FlaskConical,
+  ChartNoAxesCombined,
   Settings,
   Minus,
   Plus,
@@ -353,21 +359,25 @@ export default function App({
     {
       id: "upgrades",
       label: "Améliorer",
+      icon: TrendingUp,
       disabled: groups.upgrades.length === 0,
     },
     {
       id: "extensions",
       label: "Extensions",
+      icon: Store,
       disabled: groups.extensions.length === 0,
     },
     {
       id: "research",
       label: "Recherche",
+      icon: FlaskConical,
       disabled: groups.research.length === 0 && s.projects.length === 0,
     },
     {
       id: "finance",
       label: "Bourse",
+      icon: ChartNoAxesCombined,
       disabled: !marketUnlocked(s),
     },
   ] as const;
@@ -382,23 +392,20 @@ export default function App({
     );
   }
   return (
-    <div className="clicker-burger">
+    <div className="clicker-burger burger-dashboard">
       <header className="game-header">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Retour"
-          onClick={() => {
-            if (panel) setPanel(null);
-            else {
-              game.persist();
-              location.assign(backHref);
-            }
-          }}
-        >
-          <ArrowLeft />
-        </Button>
-        <h1>Clicker Burger</h1>
+        <div className="burger-heading">
+          <Link
+            href={backHref}
+            className="burger-breadcrumb"
+            aria-label="Retour aux jeux"
+            onClick={() => game.persist()}
+          >
+            <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
+            Jeux
+          </Link>
+          <h1>Clicker Burger</h1>
+        </div>
         <div className="header-actions">
           <Button
             variant="ghost"
@@ -419,7 +426,7 @@ export default function App({
           aria-hidden="true"
         />
       </header>
-      <main className="home">
+      <div className="home">
         <section className="balance-row" aria-label="Progression">
           <div className="cash">
             <span>Trésorerie</span>
@@ -458,7 +465,14 @@ export default function App({
             )}
           </NativeButton>
         </section>
-        <section className="restaurant-card">
+        <section
+          className="restaurant-card"
+          aria-label="Activité du restaurant"
+        >
+          <div className="card-heading">
+            <h2>Votre activité</h2>
+            <Store size={16} aria-hidden="true" />
+          </div>
           <dl className="metrics">
             <div>
               <dt title="Bonus du niveau de bâtiment sur la production et les clics">
@@ -584,7 +598,11 @@ export default function App({
                     </span>
                     <span>+{fmt(m.reward)} €</span>
                   </div>
-                  <progress max={m.target} value={progress} />
+                  <progress
+                    aria-label={missionLabel(m, s)}
+                    max={m.target}
+                    value={progress}
+                  />
                 </div>
                 <Button
                   variant={ready ? "primary" : "outline"}
@@ -647,8 +665,13 @@ export default function App({
             </div>
           )}
         </section>
-      </main>
-      <div className="control-dock">
+      </div>
+      <section className="control-dock" aria-label="Cuisine">
+        <div className="kitchen-heading">
+          <Badge variant="secondary">Niveau {level}</Badge>
+          <h2>{asset.name}</h2>
+          <p>Chaque burger compte.</p>
+        </div>
         <nav className="game-actions" aria-label="Actions du jeu">
           {nav.map((v) => (
             <Button
@@ -657,6 +680,7 @@ export default function App({
               disabled={v.disabled}
               onClick={() => setPanel(v.id)}
             >
+              <v.icon aria-hidden="true" size={16} />
               {v.label}
               {notification(v.id) > 0 && (
                 <span
@@ -670,6 +694,17 @@ export default function App({
           ))}
         </nav>
         <div className="clicker-bar">
+          <NativeButton
+            className="kitchen-scene"
+            aria-label="Préparer un burger depuis le restaurant"
+            disabled={!canCook}
+            onClick={cook}
+          >
+            <Image src={asset.image} alt="" width={240} height={240} priority />
+            <span className="kitchen-scene-caption">
+              {fmt(cpc)} burger{cpc > 1 ? "s" : ""} par clic
+            </span>
+          </NativeButton>
           <div className="click-particles" aria-live="off">
             {particles.map((p) => (
               <span key={p.id}>{p.text}</span>
@@ -681,14 +716,14 @@ export default function App({
             disabled={!canCook}
             onClick={cook}
           >
-            Prépare un burger
+            <ChefHat aria-hidden="true" /> Prépare un burger
           </Button>
           <p title="1 s réelle = 1 jour. Le clic suit ~3 % de ta prod / j. Si la demande suit, le stock reste à 0.">
             Clic {fmt(cpc)} <span>·</span> Prod. {fmt(r.production)}/j{" "}
             <span>·</span> Vente {fmt(Math.min(fundedProduction, r.demand))}/j
           </p>
         </div>
-      </div>
+      </section>
       {panel && (
         <Sheet
           title={TITLES[panel]}

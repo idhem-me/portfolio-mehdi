@@ -1,5 +1,5 @@
 "use client";
-import { useId, useState, useSyncExternalStore } from "react";
+import { useId, useMemo, useState, useSyncExternalStore } from "react";
 import { useReducedMotion } from "motion/react";
 import { Activity, ArrowDownRight, ArrowUpRight } from "lucide-react";
 import useSWR from "swr";
@@ -54,6 +54,16 @@ export function Dashboard() {
   const { data: me } = useSWR<
     Record<string, number> & { localSnapshot?: Record<string, number> }
   >("/api/backoffice/me", fetcher, { refreshInterval: 30000 });
+  const deviceChartData = useMemo(
+    () =>
+      data?.devices.map((device) => ({
+        ...device,
+        label: ["desktop", "mobile", "tablet"].includes(device.label)
+          ? t("deviceLabels." + device.label)
+          : device.label,
+      })) ?? [],
+    [data?.devices, t],
+  );
   const number = (n: number) =>
     new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(n || 0);
   const value = (k: string, n: number) =>
@@ -301,14 +311,7 @@ export function Dashboard() {
                             formatter={(n) => number(Number(n))}
                           />
                           <Pie
-                            data={data.devices.map((device) => ({
-                              ...device,
-                              label: ["desktop", "mobile", "tablet"].includes(
-                                device.label,
-                              )
-                                ? t("deviceLabels." + device.label)
-                                : device.label,
-                            }))}
+                            data={deviceChartData}
                             dataKey="value"
                             nameKey="label"
                             innerRadius={43}

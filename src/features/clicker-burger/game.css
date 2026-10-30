@@ -1338,3 +1338,341 @@
 .clicker-burger .clicker-bar > p {
   text-align: center;
 }
+
+/* Restaurant workspace: scoped to the game, leaving sheet surfaces independent. */
+.clicker-burger.burger-dashboard {
+  max-width: 1440px;
+  min-height: 0;
+  padding: clamp(16px, 3vw, 36px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  grid-template-areas: "header header" "balance balance" "kitchen activity" "kitchen missions";
+  gap: 20px;
+  align-items: start;
+}
+.burger-dashboard .game-header {
+  grid-area: header;
+  padding: 0 0 8px;
+  gap: 12px;
+  z-index: auto;
+}
+.burger-dashboard .burger-heading {
+  flex: 1;
+  min-width: 0;
+}
+.burger-dashboard .game-header h1 {
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  margin: 4px 0;
+  white-space: normal;
+}
+.burger-dashboard .home {
+  display: contents;
+}
+.burger-dashboard .balance-row {
+  grid-area: balance;
+  min-height: 0;
+  margin: 0;
+  padding: 18px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+}
+.burger-dashboard .cash {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 28px;
+  align-items: center;
+  flex: 1;
+}
+.burger-dashboard .cash > span {
+  margin: 0;
+}
+.burger-dashboard .cash strong {
+  grid-row: 2;
+  font-size: clamp(26px, 3vw, 36px);
+  font-weight: 600;
+}
+.burger-dashboard .cash small {
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  font-size: 13px;
+}
+.burger-dashboard .cash .game-date {
+  grid-column: 2;
+  grid-row: 2;
+  margin: 0;
+  gap: 10px;
+}
+.burger-dashboard .cash .game-date-fixed {
+  width: auto;
+}
+.burger-dashboard .building-image {
+  width: 72px;
+  height: 72px;
+}
+.burger-dashboard .restaurant-card {
+  grid-area: activity;
+}
+.burger-dashboard .missions-card {
+  grid-area: missions;
+  margin: 0;
+}
+.burger-dashboard .restaurant-card,
+.burger-dashboard .missions-card,
+.burger-dashboard .control-dock {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  padding: 20px;
+  min-width: 0;
+}
+.burger-dashboard .card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.burger-dashboard h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.burger-dashboard .card-heading > svg {
+  color: var(--muted-foreground);
+}
+.burger-dashboard .metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.burger-dashboard .metrics > div {
+  display: block;
+  min-width: 0;
+  border: 0;
+}
+.burger-dashboard .metrics dt {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  margin-bottom: 5px;
+}
+.burger-dashboard .metrics dd {
+  font-size: 17px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.burger-dashboard .metrics dd small {
+  font-size: 11px;
+  font-weight: 400;
+}
+.burger-dashboard .metrics > div:last-child {
+  grid-column: 1 / -1;
+}
+.burger-dashboard .metrics > div:last-child dt {
+  margin: 0;
+}
+.burger-dashboard .control-dock {
+  grid-area: kitchen;
+  position: sticky;
+  top: 20px;
+  inset-inline: auto;
+  bottom: auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.burger-dashboard .kitchen-heading {
+  text-align: center;
+  order: 0;
+}
+.burger-dashboard .kitchen-heading h2 {
+  font-size: 22px;
+  margin-top: 12px;
+}
+.burger-dashboard .kitchen-heading p {
+  font-size: 13px;
+  color: var(--muted-foreground);
+  margin-top: 4px;
+}
+.burger-dashboard .clicker-bar {
+  order: 1;
+}
+.burger-dashboard .kitchen-scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 230px;
+  margin-bottom: 20px;
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(
+      ellipse at center,
+      color-mix(in oklch, var(--accent), transparent 93%),
+      transparent 72%
+    ),
+    var(--muted);
+}
+.burger-dashboard .kitchen-scene img {
+  width: min(100%, 220px);
+  height: 200px;
+  object-fit: contain;
+}
+.burger-dashboard .kitchen-scene-caption {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  padding-bottom: 12px;
+}
+.burger-dashboard .clicker-button {
+  font-size: 16px;
+  min-height: 48px;
+}
+.burger-dashboard .clicker-bar > p {
+  margin-top: 10px;
+  font-size: 11px;
+}
+.burger-dashboard .game-actions {
+  order: 2;
+  margin: 0;
+  gap: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.burger-dashboard .game-actions > button {
+  height: var(--control-height-lg);
+  font-size: 13px;
+}
+.burger-dashboard .missions-card .home-mission {
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+.burger-dashboard .missions-card .home-mission > button {
+  min-height: var(--control-height);
+}
+.burger-dashboard .mission-meta {
+  color: var(--muted-foreground);
+}
+.burger-dashboard progress {
+  height: 4px;
+}
+.burger-dashboard .toast {
+  bottom: 24px;
+  z-index: 60;
+}
+@media (max-width: 1100px) {
+  .clicker-burger.burger-dashboard {
+    gap: 14px;
+  }
+  .burger-dashboard .cash {
+    gap: 4px 16px;
+  }
+  .burger-dashboard .metrics dd small {
+    display: block;
+  }
+}
+@media (max-width: 767px) {
+  .clicker-burger.burger-dashboard {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "header" "balance" "kitchen" "activity" "missions";
+    padding: 16px 16px 28px;
+  }
+  .burger-dashboard .game-header {
+    flex-wrap: wrap;
+  }
+  .burger-dashboard .header-actions {
+    gap: 4px;
+  }
+  .burger-dashboard .balance-row {
+    padding: 16px;
+  }
+  .burger-dashboard .cash {
+    display: block;
+  }
+  .burger-dashboard .cash small {
+    margin-top: 6px;
+  }
+  .burger-dashboard .cash .game-date {
+    margin-top: 6px;
+  }
+  .burger-dashboard .control-dock {
+    position: static;
+    padding: 16px;
+    gap: 16px;
+  }
+  .burger-dashboard .kitchen-scene {
+    min-height: 160px;
+    margin-bottom: 14px;
+  }
+  .burger-dashboard .kitchen-scene img {
+    height: 140px;
+    width: 160px;
+  }
+  .burger-dashboard .kitchen-heading h2 {
+    margin-top: 8px;
+    font-size: 18px;
+  }
+  .burger-dashboard .kitchen-heading p {
+    display: none;
+  }
+  .burger-dashboard .game-actions > button {
+    min-height: 44px;
+  }
+  .burger-dashboard .metrics {
+    gap: 18px;
+  }
+  .burger-dashboard .restaurant-card,
+  .burger-dashboard .missions-card {
+    padding: 16px;
+  }
+}
+
+.burger-dashboard .metrics dd {
+  text-align: start;
+}
+.burger-dashboard .kitchen-scene {
+  width: 100%;
+  border: 1px solid transparent;
+  color: var(--foreground);
+  transition: border-color 0.15s ease;
+}
+.burger-dashboard .kitchen-scene:hover:not(:disabled) {
+  border-color: var(--border);
+}
+.burger-dashboard .kitchen-scene img {
+  transition: transform 0.15s ease;
+}
+.burger-dashboard .kitchen-scene:active:not(:disabled) img {
+  transform: scale(0.95);
+}
+@media (prefers-reduced-motion: reduce) {
+  .burger-dashboard .kitchen-scene,
+  .burger-dashboard .kitchen-scene img {
+    transition: none;
+  }
+}
+
+.burger-dashboard .game-header {
+  align-items: flex-start;
+}
+.burger-dashboard .burger-breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 2);
+  margin-bottom: calc(var(--spacing) * 4);
+  font-size: var(--control-text-xs);
+  color: var(--muted-foreground);
+}
+.burger-dashboard .burger-breadcrumb:hover {
+  color: var(--foreground);
+}
+.burger-dashboard .burger-breadcrumb:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+}

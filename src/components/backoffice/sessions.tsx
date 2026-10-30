@@ -231,10 +231,10 @@ export function Sessions() {
   );
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="@container flex w-full min-w-0 flex-col gap-4">
       <h1 className="text-3xl font-semibold">{t("sessions")}</h1>
 
-      <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1">
+      <div className="flex min-w-0 flex-wrap items-center gap-2 pb-1 [&>*]:max-w-full">
         <DateRangeSelect
           label={t("date")}
           fromLabel={t("fromDate")}
@@ -268,9 +268,8 @@ export function Sessions() {
             ).map((value) => ({
               value,
               label:
-                new Intl.DisplayNames([locale], { type: "region" }).of(
-                  value,
-                ) || value,
+                new Intl.DisplayNames([locale], { type: "region" }).of(value) ||
+                value,
             })),
           ]}
         />
@@ -340,8 +339,8 @@ export function Sessions() {
         </div>
       ) : (
         <>
-          <div className="hidden overflow-x-auto rounded-xl border md:block">
-            <table className="w-full text-left text-sm">
+          <div className="hidden rounded-xl border @min-[48rem]:block">
+            <table className="w-full table-fixed text-left text-sm [overflow-wrap:anywhere]">
               <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur">
                 <tr>
                   {(
@@ -357,7 +356,7 @@ export function Sessions() {
                     ] as const
                   ).map(([labelKey, sortKey]) => (
                     <th
-                      className="group/col border-b border-border p-3 text-sm font-medium text-muted-foreground"
+                      className="group/col border-b border-border p-3 text-sm font-medium text-muted-foreground first:w-[24%]"
                       key={labelKey}
                     >
                       {sortKey &&
@@ -416,7 +415,7 @@ export function Sessions() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="-mx-2.5 h-auto flex-col items-start gap-0.5 py-1.5 text-start"
+                          className="-mx-2.5 h-auto max-w-full flex-col items-start gap-0.5 whitespace-normal py-1.5 text-start"
                           onClick={() => setSelected(r)}
                         >
                           <span>
@@ -428,15 +427,13 @@ export function Sessions() {
                           </span>
                         </Button>
                       </td>
-                      {["active_ms", "pages", "clicks", "mouse_px"].map(
-                        (k) => (
-                          <td className="p-3" key={k}>
-                            {k === "pages"
-                              ? Object.values(r.pages).reduce((a, b) => a + b, 0)
-                              : metric(r, k)}
-                          </td>
-                        ),
-                      )}
+                      {["active_ms", "pages", "clicks", "mouse_px"].map((k) => (
+                        <td className="p-3" key={k}>
+                          {k === "pages"
+                            ? Object.values(r.pages).reduce((a, b) => a + b, 0)
+                            : metric(r, k)}
+                        </td>
+                      ))}
                       <td className="p-3">
                         {r.country ? (
                           <span className="inline-flex items-center gap-2">
@@ -482,14 +479,14 @@ export function Sessions() {
               </tbody>
             </table>
           </div>
-          <div className="space-y-3 md:hidden">
+          <div className="space-y-3 @min-[48rem]:hidden">
             {rows.map((r) => {
               const isOnline = online(r);
               return (
                 <button
                   key={r.id}
                   onClick={() => setSelected(r)}
-                  className="block w-full rounded-xl border p-4 text-left"
+                  className="block w-full min-w-0 rounded-xl border p-4 text-left [overflow-wrap:anywhere]"
                 >
                   <span className="flex items-start justify-between gap-3">
                     <span>

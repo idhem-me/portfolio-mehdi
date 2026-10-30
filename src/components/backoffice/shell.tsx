@@ -17,16 +17,20 @@ export function BackofficeShell({ children }: { children: React.ReactNode }) {
     c = useAnalyticsConsent(),
     path = usePathname();
   return (
-    <div className="flex min-h-svh">
+    <div className="flex min-h-svh min-w-0">
       <DesignSystemScope className="contents">
         <nav
           aria-label="Backoffice"
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-sidebar-foreground md:sticky md:z-0 md:inset-x-auto md:top-0 md:bottom-auto md:h-dvh md:w-44 md:shrink-0 md:self-start md:overflow-y-auto md:border-t-0 md:border-r md:pb-2"
+          className="fixed left-1/2 bottom-[calc(2rem+env(safe-area-inset-bottom))] z-30 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border border-sidebar-border bg-sidebar p-1 text-sidebar-foreground shadow-lg md:sticky md:left-auto md:z-0 md:top-0 md:bottom-auto md:h-dvh md:w-44 md:max-w-none md:translate-x-0 md:shrink-0 md:self-start md:overflow-y-auto md:rounded-none md:border-0 md:border-r md:p-2 md:shadow-none"
         >
-          <SidebarMenu className="flex-row md:flex-col">
+          <SidebarMenu className="w-auto flex-row gap-1 md:w-full md:flex-col">
             {navigation.map((n) => (
-              <SidebarMenuItem key={n.href} className="flex-1 md:flex-none">
-                <DesignSystemSidebarButton asChild isActive={path === n.href}>
+              <SidebarMenuItem key={n.href} className="shrink-0 md:shrink">
+                <DesignSystemSidebarButton
+                  asChild
+                  isActive={path === n.href}
+                  className="w-auto justify-center whitespace-nowrap px-3 data-[active=true]:bg-background data-[active=true]:shadow-sm md:w-full md:justify-start md:px-2 md:data-[active=true]:bg-sidebar-accent md:data-[active=true]:shadow-none"
+                >
                   <Link
                     href={n.href}
                     aria-current={path === n.href ? "page" : undefined}
@@ -40,7 +44,7 @@ export function BackofficeShell({ children }: { children: React.ReactNode }) {
           </SidebarMenu>
         </nav>
       </DesignSystemScope>
-      <main className="flex min-w-0 flex-1 flex-col p-4 pb-24 md:p-6">
+      <main className="flex min-w-0 flex-1 flex-col p-4 pb-32 md:p-6">
         {c.granted ? (
           <SWRConfig value={{ provider: () => new Map() }}>
             {children}

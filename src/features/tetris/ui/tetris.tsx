@@ -25,10 +25,24 @@ import {
   RotateCw,
   Settings2,
   Repeat2,
-  X,
+  Pause,
+  Play,
+  Trophy,
+  BookOpen,
+  LogOut,
+  Keyboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { AppShell } from "@/components/layout/app-shell";
+import { DesignSystemScope } from "@/components/design-system/provider";
 import { Badge } from "@/components/ui/badge";
 import { GameAppearanceSettings } from "@/components/games/game-appearance-settings";
 import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
@@ -53,7 +67,6 @@ import {
   type AudioVolumes,
 } from "../feel/config";
 import { PieceShape as Mini } from "./piece-shape";
-import { GameplayBackground } from "./gameplay-background";
 import { Link } from "@/i18n/navigation";
 import type { CaseStudySection } from "@/lib/content";
 import { LineCelebration } from "../feel/line-celebration";
@@ -418,7 +431,7 @@ function TetrisGame({
   const g = game.current;
   const effect = feedback?.e;
   return (
-    <Card
+    <div
       ref={root}
       tabIndex={0}
       className="lava-game"
@@ -431,48 +444,146 @@ function TetrisGame({
     >
       {status === "ready" ? (
         <div className="lava-lobby">
-          <GameplayBackground />
-          <div className="lava-lobby-header">
-            <Link
-              href="/jeux"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground"
-              aria-label="Retour aux jeux"
-            >
-              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-              <span>Jeux</span>
-            </Link>
+          <header className="lava-lobby-header">
+            <div>
+              <Link
+                href="/jeux"
+                className="lava-breadcrumb"
+                aria-label="Retour aux jeux"
+              >
+                <ArrowLeft
+                  className="size-4 rtl:rotate-180"
+                  aria-hidden="true"
+                />
+                Jeux
+              </Link>
+              <h1>Tetris</h1>
+              <p>Un classique, une pièce à la fois.</p>
+            </div>
             <PlayerProfileButton />
+          </header>
+          <div className="lava-lobby-grid">
+            <Card className="lava-lobby-panel">
+              <CardHeader>
+                <CardTitle>À vous de jouer</CardTitle>
+                <CardDescription>
+                  Complétez les lignes et battez votre record.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="lava-lobby-actions">
+                <Button
+                  variant="accent"
+                  size="lg"
+                  onClick={start}
+                  disabled={preparing || !hydrated}
+                >
+                  <Play aria-hidden="true" />
+                  {preparing ? "Préparation…" : "Jouer"}
+                </Button>
+                <Separator />
+                <Button
+                  variant="outline"
+                  disabled={!leaderboardEnabled}
+                  onClick={() => setLeaderboardOpen(true)}
+                >
+                  <Trophy aria-hidden="true" />
+                  Classement
+                  {!leaderboardEnabled && (
+                    <Badge variant="secondary">Bientôt</Badge>
+                  )}
+                </Button>
+                <Button variant="outline" onClick={() => setRulesOpen(true)}>
+                  <BookOpen aria-hidden="true" />
+                  Règles
+                </Button>
+                <Button variant="outline" onClick={() => setSettingsOpen(true)}>
+                  <Settings2 aria-hidden="true" />
+                  Réglages
+                </Button>
+              </CardContent>
+              <CardFooter className="lava-lobby-footer">
+                <Button variant="ghost" asChild>
+                  <Link href="/jeux">
+                    <LogOut aria-hidden="true" />
+                    Quitter le jeu
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+            <div className="lava-lobby-details">
+              <Card className="lava-record-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trophy className="size-4" aria-hidden="true" />
+                    Votre record
+                  </CardTitle>
+                  <CardDescription>Sur cet appareil</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="lava-record-value">
+                    {hydrated ? best.toLocaleString("fr") : "—"}
+                    <span>points</span>
+                  </p>
+                  <div className="lava-piece-line" aria-hidden="true">
+                    <Mini name="T" />
+                    <Mini name="S" />
+                    <Mini name="L" />
+                    <Mini name="I" />
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="lava-guide-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Keyboard className="size-4" aria-hidden="true" />
+                    Les commandes
+                  </CardTitle>
+                  <CardDescription>
+                    Au clavier ou directement sur l’écran.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <dl className="lava-shortcuts">
+                    <div>
+                      <dt>Déplacer</dt>
+                      <dd>
+                        <kbd>←</kbd>
+                        <kbd>→</kbd>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Pivoter</dt>
+                      <dd>
+                        <kbd>↑</kbd>
+                        <kbd>X</kbd>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Lâcher la pièce</dt>
+                      <dd>
+                        <kbd>Espace</kbd>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Mettre en réserve</dt>
+                      <dd>
+                        <kbd>C</kbd>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Pause</dt>
+                      <dd>
+                        <kbd>Échap</kbd>
+                      </dd>
+                    </div>
+                  </dl>
+                  <p className="lava-touch-hint">
+                    Sur mobile, glissez pour déplacer et touchez pour pivoter.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-          <Card className="lava-lobby-panel">
-            <span className="lava-wordmark" aria-hidden="true">
-              Tetris
-            </span>
-            <Button
-              variant="accent"
-              size="lg"
-              onClick={start}
-              disabled={preparing || !hydrated}
-            >
-              {preparing ? "Préparation…" : "Jouer"}
-            </Button>
-            <Separator className="my-1" />
-            <Button
-              variant="outline"
-              disabled={!leaderboardEnabled}
-              onClick={() => setLeaderboardOpen(true)}
-            >
-              Classement{" "}
-              {!leaderboardEnabled && (
-                <Badge variant="secondary">Bientôt</Badge>
-              )}
-            </Button>
-            <Button variant="outline" onClick={() => setRulesOpen(true)}>
-              Règles
-            </Button>
-            <Button variant="outline" onClick={() => setSettingsOpen(true)}>
-              Réglages
-            </Button>
-          </Card>
         </div>
       ) : (
         <>
@@ -498,7 +609,7 @@ function TetrisGame({
                   setStatus("paused");
                 }}
               >
-                <X />
+                <Pause />
               </Button>
             </div>
           </div>
@@ -671,31 +782,40 @@ function TetrisGame({
         />
       )}
       {status === "paused" && (
-        <Card className="lava-cover lava-pause">
-          <h2>Pause</h2>
-          <Button
-            variant="accent"
-            onClick={() => {
-              unlockAudio();
-              setStatus("playing");
-              root.current?.focus({ preventScroll: true });
-            }}
-          >
-            Reprendre
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              stopRepeat();
-              audio.current?.mute();
-              ranked.current = null;
-              setExpanded(false);
-              setStatus("ready");
-            }}
-          >
-            Quitter
-          </Button>
-        </Card>
+        <div className="lava-cover lava-pause">
+          <Card className="lava-pause-panel">
+            <CardHeader>
+              <CardTitle>
+                <h2>Partie en pause</h2>
+              </CardTitle>
+              <CardDescription>Reprenez quand vous êtes prêt.</CardDescription>
+            </CardHeader>
+            <CardContent className="lava-lobby-actions">
+              <Button
+                variant="accent"
+                onClick={() => {
+                  unlockAudio();
+                  setStatus("playing");
+                  root.current?.focus({ preventScroll: true });
+                }}
+              >
+                Reprendre
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  stopRepeat();
+                  audio.current?.mute();
+                  ranked.current = null;
+                  setExpanded(false);
+                  setStatus("ready");
+                }}
+              >
+                Quitter
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       )}
       <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
         {" "}
@@ -862,14 +982,18 @@ function TetrisGame({
             ? "Partie en pause."
             : ""}
       </span>
-    </Card>
+    </div>
   );
 }
 
 export function Tetris(props: { information?: CaseStudySection[] }) {
   return (
-    <PlayerIdentityProvider>
-      <TetrisGame {...props} />
-    </PlayerIdentityProvider>
+    <AppShell>
+      <DesignSystemScope>
+        <PlayerIdentityProvider>
+          <TetrisGame {...props} />
+        </PlayerIdentityProvider>
+      </DesignSystemScope>
+    </AppShell>
   );
 }

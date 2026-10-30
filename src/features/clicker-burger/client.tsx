@@ -1,5 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
+import { AppShell } from "@/components/layout/app-shell";
+import { DesignSystemScope } from "@/components/design-system/provider";
 import "./game.css";
 // Browser saves are loaded only after mount; no guest save is rendered on the server.
 const Game = dynamic(() => import("./App"), {
@@ -11,5 +13,11 @@ const Game = dynamic(() => import("./App"), {
   ),
 });
 export function ClickerBurger({ backHref }: { backHref: string }) {
-  return <Game backHref={backHref} />;
+  return (
+    <AppShell>
+      <DesignSystemScope>
+        <Game backHref={backHref} />
+      </DesignSystemScope>
+    </AppShell>
+  );
 }

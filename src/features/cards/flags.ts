@@ -1,7 +1,9 @@
-/** Available publicly while under development; explicit false remains a kill switch. */
+/** Manual visibility gate for the card-opening game, including development. */
+export const cardsVisible = false;
+
+/** Preserve the environment kill switch when visibility is enabled again. */
 export const cardsEnabled =
-  process.env.NODE_ENV === "development" ||
-  process.env.NEXT_PUBLIC_ENABLE_CARDS !== "false";
+  cardsVisible && process.env.NEXT_PUBLIC_ENABLE_CARDS !== "false";
 
 /** Keep the work in progress out of search indexes. */
 export const cardsPublic = false;

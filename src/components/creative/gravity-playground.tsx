@@ -1146,9 +1146,6 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
                   className="pointer-events-auto mt-1 w-[min(100%,16rem)] rounded-lg bg-background/70 px-2.5 py-2 backdrop-blur-sm"
                   aria-label={t("gravityTuneLabel")}
                 >
-                  <legend className="px-0.5 text-[11px] font-medium tracking-wide text-muted-foreground">
-                    {t("gravityTuneLabel")}
-                  </legend>
                   <div className="flex flex-col gap-1">
                     {TUNING_SLIDERS.map(({ key, labelKey, min, max, step }) => {
                       const id = `gravity-tune-${key}`;
