@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Files, ArrowRight, Palette } from "lucide-react";
+import {
+  Files,
+  ArrowRight,
+  Palette,
+  ImageDown,
+  Images,
+  QrCode,
+} from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -14,6 +21,9 @@ export default async function ToolsPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations("tools");
   const color = await getTranslations("colorGenerator");
+  const compressor = await getTranslations("imageCompressor");
+  const converter = await getTranslations("imageConverter");
+  const qr = await getTranslations("qrGenerator");
   return (
     <main className="mx-auto w-full max-w-3xl space-y-8 px-6 py-12">
       <header className="space-y-3">
@@ -46,6 +56,48 @@ export default async function ToolsPage({ params }: Props) {
           <p className="text-sm text-muted-foreground">
             {t("mergeDescription")}
           </p>
+        </div>
+        <ArrowRight
+          aria-hidden="true"
+          className="size-5 shrink-0 rtl:rotate-180"
+        />
+      </Link>
+      <Link
+        href="/outils/compression-image"
+        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <ImageDown aria-hidden="true" className="size-6 shrink-0 text-accent" />
+        <div className="min-w-0 flex-1 space-y-1">
+          <h2 className="font-semibold">{compressor("title")}</h2>
+          <p className="text-sm text-muted-foreground">{compressor("intro")}</p>
+        </div>
+        <ArrowRight
+          aria-hidden="true"
+          className="size-5 shrink-0 rtl:rotate-180"
+        />
+      </Link>
+      <Link
+        href="/outils/conversion-image"
+        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Images aria-hidden="true" className="size-6 shrink-0 text-accent" />
+        <div className="min-w-0 flex-1 space-y-1">
+          <h2 className="font-semibold">{converter("title")}</h2>
+          <p className="text-sm text-muted-foreground">{converter("intro")}</p>
+        </div>
+        <ArrowRight
+          aria-hidden="true"
+          className="size-5 shrink-0 rtl:rotate-180"
+        />
+      </Link>
+      <Link
+        href="/outils/qrcode"
+        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <QrCode aria-hidden="true" className="size-6 shrink-0 text-accent" />
+        <div className="min-w-0 flex-1 space-y-1">
+          <h2 className="font-semibold">{qr("title")}</h2>
+          <p className="text-sm text-muted-foreground">{qr("intro")}</p>
         </div>
         <ArrowRight
           aria-hidden="true"
