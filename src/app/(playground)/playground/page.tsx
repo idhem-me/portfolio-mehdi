@@ -98,6 +98,14 @@ export default function PlaygroundPage() {
           </code>
           . Sert de banc d&apos;essai pour le design system.
         </p>
+        <p className="text-sm">
+          <a
+            href="/playground/design-systems"
+            className="text-accent underline-offset-4 hover:underline"
+          >
+            Comparer tous les design systems →
+          </a>
+        </p>
       </header>
 
       <div className="sticky top-0 z-40 -mx-6 border-b border-border bg-background/95 px-6 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">

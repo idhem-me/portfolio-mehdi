@@ -23,9 +23,17 @@ export function DesignSystemSidebarButton({
   ...props
 }: ComponentProps<typeof SidebarMenuButton>) {
   const { designSystem } = useDesignSystem();
-  if (designSystem === "mehdi")
+  if (designSystem === "mehdi" || designSystem === "adobe")
     return (
-      <SidebarMenuButton {...props} {...{ asChild, className }}>
+      <SidebarMenuButton
+        {...props}
+        asChild={asChild}
+        className={
+          designSystem === "adobe"
+            ? `ds-nav-button ${className ?? ""}`
+            : className
+        }
+      >
         {children}
       </SidebarMenuButton>
     );

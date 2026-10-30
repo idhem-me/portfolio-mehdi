@@ -93,6 +93,38 @@ export function DesignSystemChoiceMenu({
             </ActionList>
           </ActionMenu.Overlay>
         </ActionMenu>
+      ) : designSystem === "adobe" ? (
+        <div className="relative w-full">
+          <DesignSystemSidebarButton
+            id={id}
+            tooltip={label}
+            aria-hidden
+            tabIndex={-1}
+            className="pointer-events-none"
+            data-analytics-action={`${analyticsAction}_open`}
+          >
+            {icon}
+            <span>{current.label}</span>
+          </DesignSystemSidebarButton>
+          <select
+            aria-label={label}
+            title={title ?? label}
+            value={value}
+            className="ds-native-choice-select"
+            data-analytics-action={`${analyticsAction}_open`}
+            onChange={(event) => {
+              const next = event.target.value;
+              select(next);
+              event.target.dataset.analyticsValue = next;
+            }}
+          >
+            {choices.map((choice) => (
+              <option key={choice.value} value={choice.value}>
+                {choice.label}
+              </option>
+            ))}
+          </select>
+        </div>
       ) : (
         <DropdownMenu>
           <DropdownMenuTrigger asChild data-slot="sidebar-menu-button">

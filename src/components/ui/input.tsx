@@ -1,17 +1,17 @@
 "use client";
 
 import { TextInput } from "@primer/react";
+import { TextField } from "@adobe/react-spectrum";
 import { useDesignSystem } from "@/components/design-system/provider";
 import * as React from "react";
 import { cn } from "cn";
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   const { designSystem } = useDesignSystem();
+  const nativeTypes = ["file", "checkbox", "radio", "range", "color", "hidden"];
   if (
     designSystem === "github" &&
-    !["file", "checkbox", "radio", "range", "color", "hidden"].includes(
-      type ?? "text",
-    )
+    !nativeTypes.includes(type ?? "text")
   ) {
     return (
       <TextInput
@@ -21,6 +21,36 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         block
         data-slot="input"
         className={cn("ds-input", className)}
+      />
+    );
+  }
+  if (designSystem === "adobe" && !nativeTypes.includes(type ?? "text")) {
+    return (
+      <TextField
+        type={type}
+        label={
+          props["aria-label"] ||
+          props.placeholder ||
+          props.name ||
+          "Input"
+        }
+        value={props.value as string | undefined}
+        defaultValue={props.defaultValue as string | undefined}
+        placeholder={props.placeholder}
+        isDisabled={props.disabled}
+        isRequired={props.required}
+        name={props.name}
+        id={props.id}
+        autoComplete={props.autoComplete}
+        onChange={(value) =>
+          props.onChange?.({
+            target: { value },
+            currentTarget: { value },
+          } as React.ChangeEvent<HTMLInputElement>)
+        }
+        width="100%"
+        UNSAFE_className={cn("ds-spectrum-input", className)}
+        data-slot="input"
       />
     );
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { Label } from "@primer/react";
+import { Badge as SpectrumBadge } from "@adobe/react-spectrum";
 import { useDesignSystem } from "@/components/design-system/provider";
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -52,6 +53,22 @@ function Badge({
         data-slot="badge"
         className={className}
       />
+    );
+  if (designSystem === "adobe" && !asChild)
+    return (
+      <SpectrumBadge
+        variant={
+          variant === "destructive"
+            ? "negative"
+            : variant === "default"
+              ? "info"
+              : "neutral"
+        }
+        data-slot="badge"
+        UNSAFE_className={className}
+      >
+        {props.children}
+      </SpectrumBadge>
     );
   const Comp = asChild ? Slot.Root : "span";
 

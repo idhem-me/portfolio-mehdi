@@ -16,7 +16,7 @@ export function LanguageSwitcher() {
     <DesignSystemChoiceMenu
       label={t("label")}
       value={locale}
-      icon={<Languages />}
+      icon={<Languages className="size-4 shrink-0" />}
       choices={routing.locales.map((code) => ({
         value: code,
         label: localeNames[code],

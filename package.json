@@ -18,6 +18,7 @@
     "test:tools": "playwright test tests/local-image-tools.spec.ts --project=chromium"
   },
   "dependencies": {
+    "@adobe/react-spectrum": "^3.47.7",
     "@libsql/client": "^0.18.0",
     "@primer/octicons-react": "19.42.0",
     "@primer/primitives": "11.10.0",

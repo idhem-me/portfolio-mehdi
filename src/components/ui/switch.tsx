@@ -1,5 +1,6 @@
 "use client";
 import { ToggleSwitch } from "@primer/react";
+import { Switch as SpectrumSwitch } from "@adobe/react-spectrum";
 import { useDesignSystem } from "@/components/design-system/provider";
 import * as React from "react";
 import { Switch as Primitive } from "radix-ui";
@@ -36,6 +37,30 @@ export function Switch({
           buttonType={props.type}
           className={className}
         />
+        {props.name && checked && (
+          <input
+            type="hidden"
+            name={props.name}
+            value={props.value ?? "on"}
+            form={props.form}
+          />
+        )}
+      </>
+    );
+  }
+  if (designSystem === "adobe") {
+    return (
+      <>
+        <SpectrumSwitch
+          id={props.id}
+          isDisabled={props.disabled}
+          isSelected={checked}
+          onChange={change}
+          aria-label={props["aria-label"] || "Switch"}
+          UNSAFE_className={className}
+        >
+          {props["aria-label"] || ""}
+        </SpectrumSwitch>
         {props.name && checked && (
           <input
             type="hidden"

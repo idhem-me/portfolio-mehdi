@@ -1,6 +1,7 @@
 "use client";
 
 import { Avatar as PrimerAvatar } from "@primer/react";
+import { Avatar as SpectrumAvatar } from "@adobe/react-spectrum";
 import { useDesignSystem } from "@/components/design-system/provider";
 import * as React from "react";
 import { cn } from "cn";
@@ -38,6 +39,17 @@ function AvatarImage({
           src={props.src ?? ""}
           alt={props.alt ?? ""}
           style={{ width: "100%", height: "100%" }}
+        />
+      </AvatarPrimitive.Image>
+    );
+  if (designSystem === "adobe" && typeof props.src === "string")
+    return (
+      <AvatarPrimitive.Image {...props} asChild className={className}>
+        <SpectrumAvatar
+          src={props.src ?? ""}
+          alt={props.alt ?? ""}
+          size="avatar-size-500"
+          UNSAFE_style={{ width: "100%", height: "100%" }}
         />
       </AvatarPrimitive.Image>
     );

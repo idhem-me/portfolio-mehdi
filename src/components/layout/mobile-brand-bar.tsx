@@ -13,9 +13,12 @@ import { AnalyticsEvents } from "@/lib/analytics/events";
 import { usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
-function HomeAvatar() {
+export function HomeAvatar({ className }: { className?: string }) {
   return (
-    <Avatar className="size-7 shrink-0" aria-hidden="true">
+    <Avatar
+      className={cn("size-7 shrink-0", className)}
+      aria-hidden="true"
+    >
       <AvatarImage src="/img/avatar/AD-droite.svg" alt="" />
       <AvatarFallback className="text-[10px] font-medium">
         {profileMeta.initials}

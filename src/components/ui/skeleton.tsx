@@ -9,6 +9,15 @@ function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
     return (
       <SkeletonBox {...props} data-slot="skeleton" className={className} />
     );
+  if (designSystem === "adobe")
+    return (
+      <div
+        data-slot="skeleton"
+        data-spectrum-skeleton=""
+        className={cn("animate-pulse rounded-md bg-muted", className)}
+        {...props}
+      />
+    );
   return (
     <div
       data-slot="skeleton"

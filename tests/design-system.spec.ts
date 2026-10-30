@@ -1,8 +1,10 @@
 import { test, expect } from "@playwright/test";
+import { adobeDesignSystemEnabled } from "../src/components/design-system/flags";
+import { ENABLED_DESIGN_SYSTEMS } from "../src/components/design-system/provider";
 
 async function choose(
   page: import("@playwright/test").Page,
-  name: "GitHub" | "Mehdi",
+  name: "GitHub" | "Mehdi" | "Adobe",
 ) {
   const trigger = page.locator(
     '[data-analytics-action="design_system_open"]:visible',
@@ -329,6 +331,81 @@ test("Primer game settings and feedback dialog keep focus and dismiss correctly"
   await page.keyboard.press("Escape");
   await expect(feedback).toBeHidden();
   await expect(settings).toBeVisible();
+});
+
+test("site uses real Spectrum components, retains navigation choice and resets on reload", async ({
+  page,
+}) => {
+  test.skip(
+    !adobeDesignSystemEnabled,
+    "Adobe DS flag NEXT_PUBLIC_ENABLE_ADOBE_DS is off",
+  );
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/");
+  const cta = page.locator(".home-paper-ctas").getByRole("link").first();
+  await choose(page, "Adobe");
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-design-system",
+    "adobe",
+  );
+  await expect(
+    page.locator(".home-paper-status [data-spectrum-status]").first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Design system", exact: true }),
+  ).toBeFocused();
+  await cta.click();
+  await expect(page).toHaveURL(/realisations$/);
+  await expect(
+    page.getByRole("button", { name: "Design system", exact: true }),
+  ).toContainText("Adobe");
+  await page.getByRole("link", { name: "Accueil", exact: true }).click();
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-design-system",
+    "adobe",
+  );
+  await page
+    .getByRole("button", { name: "Activer le mode sombre", exact: true })
+    .click();
+  await expect(
+    page.locator(".ds-scope[data-design-system=adobe]").first(),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Activer le mode clair", exact: true })
+    .click();
+  await choose(page, "Mehdi");
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-design-system",
+    "mehdi",
+  );
+  await choose(page, "Adobe");
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Design system", exact: true }),
+  ).toContainText("Mehdi");
+  expect(errors).toEqual([]);
+});
+
+test("design systems compare page renders every enabled system", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/playground/design-systems");
+  await expect(
+    page.getByRole("heading", { name: "Design systems", exact: true }),
+  ).toBeVisible();
+  for (const { id } of ENABLED_DESIGN_SYSTEMS) {
+    const column = page.locator(`[data-compare-column="${id}"]`);
+    await expect(column).toBeVisible();
+    await expect(column.getByText("Tokens sémantiques")).toBeVisible();
+    await expect(column.getByText(/Tokens natifs/)).toBeVisible();
+  }
+  await expect(page.locator('[data-compare-column="adobe"]')).toHaveCount(
+    adobeDesignSystemEnabled ? 1 : 0,
+  );
+  expect(errors).toEqual([]);
 });
 
 for (const path of [

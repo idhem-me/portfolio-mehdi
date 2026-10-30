@@ -42,7 +42,11 @@ export function ThemeToggle() {
         }}
         suppressHydrationWarning
       >
-        {!mounted || !isDark ? <Moon /> : <Sun />}
+        {!mounted || !isDark ? (
+          <Moon className="size-4 shrink-0" />
+        ) : (
+          <Sun className="size-4 shrink-0" />
+        )}
         <span suppressHydrationWarning>
           {!mounted || !isDark ? t("dark") : t("light")}
         </span>

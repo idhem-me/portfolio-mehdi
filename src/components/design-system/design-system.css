@@ -193,3 +193,268 @@ html[data-design-system="github"] .ds-dialog {
   min-width: 0;
   max-width: 100%;
 }
+
+/* Spectrum Provider stays mounted; neutralize its global type outside Adobe mode. */
+.spectrum-ds-root:not(.spectrum-ds-active) {
+  font-family: inherit !important;
+  color: inherit !important;
+  line-height: inherit !important;
+}
+
+/* Adobe Spectrum token bridge.
+   Solid fallbacks are required: Sheet/portals render outside the Spectrum
+   Provider tree, so --spectrum-* vars are often unavailable there. */
+html[data-design-system="adobe"],
+.ds-scope[data-design-system="adobe"],
+.spectrum-ds-active {
+  --background: var(--spectrum-gray-50, #fff);
+  --foreground: var(--spectrum-gray-800, #222);
+  --muted: var(--spectrum-gray-100, #f8f8f8);
+  --muted-foreground: var(--spectrum-gray-700, #464646);
+  --border: var(--spectrum-gray-300, #d5d5d5);
+  --primary: var(--spectrum-accent-background-color-default, #0265dc);
+  --primary-foreground: var(--spectrum-gray-50, #fff);
+  --card: var(--spectrum-gray-50, #fff);
+  --card-foreground: var(--spectrum-gray-800, #222);
+  --popover: var(--spectrum-gray-50, #fff);
+  --popover-foreground: var(--spectrum-gray-800, #222);
+  --accent: var(--spectrum-accent-background-color-default, #0265dc);
+  --accent-foreground: #fff;
+  --destructive: var(--spectrum-negative-background-color-default, #d31510);
+  --input: var(--spectrum-gray-300, #d5d5d5);
+  --ring: var(--spectrum-blue-800, #0265dc);
+  --sidebar-ring: var(--spectrum-blue-800, #0265dc);
+  --secondary: var(--spectrum-gray-200, #e6e6e6);
+  --secondary-foreground: var(--spectrum-gray-800, #222);
+  --sidebar: var(--spectrum-gray-75, #fdfdfd);
+  --sidebar-foreground: var(--spectrum-gray-800, #222);
+  --sidebar-accent: var(--spectrum-gray-200, #e6e6e6);
+  --sidebar-accent-foreground: var(--spectrum-gray-800, #222);
+  --sidebar-border: var(--spectrum-gray-300, #d5d5d5);
+  color: var(--spectrum-gray-800, #222);
+  line-height: 1.5;
+}
+
+html.dark[data-design-system="adobe"],
+.dark .ds-scope[data-design-system="adobe"],
+.dark .spectrum-ds-active {
+  --background: var(--spectrum-gray-50, #1d1d1d);
+  --foreground: var(--spectrum-gray-800, #f8f8f8);
+  --muted: var(--spectrum-gray-100, #2c2c2c);
+  --muted-foreground: var(--spectrum-gray-700, #b1b1b1);
+  --border: var(--spectrum-gray-300, #4b4b4b);
+  --primary: var(--spectrum-accent-background-color-default, #1473e6);
+  --primary-foreground: #fff;
+  --card: var(--spectrum-gray-50, #1d1d1d);
+  --card-foreground: var(--spectrum-gray-800, #f8f8f8);
+  --popover: var(--spectrum-gray-50, #1d1d1d);
+  --popover-foreground: var(--spectrum-gray-800, #f8f8f8);
+  --accent: var(--spectrum-accent-background-color-default, #1473e6);
+  --accent-foreground: #fff;
+  --destructive: var(--spectrum-negative-background-color-default, #ec5b56);
+  --input: var(--spectrum-gray-300, #4b4b4b);
+  --ring: var(--spectrum-blue-800, #1473e6);
+  --sidebar-ring: var(--spectrum-blue-800, #1473e6);
+  --secondary: var(--spectrum-gray-200, #2c2c2c);
+  --secondary-foreground: var(--spectrum-gray-800, #f8f8f8);
+  --sidebar: var(--spectrum-gray-75, #141414);
+  --sidebar-foreground: var(--spectrum-gray-800, #f8f8f8);
+  --sidebar-accent: var(--spectrum-gray-200, #2c2c2c);
+  --sidebar-accent-foreground: var(--spectrum-gray-800, #f8f8f8);
+  --sidebar-border: var(--spectrum-gray-300, #4b4b4b);
+  color: var(--spectrum-gray-800, #f8f8f8);
+}
+
+html[data-design-system="adobe"] body {
+  font-family:
+    adobe-clean,
+    "Source Sans Pro",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+.adobe-home {
+  background-image: none;
+}
+
+.ds-scope[data-design-system="adobe"] > [data-home-paper] {
+  background: var(--background);
+  color: var(--foreground);
+  min-height: 100%;
+}
+
+.ds-scope[data-design-system="adobe"].flex {
+  background: var(--sidebar);
+}
+
+/* Mobile Sheet portals outside Spectrum Provider — force an opaque panel. */
+html[data-design-system="adobe"] .mobile-navigation-panel[data-mobile="true"] {
+  background: var(--background) !important;
+  color: var(--foreground);
+}
+html[data-design-system="adobe"] .mobile-navigation-tile {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--border);
+}
+html[data-design-system="adobe"] .mobile-navigation-tile svg,
+html[data-design-system="adobe"]
+  .mobile-navigation-settings
+  [data-slot="sidebar-menu-button"]
+  svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+html[data-design-system="adobe"]
+  .mobile-navigation-tile[data-active="true"] {
+  background: var(--background);
+  color: var(--foreground);
+  border-color: var(--foreground);
+}
+html[data-design-system="adobe"] [data-slot="sheet-content"],
+html[data-design-system="adobe"] [data-slot="dropdown-menu-content"] {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border-color: var(--border);
+}
+
+/* Native <select> overlay: same face as Mode clair / Cookies, OS dropdown. */
+.ds-native-choice-select {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.relative:has(> .ds-native-choice-select:focus-visible)
+  [data-slot="sidebar-menu-button"] {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Compact Spectrum quiet close / open control for the mobile sheet. */
+html[data-design-system="adobe"] .ds-spectrum-mobile-toggle,
+.ds-scope[data-design-system="adobe"] .ds-spectrum-mobile-toggle {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
+  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--foreground);
+}
+html[data-design-system="adobe"] .ds-spectrum-mobile-toggle svg,
+.ds-scope[data-design-system="adobe"] .ds-spectrum-mobile-toggle svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+html[data-design-system="adobe"] .ds-spectrum-mobile-toggle:hover,
+.ds-scope[data-design-system="adobe"] .ds-spectrum-mobile-toggle:hover {
+  background: var(--secondary) !important;
+}
+
+.ds-scope[data-design-system="adobe"] .ds-nav-button {
+  border: 1px solid transparent;
+  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+  box-shadow: none;
+  color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800));
+}
+
+html[data-design-system="adobe"] [data-slot="card"] {
+  border: 1px solid var(--spectrum-gray-300, var(--spectrum-global-color-gray-300));
+  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+  box-shadow: none;
+}
+
+html[data-design-system="adobe"] [data-slot="tabs-list"] {
+  background: var(--spectrum-gray-100, var(--spectrum-global-color-gray-100));
+  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+}
+
+html[data-design-system="adobe"]
+  [data-slot="tabs-trigger"][data-state="active"] {
+  background: var(--spectrum-gray-50, var(--spectrum-global-color-gray-50));
+  color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800));
+}
+
+html[data-design-system="adobe"] [data-slot="slider"] {
+  accent-color: var(--spectrum-accent-background-color-default);
+}
+
+html[data-design-system="adobe"] [data-slot="slider-range"] {
+  background: var(--spectrum-accent-background-color-default);
+}
+
+html[data-design-system="adobe"] .ds-dialog {
+  background: var(--spectrum-gray-50, var(--spectrum-global-color-gray-50));
+  border-color: var(--spectrum-gray-300, var(--spectrum-global-color-gray-300));
+  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+  color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800));
+}
+
+.ds-spectrum-input {
+  max-width: 100%;
+  width: 100%;
+}
+
+.ds-spectrum-input label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Spectrum cannot polymorph Next.js Link; style the original link as a button. */
+.ds-spectrum-aschild-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+  border: 2px solid transparent;
+  background: var(--spectrum-accent-background-color-default);
+  color: var(--spectrum-gray-50, #fff);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ds-spectrum-aschild-button[data-spectrum-aschild-button="primary"],
+.ds-spectrum-aschild-button[data-spectrum-aschild-button="secondary"] {
+  background: var(--spectrum-gray-75, var(--spectrum-global-color-gray-75));
+  border-color: var(--spectrum-gray-400, var(--spectrum-global-color-gray-400));
+  color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800));
+}
+.ds-spectrum-aschild-button[data-spectrum-aschild-button="negative"] {
+  background: var(--spectrum-negative-background-color-default);
+  color: var(--spectrum-gray-50, #fff);
+}
+.ds-spectrum-aschild-button-quiet {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800)) !important;
+  font-weight: 400;
+}

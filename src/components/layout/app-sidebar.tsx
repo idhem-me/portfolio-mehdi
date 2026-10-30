@@ -3,7 +3,6 @@ import { cardsEnabled } from "@/features/cards/flags";
 import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 
 import {
-  Home,
   LayoutDashboard,
   Cookie,
   Layers,
@@ -31,7 +30,10 @@ import { DesignSystemScope } from "@/components/design-system/provider";
 import { DesignSystemSwitcher } from "@/components/design-system/switcher";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { MobileMenuButton } from "@/components/layout/mobile-menu-button";
-import { MobileBrandBar } from "@/components/layout/mobile-brand-bar";
+import {
+  HomeAvatar,
+  MobileBrandBar,
+} from "@/components/layout/mobile-brand-bar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { openAnalyticsPreferences } from "@/lib/analytics/consent";
 import { AnalyticsEvents } from "@/lib/analytics/events";
@@ -53,14 +55,8 @@ export function AppSidebar() {
     {
       href: "/",
       label: t("home"),
-      icon: Home,
+      icon: null,
       match: (path: string) => path === "/",
-    },
-    {
-      href: "/backoffice",
-      label: t("backoffice"),
-      icon: LayoutDashboard,
-      match: (path: string) => path.startsWith("/backoffice"),
     },
     {
       href: "/realisations",
@@ -84,6 +80,12 @@ export function AppSidebar() {
           },
         ]
       : []),
+    {
+      href: "/backoffice",
+      label: t("backoffice"),
+      icon: LayoutDashboard,
+      match: (path: string) => path.startsWith("/backoffice"),
+    },
     {
       href: "/a-propos",
       label: t("about"),
@@ -120,7 +122,11 @@ export function AppSidebar() {
                         eventProps={{ href: item.href, label: item.label }}
                         onClick={closeMobilePanel}
                       >
-                        <item.icon />
+                        {item.icon ? (
+                          <item.icon />
+                        ) : (
+                          <HomeAvatar className="size-4" />
+                        )}
                         <span>{item.label}</span>
                       </TrackedLink>
                     </SidebarMenuButton>
@@ -133,16 +139,6 @@ export function AppSidebar() {
                 <DesignSystemSwitcher />
                 <LanguageSwitcher />
                 <ThemeToggle />
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={openAnalyticsPreferences}
-                    tooltip={privacy("cookies")}
-                    aria-label={privacy("cookies")}
-                  >
-                    <Cookie />
-                    <span>{privacy("cookies")}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
               </SidebarMenu>
             </div>
           </div>
@@ -198,7 +194,7 @@ export function AppSidebar() {
                 tooltip={privacy("cookies")}
                 aria-label={privacy("cookies")}
               >
-                <Cookie />
+                <Cookie className="size-4 shrink-0" />
                 <span>{privacy("cookies")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>

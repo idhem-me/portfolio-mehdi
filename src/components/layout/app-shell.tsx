@@ -22,7 +22,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SidebarInset
           className={
             pathname === "/"
-              ? `min-w-0 home-paper-background ${designSystem === "github" ? "github-home" : ""}`
+              ? `min-w-0 home-paper-background ${
+                  designSystem === "github"
+                    ? "github-home"
+                    : designSystem === "adobe"
+                      ? "adobe-home"
+                      : ""
+                }`
               : "min-w-0"
           }
         >

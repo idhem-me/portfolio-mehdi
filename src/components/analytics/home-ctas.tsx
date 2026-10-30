@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { AnalyticsEvents } from "@/lib/analytics/events";
 import { Label } from "@primer/react";
+import { StatusLight } from "@adobe/react-spectrum";
 import { useDesignSystem } from "@/components/design-system/provider";
 import { profileMeta } from "@/data/profile-meta";
 
@@ -49,10 +50,14 @@ export function HomeStatus() {
   const { designSystem } = useDesignSystem();
 
   return (
-    <p className="home-paper-status flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+    <div className="home-paper-status flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
       <span data-physics-item className="inline-block rounded-lg">
         {designSystem === "github" ? (
           <Label variant="success">{t("freelanceOn")}</Label>
+        ) : designSystem === "adobe" ? (
+          <span data-spectrum-status="">
+            <StatusLight variant="positive">{t("freelanceOn")}</StatusLight>
+          </span>
         ) : (
           t("freelanceOn")
         )}
@@ -85,7 +90,7 @@ export function HomeStatus() {
           aria-hidden
         />
       </span>
-    </p>
+    </div>
   );
 }
 

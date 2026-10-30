@@ -1,6 +1,7 @@
 "use client";
 
 import { Button as PrimerButton } from "@primer/react";
+import { ActionButton as SpectrumActionButton } from "@adobe/react-spectrum";
 import { useDesignSystem } from "@/components/design-system/provider";
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -71,6 +72,18 @@ function TabsTrigger({
         >
           {props.children}
         </PrimerButton>
+      </TabsPrimitive.Trigger>
+    );
+  if (designSystem === "adobe")
+    return (
+      <TabsPrimitive.Trigger {...props} asChild>
+        <SpectrumActionButton
+          isQuiet
+          data-slot="tabs-trigger"
+          UNSAFE_className={className}
+        >
+          {props.children}
+        </SpectrumActionButton>
       </TabsPrimitive.Trigger>
     );
   return (
