@@ -438,12 +438,16 @@ export function Sessions() {
                         ),
                       )}
                       <td className="p-3">
-                        <span className="inline-flex items-center gap-2">
-                          <CountryFlag country={r.country} locale={locale} />
-                          <span className="text-muted-foreground">
-                            {r.country || "?"}
+                        {r.country ? (
+                          <span className="inline-flex items-center gap-2">
+                            <CountryFlag country={r.country} locale={locale} />
+                            <span className="text-muted-foreground">
+                              {r.country}
+                            </span>
                           </span>
-                        </span>
+                        ) : (
+                          <CountryFlag country={r.country} locale={locale} />
+                        )}
                       </td>
                       <td className="p-3">
                         <span
