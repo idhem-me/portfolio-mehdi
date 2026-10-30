@@ -118,6 +118,25 @@ export function HomeCtas() {
           className="h-auto! min-h-(--control-height) max-w-full whitespace-normal! text-start"
         >
           <TrackedLink
+            href="/outils"
+            event={AnalyticsEvents.home_cta}
+            eventProps={{ href: "/outils", label: "outils" }}
+          >
+            <span>{t("tools")}</span>
+          </TrackedLink>
+        </Button>
+      </span>
+      <span
+        data-physics-item
+        data-physics-button
+        className="inline-flex max-w-full rounded-lg"
+      >
+        <Button
+          asChild
+          variant="secondary"
+          className="h-auto! min-h-(--control-height) max-w-full whitespace-normal! text-start"
+        >
+          <TrackedLink
             href="/jeux"
             event={AnalyticsEvents.home_cta}
             eventProps={{ href: "/jeux", label: "jeux" }}
