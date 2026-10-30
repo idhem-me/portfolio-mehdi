@@ -1,17 +1,19 @@
 "use client";
 
+import {
+  DesignSystemScope,
+  useDesignSystem,
+} from "@/components/design-system/provider";
 import { usePathname } from "@/i18n/navigation";
 import { ConsentBanner } from "@/components/analytics/consent-banner";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { MobileMenuButton } from "@/components/layout/mobile-menu-button";
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { designSystem } = useDesignSystem();
 
   return (
     <TooltipProvider>
@@ -20,7 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SidebarInset
           className={
             pathname === "/"
-              ? "min-w-0 home-paper-background"
+              ? `min-w-0 home-paper-background ${designSystem === "github" ? "github-home" : ""}`
               : "min-w-0"
           }
         >
@@ -31,7 +33,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 "calc(max(1rem, env(safe-area-inset-top)) + var(--control-height-icon) + 1rem)",
             }}
           >
-            <MobileMenuButton />
+            <DesignSystemScope>
+              <MobileMenuButton />
+            </DesignSystemScope>
           </header>
           <div className="min-w-0 flex-1">{children}</div>
         </SidebarInset>

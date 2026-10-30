@@ -1,4 +1,5 @@
 {
+  "designSystem": { "label": "Sistema di design" },
   "nav": {
     "openMenu": "Apri menu",
     "closeMenu": "Chiudi menu",

@@ -1,4 +1,5 @@
 {
+  "designSystem": { "label": "نظام التصميم" },
   "nav": {
     "openMenu": "فتح القائمة",
     "closeMenu": "إغلاق القائمة",

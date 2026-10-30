@@ -2,18 +2,7 @@
 
 import { Languages } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { DesignSystemChoiceMenu } from "@/components/design-system/choice-menu";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { localeNames, routing, type Locale } from "@/i18n/routing";
 
@@ -22,43 +11,20 @@ export function LanguageSwitcher() {
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
-  const { state, isMobile } = useSidebar();
-  const collapsed = state === "collapsed";
-
-  function onChange(next: string) {
-    if (next === locale) return;
-    router.replace(pathname, { locale: next as Locale });
-  }
-
   return (
-    <SidebarMenuItem>
-      <DropdownMenu>
-        <SidebarMenuButton asChild tooltip={t("label")} aria-label={t("label")}>
-          <DropdownMenuTrigger data-analytics-action="language_open">
-            <Languages />
-            <span>{localeNames[locale]}</span>
-          </DropdownMenuTrigger>
-        </SidebarMenuButton>
-        <DropdownMenuContent
-          side={collapsed && !isMobile ? "right" : "top"}
-          align="start"
-          sideOffset={8}
-          className="min-w-44 w-auto"
-        >
-          <DropdownMenuRadioGroup value={locale} onValueChange={onChange}>
-            {routing.locales.map((code) => (
-              <DropdownMenuRadioItem
-                key={code}
-                value={code}
-                data-analytics-action="language_select"
-                data-analytics-value={code}
-              >
-                {localeNames[code]}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </SidebarMenuItem>
+    <DesignSystemChoiceMenu
+      label={t("label")}
+      value={locale}
+      icon={<Languages />}
+      choices={routing.locales.map((code) => ({
+        value: code,
+        label: localeNames[code],
+      }))}
+      onChange={(next) => {
+        if (next !== locale)
+          router.replace(pathname, { locale: next as Locale });
+      }}
+      analyticsAction="language"
+    />
   );
 }

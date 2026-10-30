@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { DesignSystemSidebarButton as SidebarMenuButton } from "@/components/design-system/button";
+import { SidebarMenuItem } from "@/components/ui/sidebar";
 
 export function ThemeToggle() {
   const t = useTranslations("theme");

@@ -1,7 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
+import {
+  DesignSystemSidebarButton as SidebarMenuButton,
+  DesignSystemSidebarTrigger as SidebarTrigger,
+} from "@/components/design-system/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import { profileMeta } from "@/data/profile-meta";
@@ -13,7 +17,9 @@ function HomeAvatar() {
   return (
     <Avatar className="size-7 shrink-0" aria-hidden="true">
       <AvatarImage src="/img/avatar/AD-droite.svg" alt="" />
-      <AvatarFallback className="text-[10px] font-medium">{profileMeta.initials}</AvatarFallback>
+      <AvatarFallback className="text-[10px] font-medium">
+        {profileMeta.initials}
+      </AvatarFallback>
     </Avatar>
   );
 }
@@ -27,7 +33,11 @@ export function MobileBrandBar({ className }: { className?: string }) {
     <div className={cn("flex h-12 items-center gap-1 px-2", className)}>
       <SidebarMenu className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
         <SidebarMenuItem>
-          <SidebarMenuButton asChild isActive={pathname === "/"} className="h-9">
+          <SidebarMenuButton
+            asChild
+            isActive={pathname === "/"}
+            className="h-9"
+          >
             <TrackedLink
               href="/"
               aria-current={pathname === "/" ? "page" : undefined}

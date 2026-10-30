@@ -5,8 +5,10 @@ import {
   TrackedAnchor,
   TrackedLink,
 } from "@/components/analytics/tracked-link";
-import { Button } from "@/components/ui/button";
+import { DesignSystemButton as Button } from "@/components/design-system/button";
 import { AnalyticsEvents } from "@/lib/analytics/events";
+import { Label } from "@primer/react";
+import { useDesignSystem } from "@/components/design-system/provider";
 import { profileMeta } from "@/data/profile-meta";
 
 function PlatformLink({
@@ -44,11 +46,16 @@ function PlatformLink({
 
 export function HomeStatus() {
   const t = useTranslations("home");
+  const { designSystem } = useDesignSystem();
 
   return (
     <p className="home-paper-status flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
       <span data-physics-item className="inline-block rounded-lg">
-        {t("freelanceOn")}
+        {designSystem === "github" ? (
+          <Label variant="success">{t("freelanceOn")}</Label>
+        ) : (
+          t("freelanceOn")
+        )}
       </span>
       <PlatformLink
         href={profileMeta.malt}

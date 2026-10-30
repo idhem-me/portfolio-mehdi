@@ -12,7 +12,7 @@ import Matter from "matter-js";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
-import { Button } from "@/components/ui/button";
+import { DesignSystemButton as Button } from "@/components/design-system/button";
 import { useSidebar } from "@/components/ui/sidebar";
 
 import { PaintTool, type PaintBridge } from "./paint-tool";

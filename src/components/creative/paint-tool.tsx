@@ -12,7 +12,7 @@ import { createPortal } from "react-dom";
 import Matter from "matter-js";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { DesignSystemButton as Button } from "@/components/design-system/button";
 import { PaintBrush } from "./paint-brush";
 import {
   createPaintBody,

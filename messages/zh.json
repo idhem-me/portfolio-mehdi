@@ -1,4 +1,5 @@
 {
+  "designSystem": { "label": "设计系统" },
   "nav": {
     "openMenu": "打开菜单",
     "closeMenu": "关闭菜单",

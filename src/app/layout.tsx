@@ -7,7 +7,17 @@ import { ThemeProvider } from "@/components/layout/theme-provider";
 import { AnalyticsRoot } from "@/lib/analytics/analytics-root";
 import { profileMeta } from "@/data/profile-meta";
 import frMessages from "../../messages/fr.json";
+import { DesignSystemProvider } from "@/components/design-system/provider";
+import "@primer/primitives/dist/css/base/size/size.css";
+import "@primer/primitives/dist/css/base/typography/typography.css";
+import "@primer/primitives/dist/css/functional/size/border.css";
+import "@primer/primitives/dist/css/functional/size/radius.css";
+import "@primer/primitives/dist/css/functional/size/size.css";
+import "@primer/primitives/dist/css/functional/typography/typography.css";
+import "@primer/primitives/dist/css/functional/themes/light.css";
+import "@primer/primitives/dist/css/functional/themes/dark.css";
 import "./globals.css";
+import "@/components/design-system/design-system.css";
 
 const googleSans = Google_Sans({
   subsets: ["latin"],
@@ -66,11 +76,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           enableSystem
           disableTransitionOnChange
         >
-          <NextIntlClientProvider locale="fr" messages={frMessages}>
-            <SiteAccountProvider>
-              <AnalyticsRoot>{children}</AnalyticsRoot>
-            </SiteAccountProvider>
-          </NextIntlClientProvider>
+          <DesignSystemProvider>
+            <NextIntlClientProvider locale="fr" messages={frMessages}>
+              <SiteAccountProvider>
+                <AnalyticsRoot>{children}</AnalyticsRoot>
+              </SiteAccountProvider>
+            </NextIntlClientProvider>
+          </DesignSystemProvider>
         </ThemeProvider>
       </body>
     </html>
