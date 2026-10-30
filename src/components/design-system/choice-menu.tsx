@@ -5,6 +5,7 @@ import { ActionList, ActionMenu } from "@primer/react";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
@@ -16,6 +17,7 @@ import { useDesignSystem, useDesignSystemAttributes } from "./provider";
 type Choice = { value: string; label: string; icon?: ReactNode };
 export function DesignSystemChoiceMenu({
   label,
+  title,
   value,
   icon,
   choices,
@@ -23,6 +25,7 @@ export function DesignSystemChoiceMenu({
   analyticsAction,
 }: {
   label: string;
+  title?: string;
   value: string;
   icon: ReactNode;
   choices: Choice[];
@@ -66,22 +69,27 @@ export function DesignSystemChoiceMenu({
             align="start"
           >
             <ActionList selectionVariant="single" aria-label={label}>
-              {choices.map((choice) => (
-                <ActionList.Item
-                  key={choice.value}
-                  selected={choice.value === value}
-                  onSelect={() => select(choice.value)}
-                  data-analytics-action={`${analyticsAction}_select`}
-                  data-analytics-value={choice.value}
-                >
-                  {choice.icon && (
-                    <ActionList.LeadingVisual>
-                      {choice.icon}
-                    </ActionList.LeadingVisual>
-                  )}
-                  {choice.label}
-                </ActionList.Item>
-              ))}
+              <ActionList.Group>
+                {title && (
+                  <ActionList.GroupHeading>{title}</ActionList.GroupHeading>
+                )}
+                {choices.map((choice) => (
+                  <ActionList.Item
+                    key={choice.value}
+                    selected={choice.value === value}
+                    onSelect={() => select(choice.value)}
+                    data-analytics-action={`${analyticsAction}_select`}
+                    data-analytics-value={choice.value}
+                  >
+                    {choice.icon && (
+                      <ActionList.LeadingVisual>
+                        {choice.icon}
+                      </ActionList.LeadingVisual>
+                    )}
+                    {choice.label}
+                  </ActionList.Item>
+                ))}
+              </ActionList.Group>
             </ActionList>
           </ActionMenu.Overlay>
         </ActionMenu>
@@ -96,6 +104,7 @@ export function DesignSystemChoiceMenu({
             sideOffset={8}
             className="min-w-44 w-auto"
           >
+            {title && <DropdownMenuLabel>{title}</DropdownMenuLabel>}
             <DropdownMenuRadioGroup value={value} onValueChange={select}>
               {choices.map((choice) => (
                 <DropdownMenuRadioItem

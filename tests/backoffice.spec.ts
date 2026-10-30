@@ -39,7 +39,11 @@ test("consent gates pages, tracking and APIs", async ({ page, request }) => {
   expect(
     await page.evaluate(() => localStorage.getItem("backoffice_visitor")),
   ).toBeTruthy();
-  await page.getByRole("button", { name: "Retirer mon consentement" }).click();
+  await page
+    .locator('[data-sidebar="sidebar"]')
+    .getByRole("button", { name: "Cookies", exact: true })
+    .click();
+  await page.locator('[data-analytics-action="consent_deny"]').click();
   await expect(
     page.getByRole("heading", { name: "Ici, c'est vous la data." }),
   ).toBeVisible();

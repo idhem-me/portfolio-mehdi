@@ -82,8 +82,8 @@ html[data-design-system="github"],
   color: var(--fgColor-default);
 }
 .ds-choice-overlay img {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
 }
 .github-home {
   background-image: none;

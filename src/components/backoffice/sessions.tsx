@@ -135,7 +135,7 @@ export function Sessions() {
     </>
   );
   return (
-    <div className="space-y-6">
+    <div className="flex min-h-0 w-full flex-1 flex-col gap-6">
       <h1 className="text-3xl font-semibold">{t("sessions")}</h1>
       <div className="rounded-xl border bg-card p-4">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -265,9 +265,9 @@ export function Sessions() {
           </Button>
         </div>
       ) : !data ? (
-        <div className="h-48 animate-pulse rounded-xl bg-muted" />
+        <div className="min-h-48 flex-1 animate-pulse rounded-xl bg-muted" />
       ) : !data.rows.length ? (
-        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed p-10 text-center">
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-xl border border-dashed p-10 text-center">
           <p className="text-muted-foreground">{t("none")}</p>
           <Button variant="outline" onClick={() => router.replace(path)}>
             {t("reset")}
@@ -275,7 +275,7 @@ export function Sessions() {
         </div>
       ) : (
         <>
-          <div className="hidden overflow-x-auto md:block">
+          <div className="hidden min-h-0 flex-1 overflow-x-auto md:block">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr>
@@ -291,17 +291,16 @@ export function Sessions() {
                     "device",
                     "online",
                   ].map((k) => (
-                    <th className="border-b p-3" key={k}>
+                    <th className="border-b p-3 text-sm font-medium" key={k}>
                       {[
                         "started_at",
                         "active_ms",
                         "clicks",
                         "mouse_px",
                       ].includes(k) ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="-mx-2.5"
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 rounded-md py-1 text-start text-sm font-medium outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                           onClick={() => {
                             const p = new URLSearchParams(search.toString());
                             p.set("sort", k);
@@ -313,7 +312,7 @@ export function Sessions() {
                           }}
                         >
                           {t(k === "started_at" ? "start" : k)} ↕
-                        </Button>
+                        </button>
                       ) : (
                         t(k)
                       )}
@@ -358,9 +357,11 @@ export function Sessions() {
                           : metric(r, k)}
                       </td>
                     ))}
-                    <td>{r.country}</td>
-                    <td>{r.device}</td>
-                    <td>{online(r) ? "● " + t("online") : t("ended")}</td>
+                    <td className="p-3">{r.country}</td>
+                    <td className="p-3">{r.device}</td>
+                    <td className="whitespace-nowrap p-3">
+                      {online(r) ? "● " + t("online") : t("ended")}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -386,7 +387,7 @@ export function Sessions() {
               </button>
             ))}
           </div>
-          <div className="flex items-center justify-between">
+          <div className="mt-auto flex items-center justify-between border-t pt-3">
             <Button
               variant="ghost"
               size="icon"

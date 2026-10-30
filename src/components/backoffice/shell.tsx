@@ -21,7 +21,7 @@ export function BackofficeShell({ children }: { children: React.ReactNode }) {
       <DesignSystemScope className="contents">
         <nav
           aria-label="Backoffice"
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-sidebar-foreground md:sticky md:inset-x-auto md:top-0 md:bottom-auto md:h-dvh md:w-44 md:shrink-0 md:self-start md:overflow-y-auto md:border-t-0 md:border-r md:pb-2"
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-sidebar-border bg-sidebar p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-sidebar-foreground md:sticky md:z-0 md:inset-x-auto md:top-0 md:bottom-auto md:h-dvh md:w-44 md:shrink-0 md:self-start md:overflow-y-auto md:border-t-0 md:border-r md:pb-2"
         >
           <SidebarMenu className="flex-row md:flex-col">
             {navigation.map((n) => (
@@ -40,7 +40,7 @@ export function BackofficeShell({ children }: { children: React.ReactNode }) {
           </SidebarMenu>
         </nav>
       </DesignSystemScope>
-      <main className="min-w-0 flex-1 p-4 pb-28 md:p-8">
+      <main className="flex min-w-0 flex-1 flex-col p-4 pb-24 md:p-6">
         {c.granted ? (
           <SWRConfig value={{ provider: () => new Map() }}>
             {children}
@@ -58,20 +58,8 @@ export function BackofficeShell({ children }: { children: React.ReactNode }) {
               {t("accept")}
             </Button>
             <Button variant="ghost" onClick={c.openPreferences}>
-              {t("preferences")}
+              {t("cookies")}
             </Button>
-          </div>
-        )}
-        {c.granted && (
-          <div className="mt-10 flex flex-wrap items-center gap-1 border-t pt-4 text-muted-foreground">
-            <Button size="sm" variant="ghost" onClick={c.openPreferences}>
-              {t("preferences")}
-            </Button>
-            {c.granted && (
-              <Button size="sm" variant="ghost" onClick={c.withdraw}>
-                {t("withdraw")}
-              </Button>
-            )}
           </div>
         )}
       </main>

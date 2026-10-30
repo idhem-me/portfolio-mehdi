@@ -12,9 +12,9 @@ function MehdiIcon() {
     <img
       src="/img/avatar/AD-droite.svg"
       alt=""
-      width={20}
-      height={20}
-      className="size-5 shrink-0 rounded-full"
+      width={16}
+      height={16}
+      className="size-4 shrink-0 rounded-full"
     />
   );
 }
@@ -24,11 +24,16 @@ export function DesignSystemSwitcher() {
   return (
     <DesignSystemChoiceMenu
       label={t("label")}
+      title="Design System"
       value={designSystem}
       icon={<Palette />}
       choices={[
         { value: "mehdi", label: "Mehdi", icon: <MehdiIcon /> },
-        { value: "github", label: "GitHub", icon: <MarkGithubIcon /> },
+        {
+          value: "github",
+          label: "GitHub",
+          icon: <MarkGithubIcon size={16} className="size-4 shrink-0" />,
+        },
       ]}
       onChange={(value) => setDesignSystem(value as DesignSystem)}
       analyticsAction="design_system"

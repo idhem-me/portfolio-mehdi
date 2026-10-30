@@ -136,10 +136,11 @@ export function AppSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={openAnalyticsPreferences}
-                    tooltip={privacy("preferences")}
+                    tooltip={privacy("cookies")}
+                    aria-label={privacy("cookies")}
                   >
                     <Cookie />
-                    <span>{privacy("preferences")}</span>
+                    <span>{privacy("cookies")}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -194,10 +195,11 @@ export function AppSidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={openAnalyticsPreferences}
-                tooltip={privacy("preferences")}
+                tooltip={privacy("cookies")}
+                aria-label={privacy("cookies")}
               >
                 <Cookie />
-                <span>{privacy("preferences")}</span>
+                <span>{privacy("cookies")}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
