@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeInput, NativeButton } from "@/components/design-system/native-controls";
+
 import { X, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -128,8 +130,7 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
     ? CARD_SETS.find((set) => set.id === detailSetId)
     : undefined;
   const setRows = detailSetId
-    ? (sections.find((section) => section.set.id === detailSetId)?.cards ??
-      [])
+    ? (sections.find((section) => section.set.id === detailSetId)?.cards ?? [])
     : [];
   const setIndex = detail
     ? setRows.findIndex((card) => card.id === detail.id)
@@ -250,7 +251,7 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
                   ...CARD_SETS,
                 ].map((set) => (
                   <label key={set.id} className="cards-set-option">
-                    <input
+                    <NativeInput
                       type="radio"
                       name="cards-collection-filter"
                       value={set.id}
@@ -368,7 +369,7 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
                   const missing = !entry;
                   return (
                     <li key={card.id}>
-                      <button
+                      <NativeButton
                         type="button"
                         className="cards-grid-hit"
                         onClick={() => setDetail(card)}
@@ -381,7 +382,7 @@ export function CollectionScreen({ save }: { save: CardsSave }) {
                           qty={entry?.qty}
                           compact
                         />
-                      </button>
+                      </NativeButton>
                     </li>
                   );
                 })}

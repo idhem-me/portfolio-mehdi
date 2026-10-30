@@ -1,12 +1,28 @@
-/* Only pilot regions receive Primer's semantic tokens; no attributes on html/body. */
+/* The document carries the active system so routes and body portals share tokens. */
+html[data-design-system="github"],
 .ds-scope[data-design-system="github"] {
   --background: var(--bgColor-default);
   --foreground: var(--fgColor-default);
   --muted: var(--bgColor-muted);
   --muted-foreground: var(--fgColor-muted);
   --border: var(--borderColor-default);
-  --primary: var(--fgColor-default);
-  --primary-foreground: var(--bgColor-default);
+  --primary: var(--button-primary-bgColor);
+  --primary-foreground: var(--button-primary-fgColor);
+  --card: var(--bgColor-default);
+  --card-foreground: var(--fgColor-default);
+  --popover: var(--overlay-bgColor);
+  --popover-foreground: var(--fgColor-default);
+  --accent: var(--bgColor-accent-emphasis);
+  --accent-foreground: var(--fgColor-onEmphasis);
+  --destructive: var(--fgColor-danger);
+  --input: var(--borderColor-default);
+  --ring: var(--focus-outlineColor);
+  --sidebar-ring: var(--focus-outlineColor);
+  --radius: var(--borderRadius-medium);
+  --control-height: var(--control-medium-size, 32px);
+  --control-height-sm: var(--control-small-size, 28px);
+  --control-height-lg: var(--control-large-size, 40px);
+  --control-text: var(--text-body-size-medium, 14px);
   --secondary: var(--bgColor-muted);
   --secondary-foreground: var(--fgColor-default);
   --sidebar: var(--bgColor-muted);
@@ -101,4 +117,79 @@
 }
 .ds-scope[data-design-system="github"].flex {
   background: var(--bgColor-muted);
+}
+
+html[data-design-system="github"] body {
+  font-family: var(--fontStack-system);
+}
+html[data-design-system="github"] [data-slot="card"] {
+  border: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
+  border-radius: var(--borderRadius-medium);
+  box-shadow: none;
+}
+html[data-design-system="github"] [data-slot="tabs-list"] {
+  background: var(--bgColor-muted);
+  border-radius: var(--borderRadius-medium);
+}
+html[data-design-system="github"]
+  [data-slot="tabs-trigger"][data-state="active"] {
+  background: var(--bgColor-default);
+  color: var(--fgColor-default);
+  box-shadow: var(--shadow-resting-small);
+}
+html[data-design-system="github"] [data-slot="slider"] {
+  accent-color: var(--fgColor-accent);
+}
+html[data-design-system="github"] [data-slot="slider-range"] {
+  background: var(--bgColor-accent-emphasis);
+}
+html[data-design-system="github"] [data-slot="slider-thumb"] {
+  border-color: var(--borderColor-accent-emphasis);
+  background: var(--bgColor-default);
+}
+html[data-design-system="github"] [data-slot="dropdown-menu-content"],
+html[data-design-system="github"] [data-slot="sheet-content"],
+html[data-design-system="github"] [data-slot="accordion-item"] {
+  border-color: var(--borderColor-default);
+  border-radius: var(--borderRadius-medium);
+}
+html[data-design-system="github"] .ds-dialog {
+  background: var(--overlay-bgColor);
+  border-color: var(--borderColor-default);
+  border-radius: var(--borderRadius-large);
+  color: var(--fgColor-default);
+}
+/* Original layout classes still control responsive sizing, never the fallback button recipe. */
+.ds-button {
+  max-width: 100%;
+}
+.ds-button [data-component="text"] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--base-size-8);
+  min-width: 0;
+}
+.ds-button [data-component="text"] > svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.ds-input {
+  max-width: 100%;
+}
+/* Media triggers contain responsive artwork rather than a text label. Constrain
+   Primer's content wrappers so intrinsic image sizes cannot widen carousels. */
+.ds-button.cursor-zoom-in {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: 0;
+  padding: 0;
+}
+.ds-button.cursor-zoom-in [data-component="buttonContent"],
+.ds-button.cursor-zoom-in [data-component="text"] {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }

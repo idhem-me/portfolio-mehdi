@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeButton } from "@/components/design-system/native-controls";
+
 import { Fragment, type ReactNode } from "react";
 import {
   Tooltip,
@@ -18,7 +20,7 @@ type CaseStudyBodyProps = {
 
 function lookupDefinition(
   term: string,
-  glossary: Record<string, string>
+  glossary: Record<string, string>,
 ): string | undefined {
   if (glossary[term]) return glossary[term];
   const lower = term.toLowerCase();
@@ -38,7 +40,7 @@ export function CaseStudyBody({
       <p
         className={cn(
           "max-w-prose text-base leading-relaxed text-muted-foreground",
-          className
+          className,
         )}
       >
         {text}
@@ -62,12 +64,12 @@ export function CaseStudyBody({
       nodes.push(
         <Tooltip key={`${term}-${match.index}`}>
           <TooltipTrigger asChild>
-            <button
+            <NativeButton
               type="button"
               className="inline cursor-help rounded-[2px] bg-foreground/[0.06] px-0.5 font-medium text-foreground underline decoration-dotted decoration-foreground/35 underline-offset-[3px] transition-colors hover:bg-foreground/[0.1] hover:decoration-foreground/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               {term}
-            </button>
+            </NativeButton>
           </TooltipTrigger>
           <TooltipContent
             side="top"
@@ -75,7 +77,7 @@ export function CaseStudyBody({
           >
             {definition}
           </TooltipContent>
-        </Tooltip>
+        </Tooltip>,
       );
     } else {
       nodes.push(term);
@@ -92,7 +94,7 @@ export function CaseStudyBody({
     <p
       className={cn(
         "max-w-prose text-base leading-relaxed text-muted-foreground",
-        className
+        className,
       )}
     >
       {nodes.map((node, i) => (

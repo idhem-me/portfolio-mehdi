@@ -1,4 +1,6 @@
 "use client";
+
+import { NativeInput } from "@/components/design-system/native-controls";
 import { useEffect, useId, useRef, useState } from "react";
 import { UserRound, ImagePlus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -148,7 +150,7 @@ function LocalProfileForm({
       <label className="sr-only" htmlFor={id + "-photo"}>
         Photo du profil
       </label>
-      <input
+      <NativeInput
         id={id + "-photo"}
         ref={file}
         className="sr-only"

@@ -1,4 +1,6 @@
 "use client";
+
+import { NativeInput, NativeButton } from "@/components/design-system/native-controls";
 import Image from "next/image";
 import { useIdentityState } from "@/features/account/client-store";
 import { PlayerProfileButton } from "@/features/account/ui/profile-button";
@@ -110,8 +112,11 @@ export default function App({
 }) {
   const account = useIdentityState();
   const saveKey = account.loaded ? accountSaveKey(account.profile) : null;
-  const { settings, update: updateSettings, toggle: toggleSetting } =
-    useSettings();
+  const {
+    settings,
+    update: updateSettings,
+    toggle: toggleSetting,
+  } = useSettings();
   const game = useGame(saveKey);
   const s = game.state;
   const visible = discoveries(s);
@@ -280,11 +285,7 @@ export default function App({
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
-      if (
-        target?.closest(
-          'input, textarea, select, [contenteditable="true"]',
-        )
-      )
+      if (target?.closest('input, textarea, select, [contenteditable="true"]'))
         return;
       if (event.key === "Escape") {
         event.preventDefault();
@@ -404,7 +405,7 @@ export default function App({
           </Button>
           <PlayerProfileButton />
         </div>
-        <input
+        <NativeInput
           ref={iosSwitch}
           type="checkbox"
           {...({ switch: "" } as Record<string, string>)}
@@ -427,12 +428,10 @@ export default function App({
               title="1 seconde réelle = 1 jour dans le jeu"
             >
               <span className="game-date-fixed">{formatGameDate(s)}</span>
-              <span className="game-date-elapsed">
-                J+{fmt(s.elapsed, 0)}
-              </span>
+              <span className="game-date-elapsed">J+{fmt(s.elapsed, 0)}</span>
             </time>
           </div>
-          <button
+          <NativeButton
             className="building-upgrade"
             aria-label="Améliorer le bâtiment"
             onClick={() => setPanel("level")}
@@ -452,14 +451,12 @@ export default function App({
                 aria-label="Amélioration disponible"
               />
             )}
-          </button>
+          </NativeButton>
         </section>
         <section className="restaurant-card">
           <dl className="metrics">
             <div>
-              <dt
-                title="Bonus du niveau de bâtiment sur la production et les clics"
-              >
+              <dt title="Bonus du niveau de bâtiment sur la production et les clics">
                 Bonus
               </dt>
               <dd>×{levelMultiplier(s)}</dd>
@@ -472,10 +469,7 @@ export default function App({
               </dt>
               <dd>
                 {fmt(s.counts.cook + s.counts.trader, 0)}
-                <small>
-                  {" "}
-                  · {fmt(effectiveCooks(s), 0)} cuisine
-                </small>
+                <small> · {fmt(effectiveCooks(s), 0)} cuisine</small>
               </dd>
             </div>
             <div>
@@ -491,9 +485,7 @@ export default function App({
               <dd>{fmt(s.sold, 0)}</dd>
             </div>
             <div>
-              <dt
-                title="Ventes − coût des ingrédients, par jour de jeu (1 s = 1 j). Un prix trop haut freine la demande."
-              >
+              <dt title="Ventes − coût des ingrédients, par jour de jeu (1 s = 1 j). Un prix trop haut freine la demande.">
                 Revenu net / j
               </dt>
               <dd>{fmt(income, 2)} €</dd>
@@ -688,8 +680,7 @@ export default function App({
           </Button>
           <p title="1 s réelle = 1 jour. Le clic suit ~3 % de ta prod / j. Si la demande suit, le stock reste à 0.">
             Clic {fmt(cpc)} <span>·</span> Prod. {fmt(r.production)}/j{" "}
-            <span>·</span> Vente{" "}
-            {fmt(Math.min(fundedProduction, r.demand))}/j
+            <span>·</span> Vente {fmt(Math.min(fundedProduction, r.demand))}/j
           </p>
         </div>
       </div>
@@ -707,8 +698,8 @@ export default function App({
           }
           stableHeight={panel === "extensions"}
         >
-          {panel === "missions-done" && (
-            s.missionClaims.length > 0 ? (
+          {panel === "missions-done" &&
+            (s.missionClaims.length > 0 ? (
               <ul className="completed-missions">
                 {[...s.missionClaims]
                   .reverse()
@@ -723,8 +714,7 @@ export default function App({
               </ul>
             ) : (
               <p className="footnote">Aucune mission réussie.</p>
-            )
-          )}
+            ))}
           {panel === "price" && (
             <div className="price-sheet">
               <div className="price-sheet-controls">
@@ -744,7 +734,7 @@ export default function App({
                 </Button>
                 <label className="price-sheet-input">
                   <span className="sr-only">Prix en euros</span>
-                  <input
+                  <NativeInput
                     type="number"
                     inputMode="decimal"
                     min={PRICE_MIN}
@@ -753,19 +743,14 @@ export default function App({
                     value={priceDraft}
                     onChange={(event) => setPriceDraft(event.target.value)}
                     onBlur={() => {
-                      const parsed = Number(
-                        priceDraft.replace(",", "."),
-                      );
+                      const parsed = Number(priceDraft.replace(",", "."));
                       if (!Number.isFinite(parsed)) {
                         setPriceDraft(String(s.price));
                         return;
                       }
                       const next = Math.min(
                         PRICE_MAX,
-                        Math.max(
-                          PRICE_MIN,
-                          Math.round(parsed * 2) / 2,
-                        ),
+                        Math.max(PRICE_MIN, Math.round(parsed * 2) / 2),
                       );
                       game.dispatch({ type: "price", value: next });
                       setPriceDraft(String(next));
@@ -803,8 +788,7 @@ export default function App({
                     setPriceDraft(String(next));
                   }}
                 >
-                  Confort (
-                  {willingnessToPay(s).toLocaleString("fr-FR")} €)
+                  Confort ({willingnessToPay(s).toLocaleString("fr-FR")} €)
                 </Button>
                 {s.counts.trader > 0 && (
                   <Button
@@ -817,8 +801,7 @@ export default function App({
                       setPriceDraft(String(next));
                     }}
                   >
-                    Conseil équipe (
-                    {optimalPrice(s).toLocaleString("fr-FR")} €)
+                    Conseil équipe ({optimalPrice(s).toLocaleString("fr-FR")} €)
                   </Button>
                 )}
               </div>
@@ -885,8 +868,8 @@ export default function App({
           {panel === "upgrades" && (
             <>
               <p className="footnote">
-                Prix unitaires stables : seule l’inflation du calendrier s’applique
-                (+
+                Prix unitaires stables : seule l’inflation du calendrier
+                s’applique (+
                 {Math.round((timelineInflation(s) - 1) * 100)} % aujourd’hui,
                 plafond ~25 %). Les grosses infrastructures restent chères à
                 l’unité — on scale en volume.
@@ -894,13 +877,13 @@ export default function App({
               {visible.bulk && (
                 <div className="quantity" aria-label="Quantité d’achat">
                   {([1, 10, 100, "max"] as const).map((q) => (
-                    <button
+                    <NativeButton
                       key={q}
                       aria-pressed={quantity === q}
                       onClick={() => setQuantity(q)}
                     >
                       {q === "max" ? "Max" : `×${q}`}
-                    </button>
+                    </NativeButton>
                   ))}
                 </div>
               )}
@@ -1133,8 +1116,8 @@ export default function App({
                         <div>
                           <h3>{v.name}</h3>
                           <p>
-                            {v.share} % du marché · +10 % de demande · +
-                            {v.crew} employés
+                            {v.share} % du marché · +10 % de demande · +{v.crew}{" "}
+                            employés
                           </p>
                         </div>
                         {s.rivals.includes(v.id) ? (
@@ -1240,7 +1223,7 @@ export default function App({
                   <Upload />
                   Importer
                 </Button>
-                <input
+                <NativeInput
                   hidden
                   type="file"
                   accept=".json,application/json"
@@ -1264,13 +1247,13 @@ export default function App({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <button
+                            <NativeButton
                               type="button"
                               className="info-tip"
                               aria-label="À propos du capital permanent"
                             >
                               <Info size={14} />
-                            </button>
+                            </NativeButton>
                           </TooltipTrigger>
                           <TooltipContent className="max-w-56 text-left">
                             Chaque point de capital : production/clics +10 %,
@@ -1293,10 +1276,7 @@ export default function App({
                     </Button>
                   </>
                 )}
-                <Button
-                  variant="destructive"
-                  onClick={() => setPanel("reset")}
-                >
+                <Button variant="destructive" onClick={() => setPanel("reset")}>
                   Recommencer
                 </Button>
               </section>
@@ -1342,12 +1322,12 @@ export default function App({
       {toast && (
         <div role="status" className="toast">
           {toast}
-          <button
+          <NativeButton
             aria-label="Fermer la notification"
             onClick={() => setToast("")}
           >
             <X size={15} />
-          </button>
+          </NativeButton>
         </div>
       )}
     </div>

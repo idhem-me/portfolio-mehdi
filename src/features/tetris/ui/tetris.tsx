@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/refs -- Imperative game engine: React HUD is explicitly refreshed at 25 Hz; canvas reads the same engine at frame rate. */
 "use client";
+
+import { NativeInput } from "@/components/design-system/native-controls";
 import {
   useCallback,
   useEffect,
@@ -738,7 +740,7 @@ function TetrisGame({
                       <span aria-hidden="true">{settings[key]} %</span>
                     </div>
                     <p id={`tetris-${key}-description`}>{description}</p>
-                    <input
+                    <NativeInput
                       id={`tetris-${key}`}
                       type="range"
                       min={0}
@@ -843,7 +845,7 @@ function TetrisGame({
           </div>
         </SheetContent>
       </Sheet>
-      <input
+      <NativeInput
         ref={iosSwitch}
         type="checkbox"
         {...({ switch: "" } as Record<string, string>)}

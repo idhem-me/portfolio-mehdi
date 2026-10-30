@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeInput } from "@/components/design-system/native-controls";
+
 import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Download, ImageDown, ShieldCheck, Upload } from "lucide-react";
@@ -105,7 +107,7 @@ export function ImageCompressor() {
           className="mx-auto size-7 text-muted-foreground"
         />
         <p className="text-sm text-muted-foreground">{t("drop")}</p>
-        <input
+        <NativeInput
           ref={input}
           className="hidden"
           type="file"

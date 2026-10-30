@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
-import { DesignSystemSidebarButton } from "./button";
+import { DesignSystemSidebarButton } from "./sidebar-button";
 import { useDesignSystem, useDesignSystemAttributes } from "./provider";
 
 type Choice = { value: string; label: string; icon?: ReactNode };

@@ -1,4 +1,6 @@
 "use client";
+
+import { NativeButton } from "@/components/design-system/native-controls";
 import { useEffect } from "react";
 import { XIcon } from "lucide-react";
 import { cn } from "cn";
@@ -35,14 +37,14 @@ export function Toast({
       )}
     >
       <p className="min-w-0 flex-1">{message}</p>
-      <button
+      <NativeButton
         type="button"
         aria-label="Fermer"
         className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         onClick={onDismiss}
       >
         <XIcon className="size-4" />
-      </button>
+      </NativeButton>
     </div>
   ) : null;
 }

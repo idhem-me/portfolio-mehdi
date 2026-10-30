@@ -390,6 +390,7 @@ export function QRCodeGenerator() {
                         </label>
                         <Switch
                           id="qr-excavate"
+                          aria-label={t("excavate")}
                           checked={excavate}
                           onCheckedChange={setExcavate}
                           disabled={exporting}

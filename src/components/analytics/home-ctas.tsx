@@ -5,7 +5,7 @@ import {
   TrackedAnchor,
   TrackedLink,
 } from "@/components/analytics/tracked-link";
-import { DesignSystemButton as Button } from "@/components/design-system/button";
+import { Button } from "@/components/ui/button";
 import { AnalyticsEvents } from "@/lib/analytics/events";
 import { Label } from "@primer/react";
 import { useDesignSystem } from "@/components/design-system/provider";

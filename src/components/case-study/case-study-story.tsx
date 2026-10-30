@@ -11,7 +11,7 @@ import {
   ThemeImage,
   ThemeImageGroup,
 } from "@/components/case-study/theme-image";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
@@ -182,17 +182,9 @@ export function CaseStudyStory({ study, children }: CaseStudyStoryProps) {
                 section.cta.align === "center" && "flex justify-center"
               )}
             >
-              <Link
-                href={section.cta.href}
-                className={cn(
-                  buttonVariants({
-                    variant: section.cta.variant ?? "accent",
-                    size: section.cta.size ?? "lg",
-                  })
-                )}
-              >
-                {section.cta.label}
-              </Link>
+              <Button asChild variant={section.cta.variant ?? "accent"} size={section.cta.size ?? "lg"}>
+                <Link href={section.cta.href}>{section.cta.label}</Link>
+              </Button>
             </div>
           ) : null}
         </section>

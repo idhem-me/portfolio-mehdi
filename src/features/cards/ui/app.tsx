@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeInput } from "@/components/design-system/native-controls";
+
 import { SaveChoiceDialog } from "../account/save-choice";
 import { ScopedTheme } from "@/components/ui/scoped-theme";
 import { Shop } from "../shop/shop";
@@ -349,7 +351,7 @@ export default function CardsApp({
 
         <SaveChoiceDialog />
         <Toast message={message} error onDismiss={() => setMessage(null)} />
-        <input
+        <NativeInput
           ref={iosSwitch}
           type="checkbox"
           {...({ switch: "" } as Record<string, string>)}

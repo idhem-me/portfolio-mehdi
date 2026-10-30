@@ -1,4 +1,6 @@
 "use client";
+import { Select as PrimerSelect } from "@primer/react";
+import { useDesignSystem } from "@/components/design-system/provider";
 import { useLocale } from "next-intl";
 import { Select as Primitive } from "radix-ui";
 import { Check, ChevronDown } from "lucide-react";
@@ -16,6 +18,23 @@ export function Select({
   id?: string;
 }) {
   const locale = useLocale();
+  const { designSystem } = useDesignSystem();
+  if (designSystem === "github")
+    return (
+      <PrimerSelect
+        id={id}
+        aria-label={label}
+        value={value}
+        onChange={(event) => onValueChange(event.target.value)}
+        block
+      >
+        {options.map((option) => (
+          <PrimerSelect.Option key={option.value} value={option.value}>
+            {option.label}
+          </PrimerSelect.Option>
+        ))}
+      </PrimerSelect>
+    );
   return (
     <Primitive.Root
       dir={locale === "ar" ? "rtl" : "ltr"}

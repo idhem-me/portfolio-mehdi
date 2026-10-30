@@ -1,4 +1,6 @@
 "use client";
+
+import { NativeButton } from "@/components/design-system/native-controls";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Check, AlertCircle, Copy, Download, Pencil } from "lucide-react";
@@ -98,7 +100,7 @@ export function SwatchesGrid({
           const s = palette[i];
           const state = s ? feedback[`swatch:${s.label}:${s.hex}`] : undefined;
           return s ? (
-            <button
+            <NativeButton
               key={i}
               type="button"
               style={{ backgroundColor: s.hex, color: s.text }}
@@ -126,7 +128,7 @@ export function SwatchesGrid({
                   <span className="uppercase">{s.hex}</span>
                 )}
               </span>
-            </button>
+            </NativeButton>
           ) : (
             <div
               key={i}

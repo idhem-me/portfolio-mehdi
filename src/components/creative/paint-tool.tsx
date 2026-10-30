@@ -1,4 +1,6 @@
 "use client";
+
+import { NativeButton } from "@/components/design-system/native-controls";
 import {
   useEffect,
   useEffectEvent,
@@ -12,7 +14,7 @@ import { createPortal } from "react-dom";
 import Matter from "matter-js";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
-import { DesignSystemButton as Button } from "@/components/design-system/button";
+import { Button } from "@/components/ui/button";
 import { PaintBrush } from "./paint-brush";
 import {
   createPaintBody,
@@ -353,7 +355,7 @@ export function PaintTool({
     if (latestRef.current.isPlaying) addBodies();
   }
   const brushButton = (
-    <button
+    <NativeButton
       ref={brushRef}
       type="button"
       data-analytics-gesture="paint_brush"
@@ -377,7 +379,7 @@ export function PaintTool({
       }}
     >
       <PaintBrush color={token(color)} />
-    </button>
+    </NativeButton>
   );
   const palette = (
     <div
@@ -392,7 +394,7 @@ export function PaintTool({
       }}
     >
       {COLORS.map((c) => (
-        <button
+        <NativeButton
           key={c}
           type="button"
           data-analytics-action="paint_color"
@@ -410,7 +412,7 @@ export function PaintTool({
             className="block size-full rounded-full border border-foreground/15"
             style={{ background: token(c) }}
           />
-        </button>
+        </NativeButton>
       ))}
     </div>
   );

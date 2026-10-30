@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeInput } from "@/components/design-system/native-controls";
+
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, FileText, LoaderCircle, Plus, Trash2, Upload } from "lucide-react";
@@ -99,7 +101,7 @@ export function PdfMerger() {
       >
         <Upload aria-hidden="true" className="mx-auto size-7 text-muted-foreground" />
         <p className="text-sm text-muted-foreground">{t("drop")}</p>
-        <input ref={input} type="file" multiple accept=".pdf,application/pdf" className="hidden" aria-label={t("add")} disabled={busy}
+        <NativeInput ref={input} type="file" multiple accept=".pdf,application/pdf" className="hidden" aria-label={t("add")} disabled={busy}
           onChange={event => { const files = Array.from(event.target.files ?? []); event.target.value = ""; void addFiles(files); }} />
         <Button variant="outline" disabled={busy} onClick={() => input.current?.click()}><Plus aria-hidden="true" />{t("add")}</Button>
       </div>

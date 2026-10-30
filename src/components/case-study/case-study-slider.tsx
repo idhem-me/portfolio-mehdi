@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeButton } from "@/components/design-system/native-controls";
+
 import {
   useCallback,
   useEffect,
@@ -84,7 +86,7 @@ export function CaseStudySlider({
       });
       setIndex(clamped);
     },
-    [pairs.length, reduced]
+    [pairs.length, reduced],
   );
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -137,7 +139,7 @@ export function CaseStudySlider({
           className={cn(
             "flex w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain",
             "touch-pan-y [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-            !reduced && "scroll-smooth"
+            !reduced && "scroll-smooth",
           )}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -191,9 +193,12 @@ export function CaseStudySlider({
       </div>
 
       {pairs.length > 1 ? (
-        <div className="flex items-center justify-center gap-1.5" role="tablist">
+        <div
+          className="flex items-center justify-center gap-1.5"
+          role="tablist"
+        >
           {pairs.map((pair, i) => (
-            <button
+            <NativeButton
               key={pair.light.src ?? pair.light.alt}
               type="button"
               role="tab"
@@ -203,7 +208,7 @@ export function CaseStudySlider({
                 "h-1.5 rounded-full transition-[width,background-color] duration-300 ease-out",
                 i === index
                   ? "w-5 bg-foreground"
-                  : "w-1.5 bg-foreground/25 hover:bg-foreground/45"
+                  : "w-1.5 bg-foreground/25 hover:bg-foreground/45",
               )}
               onClick={() => goTo(i)}
             />

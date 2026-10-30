@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeButton } from "@/components/design-system/native-controls";
+
 import {
   createContext,
   useCallback,
@@ -28,7 +30,7 @@ type ImageLightboxContextValue = {
 };
 
 const ImageLightboxContext = createContext<ImageLightboxContextValue | null>(
-  null
+  null,
 );
 
 export function useImageLightbox() {
@@ -169,7 +171,7 @@ function LightboxOverlay({
       const ratio = distance / pinchRef.current.distance;
       const next = Math.min(
         MAX_SCALE,
-        Math.max(MIN_SCALE, pinchRef.current.scale * ratio)
+        Math.max(MIN_SCALE, pinchRef.current.scale * ratio),
       );
       setScale(next);
       if (next === MIN_SCALE) setOffset({ x: 0, y: 0 });
@@ -242,7 +244,7 @@ function LightboxOverlay({
       <div
         className={cn(
           "relative min-h-0 flex-1 touch-none overflow-hidden",
-          scale > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in"
+          scale > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-zoom-in",
         )}
         onClick={(e) => e.stopPropagation()}
         onDoubleClick={() => {
@@ -272,7 +274,9 @@ function LightboxOverlay({
             transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${scale})`,
             // Existing imperative DOM bridge; refs do not determine React state.
             // eslint-disable-next-line react-hooks/refs
-            transition: dragging.current ? undefined : "transform 160ms ease-out",
+            transition: dragging.current
+              ? undefined
+              : "transform 160ms ease-out",
           }}
         />
       </div>
@@ -281,7 +285,7 @@ function LightboxOverlay({
         Pincez ou utilisez + / − pour zoomer · Esc pour fermer
       </p>
     </div>,
-    document.body
+    document.body,
   );
 }
 
@@ -302,16 +306,16 @@ export function LightboxTrigger({
   if (!lightbox) return <>{children}</>;
 
   return (
-    <button
+    <NativeButton
       type="button"
       className={cn(
         "block w-full cursor-zoom-in rounded-lg text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        className
+        className,
       )}
       onClick={() => lightbox.open({ src, alt })}
       aria-label={`Agrandir : ${alt}`}
     >
       {children}
-    </button>
+    </NativeButton>
   );
 }

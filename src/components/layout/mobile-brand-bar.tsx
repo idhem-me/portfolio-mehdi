@@ -5,7 +5,7 @@ import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import {
   DesignSystemSidebarButton as SidebarMenuButton,
   DesignSystemSidebarTrigger as SidebarTrigger,
-} from "@/components/design-system/button";
+} from "@/components/design-system/sidebar-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TrackedLink } from "@/components/analytics/tracked-link";
 import { profileMeta } from "@/data/profile-meta";

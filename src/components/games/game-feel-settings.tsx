@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeInput } from "@/components/design-system/native-controls";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -69,7 +71,7 @@ export function GameFeelSettings({
               <span aria-hidden="true">{value.effectsVolume} %</span>
             </div>
             <p id={`${volumeInputId}-description`}>{volumeDescription}</p>
-            <input
+            <NativeInput
               id={volumeInputId}
               type="range"
               min={0}

@@ -24,7 +24,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { DesignSystemSidebarButton as SidebarMenuButton } from "@/components/design-system/button";
+import { DesignSystemSidebarButton as SidebarMenuButton } from "@/components/design-system/sidebar-button";
 import { DesignSystemScope } from "@/components/design-system/provider";
 import { DesignSystemSwitcher } from "@/components/design-system/switcher";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";

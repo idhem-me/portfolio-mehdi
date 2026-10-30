@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeInput } from "@/components/design-system/native-controls";
+
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -321,7 +323,7 @@ export function ImageConverter() {
         />
         <p className="text-sm">{t("drop")}</p>
         <p className="text-xs text-muted-foreground">{t("formats")}</p>
-        <input
+        <NativeInput
           ref={input}
           type="file"
           multiple

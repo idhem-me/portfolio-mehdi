@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeInput } from "@/components/design-system/native-controls";
+
 import {
   createContext,
   useCallback,
@@ -12,7 +14,7 @@ import Matter from "matter-js";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
-import { DesignSystemButton as Button } from "@/components/design-system/button";
+import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 
 import { PaintTool, type PaintBridge } from "./paint-tool";
@@ -1159,7 +1161,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
                           >
                             {t(labelKey)}
                           </label>
-                          <input
+                          <NativeInput
                             id={id}
                             data-analytics-action="gravity_tune"
                             data-analytics-value={key}

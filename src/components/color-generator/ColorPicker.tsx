@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeButton } from "@/components/design-system/native-controls";
+
 import { useTranslations } from "next-intl";
 import { Popover } from "radix-ui";
 import { HexColorPicker } from "react-colorful";
@@ -18,7 +20,7 @@ export function ColorPicker({
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
-        <button
+        <NativeButton
           type="button"
           aria-label={t("picker")}
           className="size-9 shrink-0 rounded-full border border-foreground/15 shadow-sm outline-none transition-shadow hover:ring-4 hover:ring-ring/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

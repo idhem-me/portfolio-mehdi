@@ -6,6 +6,7 @@ import {
   useId,
   useContext,
   useState,
+  useEffect,
   type ReactNode,
 } from "react";
 import { PortalContext, registerPortalRoot } from "@primer/react";
@@ -22,6 +23,19 @@ const Context = createContext<{
 export function DesignSystemProvider({ children }: { children: ReactNode }) {
   const [designSystem, setDesignSystem] = useState<DesignSystem>("mehdi");
   const { resolvedTheme } = useTheme();
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.designSystem = designSystem;
+    if (designSystem === "github") {
+      root.dataset.colorMode = resolvedTheme === "dark" ? "dark" : "light";
+      root.dataset.lightTheme = "light";
+      root.dataset.darkTheme = "dark";
+    } else {
+      delete root.dataset.colorMode;
+      delete root.dataset.lightTheme;
+      delete root.dataset.darkTheme;
+    }
+  }, [designSystem, resolvedTheme]);
   return (
     <Context.Provider value={{ designSystem, setDesignSystem }}>
       <PrimerThemeProvider

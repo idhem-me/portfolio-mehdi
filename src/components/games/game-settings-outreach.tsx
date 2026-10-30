@@ -1,5 +1,7 @@
 "use client";
 
+import { NativeInput, NativeTextarea } from "@/components/design-system/native-controls";
+
 import { useState } from "react";
 import { Check, Loader2, MessageSquare, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,9 +34,9 @@ export function GameSettingsOutreach({
   const [message, setMessage] = useState("");
   const [replyEmail, setReplyEmail] = useState("");
   const [honeypot, setHoneypot] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "sending" | "sent" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle",
+  );
   const [error, setError] = useState("");
   const [shareState, setShareState] = useState<"idle" | "copied" | "shared">(
     "idle",
@@ -61,7 +63,8 @@ export function GameSettingsOutreach({
         });
       }
     } catch (shareError) {
-      if (shareError instanceof Error && shareError.name === "AbortError") return;
+      if (shareError instanceof Error && shareError.name === "AbortError")
+        return;
       try {
         await navigator.clipboard.writeText(url);
         setShareState("copied");
@@ -144,11 +147,7 @@ export function GameSettingsOutreach({
         Retour
       </Button>
       <Button type="button" variant="secondary" onClick={() => void share()}>
-        {shareState === "idle" ? (
-          <Share2 />
-        ) : (
-          <Check aria-hidden />
-        )}
+        {shareState === "idle" ? <Share2 /> : <Check aria-hidden />}
         {shareState === "copied"
           ? "Lien copié"
           : shareState === "shared"
@@ -161,8 +160,8 @@ export function GameSettingsOutreach({
             Retour : {gameName}
           </DialogTitle>
           <DialogDescription className="mt-2 text-sm text-muted-foreground">
-            Ton message m’est envoyé directement. Laisse un email si tu veux
-            une réponse.
+            Ton message m’est envoyé directement. Laisse un email si tu veux une
+            réponse.
           </DialogDescription>
 
           {status === "sent" ? (
@@ -177,7 +176,7 @@ export function GameSettingsOutreach({
             <>
               <label className="mt-4 grid gap-2 text-sm">
                 <span className="text-muted-foreground">Message</span>
-                <textarea
+                <NativeTextarea
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   rows={6}
@@ -201,7 +200,7 @@ export function GameSettingsOutreach({
                   disabled={status === "sending"}
                 />
               </label>
-              <input
+              <NativeInput
                 type="text"
                 name="company_url_hp"
                 tabIndex={-1}

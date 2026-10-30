@@ -6,16 +6,28 @@ import {
   type ComponentProps,
   type FunctionComponent,
   type ReactNode,
+  type Ref,
 } from "react";
 import { Button as PrimerButton, IconButton } from "@primer/react";
-import { Button } from "@/components/ui/button";
-import {
-  SidebarMenuButton,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
-import { PanelLeft } from "lucide-react";
+import { Button } from "./mehdi-button";
 import { useDesignSystem } from "./provider";
+
+/** Compose both refs when a slotted link and its wrapper each need the element. */
+function composeRefs(...refs: (Ref<HTMLElement> | undefined)[]) {
+  return (node: HTMLElement | null) => {
+    const cleanups = refs.map((ref) => {
+      if (typeof ref === "function") return ref(node);
+      if (ref) ref.current = node;
+    });
+    return () =>
+      refs.forEach((ref, index) => {
+        const cleanup = cleanups[index];
+        if (typeof cleanup === "function") cleanup();
+        else if (typeof ref === "function") ref(null);
+        else if (ref) ref.current = null;
+      });
+  };
+}
 
 /** Polymorphic bridge: keep the original link, ref, click tracking and destination. */
 export function DesignSystemButton({
@@ -53,15 +65,37 @@ export function DesignSystemButton({
       !isValidElement<Record<string, unknown> & { children?: ReactNode }>(child)
     )
       throw new Error("DesignSystemButton requires one element");
+    const slotProps: Record<string, unknown> = { ...props, ...child.props };
+    for (const [key, handler] of Object.entries(child.props)) {
+      const parentHandler = (props as Record<string, unknown>)[key];
+      if (
+        /^on[A-Z]/.test(key) &&
+        typeof handler === "function" &&
+        typeof parentHandler === "function"
+      ) {
+        slotProps[key] = (...args: unknown[]) => {
+          handler(...args);
+          parentHandler(...args);
+        };
+      }
+    }
+    if (props.style || child.props.style)
+      slotProps.style = { ...props.style, ...(child.props.style as object) };
+    if (props.ref && child.props.ref)
+      slotProps.ref = composeRefs(
+        props.ref as Ref<HTMLElement>,
+        child.props.ref as Ref<HTMLElement>,
+      );
     return (
       <PrimerButton
         as={child.type as FunctionComponent<Record<string, unknown>>}
-        {...props}
-        {...child.props}
+        {...slotProps}
         variant={primerVariant}
         size={primerSize}
         labelWrap
-        className="ds-home-button"
+        className={["ds-button", className, child.props.className]
+          .filter(Boolean)
+          .join(" ")}
       >
         {child.props.children}
       </PrimerButton>
@@ -75,7 +109,7 @@ export function DesignSystemButton({
         aria-labelledby={undefined}
         icon={() => <>{children}</>}
         variant={primerVariant}
-        className={className}
+        className={["ds-button", className].filter(Boolean).join(" ")}
       />
     );
   }
@@ -84,82 +118,9 @@ export function DesignSystemButton({
       {...props}
       variant={primerVariant}
       size={primerSize}
-      className={className}
+      className={["ds-button", className].filter(Boolean).join(" ")}
     >
       {children}
     </PrimerButton>
-  );
-}
-
-export function DesignSystemSidebarButton({
-  asChild,
-  children,
-  className,
-  ...props
-}: ComponentProps<typeof SidebarMenuButton>) {
-  const { designSystem } = useDesignSystem();
-  if (designSystem === "mehdi")
-    return (
-      <SidebarMenuButton {...props} {...{ asChild, className }}>
-        {children}
-      </SidebarMenuButton>
-    );
-  let content = (
-    <PrimerButton variant="invisible" alignContent="start">
-      {children}
-    </PrimerButton>
-  );
-  if (asChild) {
-    const child = Children.only(children);
-    if (
-      !isValidElement<Record<string, unknown> & { children?: ReactNode }>(child)
-    )
-      throw new Error("DesignSystemSidebarButton requires one element");
-    content = (
-      <PrimerButton
-        as={child.type as FunctionComponent<Record<string, unknown>>}
-        {...child.props}
-        variant="invisible"
-        alignContent="start"
-      >
-        {child.props.children}
-      </PrimerButton>
-    );
-  }
-  return (
-    <SidebarMenuButton
-      {...props}
-      asChild
-      className={`ds-nav-button ${className ?? ""}`}
-    >
-      {content}
-    </SidebarMenuButton>
-  );
-}
-
-/** Preserve the shell's responsive behavior while changing the actual control. */
-export function DesignSystemSidebarTrigger({
-  onClick,
-  ...props
-}: ComponentProps<typeof SidebarTrigger>) {
-  const { designSystem } = useDesignSystem();
-  const { state, toggleSidebar } = useSidebar();
-  if (designSystem === "mehdi")
-    return <SidebarTrigger {...props} onClick={onClick} />;
-  return (
-    <DesignSystemButton
-      {...props}
-      data-sidebar="trigger"
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon-sm"
-      aria-label={state === "expanded" ? "Fermer le panel" : "Ouvrir le panel"}
-      onClick={(event) => {
-        onClick?.(event);
-        toggleSidebar();
-      }}
-    >
-      <PanelLeft />
-    </DesignSystemButton>
   );
 }

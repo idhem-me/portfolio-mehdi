@@ -2,7 +2,7 @@
 
 import { Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { DesignSystemButton as Button } from "@/components/design-system/button";
+import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 
 export function MobileMenuButton({ close = false }: { close?: boolean }) {
