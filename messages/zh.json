@@ -116,5 +116,43 @@
     "failed": "合并失败，请重试或移除相关文档。",
     "readFailed": "无法读取此文件，请尝试重新添加。",
     "list": "待合并的文档"
+  },
+  "colorGenerator": {
+    "title": "配色生成器",
+    "intro": "创建和谐的色阶，并将颜色导出用于设计和开发。",
+    "base": "基础颜色",
+    "picker": "选择颜色",
+    "hex": "HEX 代码",
+    "inputMode": "输入模式",
+    "invalidHex": "请输入有效的 3 位或 6 位 HEX 代码。",
+    "algorithm": "算法",
+    "contrast": "对比度偏移",
+    "naming": "命名模式",
+    "count": "色阶数量",
+    "less": "减少色阶",
+    "more": "增加色阶",
+    "palette": "调色板",
+    "name": "调色板名称",
+    "copySvg": "复制 SVG / Figma",
+    "downloadSvg": "下载 SVG",
+    "copy": "复制",
+    "empty": "空",
+    "export": "代码导出",
+    "format": "输出格式",
+    "space": "色彩空间",
+    "copied": "已复制！",
+    "copyError": "复制失败。请手动选择并复制内容。",
+    "generateSection": "1. 创建调色板",
+    "previewSection": "2. 浏览色阶",
+    "codeSection": "3. 在代码中使用",
+    "presetsIntro": "为你的设计准备的配色方案，可自由调整。",
+    "presetNames": {
+      "violet": "Violet",
+      "gray": "Gray",
+      "warning": "Warning",
+      "success": "Success",
+      "danger": "Error"
+    },
+    "closePicker": "关闭颜色选择器"
   }
 }

@@ -116,5 +116,43 @@
     "failed": "Zusammenführen fehlgeschlagen. Erneut versuchen oder betroffene Dokumente entfernen.",
     "readFailed": "Datei konnte nicht gelesen werden. Fügen Sie sie erneut hinzu.",
     "list": "Zusammenzuführende Dokumente"
+  },
+  "colorGenerator": {
+    "title": "Farbpaletten-Generator",
+    "intro": "Erstelle harmonische Farbtöne und exportiere Farben für Design und Entwicklung.",
+    "base": "Basisfarbe",
+    "picker": "Farbe wählen",
+    "hex": "HEX-Code",
+    "inputMode": "Eingabemodus",
+    "invalidHex": "Gültigen HEX-Code mit 3 oder 6 Zeichen eingeben.",
+    "algorithm": "Algorithmus",
+    "contrast": "Kontrastverschiebung",
+    "naming": "Benennungsmuster",
+    "count": "Anzahl der Farbtöne",
+    "less": "Weniger Farbtöne",
+    "more": "Mehr Farbtöne",
+    "palette": "Farbpalette",
+    "name": "Palettenname",
+    "copySvg": "SVG / Figma kopieren",
+    "downloadSvg": "SVG herunterladen",
+    "copy": "Kopieren",
+    "empty": "Leer",
+    "export": "Code exportieren",
+    "format": "Ausgabeformat",
+    "space": "Farbraum",
+    "copied": "Kopiert!",
+    "copyError": "Kopieren fehlgeschlagen. Inhalt manuell auswählen und kopieren.",
+    "generateSection": "1. Palette erstellen",
+    "previewSection": "2. Farbtöne erkunden",
+    "codeSection": "3. Im Code verwenden",
+    "presetsIntro": "Fertige Paletten zum Anpassen für deine Designs.",
+    "presetNames": {
+      "violet": "Violet",
+      "gray": "Gray",
+      "warning": "Warning",
+      "success": "Success",
+      "danger": "Error"
+    },
+    "closePicker": "Farbauswahl schließen"
   }
 }

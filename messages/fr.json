@@ -116,5 +116,43 @@
     "failed": "La fusion a échoué. Réessayez ou retirez les documents concernés.",
     "readFailed": "Impossible de lire ce fichier. Réessayez de l’ajouter.",
     "list": "Documents à fusionner"
+  },
+  "colorGenerator": {
+    "title": "Générateur de palettes",
+    "intro": "Créez des nuances harmonieuses et exportez vos couleurs pour le design et le développement.",
+    "base": "Couleur de base",
+    "picker": "Choisir une couleur",
+    "hex": "Code HEX",
+    "inputMode": "Mode de saisie",
+    "invalidHex": "Saisissez un code HEX valide à 3 ou 6 caractères.",
+    "algorithm": "Algorithme",
+    "contrast": "Décalage de contraste",
+    "naming": "Nommage des nuances",
+    "count": "Nombre de nuances",
+    "less": "Moins de nuances",
+    "more": "Plus de nuances",
+    "palette": "Palette de couleurs",
+    "name": "Nom de la palette",
+    "copySvg": "Copier SVG / Figma",
+    "downloadSvg": "Télécharger SVG",
+    "copy": "Copier",
+    "empty": "Vide",
+    "export": "Export du code",
+    "format": "Format de sortie",
+    "space": "Espace colorimétrique",
+    "copied": "Copié !",
+    "copyError": "Copie impossible. Sélectionnez et copiez le contenu manuellement.",
+    "generateSection": "1. Créer sa palette",
+    "previewSection": "2. Explorer les nuances",
+    "codeSection": "3. Utiliser dans le code",
+    "presetsIntro": "Des palettes prêtes à personnaliser pour vos designs.",
+    "presetNames": {
+      "violet": "Violet",
+      "gray": "Gray",
+      "warning": "Warning",
+      "success": "Success",
+      "danger": "Error"
+    },
+    "closePicker": "Fermer le sélecteur"
   }
 }

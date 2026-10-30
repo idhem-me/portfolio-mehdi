@@ -116,5 +116,43 @@
     "failed": "Merging failed. Try again or remove the affected documents.",
     "readFailed": "Unable to read this file. Try adding it again.",
     "list": "Documents to merge"
+  },
+  "colorGenerator": {
+    "title": "Color palette generator",
+    "intro": "Create harmonious shades and export your colors for design and development.",
+    "base": "Base color",
+    "picker": "Choose a color",
+    "hex": "HEX code",
+    "inputMode": "Input mode",
+    "invalidHex": "Enter a valid 3- or 6-character HEX code.",
+    "algorithm": "Algorithm",
+    "contrast": "Contrast shift",
+    "naming": "Naming pattern",
+    "count": "Shade count",
+    "less": "Fewer shades",
+    "more": "More shades",
+    "palette": "Color palette",
+    "name": "Palette name",
+    "copySvg": "Copy SVG / Figma",
+    "downloadSvg": "Download SVG",
+    "copy": "Copy",
+    "empty": "Empty",
+    "export": "Code export",
+    "format": "Output format",
+    "space": "Color space",
+    "copied": "Copied!",
+    "copyError": "Copy failed. Select and copy the content manually.",
+    "generateSection": "1. Create your palette",
+    "previewSection": "2. Explore the shades",
+    "codeSection": "3. Use in code",
+    "presetsIntro": "Ready-to-customize palettes for your designs.",
+    "presetNames": {
+      "violet": "Violet",
+      "gray": "Gray",
+      "warning": "Warning",
+      "success": "Success",
+      "danger": "Error"
+    },
+    "closePicker": "Close color picker"
   }
 }
