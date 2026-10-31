@@ -2,15 +2,7 @@ import { lookup } from "node:dns/promises";
 import { request as httpRequest, type IncomingMessage } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { isIP } from "node:net";
-import { addAbortSignal, Readable } from "node:stream";
-import { CheerioCrawler } from "@crawlee/cheerio";
-import {
-  Configuration,
-  type BaseHttpClient,
-  type HttpRequest,
-  type HttpResponse,
-  type StreamingHttpResponse,
-} from "@crawlee/core";
+import { addAbortSignal, type Readable } from "node:stream";
 import { createBrotliDecompress, createGunzip, createInflate } from "node:zlib";
 
 export const MAX_PRODUCT_HTML_BYTES = 1_048_576;
@@ -165,15 +157,11 @@ function requestPage(
   url: URL,
   address: Address,
   signal: AbortSignal,
-  headers?: Record<string, string>,
 ): Promise<IncomingMessage> {
   return new Promise((resolve, reject) => {
     const request = (url.protocol === "https:" ? httpsRequest : httpRequest)(
       url,
-      {
-        ...productRequestOptions(address, signal),
-        headers: { ...productRequestOptions(address, signal).headers, ...headers },
-      },
+      productRequestOptions(address, signal),
       resolve,
     );
     request.on("error", reject);
@@ -291,6 +279,12 @@ export function productPrice(value: string | undefined): number | null {
     : null;
 }
 
+function displayedProductPrice(value: string | undefined): number | null {
+  if (!value || /[-−]/.test(value)) return null;
+  const numeric = decode(value).replace(/[^\d.,]/g, "");
+  return productPrice(numeric);
+}
+
 /** Small metadata scanner only; it never executes scripts or returns merchant HTML. */
 export function parseProductMetadata(
   html: string,
@@ -369,11 +363,12 @@ export function parseProductMetadata(
       ?.replace(/<[^>]*>/g, " ")
       .replace(/&nbsp;|&#160;/gi, " ")
       .trim();
-  const visibleCurrency = /(?:€|\bEUR\b)/i.test(visiblePrice ?? "")
+  const visiblePriceText = decode(visiblePrice ?? "");
+  const visibleCurrency = /(?:€|\bEUR\b)/i.test(visiblePriceText)
     ? "EUR"
-    : /(?:\$|\bUSD\b)/i.test(visiblePrice ?? "")
+    : /(?:\$|\bUSD\b)/i.test(visiblePriceText)
       ? "USD"
-      : /(?:£|\bGBP\b)/i.test(visiblePrice ?? "")
+      : /(?:£|\bGBP\b)/i.test(visiblePriceText)
         ? "GBP"
         : null;
   const finalCurrency = currency ?? visibleCurrency;
@@ -396,11 +391,15 @@ export function parseProductMetadata(
     price:
       finalCurrency && finalCurrency !== "EUR"
         ? null
-        : productPrice(
-            structuredPrice ??
-              first("product:price:amount", "og:price:amount", "price") ??
-              (visibleCurrency === "EUR" ? visiblePrice : undefined),
-          ),
+        : structuredPrice ||
+            first("product:price:amount", "og:price:amount", "price")
+          ? productPrice(
+              structuredPrice ??
+                first("product:price:amount", "og:price:amount", "price"),
+            )
+          : visibleCurrency === "EUR"
+            ? displayedProductPrice(visiblePrice)
+            : null,
     currency: finalCurrency,
   };
 }
@@ -409,153 +408,7 @@ type Dependencies = {
   resolve?: Resolver;
   request?: typeof requestPage;
   timeoutMs?: number;
-  crawlee?: (url: string) => Promise<ProductMetadata | null>;
 };
-
-/** Crawlee's HTTP client, constrained to the same DNS-pinned transport as the native extractor. */
-const safeCrawleeClient: BaseHttpClient = {
-  async sendRequest<TResponseType extends "json" | "text" | "buffer">(
-    request: HttpRequest<TResponseType>,
-  ): Promise<HttpResponse<TResponseType>> {
-    let url = productUrl(String(request.url));
-    const redirects: URL[] = [];
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-    const onAbort = () => controller.abort();
-    request.signal?.addEventListener("abort", onAbort, { once: true });
-    try {
-      for (let hop = 0; hop <= 3; hop++) {
-        const address = await resolveProductAddress(url);
-        const response = await requestPage(
-          url,
-          address,
-          controller.signal,
-          Object.fromEntries(
-            Object.entries(request.headers ?? {}).flatMap(([key, value]) =>
-              typeof value === "string" ? [[key, value]] : [],
-            ),
-          ),
-        );
-        const status = response.statusCode ?? 0;
-        if (REDIRECTS.has(status)) {
-          const location = response.headers.location;
-          response.destroy();
-          if (!location || hop === 3) throw new ProductMetadataError("unavailable");
-          const next = productUrl(new URL(location, url).href);
-          if (url.protocol === "https:" && next.protocol !== "https:")
-            throw new ProductMetadataError("blocked_url");
-          redirects.push(next);
-          url = next;
-          continue;
-        }
-        if (status < 200 || status >= 300) {
-          response.destroy();
-          throw new ProductMetadataError("unavailable");
-        }
-        const body = await readProductHtml(response, controller.signal);
-        const base = {
-          url: url.href,
-          ip: address.address,
-          statusCode: status,
-          headers: Object.fromEntries(
-            Object.entries(response.headers).map(([key, value]) => [
-              key,
-              Array.isArray(value) ? value.join(", ") : String(value ?? ""),
-            ]),
-          ),
-          trailers: {},
-          complete: true,
-          redirectUrls: redirects,
-          request,
-        };
-        return {
-          ...base,
-          body:
-            request.responseType === "buffer" ? Buffer.from(body) : body,
-        } as HttpResponse<TResponseType>;
-      }
-      throw new ProductMetadataError("unavailable");
-    } finally {
-      clearTimeout(timer);
-      request.signal?.removeEventListener("abort", onAbort);
-    }
-  },
-  async stream(request): Promise<StreamingHttpResponse> {
-    const result = await this.sendRequest(request);
-    const body = Buffer.isBuffer(result.body)
-      ? result.body
-      : Buffer.from(String(result.body));
-    const stream = Readable.from([body]);
-    return {
-      url: result.url,
-      ip: result.ip,
-      statusCode: result.statusCode,
-      statusMessage: result.statusMessage,
-      headers: result.headers,
-      trailers: result.trailers,
-      complete: result.complete,
-      redirectUrls: result.redirectUrls,
-      request: result.request,
-      stream,
-      downloadProgress: { on: () => undefined, percent: 100, transferred: body.length },
-      uploadProgress: { on: () => undefined, percent: 100, transferred: 0 },
-    } as StreamingHttpResponse;
-  },
-};
-
-async function extractProductMetadataWithCrawlee(
-  value: string,
-): Promise<ProductMetadata | null> {
-  let result: ProductMetadata | null = null;
-  const crawler = new CheerioCrawler({
-    configuration: new Configuration({ persistStorage: false }),
-    httpClient: safeCrawleeClient,
-    maxRequestsPerCrawl: 1,
-    maxRequestRetries: 0,
-    maxConcurrency: 1,
-    useSessionPool: false,
-    async requestHandler({ $, request }) {
-      const pageUrl = new URL(request.url);
-      const parsed = parseProductMetadata($.html(), pageUrl);
-      const title = $("#productTitle, [itemprop='name']").first().text().trim();
-      const image = $("#landingImage, #imgBlkFront, [itemprop='image']")
-        .first()
-        .attr("data-old-hires") ?? $("#landingImage, #imgBlkFront, [itemprop='image']")
-        .first()
-        .attr("src");
-      const visiblePrice = $(
-        "#corePrice_feature_div .a-offscreen, #price_inside_buybox, [itemprop='price'], .product-price",
-      )
-        .first()
-        .text()
-        .trim();
-      let imageUrl = parsed.image_url;
-      try {
-        if (!imageUrl && image)
-          imageUrl = productUrl(new URL(image, pageUrl).href).href;
-      } catch {
-        imageUrl = null;
-      }
-      const isEuro = /€|\bEUR\b/i.test(visiblePrice);
-      result = {
-        title: parsed.title ?? (decode(title).slice(0, 200) || null),
-        image_url: imageUrl,
-        price:
-          parsed.price ??
-          (isEuro
-            ? productPrice(visiblePrice.replace(/€|\bEUR\b/gi, "").trim())
-            : null),
-        currency: parsed.currency ?? (isEuro ? "EUR" : null),
-      };
-    },
-  });
-  try {
-    await crawler.run([productUrl(value).href]);
-  } catch {
-    return null;
-  }
-  return result;
-}
 
 export async function extractProductMetadata(
   value: string,
@@ -607,18 +460,7 @@ export async function extractProductMetadata(
       const primary = parseProductMetadata(html, url);
       if (primary.title && primary.image_url && primary.price !== null)
         return primary;
-      const supplemental = dependencies.crawlee
-        ? await dependencies.crawlee(url.href)
-        : dependencies.request || dependencies.resolve
-          ? null
-          : await extractProductMetadataWithCrawlee(url.href);
-      if (!supplemental) return primary;
-      return {
-        title: primary.title ?? supplemental.title,
-        image_url: primary.image_url ?? supplemental.image_url,
-        price: primary.price ?? supplemental.price,
-        currency: primary.currency ?? supplemental.currency,
-      };
+      return primary;
     }
     throw new ProductMetadataError("unavailable");
   } catch (error) {
