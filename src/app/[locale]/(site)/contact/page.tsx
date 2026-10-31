@@ -87,7 +87,7 @@ async function ContactContent({ params }: Props) {
       <section>
         <BrowserWindow>
           <div className="space-y-4">
-            <Card className="flex-row items-center gap-4 p-3 sm:gap-5 sm:p-4">
+            <Card className="min-h-[120px] flex-row items-center gap-4 p-3 sm:gap-5 sm:p-4">
               <div className="relative w-14 shrink-0 self-stretch overflow-hidden rounded-lg ring-1 ring-foreground/5 sm:w-16">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
