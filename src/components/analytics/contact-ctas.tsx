@@ -1,6 +1,7 @@
 "use client";
 
 import type { SVGProps } from "react";
+import { Mail } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { TrackedAnchor } from "@/components/analytics/tracked-link";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
@@ -17,16 +18,40 @@ export function ContactMailtoButton() {
   const t = useTranslations("contact");
 
   return (
-    <Button asChild variant="outline" size="sm" className="mt-2 w-full">
+    <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="w-full justify-start gap-2 font-normal"
+    >
       <TrackedAnchor
         href={`mailto:${profileMeta.email}`}
         event={AnalyticsEvents.contact_cta}
         eventProps={{ action: "mailto" }}
         {...winkOn}
       >
+        <Mail className="size-4 shrink-0" aria-hidden />
         {t("openMail")}
       </TrackedAnchor>
     </Button>
+  );
+}
+
+function PlatformIcon({
+  platform,
+}: {
+  platform: "linkedin" | "fiverr" | "malt";
+}) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/img/logos/${platform}.svg`}
+      alt=""
+      width={16}
+      height={16}
+      className="size-4 shrink-0 opacity-80 dark:invert"
+      aria-hidden
+    />
   );
 }
 
@@ -76,7 +101,7 @@ export function ContactPhoneLink() {
             asChild
             variant="outline"
             size="sm"
-            className="justify-start gap-2 font-normal"
+            className="w-full justify-start gap-2 font-normal"
           >
             <a
               href={href}
@@ -104,7 +129,12 @@ export function ContactLinkedInButton() {
   const t = useTranslations("contact");
 
   return (
-    <Button asChild variant="outline" size="sm">
+    <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="w-full justify-start gap-2 font-normal"
+    >
       <TrackedAnchor
         href={profileMeta.linkedin}
         target="_blank"
@@ -113,7 +143,8 @@ export function ContactLinkedInButton() {
         eventProps={{ action: "linkedin" }}
         {...winkOn}
       >
-        {t("viewProfile")}
+        <PlatformIcon platform="linkedin" />
+        LinkedIn · {t("viewProfile")}
       </TrackedAnchor>
     </Button>
   );
@@ -123,7 +154,12 @@ export function ContactFiverrButton() {
   const t = useTranslations("contact");
 
   return (
-    <Button asChild variant="outline" size="sm">
+    <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="w-full justify-start gap-2 font-normal"
+    >
       <TrackedAnchor
         href={profileMeta.fiverr}
         target="_blank"
@@ -132,7 +168,8 @@ export function ContactFiverrButton() {
         eventProps={{ action: "fiverr" }}
         {...winkOn}
       >
-        {t("viewProfile")}
+        <PlatformIcon platform="fiverr" />
+        Fiverr · {t("viewProfile")}
       </TrackedAnchor>
     </Button>
   );
@@ -142,7 +179,12 @@ export function ContactMaltButton() {
   const t = useTranslations("contact");
 
   return (
-    <Button asChild variant="outline" size="sm">
+    <Button
+      asChild
+      variant="outline"
+      size="sm"
+      className="w-full justify-start gap-2 font-normal"
+    >
       <TrackedAnchor
         href={profileMeta.malt}
         target="_blank"
@@ -151,7 +193,8 @@ export function ContactMaltButton() {
         eventProps={{ action: "malt" }}
         {...winkOn}
       >
-        {t("viewProfile")}
+        <PlatformIcon platform="malt" />
+        Malt · {t("viewProfile")}
       </TrackedAnchor>
     </Button>
   );

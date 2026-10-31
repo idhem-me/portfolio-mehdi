@@ -1,6 +1,6 @@
 ---
 {
   "title": "Me contacter",
-  "intro": "Une idée de projet, une opportunité, ou simplement envie d’échanger sur le design produit ? Écrivez-moi."
+  "intro": "Vous avez un projet à lancer ou une expérience produit à faire évoluer ? Parlons-en."
 }
 ---

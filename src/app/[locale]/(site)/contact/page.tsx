@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Mail, MessageCircle } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
@@ -39,27 +40,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         routing.locales.map((l) => [
           l,
           l === routing.defaultLocale ? "/contact" : `/${l}/contact`,
-        ])
+        ]),
       ),
     },
   };
 }
 
-function PlatformLogo({ src }: { src: string }) {
+export default function ContactPage(props: Props) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt=""
-      width={16}
-      height={16}
-      className="size-4 opacity-80 dark:invert"
-      aria-hidden
-    />
+    <Suspense
+      fallback={
+        <main className="mx-auto w-full max-w-3xl px-6 py-12" aria-busy="true">
+          <div className="h-36 animate-pulse rounded-xl bg-muted" />
+        </main>
+      }
+    >
+      <ContactContent {...props} />
+    </Suspense>
   );
 }
 
-export default async function ContactPage({ params }: Props) {
+async function ContactContent({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("contact");
@@ -83,10 +84,10 @@ export default async function ContactPage({ params }: Props) {
 
       <Separator className="my-10" />
 
-      <section className="space-y-6">
+      <section>
         <BrowserWindow>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Card className="h-full min-h-[120px] flex-row items-center gap-4 p-3 sm:gap-5 sm:p-4">
+          <div className="space-y-4">
+            <Card className="flex-row items-center gap-4 p-3 sm:gap-5 sm:p-4">
               <div className="relative w-14 shrink-0 self-stretch overflow-hidden rounded-lg ring-1 ring-foreground/5 sm:w-16">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -106,54 +107,42 @@ export default async function ContactPage({ params }: Props) {
                 />
               </div>
               <CardHeader className="min-w-0 flex-1 gap-0.5 p-0">
-                <CardTitle className="truncate tracking-tight">Mehdi</CardTitle>
+                <CardTitle className="truncate tracking-tight">
+                  {profileMeta.name}
+                </CardTitle>
                 <CardDescription className="truncate">
-                  Monteyremard
+                  {profileMeta.role} · {profileMeta.locations.join(" · ")}
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-                <Mail className="size-4 text-muted-foreground" aria-hidden />
-                {t("email")}
-              </p>
-              <CopyEmailButton />
-              <ContactMailtoButton />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <section className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
+                <p className="mb-3 flex items-center gap-2 text-sm font-medium">
+                  <Mail className="size-4 text-muted-foreground" aria-hidden />
+                  {t("email")}
+                </p>
+                <div className="space-y-2">
+                  <CopyEmailButton />
+                  <ContactMailtoButton />
+                </div>
+              </section>
+
+              <section className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
+                <p className="mb-3 flex items-center gap-2 text-sm font-medium">
+                  <MessageCircle
+                    className="size-4 text-muted-foreground"
+                    aria-hidden
+                  />
+                  {t("message")}
+                </p>
+                <ContactPhoneLink />
+              </section>
             </div>
 
-            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-                <MessageCircle
-                  className="size-4 text-muted-foreground"
-                  aria-hidden
-                />
-                {t("message")}
-              </p>
-              <ContactPhoneLink />
-            </div>
-
-            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-                <PlatformLogo src="/img/logos/linkedin.svg" />
-                LinkedIn
-              </p>
+            <div className="grid gap-2 sm:grid-cols-3">
               <ContactLinkedInButton />
-            </div>
-
-            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-                <PlatformLogo src="/img/logos/fiverr.svg" />
-                Fiverr
-              </p>
               <ContactFiverrButton />
-            </div>
-
-            <div className="rounded-xl bg-muted/40 p-4 ring-1 ring-foreground/5">
-              <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-                <PlatformLogo src="/img/logos/malt.svg" />
-                Malt
-              </p>
               <ContactMaltButton />
             </div>
           </div>
