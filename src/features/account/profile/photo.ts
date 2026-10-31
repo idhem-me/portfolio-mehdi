@@ -1,4 +1,7 @@
-export async function encodePhoto(file: File) {
+export async function encodePhoto(
+  file: File,
+  options: { maxDimension?: number } = {},
+) {
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type))
     throw Error("Choisis une photo au format JPEG, PNG ou WebP.");
   if (file.size > 5_000_000)
@@ -16,7 +19,10 @@ export async function encodePhoto(file: File) {
       throw Error(
         "Cette photo est trop grande. Choisis une image plus petite.",
       );
-    const scale = Math.min(1, 256 / Math.max(bitmap.width, bitmap.height));
+    const scale = Math.min(
+      1,
+      (options.maxDimension ?? 256) / Math.max(bitmap.width, bitmap.height),
+    );
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(bitmap.width * scale));
     canvas.height = Math.max(1, Math.round(bitmap.height * scale));

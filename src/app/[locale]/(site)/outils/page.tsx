@@ -7,6 +7,7 @@ import {
   ImageDown,
   Images,
   QrCode,
+  Gift,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
@@ -35,6 +36,27 @@ export default async function ToolsPage({ params }: Props) {
         </h1>
         <p className="text-muted-foreground">{t("intro")}</p>
       </header>
+      <a
+        href={`${locale === "fr" ? "" : `/${locale}`}/outils/listes-cadeaux`}
+        lang="fr"
+        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <Gift
+          aria-hidden="true"
+          className="size-6 shrink-0 text-muted-foreground"
+        />
+        <div className="min-w-0 flex-1 space-y-1">
+          <h2 className="font-semibold">Listes de cadeaux</h2>
+          <p className="text-sm text-muted-foreground">
+            Toutes tes envies, toutes les boutiques. Un lien à partager avec tes
+            proches.
+          </p>
+        </div>
+        <ArrowRight
+          aria-hidden="true"
+          className="size-5 shrink-0 rtl:rotate-180"
+        />
+      </a>
       <Link
         href="/outils/color-generator"
         className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

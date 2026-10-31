@@ -83,7 +83,7 @@ export function Select({
           sideOffset={6}
           collisionPadding={8}
           className={cn(
-            "ds-scope z-50 max-h-[min(20rem,var(--radix-select-content-available-height))] min-w-32 max-w-[calc(100vw-1rem)] overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md",
+            "ds-scope z-[110] max-h-[min(20rem,var(--radix-select-content-available-height))] min-w-32 max-w-[calc(100vw-1rem)] overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md",
             variant === "chip"
               ? "w-max min-w-(--radix-select-trigger-width)"
               : "w-(--radix-select-trigger-width)",
