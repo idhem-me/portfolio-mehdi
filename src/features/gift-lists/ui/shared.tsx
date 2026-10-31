@@ -1,9 +1,21 @@
 "use client";
-import { useId, useState, useSyncExternalStore, type ReactNode } from "react";
-import { Gift, ExternalLink, MessageCircle, Share2 } from "lucide-react";
+import {
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
+import {
+  Gift,
+  ExternalLink,
+  MessageCircle,
+  QrCode,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { QRCodeSVG } from "qrcode.react";
 import {
   Dialog,
   DialogContent,
@@ -33,29 +45,6 @@ export function WhatsAppShare({ title, url }: { title: string; url: string }) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
-        <Button
-          variant="primary"
-          type="button"
-          onClick={async () => {
-            setShareError("");
-            try {
-              if (navigator.share)
-                await navigator.share({ title, text: title, url });
-              else {
-                await navigator.clipboard.writeText(url);
-                setShareError("Lien copié.");
-              }
-            } catch (error) {
-              if (error instanceof Error && error.name === "AbortError") return;
-              setShareError(
-                "Le partage est indisponible. Copie le lien de la liste pour l’envoyer.",
-              );
-            }
-          }}
-        >
-          <Share2 className="size-4" aria-hidden="true" />
-          Partager
-        </Button>
         <Button variant="secondary" asChild>
           <a
             href={href}
@@ -97,6 +86,95 @@ export function WhatsAppShare({ title, url }: { title: string; url: string }) {
       {shareError && (
         <p role="status" className="text-sm text-muted-foreground">
           {shareError}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export function ShareQRCode({
+  value,
+  title,
+}: {
+  value: string;
+  title: string;
+}) {
+  const qrRef = useRef<SVGSVGElement>(null);
+  const [message, setMessage] = useState("");
+
+  async function shareQrCode() {
+    setMessage("");
+    const svg = qrRef.current;
+    if (!svg) return;
+
+    let objectUrl: string | undefined;
+    try {
+      const svgBlob = new Blob([new XMLSerializer().serializeToString(svg)], {
+        type: "image/svg+xml;charset=utf-8",
+      });
+      objectUrl = URL.createObjectURL(svgBlob);
+      const image = new Image();
+      image.src = objectUrl;
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error("QR image could not be loaded"));
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 512;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Canvas is unavailable");
+      context.fillStyle = "#fff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const png = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) =>
+          blob ? resolve(blob) : reject(new Error("QR image export failed")),
+          "image/png",
+        );
+      });
+      const file = new File([png], "qr-code-liste-cadeaux.png", {
+        type: "image/png",
+      });
+
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ title, files: [file] });
+      } else {
+        const downloadUrl = URL.createObjectURL(png);
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = file.name;
+        link.click();
+        URL.revokeObjectURL(downloadUrl);
+        setMessage("QR code téléchargé. Tu peux maintenant le joindre à un message.");
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      setMessage("Le QR code n’a pas pu être partagé. Réessaie.");
+    } finally {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <div className="rounded-xl bg-white p-3">
+        <QRCodeSVG
+          ref={qrRef}
+          value={value}
+          size={256}
+          className="size-[88px]"
+          title="QR code de partage de la liste"
+        />
+      </div>
+      <Button variant="secondary" type="button" onClick={() => void shareQrCode()}>
+        <QrCode className="size-4" aria-hidden="true" />
+        Partager le QR code
+      </Button>
+      {message && (
+        <p role="status" className="max-w-56 text-center text-xs text-muted-foreground">
+          {message}
         </p>
       )}
     </div>
@@ -317,9 +395,11 @@ export function Confirm({
 export function CopyLink({
   value,
   label = "Copier le lien",
+  variant = "outline",
 }: {
   value: string;
   label?: string;
+  variant?: "primary" | "outline" | "secondary";
 }) {
   const [copied, setCopied] = useState(false);
   const [manual, setManual] = useState(false);
@@ -327,7 +407,7 @@ export function CopyLink({
     <div className="space-y-2">
       <Button
         type="button"
-        variant="outline"
+        variant={variant}
         onClick={async () => {
           try {
             await navigator.clipboard.writeText(value);

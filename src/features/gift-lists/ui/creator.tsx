@@ -3,7 +3,6 @@ import { useState } from "react";
 import useSWR from "swr";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { QRCodeSVG } from "qrcode.react";
 import {
   ArrowLeft,
   Gift,
@@ -45,6 +44,7 @@ import {
   MerchantLink,
   Notice,
   giftRequest,
+  ShareQRCode,
 } from "./shared";
 
 const api = "/api/tetris/gifts";
@@ -417,30 +417,27 @@ export function CreatorList({ id }: { id: string }) {
                   <p className="break-all text-sm text-muted-foreground">
                     {share}
                   </p>
-                  <div className="flex flex-wrap items-start gap-3">
-                    <CopyLink value={share} />
-                    <Button asChild variant="ghost">
-                      <a
-                        href={`${prefix}/l/${data.list.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Voir la liste publique
-                        <span className="sr-only"> (nouvel onglet)</span>
-                      </a>
-                    </Button>
+                  <div className="space-y-3">
+                    <div className="flex flex-wrap items-start gap-3">
+                      <CopyLink value={share} variant="primary" />
+                      <Button asChild variant="ghost">
+                        <a
+                          href={`${prefix}/l/${data.list.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Voir la liste publique
+                          <span className="sr-only"> (nouvel onglet)</span>
+                        </a>
+                      </Button>
+                    </div>
+                    <WhatsAppShare title={data.list.title} url={share} />
                   </div>
                 </>
               )}
             </div>
             {share && (
-              <div className="rounded-xl bg-white p-3">
-                <QRCodeSVG
-                  value={share}
-                  size={88}
-                  title="QR code de partage de la liste"
-                />
-              </div>
+              <ShareQRCode value={share} title={data.list.title} />
             )}
           </section>
           {data.activity.hidden ? (
@@ -590,7 +587,6 @@ export function CreatorList({ id }: { id: string }) {
               );
             })}
           </div>
-          <WhatsAppShare title={data.list.title} url={share} />
           {editingList && (
             <ListForm
               initial={data.list}
