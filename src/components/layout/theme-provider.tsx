@@ -7,5 +7,11 @@ export function ThemeProvider({
   children,
   ...props
 }: React.ComponentProps<typeof NextThemesProvider>) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
+  // The root layout applies the initial theme before hydration. Keep the
+  // library's duplicate bootstrap inert when React mounts this provider.
+  return (
+    <NextThemesProvider {...props} scriptProps={{ type: "text/plain" }}>
+      {children}
+    </NextThemesProvider>
+  );
 }

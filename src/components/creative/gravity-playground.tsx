@@ -724,6 +724,56 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const { open, setOpen, isMobile, openMobile, setOpenMobile, state } =
     useSidebar();
   const rootRef = useRef<HTMLDivElement>(null);
+  // Home-screen web apps can restore a layout viewport before iOS has
+  // finished sizing the visible viewport. Keep both fixed controls together.
+  useEffect(() => {
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as Navigator & { standalone?: boolean }).standalone;
+    const root = rootRef.current;
+    if (!standalone || !root) return;
+    const anchors = root.querySelectorAll<HTMLElement>(
+      ":scope > [data-creative-hud]",
+    );
+    const viewport = window.visualViewport;
+    let frame = 0;
+    const align = () => {
+      if (viewport && Math.abs(viewport.scale - 1) > 0.01) return;
+      const width = viewport?.width ?? document.documentElement.clientWidth;
+      const left = width < 768
+        ? "0px"
+        : state === "collapsed"
+          ? "var(--sidebar-width-icon)"
+          : "var(--sidebar-width)";
+      for (const anchor of anchors) {
+        anchor.style.left = left;
+        anchor.style.right = "auto";
+        anchor.style.width = `calc(${width}px - ${left})`;
+      }
+    };
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(align);
+    };
+    align();
+    schedule();
+    viewport?.addEventListener("resize", schedule);
+    window.addEventListener("resize", schedule);
+    window.addEventListener("pageshow", schedule);
+    document.addEventListener("visibilitychange", schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      viewport?.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("pageshow", schedule);
+      document.removeEventListener("visibilitychange", schedule);
+      for (const anchor of anchors) {
+        anchor.style.removeProperty("left");
+        anchor.style.removeProperty("right");
+        anchor.style.removeProperty("width");
+      }
+    };
+  }, [state]);
   const playButtonRef = useRef<HTMLButtonElement>(null);
   const playSnapshotRef = useRef<PlaySnapshot | null>(null);
   const sessionRef = useRef<Session | null>(null);
@@ -1098,17 +1148,12 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       <div ref={rootRef} className="relative">
         {/* HUD in content column only — below sidebar (z-10), above physics (z-6). */}
         <div
-          className="pointer-events-none fixed top-[calc(max(1rem,env(safe-area-inset-top))+6.5rem)] z-[9] flex flex-col items-center gap-1.5 end-0"
-          style={
-            isMobile
-              ? { left: 0 }
-              : {
-                  left:
-                    state === "collapsed"
-                      ? "var(--sidebar-width-icon)"
-                      : "var(--sidebar-width)",
-                }
-          }
+          data-creative-hud
+          className={`pointer-events-none fixed top-[calc(max(1rem,env(safe-area-inset-top))+6.5rem)] z-[9] flex flex-col items-center gap-1.5 end-0 left-0 ${
+            state === "collapsed"
+              ? "md:left-[var(--sidebar-width-icon)]"
+              : "md:left-[var(--sidebar-width)]"
+          }`}
         >
           {active ? (
             <>
@@ -1202,14 +1247,12 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
         </div>
         <div
           data-paint-toolbar
-          className="pointer-events-none fixed top-[max(1rem,env(safe-area-inset-top))] end-2 md:end-0 z-[11] flex justify-center"
-          style={{
-            left: isMobile
-              ? "3.75rem"
-              : state === "collapsed"
-                ? "var(--sidebar-width-icon)"
-                : "var(--sidebar-width)",
-          }}
+          data-creative-hud
+          className={`pointer-events-none fixed top-[max(1rem,env(safe-area-inset-top))] end-0 left-0 z-[11] flex justify-center ${
+            state === "collapsed"
+              ? "md:left-[var(--sidebar-width-icon)]"
+              : "md:left-[var(--sidebar-width)]"
+          }`}
         >
           <PaintTool
             bridgeRef={paintBridge}
