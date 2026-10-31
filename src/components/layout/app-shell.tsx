@@ -15,9 +15,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { designSystem } = useDesignSystem();
 
+  const giftTool = pathname.startsWith("/outils/listes-cadeaux");
+
   return (
     <TooltipProvider>
-      <SidebarProvider defaultOpen>
+      <SidebarProvider
+        key={giftTool ? "gift-tool" : "site"}
+        defaultOpen={!giftTool}
+      >
         <AppSidebar />
         <SidebarInset
           className={

@@ -5,16 +5,20 @@ import type { ScoreDraft } from "../../tetris/auth/draft";
 export function GoogleSignIn({
   draft,
   disabled = false,
+  variant = "secondary",
+  label = "Se connecter avec Google",
 }: {
   draft?: ScoreDraft;
   disabled?: boolean;
+  variant?: "primary" | "secondary";
+  label?: string;
 }) {
   const state = useIdentityState();
   if (state.kind === "google") return null;
   return (
     <Button
       type="button"
-      variant="secondary"
+      variant={variant}
       className="identity-action"
       disabled={
         disabled ||
@@ -27,9 +31,7 @@ export function GoogleSignIn({
       aria-busy={state.busy === "login"}
       onClick={() => void login(draft)}
     >
-      {state.busy === "login"
-        ? "Connexion à Google…"
-        : "Se connecter avec Google"}
+      {state.busy === "login" ? "Connexion à Google…" : label}
     </Button>
   );
 }

@@ -27,6 +27,7 @@ type State = Selection & {
   googleAvailable: boolean;
   online: boolean;
   error: string;
+  authError: string;
   busy: "login" | "logout" | "profile" | null;
   scores: LocalScore[];
 };
@@ -41,6 +42,7 @@ const initial: State = {
   googleAvailable: false,
   online: true,
   error: "",
+  authError: "",
   busy: null,
   scores: [],
 };
@@ -238,12 +240,17 @@ export async function saveProfile(rawName: string, avatar: string | null) {
   }
 }
 let popupJob: Promise<void> | null = null;
-export function login(draft?: ScoreDraft): Promise<void> {
+export function login(
+  draft?: ScoreDraft,
+  options?: { switchAccount?: boolean },
+): Promise<void> {
   if (popupJob) return popupJob;
   if (state.busy) return Promise.resolve();
   if (!navigator.onLine) {
     emit({
       error:
+        "Connexion Google impossible hors connexion. Vérifie ton réseau, puis réessaie.",
+      authError:
         "Connexion Google impossible hors connexion. Vérifie ton réseau, puis réessaie.",
     });
     return Promise.resolve();
@@ -252,12 +259,15 @@ export function login(draft?: ScoreDraft): Promise<void> {
     emit({
       error:
         "Impossible de conserver cette partie. Reste sur cet écran et réessaie.",
+      authError:
+        "Impossible de conserver cette partie. Reste sur cet écran et réessaie.",
     });
     return Promise.resolve();
   }
   const popup = window.open(
     "/api/tetris/auth/google?popup=1&returnTo=" +
-      encodeURIComponent(location.pathname),
+      encodeURIComponent(location.pathname) +
+      (options?.switchAccount ? "&switchAccount=1" : ""),
     "tetris-google",
     "popup,width=500,height=680",
   );
@@ -265,10 +275,12 @@ export function login(draft?: ScoreDraft): Promise<void> {
     emit({
       error:
         "La fenêtre Google a été bloquée. Autorise les fenêtres de connexion, puis réessaie.",
+      authError:
+        "La fenêtre Google a été bloquée. Autorise les fenêtres de connexion, puis réessaie.",
     });
     return Promise.resolve();
   }
-  emit({ busy: "login", error: "" });
+  emit({ busy: "login", error: "", authError: "" });
   popupJob = new Promise<void>((resolve) => {
     let finishing = false;
     const finish = async (success: boolean) => {
@@ -285,6 +297,10 @@ export function login(draft?: ScoreDraft): Promise<void> {
           state.kind === "google"
             ? ""
             : "Connexion Google impossible ou annulée. Réessaie quand tu le souhaites.",
+        authError:
+          state.kind === "google"
+            ? ""
+            : "Connexion interrompue. Réessaie pour continuer.",
       });
       popupJob = null;
       resolve();
@@ -309,7 +325,7 @@ export function login(draft?: ScoreDraft): Promise<void> {
   return popupJob;
 }
 export async function logout() {
-  emit({ busy: "logout", error: "" });
+  emit({ busy: "logout", error: "", authError: "" });
   try {
     const r = await fetch("/api/tetris/auth", {
       method: "POST",
@@ -317,7 +333,7 @@ export async function logout() {
     });
     if (!r.ok) throw Error();
     ++generation;
-    emit({ ...select(local), busy: null, error: "" });
+    emit({ ...select(local), busy: null, error: "", authError: "" });
     return true;
   } catch {
     emit({

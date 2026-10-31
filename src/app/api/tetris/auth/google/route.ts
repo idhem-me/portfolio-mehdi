@@ -21,6 +21,9 @@ export async function GET(request: NextRequest) {
     options: {
       redirectTo: origin + "/api/tetris/auth/callback",
       skipBrowserRedirect: true,
+      ...(request.nextUrl.searchParams.get("switchAccount") === "1"
+        ? { queryParams: { prompt: "select_account" } }
+        : {}),
     },
   });
   if (error || !data.url) return context.apply(fallback());

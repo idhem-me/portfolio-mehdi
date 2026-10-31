@@ -75,16 +75,22 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
     await page
       .getByLabel("Titre de la liste", { exact: true })
       .fill("L’anniversaire de Camille");
-    await page
-      .getByLabel("Description (facultatif)", { exact: true })
-      .fill("Quelques idées pour mes 30 ans.");
+    await expect(
+      page.getByLabel("Description (facultatif)", { exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByLabel("Titre de la liste", { exact: true }),
+    ).toHaveAttribute("placeholder", "Les cadeaux de Fanny");
     await page
       .getByLabel("Instructions de participation (facultatif)", { exact: true })
       .fill("Contactez-moi pour mon IBAN.");
     await page.getByRole("switch", { name: "Mode Surprise" }).click();
     await expect(
       page.getByLabel("Précise l’occasion (facultatif)", { exact: true }),
-    ).toBeVisible();
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("combobox", { name: "Type de liste", exact: true }),
+    ).toContainText("Anniversaire");
     await page
       .getByRole("combobox", { name: "Type de liste", exact: true })
       .click();
@@ -479,12 +485,12 @@ test("anonymous creator and unavailable public list have usable empty states", a
   await page.goto("/outils/listes-cadeaux");
   await expect(
     page.getByRole("heading", {
-      name: "Connecte-toi pour créer une liste",
+      name: "Toutes tes envies, une seule liste",
       exact: true,
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Se connecter avec Google", exact: true }),
+    page.getByRole("button", { name: "Continuer avec Google", exact: true }),
   ).toBeVisible();
   await page.goto(`/l/${randomBytes(10).toString("hex")}`);
   await expect(

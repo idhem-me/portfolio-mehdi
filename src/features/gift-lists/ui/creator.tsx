@@ -4,12 +4,32 @@ import useSWR from "swr";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, Gift, Plus, Settings, EyeOff, Heart } from "lucide-react";
+import {
+  ArrowLeft,
+  Gift,
+  Plus,
+  Settings,
+  EyeOff,
+  Heart,
+  Share2,
+} from "lucide-react";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { GoogleSignIn } from "@/features/account/ui/google-sign-in";
-import { useIdentityState } from "@/features/account/client-store";
+import {
+  loadProfile,
+  login,
+  logout,
+  useIdentityState,
+} from "@/features/account/client-store";
 import { euro, type GiftList, type GiftItem, type OwnerDetail } from "../types";
 import { ListForm, ItemForm } from "./forms";
 import {
@@ -33,18 +53,146 @@ function SignIn({ retry }: { retry: () => void }) {
   return (
     <section className="space-y-5 rounded-2xl border border-border bg-card p-6">
       <Gift className="size-9 text-foreground" aria-hidden="true" />
-      <h2 className="text-xl font-semibold">
-        Connecte-toi pour créer une liste
-      </h2>
-      <p className="text-muted-foreground">
-        Tes proches pourront réserver sans compte.
-      </p>
-      <GoogleSignIn />
-      <Button variant="ghost" onClick={retry}>
-        Actualiser ma connexion
-      </Button>
-      {identity.error && <Notice error>{identity.error}</Notice>}
+      <div className="space-y-2">
+        <h2 className="text-xl font-semibold">
+          Toutes tes envies, une seule liste
+        </h2>
+        <p className="text-muted-foreground">
+          Ajoute tes cadeaux et partage ta liste avec tes proches.
+        </p>
+      </div>
+      <div className="space-y-3">
+        <GoogleSignIn variant="primary" label="Continuer avec Google" />
+        <p className="text-sm text-muted-foreground">
+          Tes proches réservent sans compte.
+        </p>
+      </div>
+      {identity.authError && (
+        <p role="alert" className="text-sm text-foreground">
+          {identity.authError}
+        </p>
+      )}
+      {identity.loaded &&
+        !identity.loading &&
+        (!identity.googleAvailable || !identity.online) && (
+          <div className="space-y-2 text-sm text-muted-foreground">
+            <p role="status">
+              {!identity.online
+                ? "Reconnecte-toi à Internet pour continuer."
+                : "La connexion est momentanément indisponible."}
+            </p>
+            <Button
+              variant="secondary"
+              onClick={() => void loadProfile(true).then(retry)}
+            >
+              Réessayer
+            </Button>
+          </div>
+        )}
     </section>
+  );
+}
+function AccountMenu({ refresh }: { refresh: () => void }) {
+  const identity = useIdentityState();
+  const [error, setError] = useState("");
+  if (identity.kind !== "google" || !identity.profile) return null;
+  const profile = identity.profile;
+  return (
+    <div className="relative">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className="size-11 rounded-full p-0"
+            disabled={!!identity.busy}
+            aria-label={`Compte Google de ${profile.name}`}
+          >
+            <Avatar className="size-9">
+              {profile.avatar && (
+                <AvatarImage
+                  src={profile.avatar}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                />
+              )}
+              <AvatarFallback>
+                {profile.name
+                  .trim()
+                  .split(/\s+/)
+                  .slice(0, 2)
+                  .map((part) => part[0])
+                  .join("")
+                  .toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuItem
+            disabled={!identity.online || !identity.googleAvailable}
+            onSelect={() => {
+              setError("");
+              void login(undefined, { switchAccount: true }).then(refresh);
+            }}
+          >
+            Changer de compte Google
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              setError("");
+              void logout().then((success) => {
+                if (success) refresh();
+                else setError("Déconnexion impossible. Réessaie.");
+              });
+            }}
+          >
+            Se déconnecter
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {(error || identity.authError) && (
+        <p
+          role="alert"
+          className="absolute end-0 top-full z-10 w-64 rounded-lg border border-border bg-popover p-3 text-sm"
+        >
+          {error || identity.authError}
+        </p>
+      )}
+    </div>
+  );
+}
+function ShareTool() {
+  const [message, setMessage] = useState("");
+  return (
+    <footer className="mt-auto pt-8 text-center">
+      <Button
+        type="button"
+        variant="primary"
+        onClick={async () => {
+          setMessage("");
+          const url = window.location.origin + window.location.pathname;
+          try {
+            if (navigator.share)
+              await navigator.share({ title: "Crée ta liste de cadeaux", url });
+            else {
+              await navigator.clipboard.writeText(url);
+              setMessage("Lien copié.");
+            }
+          } catch (error) {
+            if (error instanceof Error && error.name === "AbortError") return;
+            setMessage("Le partage est indisponible. Réessaie.");
+          }
+        }}
+      >
+        <Share2 className="size-4" aria-hidden="true" />
+        Partager
+      </Button>
+      {message && (
+        <p role="status" className="mt-3 text-sm text-muted-foreground">
+          {message}
+        </p>
+      )}
+    </footer>
   );
 }
 export function CreatorDashboard() {
@@ -70,15 +218,18 @@ export function CreatorDashboard() {
     <main
       lang="fr"
       dir="ltr"
-      className="mx-auto w-full max-w-4xl space-y-8 px-6 py-10"
+      className="mx-auto flex min-h-svh w-full max-w-4xl flex-col gap-8 px-6 py-10"
     >
-      <DocumentLink
-        href="/outils"
-        className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground"
-      >
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        Tous les outils
-      </DocumentLink>
+      <div className="flex items-center justify-between gap-4">
+        <DocumentLink
+          href="/outils"
+          className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground"
+        >
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          Tous les outils
+        </DocumentLink>
+        <AccountMenu refresh={() => void mutate()} />
+      </div>
       <header className="flex flex-wrap items-start justify-between gap-5">
         <div className="space-y-3">
           <h1 className="text-3xl font-semibold tracking-tight">
@@ -149,6 +300,7 @@ export function CreatorDashboard() {
           </Link>
         ))}
       </div>
+      <ShareTool />
       {create && data && (
         <ListForm
           onClose={() => setCreate(false)}

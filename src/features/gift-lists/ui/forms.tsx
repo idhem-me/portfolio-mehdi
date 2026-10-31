@@ -48,7 +48,7 @@ export function ListForm({
     initial ?? {
       title: "",
       description: "",
-      occasion_type: "other",
+      occasion_type: "birthday",
       occasion_label: "",
       cover_image: null,
       is_surprise_mode: false,
@@ -104,7 +104,7 @@ export function ListForm({
                   onChange={(e) =>
                     setValue({ ...value, title: e.target.value })
                   }
-                  placeholder="Les envies de Camille"
+                  placeholder="Les cadeaux de Fanny"
                 />
               )}
             </Field>
@@ -186,18 +186,20 @@ export function ListForm({
                 Préparation de l’image…
               </p>
             )}
-            <Field label="Description (facultatif)">
-              {(id) => (
-                <TextArea
-                  id={id}
-                  maxLength={5000}
-                  value={value.description ?? ""}
-                  onChange={(e) =>
-                    setValue({ ...value, description: e.target.value })
-                  }
-                />
-              )}
-            </Field>
+            {initial && (
+              <Field label="Description (facultatif)">
+                {(id) => (
+                  <TextArea
+                    id={id}
+                    maxLength={5000}
+                    value={value.description ?? ""}
+                    onChange={(e) =>
+                      setValue({ ...value, description: e.target.value })
+                    }
+                  />
+                )}
+              </Field>
+            )}
             <Field
               label="Instructions de participation (facultatif)"
               hint="Lien ou IBAN, visible par les personnes ayant la liste."

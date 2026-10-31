@@ -211,7 +211,7 @@ export function TextArea({ id, ...props }: React.ComponentProps<"textarea">) {
     <textarea
       id={id}
       {...props}
-      className="min-h-24 w-full rounded-lg border border-input bg-background p-3 text-base outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="min-h-24 w-full rounded-lg border border-input bg-background p-3 text-[length:var(--control-text)] outline-none focus-visible:ring-2 focus-visible:ring-ring"
     />
   );
 }
