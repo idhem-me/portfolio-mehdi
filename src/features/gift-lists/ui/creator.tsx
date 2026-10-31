@@ -419,6 +419,7 @@ export function CreatorList({ id }: { id: string }) {
                   <div className="space-y-3">
                     <div className="flex flex-wrap items-start gap-3">
                       <CopyLink value={share} variant="primary" />
+                      <ListShareMenu title={data.list.title} url={share} />
                       <Button asChild variant="ghost">
                         <a
                           href={`${prefix}/l/${data.list.slug}`}
@@ -430,7 +431,6 @@ export function CreatorList({ id }: { id: string }) {
                         </a>
                       </Button>
                     </div>
-                    <ListShareMenu title={data.list.title} url={share} />
                   </div>
                 </>
               )}
