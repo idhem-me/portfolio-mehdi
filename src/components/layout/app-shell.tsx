@@ -22,6 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <SidebarProvider
         key={giftTool ? "gift-tool" : "site"}
         defaultOpen={!giftTool}
+        resizable={false}
       >
         <AppSidebar />
         <SidebarInset

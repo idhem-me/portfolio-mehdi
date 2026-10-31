@@ -59,6 +59,7 @@ type SidebarContextProps = {
   toggleSidebar: () => void
   width: number
   setWidth: (width: number) => void
+  resizable: boolean
   isResizing: boolean
   setIsResizing: (isResizing: boolean) => void
 }
@@ -76,6 +77,7 @@ function useSidebar() {
 
 function SidebarProvider({
   defaultOpen = true,
+  resizable = true,
   open: openProp,
   onOpenChange: setOpenProp,
   className,
@@ -84,6 +86,7 @@ function SidebarProvider({
   ...props
 }: React.ComponentProps<"div"> & {
   defaultOpen?: boolean
+  resizable?: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }) {
@@ -118,10 +121,11 @@ function SidebarProvider({
   )
 
   const setWidth = React.useCallback((value: number) => {
+    if (!resizable) return
     const next = clampSidebarWidth(value)
     _setWidth(next)
     document.cookie = `${SIDEBAR_WIDTH_COOKIE_NAME}=${next}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
-  }, [])
+  }, [resizable])
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
@@ -159,6 +163,7 @@ function SidebarProvider({
       toggleSidebar,
       width,
       setWidth,
+      resizable,
       isResizing,
       setIsResizing,
     }),
@@ -172,6 +177,7 @@ function SidebarProvider({
       toggleSidebar,
       width,
       setWidth,
+      resizable,
       isResizing,
     ]
   )
@@ -183,7 +189,7 @@ function SidebarProvider({
         data-resizing={isResizing ? "true" : undefined}
         style={
           {
-            "--sidebar-width": `${width}px`,
+            "--sidebar-width": resizable ? `${width}px` : "12rem",
             "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
             ...style,
           } as React.CSSProperties
@@ -355,6 +361,7 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
     setWidth,
     setIsResizing,
     isMobile,
+    resizable,
   } = useSidebar()
   const didDragRef = React.useRef(false)
   const isCollapsed = state === "collapsed"
@@ -417,6 +424,8 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
     },
     [toggleSidebar]
   )
+
+  if (!resizable) return null
 
   return (
     <button
