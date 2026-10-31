@@ -111,7 +111,8 @@ export function useCardsAccount() {
       identity.loaded &&
       !identity.busy &&
       state.data &&
-      state.data.user.anonymous === (identity.kind === "google")
+      state.data.user.anonymous ===
+        (identity.kind !== "google" && identity.kind !== "apple")
     )
       void loadCardsAccount().catch(() => {});
   }, [identity.loaded, identity.busy, identity.kind]);
@@ -131,7 +132,8 @@ export function useCardsAccount() {
     const identityMessage = (event: MessageEvent) => {
       if (
         event.origin === location.origin &&
-        event.data?.type === "tetris-google-auth"
+        (event.data?.type === "tetris-google-auth" ||
+          event.data?.type === "tetris-apple-auth")
       )
         refresh();
     };

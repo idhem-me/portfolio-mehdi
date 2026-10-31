@@ -2,8 +2,8 @@ import { activePlayer } from "@/features/tetris/server/player";
 import { NextRequest, NextResponse, connection } from "next/server";
 import { gate, player, json, failure } from "@/features/tetris/server/http";
 import { reportBackendFailure } from "@/features/tetris/server/diagnostics";
-import { verifiedGoogleUser } from "@/features/tetris/server/auth";
-import { googleIdentity } from "@/features/tetris/auth/identity";
+import { verifiedAccountUser } from "@/features/tetris/server/auth";
+import { accountIdentity, accountProvider } from "@/features/tetris/auth/identity";
 import { store } from "@/features/tetris/server/store";
 export async function GET(request: NextRequest) {
   const denied = gate(request);
@@ -28,13 +28,17 @@ export async function POST(request: NextRequest) {
     if (
       body.identity !== undefined &&
       body.identity !== "guest" &&
-      body.identity !== "google"
+      body.identity !== "google" &&
+      body.identity !== "apple"
     )
       throw Error("Envoi invalide.");
     const guest = player(request);
     const auth =
-      body.identity === "google" ? await verifiedGoogleUser(request) : null;
-    const account = auth?.user ? googleIdentity(auth.user) : null;
+      body.identity === "google" || body.identity === "apple"
+        ? await verifiedAccountUser(request)
+        : null;
+    const provider = auth?.user ? accountProvider(auth.user) : null;
+    const account = auth?.user ? accountIdentity(auth.user) : null;
     const metadata = auth?.user?.user_metadata ?? {};
     const rawAvatar =
       typeof metadata.picture === "string"
@@ -53,9 +57,10 @@ export async function POST(request: NextRequest) {
       )
         googleAvatar = url.toString();
     } catch {}
-    if (body.identity === "google" && !account) {
+    if (body.identity && body.identity !== "guest" &&
+      (!account || provider !== body.identity)) {
       const response = NextResponse.json(
-        { error: "Reconnectez-vous à Google ou choisissez un pseudo." },
+        { error: "Reconnecte-toi à ton compte ou choisis un pseudo." },
         { status: 401, headers: { "Cache-Control": "no-store" } },
       );
       return auth ? auth.apply(response) : response;
@@ -64,7 +69,7 @@ export async function POST(request: NextRequest) {
       const active = await activePlayer(request);
       if (
         !active.profile ||
-        active.profile.kind !== "google" ||
+        active.profile.kind === "local" ||
         active.profile.key !== body.recipient
       )
         return Response.json(
@@ -72,7 +77,7 @@ export async function POST(request: NextRequest) {
           { status: 401 },
         );
     }
-    if (body.identity === "google" && body.recipient) {
+    if (body.identity && body.identity !== "guest" && body.recipient) {
       const active = await activePlayer(request);
       if (active.profile) {
         publicName = active.profile.name;

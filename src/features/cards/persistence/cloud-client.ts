@@ -90,7 +90,11 @@ export function useCardsCloudSync(
   onChange: () => void,
 ): CloudView {
   const identity = useIdentityState();
-  const account = identity.kind === "google" ? identity.profile.key : null;
+  const account =
+    (identity.kind === "google" || identity.kind === "apple") &&
+    identity.profile
+      ? identity.profile.key
+      : null;
   const [view, setView] = useState<CloudView>({ status: "local" });
 
   useEffect(() => {
@@ -349,7 +353,7 @@ export function useCardsCloudSync(
           status: "local",
           conflict: undefined,
           message:
-            "Collection locale réinitialisée. Ta sauvegarde Google est conservée.",
+            "Collection locale réinitialisée. Ta sauvegarde de compte est conservée.",
         });
     };
     window.addEventListener("cards:save", onSave);

@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
-import { authClient, googleConfigured } from "@/features/tetris/server/auth";
+import { authClient, supabaseConfigured } from "@/features/tetris/server/auth";
 import { validateCloudSave } from "@/features/cards/server/validation";
 import { resolveCardsChoice } from "@/features/cards/server/save-choice";
 import { accountGate } from "@/features/account/server/http";
@@ -36,7 +36,7 @@ const actions = new Set([
 export async function POST(request: NextRequest) {
   const denied = accountGate(request, true);
   if (denied) return denied;
-  if (!googleConfigured())
+  if (!supabaseConfigured())
     return NextResponse.json(
       { error: "La connexion au jeu est indisponible." },
       { status: 503 },
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         return reply(
           {
             error:
-              "La session invité est indisponible. Connecte-toi avec Google pour continuer.",
+              "La session invité est indisponible. Connecte-toi avec Google ou Apple pour continuer.",
           },
           503,
         );

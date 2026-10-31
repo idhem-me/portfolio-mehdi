@@ -59,7 +59,7 @@ export function SaveChoiceDialog() {
                     key={source}
                   >
                     <h3 className="font-medium">
-                      {source === "device" ? "Cet appareil" : "Compte Google"}
+                      {source === "device" ? "Cet appareil" : "Compte"}
                     </h3>
                     <p className="text-sm">
                       {formatCredits(preview.cards)} cartes ·{" "}

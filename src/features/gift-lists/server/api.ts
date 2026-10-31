@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 import { isSameOrigin } from "@/lib/backoffice/request-origin";
-import { verifiedGoogleUser } from "@/features/tetris/server/auth";
+import { verifiedAccountUser } from "@/features/tetris/server/auth";
 import { safeWebUrl } from "../types";
 import { normalizeListImage } from "./cover-image";
 
@@ -261,11 +261,11 @@ export async function ownedList(
   return result.data;
 }
 export async function creatorGet(request: NextRequest) {
-  const auth = await verifiedGoogleUser(request);
+  const auth = await verifiedAccountUser(request);
   try {
     if (!auth.user)
       throw new ApiError(
-        "Connecte-toi avec Google pour retrouver tes listes.",
+        "Connecte-toi avec Google ou Apple pour retrouver tes listes.",
         401,
       );
     const db = giftAdmin();
@@ -302,11 +302,11 @@ export async function creatorGet(request: NextRequest) {
   }
 }
 export async function creatorPost(request: NextRequest) {
-  const auth = await verifiedGoogleUser(request);
+  const auth = await verifiedAccountUser(request);
   try {
     if (!auth.user)
       throw new ApiError(
-        "Connecte-toi avec Google pour gérer tes listes.",
+        "Connecte-toi avec Google ou Apple pour gérer tes listes.",
         401,
       );
     const input = creatorInput.parse(await body(request, 270000));

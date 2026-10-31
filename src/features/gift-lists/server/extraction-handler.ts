@@ -129,7 +129,7 @@ export function createExtractionHandler(dependencies: {
         return reply(
           {
             error:
-              "Connecte-toi avec Google pour remplir un cadeau automatiquement.",
+              "Connecte-toi avec Google ou Apple pour remplir un cadeau automatiquement.",
           },
           401,
         );

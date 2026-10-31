@@ -53,6 +53,8 @@ export type Settings = AudioVolumes & {
   reduced: boolean;
   overlay: boolean;
 };
+const SETTINGS_KEY = "tetris.settings";
+const LEGACY_SETTINGS_KEY = "lava-settings";
 export const defaults: Settings = {
   ...defaultAudioVolumes,
   audioScaleVersion: 2,
@@ -63,7 +65,8 @@ export const defaults: Settings = {
   overlay: true,
 };
 export function loadSettings(): Settings {
-  const stored = readStore<Partial<Settings>>("lava-settings", {});
+  const current = readStore<Partial<Settings> | null>(SETTINGS_KEY, null);
+  const stored = current ?? readStore<Partial<Settings>>(LEGACY_SETTINGS_KEY, {});
   const settings = { ...defaults, ...stored, audioScaleVersion: 2 };
   if (stored.audioScaleVersion !== 2) {
     for (const key of Object.keys(
@@ -81,9 +84,15 @@ export function loadSettings(): Settings {
         );
       }
     }
-    writeStore("lava-settings", settings);
+    saveSettings(settings);
+  } else if (!current) {
+    saveSettings(settings);
   }
   return settings;
+}
+
+export function saveSettings(settings: Settings) {
+  writeStore(SETTINGS_KEY, settings);
 }
 export function readStore<T>(key: string, fallback: T): T {
   try {

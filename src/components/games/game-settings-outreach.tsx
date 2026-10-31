@@ -25,10 +25,12 @@ export function GameSettingsOutreach({
   gameName,
   shareText,
   className,
+  showTitle = true,
 }: {
   gameName: string;
   shareText?: string;
   className?: string;
+  showTitle?: boolean;
 }) {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -133,7 +135,7 @@ export function GameSettingsOutreach({
 
   return (
     <section className={cn("game-settings-outreach", className)}>
-      <h3>À propos</h3>
+      {showTitle && <h3>À propos</h3>}
       <p className="game-settings-outreach-note">
         Une idée, un bug, une envie de mise à jour ? Écris-moi. Tu peux aussi
         partager la page du jeu.

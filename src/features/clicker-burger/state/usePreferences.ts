@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useGameSettings } from "@/components/games/game-settings";
 import {
   defaults,
   loadSettings,
@@ -6,48 +7,18 @@ import {
   type Settings,
 } from "../feel/config";
 
-const EVENT = "clicker-burger-settings";
-
 export function useSettings() {
-  const [settings, setSettings] = useState<Settings>(defaults);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setSettings(loadSettings());
-      setReady(true);
-    });
-    const sync = () => setSettings(loadSettings());
-    window.addEventListener("storage", sync);
-    window.addEventListener(EVENT, sync);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("storage", sync);
-      window.removeEventListener(EVENT, sync);
-    };
-  }, []);
-
-  const update = useCallback((patch: Partial<Settings>) => {
-    setSettings((prev) => {
-      const next = { ...prev, ...patch };
-      saveSettings(next);
-      window.dispatchEvent(new Event(EVENT));
-      return next;
-    });
-  }, []);
+  const { settings, ready, update } = useGameSettings(
+    "clicker-burger",
+    defaults,
+    loadSettings,
+    saveSettings,
+  );
 
   const toggle = useCallback(
-    (
-      key: keyof Pick<Settings, "sound" | "haptics" | "ios" | "levelPopups">,
-    ) => {
-      setSettings((prev) => {
-        const next = { ...prev, [key]: !prev[key] };
-        saveSettings(next);
-        window.dispatchEvent(new Event(EVENT));
-        return next;
-      });
-    },
-    [],
+    (key: keyof Pick<Settings, "sound" | "haptics" | "ios" | "levelPopups">) =>
+      update({ [key]: !settings[key] }),
+    [settings, update],
   );
 
   return { settings, ready, update, toggle };

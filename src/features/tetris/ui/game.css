@@ -829,66 +829,8 @@
   flex-direction: column;
   gap: calc(var(--spacing) * 3);
 }
-.lava-sheet .lava-settings .game-settings-outreach {
-  display: grid;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
-}
-.lava-sheet .lava-settings .game-settings-outreach h3 {
-  margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-.lava-sheet .lava-settings .game-settings-outreach-note {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-}
-.lava-sheet .lava-settings .game-settings-outreach > [data-slot="button"] {
-  justify-content: center;
-  min-height: var(--control-height-lg, 2.75rem);
-}
 .lava-sheet .lava-settings p {
   margin: 0;
-}
-.lava-audio-mixer {
-  display: grid;
-  gap: calc(var(--spacing) * 5);
-  min-width: 0;
-  padding: calc(var(--spacing) * 4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-}
-.lava-audio-volume-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: calc(var(--spacing) * 3);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-.lava-audio-volume-heading span {
-  color: var(--muted-foreground);
-  font-variant-numeric: tabular-nums;
-}
-.lava-audio-volume p {
-  color: var(--muted-foreground);
-  font-size: 0.75rem;
-}
-.lava-audio-volume input[type="range"] {
-  display: block;
-  width: 100%;
-  height: 2.75rem;
-  margin: 0;
-  cursor: pointer;
-  accent-color: var(--primary);
-}
-.lava-audio-volume input[type="range"]:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-  border-radius: var(--radius);
 }
 .lava-sheet .lava-settings button {
   min-height: 4rem;
@@ -1152,6 +1094,12 @@
 .lava-end-panel > .lava-end-actions {
   gap: var(--tetris-gap);
 }
+.lava-end-panel > .lava-end-actions > button,
+.lava-end-panel > .lava-end-actions > a {
+  box-sizing: border-box;
+  height: var(--tetris-touch);
+  min-height: var(--tetris-touch);
+}
 
 /* Identity controls must fit alongside the title and the official Google button. */
 .lava-end-panel {
@@ -1294,19 +1242,33 @@
 }
 .lava-lobby-grid {
   display: grid;
-  grid-template-columns: minmax(16rem, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: calc(var(--spacing) * 5);
-  align-items: stretch;
+  align-items: start;
+}
+.lava-lobby-grid > [data-slot="card"] {
+  border: 0;
+  outline: 0;
+  box-shadow: none;
 }
 .lava-lobby-panel {
   width: 100%;
   margin: 0;
-  padding: var(--card-spacing) 0 0;
+  padding: var(--card-spacing) 0 var(--card-spacing);
   gap: calc(var(--spacing) * 6);
   text-align: start;
   background: var(--card);
   box-shadow: none;
   backdrop-filter: none;
+}
+.lava-leaderboard-auth .lava-leaderboard-auth-copy,
+.lava-leaderboard-auth [data-provider-buttons] > p {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  text-align: left;
+}
+.lava-leaderboard-auth [data-provider-buttons] > button {
+  justify-content: center;
 }
 .lava-lobby-actions {
   display: flex;
@@ -1325,16 +1287,11 @@
 .lava-lobby-actions [data-slot="separator"] {
   margin-block: calc(var(--spacing) * 2);
 }
-.lava-lobby-footer {
-  margin-top: auto;
-}
-.lava-lobby-footer > a,
-.lava-lobby-footer > button {
-  width: 100%;
-}
 .lava-lobby-details {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
   gap: calc(var(--spacing) * 5);
+  align-items: start;
   min-width: 0;
 }
 .lava-record-value {
@@ -1409,35 +1366,12 @@
 .lava-pause {
   background: color-mix(in oklch, var(--background), transparent 8%);
 }
-@media (max-width: 900px) {
-  .lava-lobby-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .lava-lobby-details {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-  .lava-record-card > [data-slot="card-content"] {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
 @media (max-width: 540px) {
-  .lava-lobby-details {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .lava-record-card > [data-slot="card-content"] {
-    flex-direction: row;
-    align-items: center;
-  }
   .lava-lobby-header p {
     max-width: 18rem;
   }
 }
 
-.lava-lobby-panel {
-  border: 1px solid var(--border);
-}
 /* The fullscreen play surface must not leave the underlying navigation tabbable. */
 [data-slot="sidebar-wrapper"]:has(.lava-game:not([data-state="ready"]))
   [data-slot="sidebar"] {

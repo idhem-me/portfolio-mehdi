@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,15 +18,11 @@ import {
 import {
   loadProfile,
   saveDeviceScore,
-  saveProfile,
   submitLocalScore,
   useIdentityState,
 } from "../profile/client-store";
-import { IdentitySelector, IdentityError } from "./identity-selector";
-import { PlayerProfileButton } from "./player-profile";
-import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
-import { validateNickname } from "../profile/fields";
+import { IdentityError } from "./identity-selector";
+import { Link } from "@/i18n/navigation";
 export function GameOver({
   summary,
   localRun,
@@ -64,10 +60,7 @@ export function GameOver({
     [needsReconnect, setNeedsReconnect] = useState(false),
     [retry, setRetry] = useState(0),
     [busy, setBusy] = useState(false);
-  const nameId = useId();
-  const [name, setName] = useState(initialName ?? "");
-  const [profileError, setProfileError] = useState("");
-  const [profileBusy, setProfileBusy] = useState(false);
+  const [shareRequested, setShareRequested] = useState(false);
   const [deviceSaved, setDeviceSaved] = useState(false);
   const [deviceError, setDeviceError] = useState("");
   const saving = useRef(false),
@@ -109,7 +102,12 @@ export function GameOver({
     if (currentDraft.current && !sent) saveDraft(currentDraft.current);
   }, [scoreRun.id, sent]);
   useEffect(() => {
-    if (!identity.loaded || identity.loading || identity.kind === "google")
+    if (
+      !identity.loaded ||
+      identity.loading ||
+      identity.kind === "google" ||
+      identity.kind === "apple"
+    )
       return;
     let active = true;
     void saveDeviceScore({
@@ -140,7 +138,9 @@ export function GameOver({
     identity.loading,
     identity.kind,
     identity.profile?.key,
+    identity.profile?.name,
     initialName,
+    scoreRun,
     scoreRun.id,
     retry,
   ]);
@@ -150,6 +150,7 @@ export function GameOver({
       !identity.loaded ||
       identity.loading ||
       !profile ||
+      !shareRequested ||
       sent ||
       saving.current
     )
@@ -178,8 +179,8 @@ export function GameOver({
       localOnly: scoreRun.localOnly,
       recipient: profile.key,
       summary: summaryRef.current,
-      ...(profile.kind === "google"
-        ? { identity: "google" as const, name: profile.name }
+      ...(profile.kind === "google" || profile.kind === "apple"
+        ? { identity: profile.kind, name: profile.name }
         : {}),
     })
       .then((result) => {
@@ -196,7 +197,7 @@ export function GameOver({
         } else if (result.reason === "auth") {
           setNeedsReconnect(true);
           setMessage(
-            "Reconnecte-toi à Google pour enregistrer ce score. Il est conservé ici en attendant.",
+            "Reconnecte-toi à ton compte pour enregistrer ce score. Il est conservé ici en attendant.",
           );
           void loadProfile(true);
         } else
@@ -217,6 +218,7 @@ export function GameOver({
     scoreRun.opening,
     scoreRun.localOnly,
     sent,
+    shareRequested,
     retry,
   ]);
   return (
@@ -239,59 +241,15 @@ export function GameOver({
             <p className="lava-end-score lava-end-number">
               {summary.score.toLocaleString("fr")}
             </p>
-            {identity.kind !== "google" && deviceSaved && (
+            {identity.kind !== "google" &&
+              identity.kind !== "apple" &&
+              deviceSaved && (
               <p className="mt-2 text-sm" role="status">
                 Score enregistré sur cet appareil
               </p>
             )}
           </div>
-          {identity.profile ? (
-            <div className="lava-end-identity">
-              <PlayerProfileButton draft={draft} />
-              <span>{identity.profile.name}</span>
-            </div>
-          ) : (
-            <form
-              className="lava-end-pseudo"
-              onSubmit={async (event) => {
-                event.preventDefault();
-                setProfileError("");
-                setProfileBusy(true);
-                try {
-                  await saveProfile(validateNickname(name), null);
-                } catch (error) {
-                  setProfileError(
-                    error instanceof Error
-                      ? error.message
-                      : "Le pseudo n’a pas pu être enregistré. Réessaie.",
-                  );
-                } finally {
-                  setProfileBusy(false);
-                }
-              }}
-            >
-              <label htmlFor={nameId}>Pseudo</label>
-              <div className="lava-end-pseudo-controls">
-                <Input
-                  id={nameId}
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="Ton pseudo"
-                  autoComplete="nickname"
-                  maxLength={20}
-                  disabled={profileBusy}
-                />
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={profileBusy || !identity.loaded || identity.loading}
-                >
-                  {profileBusy ? "Enregistrement…" : "Valider"}
-                </Button>
-              </div>
-              {profileError && <IdentityError>{profileError}</IdentityError>}
-            </form>
-          )}
+          {identity.profile && <p className="text-sm">Connecté avec {identity.profile.name}</p>}
           {busy && (
             <p className="text-sm" role="status">
               Enregistrement du score…
@@ -310,7 +268,6 @@ export function GameOver({
           <p className="text-sm text-muted-foreground">
             Record : {summary.best.toLocaleString("fr")}
           </p>
-          <Separator />
         </CardContent>
         <CardFooter className="lava-end-actions">
           <Button
@@ -331,13 +288,12 @@ export function GameOver({
           <Button variant="outline" onClick={onMenu}>
             Menu
           </Button>
-          <Separator className="my-2" />
-          <IdentitySelector
-            draft={draft}
-            disabled={busy && !needsReconnect}
-            editOnly={!!identity.profile && !needsReconnect}
-            connectOnly={!identity.profile || needsReconnect}
-          />
+          <Button variant="outline" asChild>
+            <Link href="/jeux">Quitter le jeu</Link>
+          </Button>
+          {identity.profile?.kind === "google" || identity.profile?.kind === "apple" ? (
+            <Button variant="secondary" disabled={busy || sent || !!scoreRun.localOnly} onClick={() => setShareRequested(true)}>Enregistrer en ligne</Button>
+          ) : null}
         </CardFooter>
       </Card>
     </div>

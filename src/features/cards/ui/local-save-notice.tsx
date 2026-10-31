@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { GoogleSignIn } from "@/features/account/ui/google-sign-in";
+import { OAuthSignInButtons } from "@/features/account/ui/google-sign-in";
 import { useIdentityState } from "@/features/account/client-store";
 
 const NOTICE_KEY = "cards.local-save-notice.v1";
@@ -32,11 +32,20 @@ export function LocalSaveNotice({
   });
 
   useEffect(() => {
-    if (identity.kind !== "google" || dismissed) return;
+    if (
+      (identity.kind !== "google" && identity.kind !== "apple") ||
+      dismissed
+    )
+      return;
     persistDismissed();
   }, [identity.kind, dismissed]);
 
-  if (boostersOpened < 3 || dismissed || identity.kind === "google")
+  if (
+    boostersOpened < 3 ||
+    dismissed ||
+    identity.kind === "google" ||
+    identity.kind === "apple"
+  )
     return null;
 
   const dismiss = () => {
@@ -59,18 +68,18 @@ export function LocalSaveNotice({
         progression.
       </p>
       <p className="text-sm text-muted-foreground">
-        Connecte-toi avec Google pour sauvegarder ta progression et la retrouver
+        Connecte-toi avec Google ou Apple pour sauvegarder ta progression et la retrouver
         sur tes autres appareils.
       </p>
       <div className="cards-local-save-actions">
         <Button variant="outline" className="min-h-11" onClick={dismiss}>
           Continuer sur cet appareil
         </Button>
-        <GoogleSignIn />
+        <OAuthSignInButtons />
       </div>
-      {identity.loaded && !identity.googleAvailable && (
+      {identity.loaded && !identity.googleAvailable && !identity.appleAvailable && (
         <p className="text-xs text-muted-foreground">
-          La connexion Google n’est pas disponible dans cet environnement.
+          La connexion par compte n’est pas disponible dans cet environnement.
         </p>
       )}
       {identity.error && (

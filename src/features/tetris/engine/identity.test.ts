@@ -5,6 +5,9 @@ import {
   googleIdentity,
   suggestedNickname,
   googleDisplayName,
+  accountProvider,
+  accountIdentity,
+  accountDisplayName,
 } from "../auth/identity";
 import {
   saveDraft,
@@ -53,6 +56,27 @@ test("only verified Google identities choose account records; public suggestions
   assert.equal(
     googleDisplayName({ name: "secret@example.com" }),
     "Joueur Google",
+  );
+});
+test("Apple identities stay distinct from Google and work without name metadata", () => {
+  const apple = { id: "u", app_metadata: { provider: "apple" } };
+  const google = { id: "u", app_metadata: { provider: "google" } };
+  assert.equal(accountProvider(apple), "apple");
+  assert.equal(
+    accountProvider({ identities: [{ provider: "apple" }] }),
+    "apple",
+  );
+  assert.equal(accountIdentity(apple), "apple:u");
+  assert.equal(accountIdentity(google), "google:u");
+  assert.notEqual(accountIdentity(apple), accountIdentity(google));
+  assert.equal(accountDisplayName("apple", {}), "Joueur Apple");
+  assert.equal(
+    accountDisplayName("apple", { full_name: "Alice Dupont" }),
+    "Alice Dupont",
+  );
+  assert.equal(
+    accountDisplayName("apple", { full_name: "private@relay.appleid.com" }),
+    "Joueur Apple",
   );
 });
 test("an ended game survives retries until acknowledged, with no trusted score data", () => {

@@ -10,11 +10,15 @@ export function PlayerProfileButton({
   showHelp = true,
   avatarOverride,
   menuExtras,
+  providersOnly = false,
+  hideNickname = false,
 }: {
   className?: string;
   showHelp?: boolean;
   avatarOverride?: React.ReactNode;
   menuExtras?: React.ReactNode;
+  providersOnly?: boolean;
+  hideNickname?: boolean;
   draft?: ScoreDraft;
 }) {
   const profile = usePlayerProfile();
@@ -26,6 +30,8 @@ export function PlayerProfileButton({
         avatarOverride={avatarOverride}
         draft={draft}
         menuExtras={menuExtras}
+        providersOnly={providersOnly}
+        hideNickname={hideNickname}
         trigger={
           <Button
             type="button"

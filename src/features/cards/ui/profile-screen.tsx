@@ -43,7 +43,7 @@ export function ProfileScreen({ save }: { save: CardsSave }) {
       <p className="text-sm text-muted-foreground">
         {account.data?.user.anonymous
           ? "Progression enregistrée dans ta session invité."
-          : "Progression sauvegardée avec Google."}
+          : "Progression sauvegardée avec ton compte."}
       </p>
 
       <Tabs

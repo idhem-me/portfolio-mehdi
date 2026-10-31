@@ -23,14 +23,13 @@ import {
   ArrowRight,
   ChevronsDown,
   RotateCw,
-  Settings2,
   Repeat2,
   Pause,
   Play,
   Trophy,
   BookOpen,
-  LogOut,
   Keyboard,
+  Settings as SettingsIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,13 +38,11 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-  CardFooter,
 } from "@/components/ui/card";
 import { AppShell } from "@/components/layout/app-shell";
 import { DesignSystemScope } from "@/components/design-system/provider";
 import { Badge } from "@/components/ui/badge";
-import { GameAppearanceSettings } from "@/components/games/game-appearance-settings";
-import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
+import { GameSettingsPanel, useGameSettings } from "@/components/games/game-settings";
 import {
   Sheet,
   SheetContent,
@@ -62,6 +59,7 @@ import {
   feel,
   readStore,
   loadSettings,
+  saveSettings,
   writeStore,
   type Settings,
   type AudioVolumes,
@@ -75,11 +73,11 @@ import { haptic } from "../feel/haptics";
 import { sourceLicense } from "../engine/source-license";
 import { GameAudio } from "../feel/audio";
 import { soundEnabled, leaderboardEnabled, tetrisEnabled } from "../flags";
+import { tetrisSettings } from "./settings.config";
 import { seeded, replayLimit } from "../engine/replay";
 import { Leaderboard, type RankedRun } from "./leaderboard";
 import { PlayerIdentityProvider } from "./player-identity";
 import { GameOver } from "./game-over";
-import { PlayerProfileButton } from "./player-profile";
 import { Separator } from "@/components/ui/separator";
 import { recoverDraft, type ScoreDraft } from "../auth/draft";
 import "./game.css";
@@ -146,6 +144,7 @@ function TetrisGame({
     }
   };
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const settingsTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [rulesOpen, setRulesOpen] = useState(false);
   const game = useRef(new Game(() => 0.5));
   const root = useRef<HTMLDivElement>(null);
@@ -157,7 +156,12 @@ function TetrisGame({
   );
   const statusRef = useRef(status);
   statusRef.current = status;
-  const [settings, setSettings] = useState<Settings>(defaults);
+  const { settings, update: updateGameSettings } = useGameSettings(
+    "tetris",
+    defaults,
+    loadSettings,
+    saveSettings,
+  );
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
   const [best, setBest] = useState(0);
@@ -195,7 +199,6 @@ function TetrisGame({
   const repeat = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
-      setSettings(loadSettings());
       setBest(readStore<number>("lava-best", 0));
       const draft = recoverDraft();
       if (draft) {
@@ -392,11 +395,7 @@ function TetrisGame({
     };
   }, [status, expanded]);
   const setVolume = (key: keyof AudioVolumes, value: number) => {
-    setSettings((s) => {
-      const next = { ...s, [key]: value };
-      writeStore("lava-settings", next);
-      return next;
-    });
+    updateGameSettings({ [key]: value });
   };
   const toggle = (
     key: Exclude<keyof Settings, keyof AudioVolumes | "audioScaleVersion">,
@@ -408,11 +407,7 @@ function TetrisGame({
         audio.current.unlock();
       } else audio.current?.mute();
     }
-    setSettings((s) => {
-      const next = { ...s, [key]: !s[key] };
-      writeStore("lava-settings", next);
-      return next;
-    });
+    updateGameSettings({ [key]: !settings[key] });
   };
   const press = (a: Action) => {
     stopRepeat();
@@ -460,7 +455,9 @@ function TetrisGame({
               <h1>Tetris</h1>
               <p>Un classique, une pièce à la fois.</p>
             </div>
-            <PlayerProfileButton />
+            <Button variant="ghost" size="icon" aria-label="Réglages" onClick={(event) => { settingsTriggerRef.current = event.currentTarget; setSettingsOpen(true); }}>
+              <SettingsIcon aria-hidden="true" />
+            </Button>
           </header>
           <div className="lava-lobby-grid">
             <Card className="lava-lobby-panel">
@@ -496,19 +493,7 @@ function TetrisGame({
                   <BookOpen aria-hidden="true" />
                   Règles
                 </Button>
-                <Button variant="outline" onClick={() => setSettingsOpen(true)}>
-                  <Settings2 aria-hidden="true" />
-                  Réglages
-                </Button>
               </CardContent>
-              <CardFooter className="lava-lobby-footer">
-                <Button variant="ghost" asChild>
-                  <Link href="/jeux">
-                    <LogOut aria-hidden="true" />
-                    Quitter le jeu
-                  </Link>
-                </Button>
-              </CardFooter>
             </Card>
             <div className="lava-lobby-details">
               <Card className="lava-record-card">
@@ -590,16 +575,16 @@ function TetrisGame({
           <div className="lava-top">
             <span className="lava-wordmark">Tetris</span>
             <div className="flex items-center gap-2">
-              <PlayerProfileButton />
               <Button
                 variant="ghost"
                 aria-label="Réglages"
-                onClick={() => {
+                onClick={(event) => {
+                  settingsTriggerRef.current = event.currentTarget;
                   setStatus("paused");
                   setSettingsOpen(true);
                 }}
               >
-                <Settings2 />
+                <SettingsIcon />
               </Button>
               <Button
                 variant="ghost"
@@ -817,102 +802,30 @@ function TetrisGame({
           </Card>
         </div>
       )}
-      <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-        {" "}
-        <SheetContent className="lava-sheet z-[80]">
-          <SheetHeader>
-            <SheetTitle>Réglages</SheetTitle>
-            <SheetDescription className="sr-only">
-              Effets et commandes du jeu.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="lava-settings">
-            <GameAppearanceSettings />
-            {soundEnabled && (
-              <Button
-                variant="outline"
-                role="switch"
-                aria-label="Son"
-                aria-checked={settings.sound}
-                onClick={() => toggle("sound")}
-              >
-                Son{" "}
-                <Badge variant={settings.sound ? "default" : "secondary"}>
-                  {settings.sound ? "Oui" : "Non"}
-                </Badge>
-              </Button>
-            )}
-            {soundEnabled && settings.sound && (
-              <fieldset className="lava-audio-mixer">
-                <legend className="sr-only">Volumes du son</legend>
-                {(
-                  [
-                    [
-                      "effectsVolume",
-                      "Effets sonores",
-                      "Rotation et chute des briques",
-                    ],
-                    ["musicVolume", "Musique", "Fond musical"],
-                    ["voiceVolume", "Voix", "Nice et wow"],
-                  ] as const
-                ).map(([key, label, description]) => (
-                  <div className="lava-audio-volume" key={key}>
-                    <div className="lava-audio-volume-heading">
-                      <label htmlFor={`tetris-${key}`}>{label}</label>
-                      <span aria-hidden="true">{settings[key]} %</span>
-                    </div>
-                    <p id={`tetris-${key}-description`}>{description}</p>
-                    <NativeInput
-                      id={`tetris-${key}`}
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={5}
-                      value={settings[key]}
-                      aria-valuetext={`${settings[key]} %`}
-                      aria-describedby={`tetris-${key}-description`}
-                      onChange={(event) =>
-                        setVolume(key, Number(event.target.value))
-                      }
-                    />
-                  </div>
-                ))}
-              </fieldset>
-            )}
-            {(
-              [
-                ["haptics", "Haptiques"],
-                ["ios", "Haptiques iOS expérimentales"],
-                ["reduced", "Effets réduits"],
-                ["overlay", "Contrôles visibles"],
-              ] as const
-            ).map(([key, label]) => (
-              <Button
-                key={key}
-                variant="outline"
-                role="switch"
-                aria-checked={settings[key]}
-                onClick={() => toggle(key)}
-              >
-                {label}
-                <Badge variant={settings[key] ? "default" : "secondary"}>
-                  {settings[key] ? "Oui" : "Non"}
-                </Badge>
-              </Button>
-            ))}
-
-            <p className="text-xs text-muted-foreground">
-              L’option iOS utilise une astuce non officielle de Safari 18+,
-              uniquement sur les impacts forts. Elle peut ne produire aucune
-              vibration.
-            </p>
-            <GameSettingsOutreach
-              gameName="Tetris"
-              shareText="Viens jouer au Tetris du portfolio."
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
+      <GameSettingsPanel
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        triggerRef={settingsTriggerRef}
+        config={tetrisSettings}
+        settings={settings}
+        onSettingChange={(id, value) => {
+          if (id === "sound") toggle("sound");
+          else if (
+            id === "effectsVolume" ||
+            id === "musicVolume" ||
+            id === "voiceVolume"
+          ) {
+            setVolume(id, Number(value));
+          } else if (
+            id === "haptics" ||
+            id === "ios" ||
+            id === "reduced" ||
+            id === "overlay"
+          ) {
+            toggle(id);
+          }
+        }}
+      />
       {leaderboardEnabled && (
         <Leaderboard open={leaderboardOpen} onOpenChange={setLeaderboardOpen} />
       )}

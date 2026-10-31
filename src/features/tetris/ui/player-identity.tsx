@@ -19,8 +19,11 @@ export function usePlayerIdentity() {
     auth: {
       loading: state.loading,
       googleAvailable: state.googleAvailable,
+      appleAvailable: state.appleAvailable,
       user:
-        state.kind === "google" ? { displayName: state.profile.name } : null,
+        state.kind === "google" || state.kind === "apple"
+          ? { displayName: state.profile.name }
+          : null,
     },
     login,
     logout,

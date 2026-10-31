@@ -22,9 +22,10 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { GoogleSignIn } from "./google-sign-in";
+import { OAuthSignInButtons } from "./google-sign-in";
 import {
   loadProfile,
+  loginWithProvider,
   logout,
   saveProfile,
   useIdentityState,
@@ -67,7 +68,7 @@ export function IdentityError({
   return (
     <div className="identity-error" role="alert" aria-live="polite">
       <p>{children}</p>
-      {retry && (
+      {retry && !String(children).startsWith("Serveur injoignable") && (
         <Button type="button" variant="outline" onClick={retry}>
           Réessayer
         </Button>
@@ -214,6 +215,8 @@ export function IdentitySelector({
   editOnly = false,
   avatarOverride,
   menuExtras,
+  providersOnly = false,
+  hideNickname = false,
 }: {
   draft?: ScoreDraft;
   disabled?: boolean;
@@ -224,6 +227,9 @@ export function IdentitySelector({
   avatarOverride?: React.ReactNode;
   /** Extra items rendered at the end of the avatar dropdown. */
   menuExtras?: React.ReactNode;
+  /** Hide local nickname/profile editing for games that use provider identity only. */
+  providersOnly?: boolean;
+  hideNickname?: boolean;
 }) {
   const state = useIdentityState();
   const [open, setOpen] = useState(false);
@@ -235,7 +241,11 @@ export function IdentitySelector({
   const unavailable =
     disabled || !state.loaded || state.loading || !!state.busy;
   useEffect(() => {
-    if (open && panel === "connect" && state.kind === "google") {
+    if (
+      open &&
+      panel === "connect" &&
+      (state.kind === "google" || state.kind === "apple")
+    ) {
       const frame = requestAnimationFrame(() => setOpen(false));
       return () => cancelAnimationFrame(frame);
     }
@@ -247,14 +257,31 @@ export function IdentitySelector({
   const error = state.error && (
     <IdentityError
       retry={() => {
-        if (state.error.includes("Google") || state.error.includes("fenêtre"))
-          void import("../client-store").then(({ login }) => login(draft));
-        else void loadProfile(true);
+        if (
+          state.error.includes("Google") ||
+          state.error.includes("Apple") ||
+          state.error.includes("fenêtre")
+        ) {
+          const provider = state.error.includes("Apple") ? "apple" : "google";
+          void loginWithProvider(provider, draft);
+        } else void loadProfile(true);
       }}
     >
       {state.error}
     </IdentityError>
   );
+  const signedIn = state.kind === "google" || state.kind === "apple";
+  if (providersOnly) {
+    return (
+      <div className="identity-selector">
+        {profile && <div className="identity-profile"><PlayerAvatar name={profile.name} avatar={profile.avatar} /><div><strong>{profile.name}</strong><p>Compte {state.kind === "apple" ? "Apple" : "Google"}</p></div></div>}
+        {signedIn ? (
+          <Button type="button" variant="outline" disabled={!!state.busy} onClick={() => void logout()}>{state.busy === "logout" ? "Déconnexion…" : "Se déconnecter"}</Button>
+        ) : <OAuthSignInButtons draft={draft} disabled={disabled} />}
+        {!state.error.startsWith("Serveur injoignable") && error}
+      </div>
+    );
+  }
   const choices = (
     <section
       className="identity-selector"
@@ -269,12 +296,18 @@ export function IdentitySelector({
           )}
           <div>
             <strong>{profile.name}</strong>
-            <p>{state.kind === "google" ? "Compte Google" : "Pseudo"}</p>
+            <p>
+              {state.kind === "google"
+                ? "Compte Google"
+                : state.kind === "apple"
+                  ? "Compte Apple"
+                  : "Pseudo"}
+            </p>
           </div>
         </div>
       )}
       {state.loading && <p role="status">Chargement du profil…</p>}
-      {state.kind === "google" ? (
+      {signedIn ? (
         <Button
           type="button"
           className="identity-action"
@@ -309,7 +342,7 @@ export function IdentitySelector({
       {!open && error}
     </section>
   );
-  const activePanel = state.kind === "google" ? "choices" : panel;
+  const activePanel = signedIn ? "choices" : panel;
   return (
     <Sheet
       open={open}
@@ -323,7 +356,7 @@ export function IdentitySelector({
           <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="identity-dropdown z-[95] min-w-56"
+            className="identity-dropdown z-[95] min-w-56 w-[min(22rem,calc(100vw-2rem))]"
             onCloseAutoFocus={(event) => {
               if (open) event.preventDefault();
             }}
@@ -334,18 +367,18 @@ export function IdentitySelector({
                 <DropdownMenuSeparator />
               </>
             )}
-            <DropdownMenuItem
-              disabled={unavailable || state.kind === "google"}
+            {!hideNickname && <DropdownMenuItem
+              disabled={unavailable || signedIn}
               title={
-                state.kind === "google"
-                  ? "Le pseudo vient de ton compte Google"
+                signedIn
+                  ? `Le pseudo vient de ton compte ${state.kind === "apple" ? "Apple" : "Google"}`
                   : undefined
               }
               onSelect={() => show("pseudo")}
             >
               {profile ? "Modifier mon pseudo" : "Ajouter un pseudo"}
-            </DropdownMenuItem>
-            {state.kind === "google" ? (
+            </DropdownMenuItem>}
+            {signedIn ? (
               <DropdownMenuItem
                 disabled={!!state.busy}
                 onSelect={(event) => {
@@ -357,18 +390,24 @@ export function IdentitySelector({
               >
                 {state.busy === "logout" ? "Déconnexion…" : "Se déconnecter"}
               </DropdownMenuItem>
+            ) : hideNickname ? (
+              <div className="flex flex-col gap-2 p-2" onKeyDown={(event) => event.stopPropagation()}>
+                <OAuthSignInButtons draft={draft} layout="vertical" />
+              </div>
             ) : (
               <DropdownMenuItem
                 disabled={
-                  unavailable || !state.googleAvailable || !state.online
+                  unavailable ||
+                  (!state.googleAvailable && !state.appleAvailable) ||
+                  !state.online
                 }
                 onSelect={() => show("connect")}
               >
-                Se connecter avec Google
+                Se connecter avec Google ou Apple
               </DropdownMenuItem>
             )}
             {menuExtras}
-            {state.error && <div className="p-2">{error}</div>}
+            {state.error && !hideNickname && <div className="p-2">{error}</div>}
           </DropdownMenuContent>
         </DropdownMenu>
       ) : trigger ? (
@@ -379,10 +418,10 @@ export function IdentitySelector({
             type="button"
             variant="secondary"
             className="identity-action"
-            disabled={unavailable || state.kind === "google"}
+            disabled={unavailable || signedIn}
             title={
-              state.kind === "google"
-                ? "Le pseudo vient de ton compte Google"
+              signedIn
+                ? `Le pseudo vient de ton compte ${state.kind === "apple" ? "Apple" : "Google"}`
                 : undefined
             }
             onClick={() => show("pseudo")}
@@ -398,9 +437,9 @@ export function IdentitySelector({
             className="identity-action"
             disabled={
               unavailable ||
-              !state.googleAvailable ||
+              (!state.googleAvailable && !state.appleAvailable) ||
               !state.online ||
-              state.kind === "google"
+              signedIn
             }
             onClick={() => show("connect")}
           >
@@ -429,7 +468,7 @@ export function IdentitySelector({
             {activePanel === "pseudo"
               ? "Choisis un pseudo et, si tu veux, une photo. Ton profil est partagé sur ce site."
               : activePanel === "connect"
-                ? "Connecte ton compte Google pour utiliser ton profil sur tout le site."
+                ? "Connecte ton compte Google ou Apple pour utiliser ton profil sur tout le site."
                 : "Choisis un pseudo ou connecte ton compte."}
           </SheetDescription>
         </SheetHeader>
@@ -441,7 +480,7 @@ export function IdentitySelector({
             />
           ) : activePanel === "connect" ? (
             <>
-              <GoogleSignIn draft={draft} disabled={disabled} />
+              <OAuthSignInButtons draft={draft} disabled={disabled} />
               {error}
             </>
           ) : (

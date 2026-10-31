@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sheet";
 import { useIdentityState } from "../profile/client-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { OAuthSignInButtons } from "@/features/account/ui/google-sign-in";
 export type { RankedRun } from "../auth/draft";
 export function Leaderboard({
   open,
@@ -104,39 +105,72 @@ export function Leaderboard({
                 {[...identity.scores]
                   .filter(
                     (row) =>
-                      row.kind !== "google" ||
+                      (row.kind !== "google" && row.kind !== "apple") ||
                       row.identityKey === identity.profile?.key,
                   )
                   .sort((a, b) => b.score - a.score)
                   .slice(0, 20)
-                  .map((row) => (
-                    <li key={row.id} className="flex items-center gap-3">
-                      <Avatar className="size-9">
-                        {row.identityKey === identity.profile?.key &&
-                          identity.profile.avatar && (
-                            <AvatarImage src={identity.profile.avatar} alt="" />
+                  .map((row) => {
+                    const accountProfile =
+                      identity.kind === "google" || identity.kind === "apple"
+                        ? identity.profile
+                        : null;
+                    const ownScore =
+                      accountProfile !== null &&
+                      row.identityKey === accountProfile.key;
+                    const displayName =
+                      row.kind === "google" || row.kind === "apple"
+                        ? accountProfile && ownScore
+                          ? accountProfile.name
+                          : row.name
+                        : "Anonyme";
+                    return (
+                      <li key={row.id} className="flex items-center gap-3">
+                        <Avatar className="size-9">
+                          {ownScore && accountProfile?.avatar && (
+                            <AvatarImage src={accountProfile.avatar} alt="" />
                           )}
-                        <AvatarFallback>
-                          {row.name.slice(0, 1).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="min-w-0 flex-1 truncate">
-                        {row.identityKey === identity.profile?.key
-                          ? identity.profile.name
-                          : row.name}
-                      </span>
-                      <span className="tabular-nums">
-                        {row.score.toLocaleString("fr")}
-                      </span>
-                    </li>
-                  ))}
+                          <AvatarFallback>
+                            {displayName.slice(0, 1).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="min-w-0 flex-1 truncate">
+                          {displayName}
+                        </span>
+                        <span className="tabular-nums">
+                          {row.score.toLocaleString("fr")}
+                        </span>
+                      </li>
+                    );
+                  })}
               </ol>
             </section>
           )}
-          <p className="text-xs text-muted-foreground">
-            Google et pseudos anonymes figurent au classement général. Les
-            profils locaux restent sur cet appareil.
-          </p>
+          <section
+            aria-label="Enregistrement en ligne"
+            className="lava-leaderboard-auth space-y-3 text-left"
+          >
+            {identity.kind === "google" || identity.kind === "apple" ? (
+              <>
+                <p className="text-sm font-medium">
+                  Connecté avec {identity.profile.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  À la fin d’une partie, choisis « Enregistrer en ligne » pour
+                  envoyer ton score.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="font-medium">Enregistrer mes scores en ligne</h3>
+                <p className="lava-leaderboard-auth-copy text-sm text-muted-foreground">
+                  Sans connexion, tes scores restent anonymes et sauvegardés sur
+                  cet appareil.
+                </p>
+                <OAuthSignInButtons layout="horizontal" />
+              </>
+            )}
+          </section>
         </div>
       </SheetContent>
     </Sheet>

@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { type NextRequest, type NextResponse } from "next/server";
-import { googleIdentity } from "../auth/identity";
-export function googleConfigured() {
+import { accountIdentity, accountProvider } from "../auth/identity";
+export function supabaseConfigured() {
   try {
     const url = new URL(process.env.SUPABASE_URL || "");
     const key =
@@ -23,6 +23,12 @@ export function googleConfigured() {
   } catch {
     return false;
   }
+}
+export function googleConfigured() {
+  return supabaseConfigured();
+}
+export function appleConfigured() {
+  return supabaseConfigured() && process.env.APPLE_AUTH_ENABLED === "true";
 }
 /** One SSR client per request. Its cookies never reach portfolio pages. */
 export function authClient(request: NextRequest) {
@@ -73,8 +79,8 @@ export function authClient(request: NextRequest) {
     },
   };
 }
-export async function verifiedGoogleUser(request: NextRequest) {
-  if (!googleConfigured())
+export async function verifiedAccountUser(request: NextRequest) {
+  if (!supabaseConfigured())
     return { user: null, apply: (response: NextResponse) => response };
   const context = authClient(request);
   if (
@@ -86,10 +92,18 @@ export async function verifiedGoogleUser(request: NextRequest) {
   try {
     const { data, error } = await context.client.auth.getUser();
     return {
-      user: !error && googleIdentity(data.user) ? data.user : null,
+      user: !error && accountIdentity(data.user) ? data.user : null,
       apply: context.apply,
     };
   } catch {
     return { user: null, apply: context.apply };
   }
+}
+export async function verifiedGoogleUser(request: NextRequest) {
+  const auth = await verifiedAccountUser(request);
+  return {
+    ...auth,
+    user:
+      auth.user && accountProvider(auth.user) === "google" ? auth.user : null,
+  };
 }

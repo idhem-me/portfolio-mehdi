@@ -1,7 +1,11 @@
 import type { NextRequest } from "next/server";
 import { createHash } from "node:crypto";
-import { verifiedGoogleUser } from "./auth";
-import { googleIdentity, googleDisplayName } from "../auth/identity";
+import { verifiedAccountUser } from "./auth";
+import {
+  accountDisplayName,
+  accountIdentity,
+  accountProvider,
+} from "../auth/identity";
 import { store } from "./store";
 export function googlePhoto(metadata: Record<string, unknown>) {
   try {
@@ -16,8 +20,9 @@ export function googlePhoto(metadata: Record<string, unknown>) {
   return null;
 }
 export async function activePlayer(request: NextRequest) {
-  const auth = await verifiedGoogleUser(request);
-  const account = auth.user ? googleIdentity(auth.user) : null;
+  const auth = await verifiedAccountUser(request);
+  const account = auth.user ? accountIdentity(auth.user) : null;
+  const provider = auth.user ? accountProvider(auth.user) : null;
   const owner = account ?? request.cookies.get("lava-player")?.value ?? "";
   const custom = (
     !account && owner ? await (await store()).profile(owner) : null
@@ -28,7 +33,9 @@ export async function activePlayer(request: NextRequest) {
   const profile =
     account && auth.user
       ? {
-          name: googleDisplayName(auth.user.user_metadata),
+          name: provider
+            ? accountDisplayName(provider, auth.user.user_metadata)
+            : "Joueur",
           avatar: googlePhoto(auth.user.user_metadata),
         }
       : custom;
@@ -38,7 +45,7 @@ export async function activePlayer(request: NextRequest) {
     profile: profile
       ? {
           ...profile,
-          kind: account ? "google" : "local",
+          kind: account ? provider ?? "google" : "local",
           key: createHash("sha256").update(owner).digest("hex"),
         }
       : null,

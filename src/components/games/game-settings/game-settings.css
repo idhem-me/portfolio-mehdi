@@ -1,0 +1,229 @@
+.game-settings-panel[data-slot="sheet-content"] {
+  --game-settings-padding: calc(var(--spacing) * 6);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+
+.game-settings-header[data-slot="sheet-header"] {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  flex: none;
+  padding: calc(var(--game-settings-padding) * 1.2)
+    calc(var(--game-settings-padding) + var(--control-height-lg))
+    var(--game-settings-padding) var(--game-settings-padding);
+  border-bottom: 1px solid var(--border);
+  background: var(--popover);
+}
+
+.game-settings-panel > [data-slot="sheet-close"] {
+  position: absolute;
+  z-index: 2;
+  top: max(calc(var(--spacing) * 4), env(safe-area-inset-top));
+  right: max(calc(var(--spacing) * 4), env(safe-area-inset-right));
+  background: var(--popover);
+}
+
+.game-settings-scroll {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--game-settings-padding);
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: calc(var(--game-settings-padding) / 2) var(--game-settings-padding)
+    var(--game-settings-padding);
+  line-height: 1.7;
+}
+
+.game-settings-section {
+  display: grid;
+  gap: calc(var(--spacing) * 3);
+  min-width: 0;
+}
+
+.game-settings-section-heading {
+  display: grid;
+  gap: calc(var(--spacing) * 2);
+}
+
+.game-settings-section-heading h2 {
+  margin: 0;
+  font-size: var(--control-text);
+  font-weight: 600;
+}
+
+.game-settings-section-heading p,
+.game-settings-description,
+.game-settings-note {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: var(--control-text-xs);
+}
+
+.game-settings-card {
+  display: grid;
+  gap: calc(var(--spacing) * 4);
+  min-width: 0;
+  padding: calc(var(--spacing) * 4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  color: var(--card-foreground);
+}
+
+.game-settings-card.is-disabled {
+  opacity: 0.55;
+}
+
+.game-settings-panel .game-settings-card.is-borderless {
+  border: none !important;
+  outline: none;
+  box-shadow: none;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.game-settings-account-title {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--spacing) * 2);
+  margin: 0;
+  font-size: var(--control-text);
+  font-weight: 600;
+}
+
+.game-settings-account-title svg {
+  width: calc(var(--spacing) * 4);
+  height: calc(var(--spacing) * 4);
+  color: var(--muted-foreground);
+}
+
+.game-settings-toggle {
+  display: flex;
+  width: 100%;
+  min-height: var(--control-height-lg);
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--spacing) * 4);
+  padding: calc(var(--spacing) * 2) 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.game-settings-toggle + .game-settings-toggle {
+  border-top: 1px solid var(--border);
+  padding-top: calc(var(--spacing) * 4);
+}
+
+.game-settings-toggle-copy {
+  display: grid;
+  gap: calc(var(--spacing) * 1);
+  min-width: 0;
+}
+
+.game-settings-toggle [data-slot="badge"] {
+  flex: none;
+}
+
+.game-settings-slider {
+  display: grid;
+  gap: calc(var(--spacing) * 2);
+  min-width: 0;
+}
+
+.game-settings-slider-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--spacing) * 3);
+  font-size: var(--control-text);
+  font-weight: 500;
+}
+
+.game-settings-slider-heading span {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.game-settings-slider input[type="range"] {
+  display: block;
+  width: 100%;
+  height: var(--control-height-lg);
+  margin: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.game-settings-slider input[type="range"]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+.game-settings-segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(var(--spacing) * 1);
+  padding: calc(var(--spacing) * 1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.game-settings-segmented > button {
+  min-width: 0;
+  min-height: var(--control-height-lg);
+  height: auto;
+  gap: calc(var(--spacing) * 1.5);
+  padding: calc(var(--spacing) * 2);
+  white-space: nowrap;
+}
+
+.game-settings-button {
+  width: 100%;
+  min-height: var(--control-height-lg);
+  justify-content: center;
+}
+
+.game-settings-outreach-note,
+.game-settings-panel .game-settings-outreach h3 {
+  margin: 0;
+  font-size: var(--control-text-xs);
+}
+
+.game-settings-outreach-note {
+  color: var(--muted-foreground);
+}
+
+.game-settings-panel .game-settings-outreach {
+  display: grid;
+  gap: calc(var(--spacing) * 3);
+}
+
+@media (max-width: 24rem) {
+  .game-settings-segmented > button {
+    flex-direction: column;
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game-settings-panel,
+  [data-slot="sheet-overlay"]:has(+ .game-settings-panel) {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

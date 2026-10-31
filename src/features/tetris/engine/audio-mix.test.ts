@@ -28,19 +28,22 @@ test("old 70/35/70 settings become 50/50/50 once while preserving the sound pref
     globalThis,
     "localStorage",
   );
-  let saved = JSON.stringify({
-    effectsVolume: 70,
-    musicVolume: 35,
-    voiceVolume: 70,
-    sound: false,
-  });
+  const storage = new Map<string, string>([
+    [
+      "lava-settings",
+      JSON.stringify({
+        effectsVolume: 70,
+        musicVolume: 35,
+        voiceVolume: 70,
+        sound: false,
+      }),
+    ],
+  ]);
   Object.defineProperty(globalThis, "localStorage", {
     configurable: true,
     value: {
-      getItem: () => saved,
-      setItem: (_key: string, value: string) => {
-        saved = value;
-      },
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
     },
   });
   try {
@@ -50,8 +53,9 @@ test("old 70/35/70 settings become 50/50/50 once while preserving the sound pref
     assert.equal(settings.voiceVolume, 50);
     assert.equal(settings.sound, false);
     assert.equal(settings.audioScaleVersion, 2);
+    assert.deepEqual(JSON.parse(storage.get("tetris.settings") ?? "{}"), settings);
     assert.deepEqual(loadSettings(), settings);
-    saved = JSON.stringify({ ...settings, voiceVolume: 100 });
+    storage.set("tetris.settings", JSON.stringify({ ...settings, voiceVolume: 100 }));
     assert.equal(loadSettings().voiceVolume, 100);
   } finally {
     if (descriptor)

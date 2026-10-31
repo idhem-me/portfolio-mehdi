@@ -8,7 +8,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useIdentityState } from "@/features/account/client-store";
-import { PlayerProfileButton } from "@/features/account/ui/profile-button";
 import { useSettings } from "./state/usePreferences";
 import { useNotices } from "./state/useNotices";
 import { useEffect, useRef, useState } from "react";
@@ -25,20 +24,15 @@ import {
   Download,
   Upload,
   Check,
-  Info,
   X,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { LevelUp } from "./components/LevelUp";
-import { GameFeelSettings } from "@/components/games/game-feel-settings";
-import { GameAppearanceSettings } from "@/components/games/game-appearance-settings";
-import { GameSettingsOutreach } from "@/components/games/game-settings-outreach";
+import {
+  GameSettingsPanel,
+  SettingsButton,
+  SettingsCard,
+} from "@/components/games/game-settings";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet } from "./components/Sheet";
@@ -48,6 +42,7 @@ import { BURGER_ASSETS } from "./assets/game-assets";
 import { BurgerAudio } from "./feel/audio";
 import { haptic } from "./feel/haptics";
 import type { FeedbackKind } from "./feel/config";
+import { clickerBurgerSettings } from "./settings.config";
 import {
   buildingLevel,
   clickProduction,
@@ -161,6 +156,7 @@ export default function App({
   const particleId = useRef(0);
   const particleTimers = useRef<ReturnType<typeof setTimeout>[]>([]);
   const file = useRef<HTMLInputElement>(null);
+  const settingsTriggerRef = useRef<HTMLElement | null>(null);
   const audio = useRef<BurgerAudio | null>(null);
   const iosSwitch = useRef<HTMLInputElement>(null);
   const settingsRef = useRef(settings);
@@ -311,6 +307,10 @@ export default function App({
       }
       if (event.key === "r" || event.key === "R") {
         event.preventDefault();
+        settingsTriggerRef.current =
+          document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
         setPanel((p) => (p === "settings" ? null : "settings"));
         return;
       }
@@ -391,6 +391,83 @@ export default function App({
       </div>
     );
   }
+  const settingsCustomSections = [
+    {
+      title: "Raccourcis clavier",
+      content: (
+        <SettingsCard>
+          <p className="game-settings-note">
+            Espace : préparer un burger · Échap : fermer · R : réglages · 1–5 :
+            Améliorer, Recherche, Missions, Extensions, Bourse.
+          </p>
+        </SettingsCard>
+      ),
+    },
+    {
+      title: "Sauvegarde",
+      content: (
+        <SettingsCard className="is-borderless">
+          <p className="game-settings-note">
+            {game.saved
+              ? "Automatique sur cet appareil"
+              : "Enregistrement indisponible"} · hors ligne : 8 h maximum.
+          </p>
+          <SettingsButton type="button" onClick={exportSave}>
+            <Download aria-hidden="true" /> Exporter
+          </SettingsButton>
+          <SettingsButton type="button" onClick={() => file.current?.click()}>
+            <Upload aria-hidden="true" /> Importer
+          </SettingsButton>
+          <NativeInput
+            hidden
+            type="file"
+            accept=".json,application/json"
+            ref={file}
+            onChange={(event) => void importSave(event.target.files?.[0])}
+          />
+          {game.error && <p role="alert" className="error-message">{game.error}</p>}
+          {game.error && (
+            <SettingsButton type="button" onClick={game.allowSave}>
+              Remplacer la sauvegarde illisible
+            </SettingsButton>
+          )}
+          <SettingsButton
+            type="button"
+            variant="danger"
+            onClick={() => setPanel("reset")}
+          >
+            Recommencer
+          </SettingsButton>
+        </SettingsCard>
+      ),
+    },
+    ...(visible.prestige
+      ? [
+          {
+            title: "Faillite stratégique",
+            content: (
+              <SettingsCard>
+                <p className="game-settings-note">
+                  Chaque point de capital augmente la production et les clics de
+                  10 % et la demande de 4 % pour les parties suivantes.
+                </p>
+                <p className="game-settings-note">
+                  Gain à la liquidation : +{prestigeGain(s)} point
+                  {prestigeGain(s) === 1 ? "" : "s"}. Capital permanent actuel : {s.capital}.
+                </p>
+                <SettingsButton
+                  type="button"
+                  disabled={prestigeGain(s) < 1}
+                  onClick={() => setPanel("prestige")}
+                >
+                  Liquider
+                </SettingsButton>
+              </SettingsCard>
+            ),
+          },
+        ]
+      : []),
+  ];
   return (
     <div className="clicker-burger burger-dashboard">
       <header className="game-header">
@@ -411,11 +488,13 @@ export default function App({
             variant="ghost"
             size="icon"
             aria-label="Réglages"
-            onClick={() => setPanel("settings")}
+            onClick={(event) => {
+              settingsTriggerRef.current = event.currentTarget;
+              setPanel("settings");
+            }}
           >
             <Settings />
           </Button>
-          <PlayerProfileButton />
         </div>
         <NativeInput
           ref={iosSwitch}
@@ -724,12 +803,11 @@ export default function App({
           </p>
         </div>
       </section>
-      {panel && (
+      {panel && panel !== "settings" && (
         <Sheet
           title={TITLES[panel]}
           onClose={() => setPanel(null)}
           side={
-            panel === "settings" ||
             panel === "reset" ||
             panel === "prestige" ||
             panel === "missions-done"
@@ -1196,132 +1274,6 @@ export default function App({
               ))}
             </Tabs>
           )}
-          {panel === "settings" && (
-            <div className="burger-settings">
-              <GameAppearanceSettings />
-              <GameFeelSettings
-                className="burger-feel-settings"
-                value={settings}
-                volumeInputId="burger-effects-volume"
-                volumeDescription="Clics, nouveautés et niveaux"
-                onUnlockAudio={unlockFeel}
-                onToggleSound={() => toggleSetting("sound")}
-                onToggleHaptics={() => toggleSetting("haptics")}
-                onToggleIos={() => toggleSetting("ios")}
-                onEffectsVolume={(value) => {
-                  updateSettings({ effectsVolume: value });
-                  audio.current?.setVolume(value);
-                }}
-                onPreviewEffects={() => audio.current?.emit("cook")}
-              >
-                <Button
-                  variant="outline"
-                  role="switch"
-                  aria-checked={settings.levelPopups}
-                  onClick={() => {
-                    toggleSetting("levelPopups");
-                    if (settings.levelPopups) game.dismissLevel();
-                  }}
-                >
-                  Popups de félicitation
-                  <Badge
-                    variant={settings.levelPopups ? "default" : "secondary"}
-                  >
-                    {settings.levelPopups ? "Oui" : "Non"}
-                  </Badge>
-                </Button>
-              </GameFeelSettings>
-
-              <GameSettingsOutreach
-                className="burger-settings-actions"
-                gameName="Clicker Burger"
-                shareText="Viens gérer ton empire de burgers."
-              />
-              <section className="burger-settings-actions">
-                <h3>Raccourcis clavier</h3>
-                <p className="burger-settings-note">
-                  Espace : préparer un burger · Échap : fermer · R : réglages ·
-                  1–5 : Améliorer, Recherche, Missions, Extensions, Bourse.
-                </p>
-              </section>
-              <section className="burger-settings-actions">
-                <h3>Sauvegarde</h3>
-                <p className="burger-settings-note">
-                  {game.saved
-                    ? "Automatique sur cet appareil"
-                    : "Enregistrement indisponible"}{" "}
-                  · hors ligne : 8 h maximum.
-                </p>
-                <Button variant="secondary" onClick={exportSave}>
-                  <Download />
-                  Exporter
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => file.current?.click()}
-                >
-                  <Upload />
-                  Importer
-                </Button>
-                <NativeInput
-                  hidden
-                  type="file"
-                  accept=".json,application/json"
-                  ref={file}
-                  onChange={(ev) => void importSave(ev.target.files?.[0])}
-                />
-                {game.error && (
-                  <>
-                    <p role="alert" className="error-message">
-                      {game.error}
-                    </p>
-                    <Button variant="secondary" onClick={game.allowSave}>
-                      Remplacer la sauvegarde illisible
-                    </Button>
-                  </>
-                )}
-                {visible.prestige && (
-                  <>
-                    <h3 className="prestige-heading">
-                      Faillite stratégique
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <NativeButton
-                              type="button"
-                              className="info-tip"
-                              aria-label="À propos du capital permanent"
-                            >
-                              <Info size={14} />
-                            </NativeButton>
-                          </TooltipTrigger>
-                          <TooltipContent className="max-w-56 text-left">
-                            Chaque point de capital : production/clics +10 %,
-                            demande +4 %, pour toutes les parties suivantes.
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </h3>
-                    <p className="burger-settings-note">
-                      Gain à la liquidation : +{prestigeGain(s)} point
-                      {prestigeGain(s) === 1 ? "" : "s"}. Capital permanent
-                      actuel : {s.capital}.
-                    </p>
-                    <Button
-                      variant="secondary"
-                      disabled={prestigeGain(s) < 1}
-                      onClick={() => setPanel("prestige")}
-                    >
-                      Liquider
-                    </Button>
-                  </>
-                )}
-                <Button variant="destructive" onClick={() => setPanel("reset")}>
-                  Recommencer
-                </Button>
-              </section>
-            </div>
-          )}
           {(panel === "reset" || panel === "prestige") && (
             <>
               <p className="confirm-text">
@@ -1356,6 +1308,29 @@ export default function App({
           )}
         </Sheet>
       )}
+      <GameSettingsPanel
+        open={panel === "settings"}
+        onClose={() => setPanel(null)}
+        triggerRef={settingsTriggerRef}
+        config={clickerBurgerSettings}
+        settings={settings}
+        customSections={settingsCustomSections}
+        onSettingChange={(id, value) => {
+          if (id === "sound") {
+            unlockFeel();
+            toggleSetting("sound");
+          } else if (id === "effectsVolume") {
+            const next = Number(value);
+            updateSettings({ effectsVolume: next });
+            audio.current?.setVolume(next);
+          } else if (id === "haptics" || id === "ios") {
+            toggleSetting(id);
+          } else if (id === "levelPopups") {
+            toggleSetting("levelPopups");
+            if (settings.levelPopups) game.dismissLevel();
+          }
+        }}
+      />
       {settings.levelPopups && game.levelNotice !== null && (
         <LevelUp level={game.levelNotice} onClose={game.dismissLevel} />
       )}

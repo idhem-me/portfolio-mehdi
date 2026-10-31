@@ -139,3 +139,14 @@
   min-width: 18rem;
   width: min(100vw - 2rem, 20rem);
 }
+
+.identity-dropdown:has([data-provider-buttons]) {
+  width: min(22rem, calc(100vw - 2rem));
+  max-width: calc(100vw - 2rem);
+  overflow-x: visible;
+}
+
+.identity-dropdown [data-provider-buttons] > button {
+  width: 100%;
+  min-width: 0;
+}

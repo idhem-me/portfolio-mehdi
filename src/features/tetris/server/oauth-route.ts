@@ -1,0 +1,71 @@
+import { NextRequest, NextResponse } from "next/server";
+import { accountGate as gate } from "@/features/account/server/http";
+import { safeGamePath, type OAuthProvider } from "../auth/identity";
+import { appleConfigured, authClient, supabaseConfigured } from "./auth";
+import { popupResult } from "./oauth-popup";
+
+export async function startOAuth(
+  request: NextRequest,
+  provider: OAuthProvider,
+) {
+  const denied = gate(request);
+  if (denied) return denied;
+  const path = safeGamePath(request.nextUrl.searchParams.get("returnTo"));
+  const popup = request.nextUrl.searchParams.get("popup") === "1";
+  const origin = request.nextUrl.protocol + "//" + request.headers.get("host");
+  const fallback = () =>
+    popup
+      ? popupResult(false, provider)
+      : NextResponse.redirect(new URL(path + "?auth=error", origin), 303);
+  if (
+    !supabaseConfigured() ||
+    (provider === "apple" && !appleConfigured())
+  )
+    return fallback();
+
+  const context = authClient(request);
+  const { data: ticket } = await context.client.rpc("cards_prepare_login");
+  const { data, error } = await context.client.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo: origin + "/api/tetris/auth/callback",
+      skipBrowserRedirect: true,
+      ...(provider === "google" &&
+      request.nextUrl.searchParams.get("switchAccount") === "1"
+        ? { queryParams: { prompt: "select_account" } }
+        : {}),
+    },
+  });
+  if (error || !data.url) return context.apply(fallback());
+  const response = context.apply(NextResponse.redirect(data.url, 303));
+  if (typeof ticket === "string")
+    response.cookies.set("cards-login-ticket", ticket, {
+      path: "/api/tetris",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: request.nextUrl.protocol === "https:",
+      maxAge: 600,
+    });
+  response.cookies.set("lava-auth-popup", popup ? "1" : "0", {
+    path: "/api/tetris",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: request.nextUrl.protocol === "https:",
+    maxAge: 600,
+  });
+  response.cookies.set("lava-auth-return", path, {
+    path: "/api/tetris",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: request.nextUrl.protocol === "https:",
+    maxAge: 600,
+  });
+  response.cookies.set("lava-auth-provider", provider, {
+    path: "/api/tetris",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: request.nextUrl.protocol === "https:",
+    maxAge: 600,
+  });
+  return response;
+}

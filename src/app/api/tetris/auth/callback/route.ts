@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { accountGate as gate } from "@/features/account/server/http";
-import { authClient, googleConfigured } from "@/features/tetris/server/auth";
+import {
+  authClient,
+  supabaseConfigured,
+} from "@/features/tetris/server/auth";
+import type { OAuthProvider } from "@/features/tetris/auth/identity";
+import { accountProvider } from "@/features/tetris/auth/identity";
 import { safeGamePath } from "@/features/tetris/auth/identity";
 import { resolveCardsChoice } from "@/features/cards/server/save-choice";
 import { popupResult } from "@/features/tetris/server/oauth-popup";
@@ -10,12 +15,19 @@ export async function GET(request: NextRequest) {
   const path = safeGamePath(request.cookies.get("lava-auth-return")?.value);
   const origin = request.nextUrl.protocol + "//" + request.headers.get("host");
   let success = false;
-  const context = googleConfigured() ? authClient(request) : null;
+  const context = supabaseConfigured() ? authClient(request) : null;
   const code = request.nextUrl.searchParams.get("code");
+  const providerValue = request.cookies.get("lava-auth-provider")?.value;
+  const expectedProvider: OAuthProvider =
+    providerValue === "apple" ? "apple" : "google";
   if (context && code && !request.nextUrl.searchParams.has("error")) {
     try {
       const { error } = await context.client.auth.exchangeCodeForSession(code);
-      success = !error;
+      if (!error) {
+        const { data } = await context.client.auth.getUser();
+        success = accountProvider(data.user) === expectedProvider;
+        if (!success) await context.client.auth.signOut({ scope: "local" });
+      }
       const ticket = request.cookies.get("cards-login-ticket")?.value;
       if (success && ticket) {
         const claim = await context.client.rpc("cards_claim_login", {
@@ -37,7 +49,7 @@ export async function GET(request: NextRequest) {
   }
   const response =
     request.cookies.get("lava-auth-popup")?.value === "1"
-      ? popupResult(success)
+      ? popupResult(success, expectedProvider)
       : NextResponse.redirect(
           new URL(path + (success ? "?auth=success" : "?auth=error"), origin),
           303,
@@ -54,6 +66,12 @@ export async function GET(request: NextRequest) {
     maxAge: 0,
   });
   response.cookies.set("lava-auth-return", "", {
+    path: "/api/tetris",
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 0,
+  });
+  response.cookies.set("lava-auth-provider", "", {
     path: "/api/tetris",
     httpOnly: true,
     sameSite: "lax",

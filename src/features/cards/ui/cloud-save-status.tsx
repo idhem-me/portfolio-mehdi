@@ -29,7 +29,7 @@ export function CloudSaveStatus({
         >
           <span>
             {cloud.status === "saved"
-              ? "Progression sauvegardée avec Google"
+              ? "Progression sauvegardée avec ton compte"
               : cloud.status === "loading"
                 ? "Synchronisation de la progression…"
                 : cloud.status === "conflict"
@@ -59,7 +59,7 @@ export function CloudSaveStatus({
           <DialogDescription className="mt-2 text-sm text-muted-foreground">
             {cloud.conflict?.differentAccount
               ? "La progression de cet appareil était liée à un autre compte. Elle ne sera pas transférée sans ton choix. "
-              : "La progression de cet appareil diffère de celle de ton compte Google. "}
+              : "La progression de cet appareil diffère de celle de ton compte. "}
             Sur cet appareil : {cloud.conflict?.localCards ?? 0} cartes. Sur le
             compte : {cloud.conflict?.remoteCards ?? 0} cartes. Les collections
             ne sont pas additionnées, pour éviter les doublons. Une copie de

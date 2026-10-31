@@ -1,11 +1,12 @@
 "use client";
 import { useSyncExternalStore } from "react";
 import { saveDraft, type ScoreDraft, type GameSummary } from "../auth/draft";
+import type { OAuthProvider } from "../auth/identity";
 import { validateNickname } from "./fields";
 export type PlayerProfile = {
   name: string;
   avatar: string | null;
-  kind: "local" | "google";
+  kind: "local" | OAuthProvider;
   key: string;
   serverKey?: string;
 };
@@ -16,15 +17,16 @@ export type LocalScore = {
   lines: number;
   created: number;
   identityKey: string | null;
-  kind: "local" | "google" | "anonymous";
+  kind: "local" | OAuthProvider | "anonymous";
 };
 type Selection =
   | { kind: "anonymous"; profile: null }
-  | { kind: "local" | "google"; profile: PlayerProfile };
+  | { kind: "local" | OAuthProvider; profile: PlayerProfile };
 type State = Selection & {
   loaded: boolean;
   loading: boolean;
   googleAvailable: boolean;
+  appleAvailable: boolean;
   online: boolean;
   error: string;
   authError: string;
@@ -40,6 +42,7 @@ const initial: State = {
   loaded: false,
   loading: false,
   googleAvailable: false,
+  appleAvailable: false,
   online: true,
   error: "",
   authError: "",
@@ -112,7 +115,7 @@ function validProfile(value: unknown): value is PlayerProfile {
     typeof p.name === "string" &&
     typeof p.key === "string" &&
     /^[a-f0-9]{64}$/.test(p.key) &&
-    (p.kind === "local" || p.kind === "google") &&
+    (p.kind === "local" || p.kind === "google" || p.kind === "apple") &&
     (p.avatar === null || typeof p.avatar === "string")
   );
 }
@@ -121,7 +124,10 @@ export async function loadProfile(force = false): Promise<void> {
   if (state.loaded && !force) return;
   const id = ++generation,
     cached = read<unknown>(localKey, null);
-  if (validProfile(cached) && cached.kind === "local") local = cached;
+  if (validProfile(cached) && cached.kind === "local") {
+    local = null;
+    try { localStorage.removeItem(localKey); } catch {}
+  }
   if (!state.loaded)
     emit({
       ...select(local),
@@ -141,34 +147,31 @@ export async function loadProfile(force = false): Promise<void> {
           signal: AbortSignal.timeout(8000),
         }),
       ]);
-      // A missing local-profile backend must not disable the independent Google login.
+      // A missing local-profile backend must not disable OAuth account login.
       if (!a.ok) throw Error();
       const [profile, auth] = await Promise.all([
         p.ok ? p.json() : Promise.resolve(null),
         a.json(),
       ]);
       if (id !== generation) return;
-      if (validProfile(profile) && profile.kind === "local" && !local) {
-        local = profile;
-        write(localKey, local);
-      }
       emit({
         ...select(
-          validProfile(profile) && profile.kind === "google" ? profile : local,
+          validProfile(profile) && profile.kind !== "local" ? profile : local,
         ),
         loading: false,
         loaded: true,
         googleAvailable: !!auth.googleAvailable,
+        appleAvailable: !!auth.appleAvailable,
         ...(!p.ok
           ? {
               error:
-                "Serveur injoignable. Continue ici, ou connecte-toi avec Google.",
+                "Serveur injoignable. Continue ici, ou connecte-toi avec ton compte.",
             }
           : state.error.startsWith("Serveur injoignable")
             ? { error: "" }
             : {}),
       });
-      void syncLocalScores();
+      // Local runs are shared only after an explicit player action.
     } catch {
       if (id === generation)
         emit({
@@ -183,8 +186,8 @@ export async function loadProfile(force = false): Promise<void> {
   return loading;
 }
 export async function saveProfile(rawName: string, avatar: string | null) {
-  if (state.kind === "google")
-    throw Error("Ton profil est géré par ton compte Google.");
+  if (state.kind === "google" || state.kind === "apple")
+    throw Error("Ton profil est géré par ton compte connecté.");
   const name = validateNickname(rawName),
     key =
       local?.key ??
@@ -206,7 +209,7 @@ export async function saveProfile(rawName: string, avatar: string | null) {
         });
         if (r.status === 403)
           throw Error(
-            "Ton compte Google a changé. Rouvre le profil avant de réessayer.",
+            "Ton compte a changé. Rouvre le profil avant de réessayer.",
           );
         if (r.status === 409)
           throw Error("Ce pseudo est déjà utilisé. Choisis-en un autre.");
@@ -222,13 +225,16 @@ export async function saveProfile(rawName: string, avatar: string | null) {
             };
         }
       } catch (error) {
-        if (error instanceof Error && /pseudo|photo|Google/.test(error.message))
+        if (error instanceof Error && /pseudo|photo|compte/i.test(error.message))
           throw error;
       }
     }
-    if (identitySnapshot().kind === "google")
+    if (
+      identitySnapshot().kind === "google" ||
+      identitySnapshot().kind === "apple"
+    )
       throw Error(
-        "Ton compte Google a changé. Rouvre le profil avant de réessayer.",
+        "Ton compte a changé. Rouvre le profil avant de réessayer.",
       );
     write(localKey, next);
     local = next;
@@ -240,7 +246,8 @@ export async function saveProfile(rawName: string, avatar: string | null) {
   }
 }
 let popupJob: Promise<void> | null = null;
-export function login(
+export function loginWithProvider(
+  provider: OAuthProvider,
   draft?: ScoreDraft,
   options?: { switchAccount?: boolean },
 ): Promise<void> {
@@ -249,9 +256,9 @@ export function login(
   if (!navigator.onLine) {
     emit({
       error:
-        "Connexion Google impossible hors connexion. Vérifie ton réseau, puis réessaie.",
+        `Connexion ${provider === "apple" ? "Apple" : "Google"} impossible hors connexion. Vérifie ton réseau, puis réessaie.`,
       authError:
-        "Connexion Google impossible hors connexion. Vérifie ton réseau, puis réessaie.",
+        `Connexion ${provider === "apple" ? "Apple" : "Google"} impossible hors connexion. Vérifie ton réseau, puis réessaie.`,
     });
     return Promise.resolve();
   }
@@ -265,18 +272,18 @@ export function login(
     return Promise.resolve();
   }
   const popup = window.open(
-    "/api/tetris/auth/google?popup=1&returnTo=" +
+    `/api/tetris/auth/${provider}?popup=1&returnTo=` +
       encodeURIComponent(location.pathname) +
       (options?.switchAccount ? "&switchAccount=1" : ""),
-    "tetris-google",
+    `tetris-${provider}`,
     "popup,width=500,height=680",
   );
   if (!popup) {
     emit({
       error:
-        "La fenêtre Google a été bloquée. Autorise les fenêtres de connexion, puis réessaie.",
+        `La fenêtre ${provider === "apple" ? "Apple" : "Google"} a été bloquée. Autorise les fenêtres de connexion, puis réessaie.`,
       authError:
-        "La fenêtre Google a été bloquée. Autorise les fenêtres de connexion, puis réessaie.",
+        `La fenêtre ${provider === "apple" ? "Apple" : "Google"} a été bloquée. Autorise les fenêtres de connexion, puis réessaie.`,
     });
     return Promise.resolve();
   }
@@ -290,15 +297,15 @@ export function login(
       clearTimeout(timeout);
       window.removeEventListener("message", receive);
       await loadProfile(true);
-      if (success || state.kind === "google") popup.close();
+      if (success || state.kind === provider) popup.close();
       emit({
         busy: null,
         error:
-          state.kind === "google"
+          state.kind === provider
             ? ""
-            : "Connexion Google impossible ou annulée. Réessaie quand tu le souhaites.",
+            : `Connexion ${provider === "apple" ? "Apple" : "Google"} impossible ou annulée. Réessaie quand tu le souhaites.`,
         authError:
-          state.kind === "google"
+          state.kind === provider
             ? ""
             : "Connexion interrompue. Réessaie pour continuer.",
       });
@@ -309,7 +316,7 @@ export function login(
       if (
         event.origin === location.origin &&
         event.source === popup &&
-        event.data?.type === "tetris-google-auth"
+        event.data?.type === `tetris-${provider}-auth`
       )
         void finish(event.data.ok === true);
     };
@@ -323,6 +330,12 @@ export function login(
     window.addEventListener("message", receive);
   });
   return popupJob;
+}
+export function login(
+  draft?: ScoreDraft,
+  options?: { switchAccount?: boolean },
+) {
+  return loginWithProvider("google", draft, options);
 }
 export async function logout() {
   emit({ busy: "logout", error: "", authError: "" });
@@ -346,7 +359,7 @@ export async function logout() {
 export type QueuedScore = {
   id: string;
   steps: unknown[];
-  identity?: "google" | "guest";
+  identity?: OAuthProvider | "guest";
   name?: string;
   opening?: boolean;
   recipient?: string;
@@ -355,7 +368,9 @@ export type QueuedScore = {
 };
 async function sendScore(run: QueuedScore) {
   return fetch(
-    run.identity === "google" || run.identity === "guest"
+    run.identity === "google" ||
+    run.identity === "apple" ||
+    run.identity === "guest"
       ? "/api/tetris/leaderboard"
       : "/api/tetris/local-scores",
     {

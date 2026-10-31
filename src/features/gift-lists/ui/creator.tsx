@@ -22,10 +22,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { GoogleSignIn } from "@/features/account/ui/google-sign-in";
+import { OAuthSignInButtons } from "@/features/account/ui/google-sign-in";
 import {
   loadProfile,
-  login,
+  loginWithProvider,
   logout,
   useIdentityState,
 } from "@/features/account/client-store";
@@ -61,7 +61,11 @@ function SignIn({ retry }: { retry: () => void }) {
         </p>
       </div>
       <div className="space-y-3">
-        <GoogleSignIn variant="primary" label="Continuer avec Google" />
+        <OAuthSignInButtons
+          variant="primary"
+          googleLabel="Continuer avec Google"
+          layout="horizontal"
+        />
         <p className="text-sm text-muted-foreground">
           Tes proches réservent sans compte.
         </p>
@@ -73,7 +77,7 @@ function SignIn({ retry }: { retry: () => void }) {
       )}
       {identity.loaded &&
         !identity.loading &&
-        (!identity.googleAvailable || !identity.online) && (
+        ((!identity.googleAvailable && !identity.appleAvailable) || !identity.online) && (
           <div className="space-y-2 text-sm text-muted-foreground">
             <p role="status">
               {!identity.online
@@ -94,8 +98,13 @@ function SignIn({ retry }: { retry: () => void }) {
 function AccountMenu({ refresh }: { refresh: () => void }) {
   const identity = useIdentityState();
   const [error, setError] = useState("");
-  if (identity.kind !== "google" || !identity.profile) return null;
+  if (
+    (identity.kind !== "google" && identity.kind !== "apple") ||
+    !identity.profile
+  )
+    return null;
   const profile = identity.profile;
+  const provider = identity.kind === "apple" ? "apple" : "google";
   return (
     <div className="relative">
       <DropdownMenu>
@@ -104,7 +113,7 @@ function AccountMenu({ refresh }: { refresh: () => void }) {
             variant="ghost"
             className="size-11 rounded-full p-0"
             disabled={!!identity.busy}
-            aria-label={`Compte Google de ${profile.name}`}
+            aria-label={`Compte ${provider === "apple" ? "Apple" : "Google"} de ${profile.name}`}
           >
             <Avatar className="size-9">
               {profile.avatar && (
@@ -128,13 +137,20 @@ function AccountMenu({ refresh }: { refresh: () => void }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64">
           <DropdownMenuItem
-            disabled={!identity.online || !identity.googleAvailable}
+            disabled={
+              !identity.online ||
+              (provider === "apple"
+                ? !identity.appleAvailable
+                : !identity.googleAvailable)
+            }
             onSelect={() => {
               setError("");
-              void login(undefined, { switchAccount: true }).then(refresh);
+              void loginWithProvider(provider, undefined, {
+                switchAccount: true,
+              }).then(refresh);
             }}
           >
-            Changer de compte Google
+            Changer de compte {provider === "apple" ? "Apple" : "Google"}
           </DropdownMenuItem>
           <DropdownMenuItem
             onSelect={() => {
@@ -210,7 +226,9 @@ export function CreatorDashboard() {
     { shouldRetryOnError: false, refreshInterval: 15000 },
   );
   const data =
-    identity.kind === "google" && !identity.busy && !error
+    (identity.kind === "google" || identity.kind === "apple") &&
+    !identity.busy &&
+    !error
       ? response
       : undefined;
   return (
@@ -334,7 +352,9 @@ export function CreatorList({ id }: { id: string }) {
     { shouldRetryOnError: false, refreshInterval: 10000 },
   );
   const data =
-    identity.kind === "google" && !identity.busy && !error
+    (identity.kind === "google" || identity.kind === "apple") &&
+    !identity.busy &&
+    !error
       ? response
       : undefined;
   const [editingList, setEditingList] = useState(false);

@@ -30,9 +30,12 @@ export async function POST(request: NextRequest) {
     )
       throw Error("Profil invalide.");
     const active = await activePlayer(request);
-    if (active.profile?.kind === "google")
+    if (
+      active.profile?.kind === "google" ||
+      active.profile?.kind === "apple"
+    )
       return NextResponse.json(
-        { error: "Ton profil est géré par ton compte Google." },
+        { error: "Ton profil est géré par ton compte connecté." },
         { status: 403 },
       );
     if (
@@ -47,7 +50,9 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       );
     const owner =
-      active.profile?.kind === "google" ? active.owner : player(request);
+      active.profile?.kind === "google" || active.profile?.kind === "apple"
+        ? active.owner
+        : player(request);
     const response = json({
       ...(await (await store()).saveProfile(owner, body.name, body.avatar)),
       kind: active.profile?.kind ?? "local",
@@ -56,7 +61,10 @@ export async function POST(request: NextRequest) {
         .update(owner)
         .digest("hex"),
     });
-    if (active.profile?.kind !== "google")
+    if (
+      active.profile?.kind !== "google" &&
+      active.profile?.kind !== "apple"
+    )
       response.cookies.set("lava-player", owner, {
         httpOnly: true,
         sameSite: "lax",
