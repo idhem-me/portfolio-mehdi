@@ -20,12 +20,13 @@ export function SafeSvg({ markup, className, title }: SafeSvgProps) {
   }
 
   return (
-    <span
-      role={title ? "img" : undefined}
-      aria-label={title}
+    // An SVG image has no scripting/document privileges, even if a parser regresses.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(result.svg)}`}
+      alt={title ?? ""}
       aria-hidden={title ? undefined : true}
-      className={cn("inline-flex [&_svg]:size-full", className)}
-      dangerouslySetInnerHTML={{ __html: result.svg }}
+      className={cn("inline-block", className)}
     />
   );
 }

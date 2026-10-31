@@ -7,5 +7,12 @@ export async function GET(r: Request) {
   )
     return new Response(null, { status: 401 });
   const { error } = await db().rpc("purge_backoffice");
-  return Response.json({ ok: !error }, { status: error ? 500 : 200 });
+  const cleanup = error ? null : await db().rpc("security_cleanup");
+  return Response.json(
+    { ok: !error && !cleanup?.error },
+    {
+      status: error || cleanup?.error ? 500 : 200,
+      headers: { "Cache-Control": "private, no-store" },
+    },
+  );
 }

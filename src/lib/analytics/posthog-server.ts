@@ -1,3 +1,4 @@
+import "server-only";
 export type AnalyticsPeriod = 7 | 30;
 
 export type AnalyticsSummary = {
@@ -31,27 +32,23 @@ async function runHogQL(query: string): Promise<unknown[][]> {
     throw new Error("PostHog server credentials missing");
   }
 
-  const res = await fetch(
-    `${getApiHost()}/api/projects/${projectId}/query/`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query: {
-          kind: "HogQLQuery",
-          query,
-        },
-      }),
-      next: { revalidate: 300 },
+  const res = await fetch(`${getApiHost()}/api/projects/${projectId}/query/`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
     },
-  );
+    body: JSON.stringify({
+      query: {
+        kind: "HogQLQuery",
+        query,
+      },
+    }),
+    next: { revalidate: 300 },
+  });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`PostHog query failed (${res.status}): ${text.slice(0, 200)}`);
+    throw new Error("Analytics provider unavailable");
   }
 
   const json = (await res.json()) as { results?: unknown[][] };
@@ -61,10 +58,8 @@ async function runHogQL(query: string): Promise<unknown[][]> {
 export async function fetchAnalyticsSummary(
   periodDays: AnalyticsPeriod = 7,
 ): Promise<AnalyticsSummary> {
-  const posthogAppUrl =
-    process.env.NEXT_PUBLIC_POSTHOG_APP_URL?.trim() || null;
-  const clarityAppUrl =
-    process.env.NEXT_PUBLIC_CLARITY_APP_URL?.trim() || null;
+  const posthogAppUrl = process.env.NEXT_PUBLIC_POSTHOG_APP_URL?.trim() || null;
+  const clarityAppUrl = process.env.NEXT_PUBLIC_CLARITY_APP_URL?.trim() || null;
   const vercelAppUrl =
     process.env.NEXT_PUBLIC_VERCEL_ANALYTICS_URL?.trim() || null;
 
@@ -144,10 +139,10 @@ export async function fetchAnalyticsSummary(
         count: Number(row[1] ?? 0),
       })),
     };
-  } catch (err) {
+  } catch {
     return {
       ...base,
-      error: err instanceof Error ? err.message : "Erreur PostHog inconnue",
+      error: "Les statistiques sont momentanément indisponibles.",
     };
   }
 }

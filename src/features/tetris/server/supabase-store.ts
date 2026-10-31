@@ -1,3 +1,4 @@
+import "server-only";
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { reportSupabaseFailure } from "./diagnostics";
 import { verifyReplay } from "../engine/replay";

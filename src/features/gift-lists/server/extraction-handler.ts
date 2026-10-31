@@ -1,3 +1,4 @@
+import { HttpError } from "@/lib/security/http";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSameOrigin } from "@/lib/backoffice/request-origin";
 import {
@@ -88,6 +89,7 @@ export function createExtractionHandler(dependencies: {
   authenticate: (request: NextRequest) => Promise<Auth>;
   extract?: (url: string) => Promise<ProductMetadata>;
   budget?: ExtractionBudget;
+  acquireShared?: () => Promise<() => Promise<void>>;
 }) {
   const budget = dependencies.budget ?? new ExtractionBudget();
   return async (request: NextRequest): Promise<NextResponse> => {
@@ -158,7 +160,9 @@ export function createExtractionHandler(dependencies: {
           429,
           { "Retry-After": "60" },
         );
+      let releaseShared: (() => Promise<void>) | undefined;
       try {
+        releaseShared = await dependencies.acquireShared?.();
         const data = await (dependencies.extract ?? extractProductMetadata)(
           url,
         );
@@ -178,6 +182,12 @@ export function createExtractionHandler(dependencies: {
               : "Complète ou corrige les informations manuellement.",
         });
       } catch (error) {
+        if (error instanceof HttpError)
+          return reply(
+            { error: error.message },
+            error.status,
+            error.status === 429 ? { "Retry-After": "60" } : {},
+          );
         if (
           error instanceof ProductMetadataError &&
           error.code !== "unavailable"
@@ -199,12 +209,19 @@ export function createExtractionHandler(dependencies: {
           currency: null,
           manual_entry: true,
           message:
-          "Remplis les champs manuellement : les informations de cette boutique ne sont pas accessibles.",
+            "Remplis les champs manuellement : les informations de cette boutique ne sont pas accessibles.",
         });
       } finally {
         release();
+        await releaseShared?.();
       }
-    } catch {
+    } catch (error) {
+      if (error instanceof HttpError)
+        return reply(
+          { error: error.message },
+          error.status,
+          error.status === 429 ? { "Retry-After": "60" } : {},
+        );
       return reply(
         {
           error:

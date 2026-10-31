@@ -34,6 +34,47 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+          },
+          ...(process.env.NODE_ENV === "production"
+            ? [{ key: "Strict-Transport-Security", value: "max-age=31536000" }]
+            : []),
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              // Cache Components emits inline bootstrap scripts; no unsafe-eval in production.
+              "script-src 'self' 'unsafe-inline' https://*.posthog.com https://www.clarity.ms https://*.clarity.ms https://accounts.google.com" +
+                (process.env.NODE_ENV === "development"
+                  ? " 'unsafe-eval'"
+                  : ""),
+              "style-src 'self' 'unsafe-inline' https://accounts.google.com",
+              "img-src 'self' https: data: blob:" +
+                (process.env.NODE_ENV === "development" ? " http:" : ""),
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.posthog.com https://*.clarity.ms https://*.bing.com https://api.web3forms.com https://accounts.google.com" +
+                (process.env.NODE_ENV === "development" ? " ws: wss:" : ""),
+              "frame-src https://accounts.google.com",
+              "worker-src 'self' blob:",
+              "media-src 'self' blob: data:",
+              "script-src-attr 'none'",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "object-src 'none'",
+            ].join("; "),
+          },
+        ],
+      },
       ...[
         "/l/:path*",
         "/listes/:path*",

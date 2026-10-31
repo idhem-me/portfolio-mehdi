@@ -1,3 +1,4 @@
+import "server-only";
 import type { NextRequest } from "next/server";
 import { createHash } from "node:crypto";
 import { verifiedAccountUser } from "./auth";
@@ -45,7 +46,7 @@ export async function activePlayer(request: NextRequest) {
     profile: profile
       ? {
           ...profile,
-          kind: account ? provider ?? "google" : "local",
+          kind: account ? (provider ?? "google") : "local",
           key: createHash("sha256").update(owner).digest("hex"),
         }
       : null,

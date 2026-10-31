@@ -1,19 +1,34 @@
+import { budget, imageLease } from "@/lib/security/budget";
+import { readBytes, HttpError } from "@/lib/security/http";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import { authClient } from "@/features/tetris/server/auth";
 import { accountGate } from "@/features/account/server/http";
 import { validateAvatar } from "@/features/cards/avatar/validate";
+export const maxDuration = 60;
 export async function POST(request: NextRequest) {
   const denied = accountGate(request, true);
   if (denied) return denied;
   const context = authClient(request);
   const reply = (data: unknown, status = 200) =>
-    context.apply(NextResponse.json(data, { status }));
+    context.apply(
+      NextResponse.json(data, {
+        status,
+        headers: status === 429 ? { "Retry-After": "60" } : {},
+      }),
+    );
+  let release: (() => Promise<void>) | undefined;
   try {
     const {
       data: { user },
     } = await context.client.auth.getUser();
     if (!user) return reply({ error: "Connexion requise." }, 401);
+    await budget(request, "avatar", {
+      global: 120,
+      network: 20,
+      user: user.id,
+      perUser: 10,
+    });
     if (Number(request.headers.get("content-length")) > 2200000)
       return reply({ error: "Image trop volumineuse." }, 413);
     const { data: owned } = await context.client
@@ -23,12 +38,16 @@ export async function POST(request: NextRequest) {
       .maybeSingle();
     if (!owned)
       return reply({ error: "Achète d’abord l’avatar personnalisé." }, 403);
-    const form = await request.formData();
+    const multipart = await readBytes(request, 2200000);
+    const form = await new Response(new Uint8Array(multipart), {
+      headers: { "Content-Type": request.headers.get("content-type") ?? "" },
+    }).formData();
     const file = form.get("avatar");
     if (!(file instanceof File))
       return reply({ error: "Image manquante." }, 400);
     await validateAvatar(file);
     const bytes = Buffer.from(await file.arrayBuffer());
+    release = await imageLease();
     const image = sharp(bytes, { limitInputPixels: 16777216, animated: false });
     const metadata = await image.metadata();
     if (metadata.pages && metadata.pages > 1)
@@ -57,12 +76,20 @@ export async function POST(request: NextRequest) {
     return reply(
       {
         error:
-          error instanceof Error
+          error instanceof HttpError
             ? error.message
-            : "Impossible d’enregistrer l’avatar.",
+            : error instanceof Error &&
+                [
+                  "L’image doit peser au maximum 2 Mo.",
+                  "Choisis une image PNG, JPEG ou WebP valide.",
+                ].includes(error.message)
+              ? error.message
+              : "Impossible d’enregistrer cette image.",
       },
-      400,
+      error instanceof HttpError ? error.status : 400,
     );
+  } finally {
+    await release?.();
   }
 }
 export async function GET(request: NextRequest) {

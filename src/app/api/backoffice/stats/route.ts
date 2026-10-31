@@ -1,8 +1,9 @@
-import { db, guard } from "@/lib/backoffice/server";
+import { requireDashboardSession } from "@/lib/dashboard-auth";
+import { db } from "@/lib/backoffice/server";
 
 const cache = new Map<string, { at: number; data: unknown }>();
 export async function GET(r: Request) {
-  const denied = guard(r);
+  const denied = await requireDashboardSession(r);
   if (denied) return denied;
   const range = new URL(r.url).searchParams.get("range") || "7d";
   const hours = (

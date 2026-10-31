@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  getConsent,
-  subscribeConsent,
-  type ConsentStatus,
-} from "./consent";
+import { getConsent, subscribeConsent, type ConsentStatus } from "./consent";
 
 declare global {
   interface Window {
@@ -17,13 +13,7 @@ function injectClarity(projectId: string) {
   if (typeof window === "undefined") return;
   if (document.getElementById("ms-clarity")) return;
 
-  (function (
-    c: Window,
-    l: Document,
-    a: string,
-    r: string,
-    i: string,
-  ) {
+  (function (c: Window, l: Document, a: string, r: string, i: string) {
     const w = c as Window & Record<string, unknown>;
     w[a] =
       w[a] ||
@@ -48,6 +38,17 @@ export function ClarityScript() {
     function apply(status: ConsentStatus) {
       if (status === "granted") {
         injectClarity(id!);
+        window.clarity?.("consentv2", {
+          analytics_Storage: "granted",
+          ad_Storage: "denied",
+        });
+      } else if (document.getElementById("ms-clarity")) {
+        window.clarity?.("consentv2", {
+          analytics_Storage: "denied",
+          ad_Storage: "denied",
+        });
+        // Stop already-loaded code; deleting its script element cannot unload it.
+        window.location.reload();
       }
     }
 

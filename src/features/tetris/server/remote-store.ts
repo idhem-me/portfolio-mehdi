@@ -1,3 +1,4 @@
+import "server-only";
 import type { Client } from "@libsql/client";
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { verifyReplay } from "../engine/replay";

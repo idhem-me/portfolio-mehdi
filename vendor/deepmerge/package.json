@@ -1,0 +1,8 @@
+{
+  "name": "deepmerge",
+  "version": "4.3.2-security.1",
+  "main": "index.cjs",
+  "types": "index.d.ts",
+  "license": "MIT",
+  "private": true
+}

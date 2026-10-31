@@ -48,7 +48,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     function captureCurrentPageview() {
-      const url = window.location.pathname + (window.location.search || "");
+      const url = window.location.pathname;
       posthog.capture("$pageview", {
         $current_url: window.location.origin + url,
       });
@@ -84,9 +84,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     }
     if (!posthog.__loaded) return;
 
-    const url =
-      pathname +
-      (searchParams?.toString() ? `?${searchParams.toString()}` : "");
+    const url = pathname;
 
     posthog.capture("$pageview", {
       $current_url: window.location.origin + url,

@@ -100,20 +100,22 @@ export const track = {
 export function startTracking() {
   let cleanup = () => {};
   let applied: string | null | undefined;
+  let generation = 0;
+  let stopped = false;
   const remove = async () => {
     const id = localStorage.getItem("backoffice_delete");
     if (!id) return;
     try {
       const r = await fetch("/api/backoffice/me", {
         method: "DELETE",
-        headers: { "x-visitor-id": id },
       });
       if (r.ok) localStorage.removeItem("backoffice_delete");
     } catch {}
   };
-  function apply() {
+  async function apply() {
     const status = getConsent();
     if (status === applied) return;
+    const currentGeneration = ++generation;
     applied = status;
     cleanup();
     running = false;
@@ -130,8 +132,32 @@ export function startTracking() {
       void remove();
       return;
     }
-    void remove();
-    visitor = localStorage.getItem("backoffice_visitor") || createId();
+    await remove();
+    if (localStorage.getItem("backoffice_delete")) return;
+    try {
+      const response = await fetch("/api/backoffice/me", {
+        method: "POST",
+        cache: "no-store",
+      });
+      if (!response.ok) return;
+      const data = await response.json();
+      if (
+        stopped ||
+        currentGeneration !== generation ||
+        getConsent() !== "granted"
+      )
+        return;
+      if (typeof data.visitor_id !== "string") return;
+      visitor = data.visitor_id;
+    } catch {
+      return;
+    }
+    // A server-issued identity must never reuse a session owned by the previous UUID.
+    if (localStorage.getItem("backoffice_visitor") !== visitor) {
+      for (const key of Object.keys(sessionStorage)) {
+        if (key.startsWith("backoffice_")) sessionStorage.removeItem(key);
+      }
+    }
     localStorage.setItem("backoffice_visitor", visitor);
     const oldActivity = Number(
       sessionStorage.getItem("backoffice_activity") || 0,
@@ -394,13 +420,25 @@ export function startTracking() {
       window.removeEventListener("pagehide", hide);
     };
   }
-  apply();
-  const unsubscribe = subscribeConsent(apply);
-  window.addEventListener("online", remove);
+  void apply();
+  const unsubscribe = subscribeConsent(() => {
+    void apply();
+  });
+  const online = () => {
+    void remove().then(() => {
+      if (!running && getConsent() === "granted") {
+        applied = undefined;
+        void apply();
+      }
+    });
+  };
+  window.addEventListener("online", online);
   return () => {
+    stopped = true;
+    generation++;
     cleanup();
     unsubscribe();
     running = false;
-    window.removeEventListener("online", remove);
+    window.removeEventListener("online", online);
   };
 }

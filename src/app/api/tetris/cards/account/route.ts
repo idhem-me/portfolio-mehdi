@@ -1,7 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
+import { budget } from "@/lib/security/budget";
+import { readText, HttpError } from "@/lib/security/http";
 import { NextRequest, NextResponse } from "next/server";
 import { authClient, supabaseConfigured } from "@/features/tetris/server/auth";
-import { validateCloudSave } from "@/features/cards/server/validation";
 import { resolveCardsChoice } from "@/features/cards/server/save-choice";
 import { accountGate } from "@/features/account/server/http";
 
@@ -43,18 +43,37 @@ export async function POST(request: NextRequest) {
     );
   const context = authClient(request);
   const reply = (data: unknown, status = 200) =>
-    context.apply(NextResponse.json(data, { status }));
+    context.apply(
+      NextResponse.json(data, {
+        status,
+        headers: status === 429 ? { "Retry-After": "60" } : {},
+      }),
+    );
   try {
-    if (Number(request.headers.get("content-length")) > 220000)
-      return reply({ error: "Requête trop volumineuse." }, 413);
-    const raw = await request.text();
-    if (raw.length > 220000)
-      return reply({ error: "Requête trop volumineuse." }, 413);
-    const body = JSON.parse(raw);
+    await budget(request, "cards-account", { global: 2000, network: 180 });
+    const raw = await readText(request, 220000);
+    let body;
+    try {
+      body = JSON.parse(raw);
+    } catch {
+      return reply({ error: "Requête invalide." }, 400);
+    }
+    if (!body || typeof body !== "object" || Array.isArray(body))
+      return reply({ error: "Requête invalide." }, 400);
+    if (body.legacySave !== undefined)
+      return reply(
+        { error: "L’import des sauvegardes locales est fermé." },
+        410,
+      );
     let {
       data: { user },
     } = await context.client.auth.getUser();
     if (!user) {
+      await budget(request, "cards-guest", {
+        global: 100,
+        network: 5,
+        seconds: 600,
+      });
       const signed = await context.client.auth.signInAnonymously();
       if (signed.error)
         return reply(
@@ -76,38 +95,6 @@ export async function POST(request: NextRequest) {
     )
       return reply({ error: "Requête invalide." }, 400);
     let legacyProcessed = false;
-    if (action === "state" && body.legacySave) {
-      let candidate;
-      try {
-        candidate = validateCloudSave(body.legacySave);
-      } catch {
-        return reply(
-          {
-            error:
-              "L’ancienne sauvegarde est invalide. Elle a été conservée sur cet appareil.",
-          },
-          400,
-        );
-      }
-      const admin = createClient(
-        process.env.SUPABASE_URL!,
-        (process.env.SUPABASE_SECRET_KEY ||
-          process.env.SUPABASE_SERVICE_ROLE_KEY)!,
-        { auth: { persistSession: false, autoRefreshToken: false } },
-      );
-      const imported = await admin.rpc("cards_import_legacy_for", {
-        owner_id: user.id,
-        candidate,
-      });
-      if (imported.error)
-        return reply(
-          {
-            error: "Impossible de transférer l’ancienne sauvegarde. Réessaie.",
-          },
-          409,
-        );
-      legacyProcessed = true;
-    }
     let data, error;
     if (action === "resolve") {
       try {
@@ -167,7 +154,9 @@ export async function POST(request: NextRequest) {
       maxAge: 31536000,
     });
     return response;
-  } catch {
+  } catch (error) {
+    if (error instanceof HttpError)
+      return reply({ error: error.message }, error.status);
     return reply({ error: "Le jeu est momentanément indisponible." }, 503);
   }
 }

@@ -1,4 +1,14 @@
-# Backoffice public
+# Mise à jour sécurité (31 octobre 2026)
+
+Les détails de sessions, statistiques globales et pages backoffice sont désormais réservés à une session administrateur. Le consentement analytics ne donne aucun droit administrateur. `/api/backoffice/me` reste un accès visiteur, lié à un secret HttpOnly émis par le serveur, jamais au header `x-visitor-id`.
+
+Avant de déployer, appliquer `supabase/migrations/20261031155314_security_hardening.sql` après les migrations existantes, configurer `SECURITY_HASH_KEY` (secret aléatoire stable de 32 caractères minimum), un `DASHBOARD_PASSWORD` unique de 12 caractères minimum et `CRON_SECRET`. Voir `SECURITY_REMEDIATION.md` pour la validation et les choix de compatibilité. Les anciennes sessions administrateur sont invalidées ; l’historique visiteur antérieur reste soumis à la rétention de 90 jours, sans transfert de propriété fondé sur un UUID public.
+
+---
+
+## Archive — fonctionnement avant correction
+
+# Backoffice administrateur
 
 ## Mise en service
 1. Migration déjà appliquée au projet Supabase connecté (version 20261030122415). Pour un autre environnement, appliquer la migration `supabase/migrations/20261030122415_backoffice.sql` au projet Supabase utilisé par le site.

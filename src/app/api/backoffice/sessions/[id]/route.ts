@@ -1,11 +1,12 @@
-import { db, guard } from "@/lib/backoffice/server";
+import { requireDashboardSession } from "@/lib/dashboard-auth";
+import { db } from "@/lib/backoffice/server";
 import { z } from "zod";
 
 export async function GET(
   r: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const denied = guard(r);
+  const denied = await requireDashboardSession(r);
   if (denied) return denied;
   const { id } = await params;
   if (!z.uuid().safeParse(id).success)

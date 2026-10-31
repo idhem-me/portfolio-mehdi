@@ -1,3 +1,4 @@
+import sanitizeHtml from "sanitize-html";
 /**
  * Sanitise du markup SVG pour bloquer l’exécution de code (XSS) et réduire
  * le risque d’injection de consignes cachées (commentaires / métadonnées).
@@ -6,41 +7,121 @@
  */
 
 const MAX_SVG_CHARS = 512_000;
-
-const XML_COMMENT = /<!--[\s\S]*?-->/g;
-const CDATA = /<!\[CDATA\[[\s\S]*?\]\]>/gi;
-const PROCESSING_INSTRUCTION = /<\?[\s\S]*?\?>/g;
-const DOCTYPE = /<!DOCTYPE[\s\S]*?>/gi;
-
-/** Éléments capables d’exécuter du code ou d’embarquer du HTML. */
-const DANGEROUS_PAIRED_ELEMENTS =
-  /<\s*(script|foreignObject|iframe|object|embed|link|meta|base|handler)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi;
-
-const DANGEROUS_SELF_CLOSING =
-  /<\s*(script|foreignObject|iframe|object|embed|link|meta|base|handler)\b[^>]*\/\s*>/gi;
-
-/**
- * Vecteurs fréquents d’injection de consignes / texte caché dans un SVG
- * (métadonnées, descriptions non affichées).
- */
-const PROMPT_VECTOR_ELEMENTS =
-  /<\s*(metadata|title|desc)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi;
-
-const EVENT_HANDLER_ATTR =
-  /\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi;
-
-const DANGEROUS_URI_ATTR =
-  /\s+(?:xlink:)?(?:href|src|action|formaction|data|poster)\s*=\s*(?:"\s*(?:javascript|vbscript|data\s*:\s*text\/html)[^"]*"|'\s*(?:javascript|vbscript|data\s*:\s*text\/html)[^']*'|(?:javascript|vbscript|data\s*:\s*text\/html)[^\s>]*)/gi;
-
-/** Bloque les références externes (SSRF / XSS via <use> / <image>). */
-const EXTERNAL_RESOURCE_ATTR =
-  /\s+(?:xlink:)?(?:href|src)\s*=\s*(?:"\s*https?:\/\/[^"]*"|'\s*https?:\/\/[^']*'|https?:\/\/[^\s>]*)/gi;
-
-const NULL_BYTES = /\u0000/g;
+const SVG_TAGS = [
+  "svg",
+  "g",
+  "path",
+  "circle",
+  "ellipse",
+  "rect",
+  "line",
+  "polyline",
+  "polygon",
+  "text",
+  "tspan",
+  "defs",
+  "use",
+  "symbol",
+  "clipPath",
+  "mask",
+  "linearGradient",
+  "radialGradient",
+  "stop",
+  "pattern",
+  "filter",
+  "feGaussianBlur",
+  "feOffset",
+  "feBlend",
+  "feColorMatrix",
+  "feComponentTransfer",
+  "feFuncR",
+  "feFuncG",
+  "feFuncB",
+  "feFuncA",
+  "feMerge",
+  "feMergeNode",
+  "feFlood",
+  "feComposite",
+  "feDropShadow",
+];
+const SVG_ATTRIBUTES = [
+  "style",
+  "xmlns",
+  "xmlns:xlink",
+  "viewBox",
+  "width",
+  "height",
+  "x",
+  "y",
+  "x1",
+  "x2",
+  "y1",
+  "y2",
+  "cx",
+  "cy",
+  "r",
+  "rx",
+  "ry",
+  "d",
+  "points",
+  "id",
+  "class",
+  "fill",
+  "fill-rule",
+  "fill-opacity",
+  "stroke",
+  "stroke-width",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "stroke-miterlimit",
+  "stroke-dasharray",
+  "stroke-dashoffset",
+  "stroke-opacity",
+  "opacity",
+  "transform",
+  "clip-path",
+  "clip-rule",
+  "mask",
+  "filter",
+  "href",
+  "xlink:href",
+  "preserveAspectRatio",
+  "gradientUnits",
+  "gradientTransform",
+  "offset",
+  "stop-color",
+  "stop-opacity",
+  "patternUnits",
+  "patternTransform",
+  "maskUnits",
+  "maskContentUnits",
+  "clipPathUnits",
+  "font-size",
+  "font-family",
+  "font-weight",
+  "text-anchor",
+  "dominant-baseline",
+  "dx",
+  "dy",
+  "color",
+  "stdDeviation",
+  "in",
+  "in2",
+  "result",
+  "mode",
+  "type",
+  "values",
+  "operator",
+  "k1",
+  "k2",
+  "k3",
+  "k4",
+  "flood-color",
+  "flood-opacity",
+];
 
 export type SanitizeSvgResult =
-  | { ok: true; svg: string }
-  | { ok: false; reason: string };
+  { ok: true; svg: string } | { ok: false; reason: string };
 
 function stripBom(input: string): string {
   return input.charCodeAt(0) === 0xfeff ? input.slice(1) : input;
@@ -50,9 +131,7 @@ function stripBom(input: string): string {
  * Vérifie qu’un chemin relatif sous `public/` est sûr (pas de traversal).
  * Retourne les segments normalisés, ou `null` si le chemin est invalide.
  */
-export function normalizePublicSvgPath(
-  segments: string[],
-): string[] | null {
+export function normalizePublicSvgPath(segments: string[]): string[] | null {
   if (!segments.length) return null;
 
   const normalized: string[] = [];
@@ -82,49 +161,46 @@ export function normalizePublicSvgPath(
 }
 
 export function sanitizeSvg(raw: string): SanitizeSvgResult {
-  if (typeof raw !== "string") {
-    return { ok: false, reason: "Entrée invalide" };
-  }
-
-  const withoutBom = stripBom(raw).replace(NULL_BYTES, "");
-  if (!withoutBom.trim()) {
-    return { ok: false, reason: "SVG vide" };
-  }
-
-  if (withoutBom.length > MAX_SVG_CHARS) {
-    return { ok: false, reason: "SVG trop volumineux" };
-  }
-
-  if (!/<svg[\s>]/i.test(withoutBom)) {
-    return { ok: false, reason: "Racine <svg> manquante" };
-  }
-
-  let svg = withoutBom
-    .replace(XML_COMMENT, "")
-    .replace(CDATA, "")
-    .replace(PROCESSING_INSTRUCTION, "")
-    .replace(DOCTYPE, "")
-    .replace(PROMPT_VECTOR_ELEMENTS, "")
-    .replace(DANGEROUS_PAIRED_ELEMENTS, "")
-    .replace(DANGEROUS_SELF_CLOSING, "")
-    .replace(EVENT_HANDLER_ATTR, "")
-    .replace(DANGEROUS_URI_ATTR, "")
-    .replace(EXTERNAL_RESOURCE_ATTR, "");
-
-  svg = svg.replace(/\s+style\s*=\s*(?:"[^"]*"|'[^']*')/gi, (attr) => {
-    if (
-      /expression\s*\(|javascript\s*:|url\s*\(\s*['"]?\s*javascript/i.test(attr)
-    ) {
-      return "";
-    }
-    return attr;
-  });
-
-  if (!/<svg[\s>]/i.test(svg)) {
-    return { ok: false, reason: "SVG invalide après sanitisation" };
-  }
-
-  return { ok: true, svg: svg.trim() };
+  if (typeof raw !== "string" || !raw.trim() || raw.length > MAX_SVG_CHARS)
+    return { ok: false, reason: "SVG vide ou trop volumineux" };
+  // Never resolve custom entities/DTDs; this parser does not load external resources.
+  if (/<!DOCTYPE|<!ENTITY/i.test(raw))
+    return { ok: false, reason: "Déclaration XML interdite" };
+  const svg = sanitizeHtml(stripBom(raw), {
+    allowedTags: SVG_TAGS,
+    allowedAttributes: { "*": SVG_ATTRIBUTES },
+    allowedStyles: {
+      "*": {
+        "mask-type": [/^(?:alpha|luminance)$/],
+        display: [/^(?:block|inline|none)$/],
+        "color-scheme": [/^only light$/],
+      },
+    },
+    allowedSchemes: [],
+    allowProtocolRelative: false,
+    parser: { lowerCaseTags: false, lowerCaseAttributeNames: false },
+    transformTags: {
+      "*": (tagName, attribs) => {
+        for (const [name, value] of Object.entries(attribs)) {
+          if (
+            (name === "href" || name === "xlink:href") &&
+            !/^#[A-Za-z_][\w.-]*$/.test(value)
+          )
+            delete attribs[name];
+          if (
+            /url\s*\(/i.test(value) &&
+            !/^url\(#[A-Za-z_][\w.-]*\)$/.test(value)
+          )
+            delete attribs[name];
+        }
+        return { tagName, attribs };
+      },
+    },
+    enforceHtmlBoundary: false,
+  }).trim();
+  if (!/^<svg(?:\s|>)/.test(svg) || !svg.endsWith("</svg>"))
+    return { ok: false, reason: "Racine SVG invalide" };
+  return { ok: true, svg };
 }
 
 /** CSP recommandée pour une réponse `image/svg+xml`. */

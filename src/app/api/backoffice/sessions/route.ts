@@ -1,7 +1,8 @@
-import { db, guard } from "@/lib/backoffice/server";
+import { requireDashboardSession } from "@/lib/dashboard-auth";
+import { db } from "@/lib/backoffice/server";
 
 export async function GET(r: Request) {
-  const denied = guard(r);
+  const denied = await requireDashboardSession(r);
   if (denied) return denied;
   const p = new URL(r.url).searchParams;
   const page = Math.max(1, Math.min(100000, Number(p.get("page")) || 1));

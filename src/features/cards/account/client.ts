@@ -53,17 +53,10 @@ export async function cardsRequest(
   payload: Record<string, unknown> = {},
   requestId = crypto.randomUUID(),
 ): Promise<CardsAccount> {
-  let legacySave;
-  if (action === "state") {
-    try {
-      const raw = localStorage.getItem("cards.save.v1");
-      if (raw) legacySave = JSON.parse(raw);
-    } catch {}
-  }
   const response = await fetch("/api/tetris/cards/account", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action, payload, requestId, legacySave }),
+    body: JSON.stringify({ action, payload, requestId }),
   });
   const result = await response.json();
   if (!response.ok) throw new Error(result.error ?? "Connexion indisponible.");

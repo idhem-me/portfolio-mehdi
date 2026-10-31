@@ -32,7 +32,13 @@ export default function DashboardLoginPage() {
       }
 
       const next = searchParams.get("next") || "/dashboard";
-      router.replace(next.startsWith("/dashboard") ? next : "/dashboard");
+      router.replace(
+        /^\/(?:dashboard|(?:fr\/|en\/|zh\/|ar\/|es\/|it\/|de\/)?backoffice)(?:\/sessions)?$/.test(
+          next,
+        )
+          ? next
+          : "/dashboard",
+      );
       router.refresh();
     } catch {
       setError("Erreur réseau.");

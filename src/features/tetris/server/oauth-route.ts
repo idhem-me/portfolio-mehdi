@@ -1,3 +1,4 @@
+import "server-only";
 import { NextRequest, NextResponse } from "next/server";
 import { accountGate as gate } from "@/features/account/server/http";
 import { safeGamePath, type OAuthProvider } from "../auth/identity";
@@ -17,10 +18,7 @@ export async function startOAuth(
     popup
       ? popupResult(false, provider)
       : NextResponse.redirect(new URL(path + "?auth=error", origin), 303);
-  if (
-    !supabaseConfigured() ||
-    (provider === "apple" && !appleConfigured())
-  )
+  if (!supabaseConfigured() || (provider === "apple" && !appleConfigured()))
     return fallback();
 
   const context = authClient(request);

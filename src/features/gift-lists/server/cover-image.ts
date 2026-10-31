@@ -1,4 +1,6 @@
+import "server-only";
 import sharp from "sharp";
+import { imageSignature } from "@/features/cards/avatar/validate";
 
 export async function normalizeListImage(
   value: string | null,
@@ -10,6 +12,9 @@ export async function normalizeListImage(
   )
     throw new Error("invalid_image");
   const bytes = Buffer.from(value.slice(value.indexOf(",") + 1), "base64");
+  const signature = imageSignature(bytes);
+  if (!signature || !value.startsWith(`data:${signature};base64,`))
+    throw new Error("invalid_image");
   const image = sharp(bytes, { limitInputPixels: 36_000_000, animated: false });
   const metadata = await image.metadata();
   if (!["jpeg", "png", "webp"].includes(metadata.format ?? ""))

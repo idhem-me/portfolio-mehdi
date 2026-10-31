@@ -48,7 +48,10 @@ async function handleDashboardAuth(request: NextRequest) {
 
   if (!authed) {
     if (pathname.startsWith("/api/analytics")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401, headers: { "Cache-Control": "private, no-store" } },
+      );
     }
     const loginUrl = new URL("/dashboard/login", request.url);
     loginUrl.searchParams.set("next", pathname);
@@ -64,12 +67,13 @@ export default async function proxy(request: NextRequest) {
   const gamePath = pathname
     .replace(/^\/(?:fr|en|zh|ar|es|it|de)(?=\/)/, "")
     .replace(/\/$/, "");
-  const hiddenTetris = !tetrisEnabled &&
+  const hiddenTetris =
+    !tetrisEnabled &&
     ["/jeux/tetris", "/realisations/tetris"].includes(gamePath);
-  const hiddenBurger = !clickerBurgerEnabled && gamePath === "/jeux/clicker-burger";
+  const hiddenBurger =
+    !clickerBurgerEnabled && gamePath === "/jeux/clicker-burger";
   const hiddenCards =
-    !cardsEnabled &&
-    (gamePath === "/jeux/cards" || gamePath === "/cards");
+    !cardsEnabled && (gamePath === "/jeux/cards" || gamePath === "/cards");
   const hiddenGames =
     !tetrisEnabled &&
     !clickerBurgerEnabled &&

@@ -1,6 +1,8 @@
+import "server-only";
+import { budget, imageLease } from "@/lib/security/budget";
+import { HttpError } from "@/lib/security/http";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
-import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 import { isSameOrigin } from "@/lib/backoffice/request-origin";
 import { verifiedAccountUser } from "@/features/tetris/server/auth";
@@ -161,27 +163,30 @@ function reply(data: unknown, status = 200) {
       "Cache-Control": "private, no-store",
       "X-Robots-Tag": "noindex, nofollow",
       "Referrer-Policy": "no-referrer",
+      ...(status === 429 ? { "Retry-After": "60" } : {}),
     },
   });
 }
 function failure(error: unknown) {
-  return error instanceof ApiError
+  return error instanceof HttpError
     ? reply({ error: error.message }, error.status)
-    : error instanceof z.ZodError
-      ? reply(
-          {
-            error:
-              "Vérifie les champs : titre, liens et montants doivent être valides.",
-          },
-          400,
-        )
-      : reply(
-          {
-            error:
-              "Le service est momentanément indisponible. Réessaie dans un instant.",
-          },
-          503,
-        );
+    : error instanceof ApiError
+      ? reply({ error: error.message }, error.status)
+      : error instanceof z.ZodError
+        ? reply(
+            {
+              error:
+                "Vérifie les champs : titre, liens et montants doivent être valides.",
+            },
+            400,
+          )
+        : reply(
+            {
+              error:
+                "Le service est momentanément indisponible. Réessaie dans un instant.",
+            },
+            503,
+          );
 }
 async function body(request: Request, maxBytes = 20000): Promise<unknown> {
   if (!request.headers.get("origin") || !isSameOrigin(request))
@@ -219,28 +224,6 @@ async function body(request: Request, maxBytes = 20000): Promise<unknown> {
   }
 }
 
-// Local backstop only. No IP is retained; deployment-level limits may supplement it.
-const salt = randomBytes(32);
-const budgets = new Map<string, { until: number; count: number }>();
-function limit(key: string, max: number) {
-  const now = Date.now();
-  for (const [id, entry] of budgets) if (entry.until <= now) budgets.delete(id);
-  const current = budgets.get(key) ?? { until: now + 60000, count: 0 };
-  if (current.count >= max || (!budgets.has(key) && budgets.size >= 5000))
-    throw new ApiError(
-      "Trop de demandes. Patiente une minute avant de réessayer.",
-      429,
-    );
-  current.count++;
-  budgets.set(key, current);
-}
-function guestKey(request: Request, prefix: string) {
-  return createHash("sha256")
-    .update(salt)
-    .update(prefix)
-    .update(request.headers.get("x-forwarded-for")?.split(",")[0] ?? "local")
-    .digest("hex");
-}
 export async function ownedList(
   db: SupabaseClient,
   userId: string,
@@ -268,6 +251,12 @@ export async function creatorGet(request: NextRequest) {
         "Connecte-toi avec Google ou Apple pour retrouver tes listes.",
         401,
       );
+    await budget(request, "gift-owner-read", {
+      global: 2000,
+      network: 120,
+      user: auth.user.id,
+      perUser: 120,
+    });
     const db = giftAdmin();
     const id = request.nextUrl.searchParams.get("id");
     if (!id) {
@@ -309,20 +298,30 @@ export async function creatorPost(request: NextRequest) {
         "Connecte-toi avec Google ou Apple pour gérer tes listes.",
         401,
       );
+    await budget(request, "gift-owner", {
+      global: 600,
+      network: 120,
+      user: auth.user.id,
+      perUser: 60,
+    });
     const input = creatorInput.parse(await body(request, 270000));
+    const db = giftAdmin();
+    if (input.action !== "create_list")
+      await ownedList(db, auth.user.id, input.list_id);
     if (input.action === "create_list" || input.action === "update_list") {
+      const release = await imageLease();
       try {
         input.data.cover_image = await normalizeListImage(
           input.data.cover_image,
         );
       } catch {
         throw new ApiError(
-          "Choisis une image JPEG, PNG ou WebP valide, de moins de 5 Mo.",
+          "Choisis une image JPEG, PNG ou WebP valide. Réduis sa taille avant de réessayer.",
         );
+      } finally {
+        await release();
       }
     }
-    limit(`owner:${auth.user.id}`, 60);
-    const db = giftAdmin();
     if (input.action === "create_list") {
       const result = await db
         .from("gift_lists")
@@ -332,7 +331,6 @@ export async function creatorPost(request: NextRequest) {
       check(result.error);
       return auth.apply(reply({ list: result.data }, 201));
     }
-    await ownedList(db, auth.user.id, input.list_id);
     switch (input.action) {
       case "update_list": {
         const result = await db
@@ -406,7 +404,7 @@ export async function publicGet(request: NextRequest, slug: string) {
   try {
     if (!slugSchema.safeParse(slug).success)
       throw new ApiError("Cette liste est introuvable.", 404);
-    limit(guestKey(request, "read"), 120);
+    await budget(request, "gift-read", { global: 2000, network: 120 });
     const db = giftAdmin();
     const result = await db.rpc("gift_read_public", { p_slug: slug });
     check(result.error);
@@ -434,7 +432,7 @@ export async function publicPost(request: NextRequest, slug: string) {
   try {
     slugSchema.parse(slug);
     const input = reservationInput.parse(await body(request));
-    limit(guestKey(request, "reserve"), 20);
+    await budget(request, "gift-reserve", { global: 300, network: 20 });
     const result = await giftAdmin().rpc("gift_reserve", {
       p_slug: slug,
       p_item_id: input.item_id,
@@ -455,7 +453,7 @@ export async function cancelPost(request: NextRequest) {
     const input = z
       .object({ token: z.string().regex(/^[0-9a-f]{64}$/) })
       .parse(await body(request));
-    limit(guestKey(request, "cancel"), 20);
+    await budget(request, "gift-cancel", { global: 300, network: 20 });
     const result = await giftAdmin().rpc("gift_cancel", {
       p_token: input.token,
     });
