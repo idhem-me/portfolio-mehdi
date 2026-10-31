@@ -217,7 +217,9 @@ export function TextArea({ id, ...props }: React.ComponentProps<"textarea">) {
 }
 export function GiftImage({ item }: { item: GiftItem }) {
   const [failed, setFailed] = useState(false);
-  const url = safeWebUrl(item.image_url);
+  const url = item.image_url?.startsWith("data:image/webp;base64,")
+    ? item.image_url
+    : safeWebUrl(item.image_url);
   return (
     <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl bg-muted/50">
       {url && !failed ? (

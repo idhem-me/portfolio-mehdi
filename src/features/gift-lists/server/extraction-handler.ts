@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { isSameOrigin } from "@/lib/backoffice/request-origin";
 import {
   extractProductMetadata,
+  productTitleFromUrl,
   ProductMetadataError,
   type ProductMetadata,
 } from "./product-metadata";
@@ -192,13 +193,13 @@ export function createExtractionHandler(dependencies: {
           );
         return reply({
           status: "manual",
-          title: null,
+          title: productTitleFromUrl(url),
           image_url: null,
           price: null,
           currency: null,
           manual_entry: true,
           message:
-            "Les informations ne sont pas accessibles sur cette boutique. Remplis les champs manuellement.",
+          "Remplis les champs manuellement : les informations de cette boutique ne sont pas accessibles.",
         });
       } finally {
         release();

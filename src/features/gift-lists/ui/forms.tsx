@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState, type FormEvent } from "react";
+import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -296,20 +297,28 @@ export function ItemForm({
   const [priority, setPriority] = useState(initial?.priority ?? "normal");
   const [busy, setBusy] = useState(false);
   const [extracting, setExtracting] = useState(false);
+  const [preparingItemImage, setPreparingItemImage] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [manualEntry, setManualEntry] = useState(false);
   const lock = useRef(false);
   async function extract() {
     if (extracting) return;
     setExtracting(true);
     setError("");
     setMessage("");
+    setManualEntry(false);
+    setTitle("");
+    setPrice("");
+    setImage("");
     try {
       const result = await giftRequest<{
         title: string | null;
         image_url: string | null;
         price: number | null;
         message?: string;
+        manual_entry?: boolean;
+        status?: string;
       }>("/api/tetris/gifts/extract", { url });
       if (result.title) setTitle(result.title);
       if (result.image_url) setImage(result.image_url);
@@ -318,15 +327,17 @@ export function ItemForm({
         result.message ||
           "Informations récupérées. Vérifie-les avant d’ajouter le cadeau.",
       );
+      setManualEntry(result.manual_entry === true || result.status === "manual");
     } catch (e) {
       setMessage(`${errorText(e)} Tu peux remplir le cadeau manuellement.`);
+      setManualEntry(true);
     } finally {
       setExtracting(false);
     }
   }
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (lock.current || extracting) return;
+    if (lock.current || extracting || preparingItemImage) return;
     lock.current = true;
     setBusy(true);
     setError("");
@@ -351,7 +362,7 @@ export function ItemForm({
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open && !busy && !extracting) onClose();
+        if (!open && !busy && !extracting && !preparingItemImage) onClose();
       }}
     >
       <DialogContent className="max-h-[90svh] max-w-lg overflow-y-auto">
@@ -364,7 +375,7 @@ export function ItemForm({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-5">
-          <fieldset disabled={busy || extracting} className="space-y-5">
+          <fieldset disabled={busy || extracting || preparingItemImage} className="space-y-5">
             <Field label="Lien du produit (facultatif)">
               {(id) => (
                 <Input
@@ -388,6 +399,12 @@ export function ItemForm({
                 ? "Lecture de la boutique…"
                 : "Remplir automatiquement"}
             </Button>
+            {manualEntry && message && (
+              <p role="status" className="flex items-start gap-2 text-sm text-warning">
+                <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                {message}
+              </p>
+            )}
             <Field label="Nom du cadeau">
               {(id) => (
                 <Input
@@ -424,6 +441,37 @@ export function ItemForm({
                 />
               )}
             </Field>
+            <Field label="Ou ajouter une photo depuis cet appareil">
+              {(id) => (
+                <Input
+                  id={id}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={async (event) => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    setPreparingItemImage(true);
+                    setError("");
+                    try {
+                      setImage(await encodePhoto(file, { maxDimension: 960 }));
+                    } catch (error) {
+                      setError(errorText(error));
+                    } finally {
+                      setPreparingItemImage(false);
+                      event.target.value = "";
+                    }
+                  }}
+                />
+              )}
+            </Field>
+            {image.startsWith("data:image/") && (
+              <div className="space-y-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={image} alt="Aperçu de la photo du cadeau" className="max-h-48 rounded-lg object-contain" />
+                <Button type="button" variant="outline" onClick={() => setImage("")}>Retirer la photo</Button>
+              </div>
+            )}
+            {preparingItemImage && <p role="status" className="text-sm text-muted-foreground">Préparation de la photo…</p>}
             <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
               <input
                 type="checkbox"
@@ -451,7 +499,7 @@ export function ItemForm({
               C’est un coup de cœur
             </label>
           </fieldset>
-          {message && <Notice>{message}</Notice>}
+          {message && !manualEntry && <Notice>{message}</Notice>}
           {error && <Notice error>{error}</Notice>}
           <DialogFooter>
             <Button

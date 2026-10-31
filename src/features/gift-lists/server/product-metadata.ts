@@ -2,7 +2,15 @@ import { lookup } from "node:dns/promises";
 import { request as httpRequest, type IncomingMessage } from "node:http";
 import { request as httpsRequest } from "node:https";
 import { isIP } from "node:net";
-import { addAbortSignal, type Readable } from "node:stream";
+import { addAbortSignal, Readable } from "node:stream";
+import { CheerioCrawler } from "@crawlee/cheerio";
+import {
+  Configuration,
+  type BaseHttpClient,
+  type HttpRequest,
+  type HttpResponse,
+  type StreamingHttpResponse,
+} from "@crawlee/core";
 import { createBrotliDecompress, createGunzip, createInflate } from "node:zlib";
 
 export const MAX_PRODUCT_HTML_BYTES = 1_048_576;
@@ -23,6 +31,42 @@ export type ProductMetadata = {
   price: number | null;
   currency: string | null;
 };
+
+/** Uses a product URL slug as a title hint when a shop blocks metadata access. */
+export function productTitleFromUrl(value: string): string | null {
+  let url: URL;
+  try {
+    url = productUrl(value);
+  } catch {
+    return null;
+  }
+  let slug: string;
+  try {
+    slug = decodeURIComponent(
+      url.pathname.split("/").filter(Boolean).at(-1) ?? "",
+    );
+  } catch {
+    return null;
+  }
+  slug = slug
+    .replace(/\.[a-z0-9]{1,8}$/i, "")
+    .replace(/(?:-|_)?\d{10,14}$/, "")
+    .replace(/^(?:p|product)[-_]/i, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!/[a-z]/i.test(slug)) return null;
+  const minor = new Set(["a", "à", "au", "aux", "de", "des", "du", "et", "la", "le", "les", "un", "une"]);
+  return slug
+    .split(" ")
+    .map((word, index) =>
+      index > 0 && minor.has(word.toLocaleLowerCase("fr"))
+        ? word.toLocaleLowerCase("fr")
+        : word.charAt(0).toLocaleUpperCase("fr") + word.slice(1),
+    )
+    .join(" ")
+    .slice(0, 200);
+}
 type Address = { address: string; family: number };
 type Resolver = (hostname: string) => Promise<Address[]>;
 
@@ -121,11 +165,15 @@ function requestPage(
   url: URL,
   address: Address,
   signal: AbortSignal,
+  headers?: Record<string, string>,
 ): Promise<IncomingMessage> {
   return new Promise((resolve, reject) => {
     const request = (url.protocol === "https:" ? httpsRequest : httpRequest)(
       url,
-      productRequestOptions(address, signal),
+      {
+        ...productRequestOptions(address, signal),
+        headers: { ...productRequestOptions(address, signal).headers, ...headers },
+      },
       resolve,
     );
     request.on("error", reject);
@@ -250,11 +298,38 @@ export function parseProductMetadata(
 ): ProductMetadata {
   const metadata = new Map<string, string>();
   let title: string | undefined;
+  let structuredPrice: string | undefined;
+  let structuredCurrency: string | undefined;
   // Consume script/style/comment bodies before considering tags inside them.
   const tags =
     /<!--[\s\S]*?(?:-->|$)|<(script|style)\b[^>]*>[\s\S]*?(?:<\/\1\s*>|$)|<title\b[^>]*>[\s\S]*?<\/title\s*>|<meta\b(?:[^"'<>]|"[^"]*"|'[^']*')*>/gi;
   for (const match of html.matchAll(tags)) {
     const tag = match[0];
+    if (/^<script\b/i.test(tag) && /\btype\s*=\s*["']application\/ld\+json["']/i.test(tag)) {
+      const body = tag.replace(/^<script\b[^>]*>|<\/script\s*>$/gi, "");
+      try {
+        const visit = (value: unknown): void => {
+          if (!value || typeof value !== "object") return;
+          if (Array.isArray(value)) return value.forEach(visit);
+          const record = value as Record<string, unknown>;
+          const types = Array.isArray(record["@type"]) ? record["@type"] : [record["@type"]];
+          if (types.includes("Product") || record.offers) {
+            const offers = Array.isArray(record.offers) ? record.offers : [record.offers];
+            for (const offer of offers) {
+              if (!offer || typeof offer !== "object") continue;
+              const item = offer as Record<string, unknown>;
+              structuredPrice ??= typeof item.price === "string" || typeof item.price === "number" ? String(item.price) : undefined;
+              structuredCurrency ??= typeof item.priceCurrency === "string" ? item.priceCurrency : undefined;
+            }
+          }
+          Object.values(record).forEach(visit);
+        };
+        visit(JSON.parse(body));
+      } catch {
+        // Malformed structured data is ignored; the remaining metadata still applies.
+      }
+      continue;
+    }
     if (/^<title\b/i.test(tag)) {
       title ??= decode(tag.replace(/^<title\b[^>]*>|<\/title\s*>$/gi, ""));
       continue;
@@ -285,7 +360,23 @@ export function parseProductMetadata(
       "product:price:currency",
       "og:price:currency",
       "pricecurrency",
-    )?.toUpperCase() ?? null;
+    )?.toUpperCase() ?? structuredCurrency?.toUpperCase() ?? null;
+  // Shops often expose their displayed price in accessible spans instead of metadata.
+  const visiblePrice =
+    /<(?:span|div)[^>]*class\s*=\s*["'][^"']*(?:a-offscreen|price__value|product-price|price)[^"']*["'][^>]*>([\s\S]*?)<\/(?:span|div)\s*>/i.exec(
+      html,
+    )?.[1]
+      ?.replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;|&#160;/gi, " ")
+      .trim();
+  const visibleCurrency = /(?:€|\bEUR\b)/i.test(visiblePrice ?? "")
+    ? "EUR"
+    : /(?:\$|\bUSD\b)/i.test(visiblePrice ?? "")
+      ? "USD"
+      : /(?:£|\bGBP\b)/i.test(visiblePrice ?? "")
+        ? "GBP"
+        : null;
+  const finalCurrency = currency ?? visibleCurrency;
   let image: string | null = null;
   try {
     const value = first(
@@ -303,12 +394,14 @@ export function parseProductMetadata(
     image_url: image,
     // This tool stores EUR; never silently interpret a dollar amount as euros.
     price:
-      currency && currency !== "EUR"
+      finalCurrency && finalCurrency !== "EUR"
         ? null
         : productPrice(
-            first("product:price:amount", "og:price:amount", "price"),
+            structuredPrice ??
+              first("product:price:amount", "og:price:amount", "price") ??
+              (visibleCurrency === "EUR" ? visiblePrice : undefined),
           ),
-    currency,
+    currency: finalCurrency,
   };
 }
 
@@ -316,7 +409,153 @@ type Dependencies = {
   resolve?: Resolver;
   request?: typeof requestPage;
   timeoutMs?: number;
+  crawlee?: (url: string) => Promise<ProductMetadata | null>;
 };
+
+/** Crawlee's HTTP client, constrained to the same DNS-pinned transport as the native extractor. */
+const safeCrawleeClient: BaseHttpClient = {
+  async sendRequest<TResponseType extends "json" | "text" | "buffer">(
+    request: HttpRequest<TResponseType>,
+  ): Promise<HttpResponse<TResponseType>> {
+    let url = productUrl(String(request.url));
+    const redirects: URL[] = [];
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    const onAbort = () => controller.abort();
+    request.signal?.addEventListener("abort", onAbort, { once: true });
+    try {
+      for (let hop = 0; hop <= 3; hop++) {
+        const address = await resolveProductAddress(url);
+        const response = await requestPage(
+          url,
+          address,
+          controller.signal,
+          Object.fromEntries(
+            Object.entries(request.headers ?? {}).flatMap(([key, value]) =>
+              typeof value === "string" ? [[key, value]] : [],
+            ),
+          ),
+        );
+        const status = response.statusCode ?? 0;
+        if (REDIRECTS.has(status)) {
+          const location = response.headers.location;
+          response.destroy();
+          if (!location || hop === 3) throw new ProductMetadataError("unavailable");
+          const next = productUrl(new URL(location, url).href);
+          if (url.protocol === "https:" && next.protocol !== "https:")
+            throw new ProductMetadataError("blocked_url");
+          redirects.push(next);
+          url = next;
+          continue;
+        }
+        if (status < 200 || status >= 300) {
+          response.destroy();
+          throw new ProductMetadataError("unavailable");
+        }
+        const body = await readProductHtml(response, controller.signal);
+        const base = {
+          url: url.href,
+          ip: address.address,
+          statusCode: status,
+          headers: Object.fromEntries(
+            Object.entries(response.headers).map(([key, value]) => [
+              key,
+              Array.isArray(value) ? value.join(", ") : String(value ?? ""),
+            ]),
+          ),
+          trailers: {},
+          complete: true,
+          redirectUrls: redirects,
+          request,
+        };
+        return {
+          ...base,
+          body:
+            request.responseType === "buffer" ? Buffer.from(body) : body,
+        } as HttpResponse<TResponseType>;
+      }
+      throw new ProductMetadataError("unavailable");
+    } finally {
+      clearTimeout(timer);
+      request.signal?.removeEventListener("abort", onAbort);
+    }
+  },
+  async stream(request): Promise<StreamingHttpResponse> {
+    const result = await this.sendRequest(request);
+    const body = Buffer.isBuffer(result.body)
+      ? result.body
+      : Buffer.from(String(result.body));
+    const stream = Readable.from([body]);
+    return {
+      url: result.url,
+      ip: result.ip,
+      statusCode: result.statusCode,
+      statusMessage: result.statusMessage,
+      headers: result.headers,
+      trailers: result.trailers,
+      complete: result.complete,
+      redirectUrls: result.redirectUrls,
+      request: result.request,
+      stream,
+      downloadProgress: { on: () => undefined, percent: 100, transferred: body.length },
+      uploadProgress: { on: () => undefined, percent: 100, transferred: 0 },
+    } as StreamingHttpResponse;
+  },
+};
+
+async function extractProductMetadataWithCrawlee(
+  value: string,
+): Promise<ProductMetadata | null> {
+  let result: ProductMetadata | null = null;
+  const crawler = new CheerioCrawler({
+    configuration: new Configuration({ persistStorage: false }),
+    httpClient: safeCrawleeClient,
+    maxRequestsPerCrawl: 1,
+    maxRequestRetries: 0,
+    maxConcurrency: 1,
+    useSessionPool: false,
+    async requestHandler({ $, request }) {
+      const pageUrl = new URL(request.url);
+      const parsed = parseProductMetadata($.html(), pageUrl);
+      const title = $("#productTitle, [itemprop='name']").first().text().trim();
+      const image = $("#landingImage, #imgBlkFront, [itemprop='image']")
+        .first()
+        .attr("data-old-hires") ?? $("#landingImage, #imgBlkFront, [itemprop='image']")
+        .first()
+        .attr("src");
+      const visiblePrice = $(
+        "#corePrice_feature_div .a-offscreen, #price_inside_buybox, [itemprop='price'], .product-price",
+      )
+        .first()
+        .text()
+        .trim();
+      let imageUrl = parsed.image_url;
+      try {
+        if (!imageUrl && image)
+          imageUrl = productUrl(new URL(image, pageUrl).href).href;
+      } catch {
+        imageUrl = null;
+      }
+      const isEuro = /€|\bEUR\b/i.test(visiblePrice);
+      result = {
+        title: parsed.title ?? (decode(title).slice(0, 200) || null),
+        image_url: imageUrl,
+        price:
+          parsed.price ??
+          (isEuro
+            ? productPrice(visiblePrice.replace(/€|\bEUR\b/gi, "").trim())
+            : null),
+        currency: parsed.currency ?? (isEuro ? "EUR" : null),
+      };
+    },
+  });
+  try {
+    await crawler.run([productUrl(value).href]);
+  } catch {
+    return null;
+  }
+  return result;
+}
 
 export async function extractProductMetadata(
   value: string,
@@ -365,7 +604,21 @@ export async function extractProductMetadata(
         readProductHtml(response, controller.signal),
         aborted,
       ]);
-      return parseProductMetadata(html, url);
+      const primary = parseProductMetadata(html, url);
+      if (primary.title && primary.image_url && primary.price !== null)
+        return primary;
+      const supplemental = dependencies.crawlee
+        ? await dependencies.crawlee(url.href)
+        : dependencies.request || dependencies.resolve
+          ? null
+          : await extractProductMetadataWithCrawlee(url.href);
+      if (!supplemental) return primary;
+      return {
+        title: primary.title ?? supplemental.title,
+        image_url: primary.image_url ?? supplemental.image_url,
+        price: primary.price ?? supplemental.price,
+        currency: primary.currency ?? supplemental.currency,
+      };
     }
     throw new ProductMetadataError("unavailable");
   } catch (error) {

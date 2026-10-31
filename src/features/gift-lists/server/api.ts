@@ -17,8 +17,11 @@ const optionalText = (max: number) =>
     .nullable()
     .optional()
     .transform((value) => value || null);
-const webUrl = optionalText(4096).refine(
-  (value) => value === null || safeWebUrl(value) !== null,
+const webUrl = optionalText(250000).refine(
+  (value) =>
+    value === null ||
+    safeWebUrl(value) !== null ||
+    /^data:image\/webp;base64,[A-Za-z0-9+/]+={0,2}$/.test(value),
   "Lien HTTP ou HTTPS requis.",
 );
 const money = z
