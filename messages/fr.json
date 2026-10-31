@@ -325,6 +325,8 @@
     "loadMore": "Charger plus de résultats",
     "resultsCount": "{count, plural, =0 {Aucun résultat} =1 {1 résultat} other {# résultats}}",
     "clearDates": "Effacer les dates",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "demoNotice": "Démonstration : toutes les valeurs affichées ci-dessous sont fictives.",
+    "demoSession": "Exemple de session"
   }
 }

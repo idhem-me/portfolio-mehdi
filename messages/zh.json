@@ -325,6 +325,8 @@
     "loadMore": "加载更多结果",
     "resultsCount": "{count, plural, =0 {无结果} =1 {1 个结果} other {# 个结果}}",
     "clearDates": "清除日期",
-    "cookies": "Cookies"
+    "cookies": "Cookies",
+    "demoNotice": "演示：下方所有数字均为虚构。",
+    "demoSession": "示例会话"
   }
 }

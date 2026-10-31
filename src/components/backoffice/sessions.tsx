@@ -1,9 +1,8 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import useSWR from "swr";
 import { Drawer } from "vaul";
 import {
   Sheet,
@@ -23,8 +22,10 @@ import ReactCountryFlag from "react-country-flag";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { fetcher, distance, type Row } from "./data";
+import { distance, type Row } from "./data";
 import { DateRangeSelect } from "@/components/ui/date-range-select";
+
+import { DEMO_NOW, filterDemoSessions } from "./demo";
 
 const SORTABLE = ["started_at", "active_ms", "clicks", "mouse_px"] as const;
 
@@ -87,6 +88,10 @@ function CountryFlag({
 }
 
 export function Sessions() {
+  const search = useSearchParams();
+  return <SessionList key={search.toString()} />;
+}
+function SessionList() {
   const t = useTranslations("backoffice"),
     locale = useLocale(),
     router = useRouter(),
@@ -95,8 +100,8 @@ export function Sessions() {
     mobile = useIsMobile();
   const [selected, setSelected] = useState<Row | null>(null);
   const [page, setPage] = useState(1);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [now] = useState(() => Date.now());
+  const now = DEMO_NOW;
+  const sentinel = useRef<HTMLDivElement>(null);
   const query = useMemo(() => {
     const next = new URLSearchParams(search.toString());
     next.delete("page");
@@ -104,29 +109,21 @@ export function Sessions() {
       next.set("from", new Date(now - 7 * 86400000).toISOString());
     return next;
   }, [search, now]);
-  const filterKey = query.toString();
-  const { data, error, mutate, isValidating } = useSWR<{
-    rows: Row[];
-    total: number;
-    options?: { countries: string[]; paths: string[] };
-  }>("/api/backoffice/sessions?" + filterKey + "&page=" + page, fetcher, {
-    refreshInterval: 30000,
-  });
-
+  const data = useMemo(() => filterDemoSessions(query), [query]);
+  const rows = data.rows.slice(0, page * 15);
+  const hasMore = rows.length < data.total;
   useEffect(() => {
-    setPage(1);
-    setRows([]);
-  }, [filterKey]);
-
-  useEffect(() => {
-    if (!data) return;
-    setRows((previous) =>
-      page === 1 ? data.rows : mergeRows(previous, data.rows),
+    const node = sentinel.current;
+    if (!node || !hasMore) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) setPage((current) => current + 1);
+      },
+      { rootMargin: "200px" },
     );
-    // Appliquer uniquement quand la réponse SWR change — pas au seul setPage,
-    // sinon la page N réutiliserait encore les rows de N-1.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- page lu volontairement au moment du fetch résolu
-  }, [data]);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [hasMore, page]);
 
   function update(k: string, v: string) {
     const p = new URLSearchParams(search.toString());
@@ -146,7 +143,6 @@ export function Sessions() {
         : new Intl.NumberFormat(locale).format(Number(r[k]) || 0);
   const index = rows.findIndex((r) => r.id === selected?.id);
   const total = data?.total ?? 0;
-  const hasMore = rows.length < total;
   const fromValue = query.get("from")?.slice(0, 10) || "";
   const toValue = query.get("to")?.slice(0, 10) || "";
   const dateSummary = formatDateSummary(fromValue, toValue, locale);
@@ -233,6 +229,7 @@ export function Sessions() {
   return (
     <div className="@container flex w-full min-w-0 flex-col gap-4">
       <h1 className="text-3xl font-semibold">{t("sessions")}</h1>
+      <p className="text-xs text-muted-foreground">{t("demoNotice")}</p>
 
       <div className="flex min-w-0 flex-wrap items-center gap-2 pb-1 [&>*]:max-w-full">
         <DateRangeSelect
@@ -318,19 +315,7 @@ export function Sessions() {
         </Button>
       </div>
 
-      {error ? (
-        <div
-          role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-4 text-sm"
-        >
-          {t("error")}
-          <Button variant="outline" onClick={() => mutate()}>
-            {t("retry")}
-          </Button>
-        </div>
-      ) : !data && rows.length === 0 ? (
-        <div className="min-h-48 animate-pulse rounded-xl bg-muted" />
-      ) : !rows.length ? (
+      {!rows.length ? (
         <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed p-10 text-center">
           <p className="text-muted-foreground">{t("none")}</p>
           <Button variant="outline" onClick={() => router.replace(path)}>
@@ -525,10 +510,13 @@ export function Sessions() {
             })}
           </div>
           {hasMore ? (
-            <div className="flex justify-center pt-1">
+            <div
+              ref={sentinel}
+              className="flex justify-center pt-1"
+              data-testid="session-load-more"
+            >
               <Button
                 variant="outline"
-                disabled={isValidating}
                 onClick={() => setPage((current) => current + 1)}
               >
                 {t("loadMore")}
@@ -586,11 +574,6 @@ export function Sessions() {
       )}
     </div>
   );
-}
-
-function mergeRows(previous: Row[], next: Row[]) {
-  const seen = new Set(previous.map((row) => row.id));
-  return [...previous, ...next.filter((row) => !seen.has(row.id))];
 }
 
 function formatDateSummary(from: string, to: string, locale: string) {

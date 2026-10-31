@@ -1,3 +1,19 @@
+# Back-office de démonstration
+
+`/backoffice` et `/backoffice/sessions` affichent exclusivement des données fictives, avec une mention explicite dans les sept langues. Aucune connexion ni acceptation des cookies n’est nécessaire à leur consultation. Le navigateur ne charge aucune API analytics pour ces vues, même lorsqu’un administrateur est connecté.
+
+Le dashboard reprend l’interface d’origine : périodes 24 h / 7 j / 30 j / 90 j, comparaisons, courbe, appareils, pays, pages et exemple de session. Les sessions reprennent les drapeaux, icônes appareil, états simulés, filtres date/pays/appareil/page, tris, fiches latérales sur ordinateur et tiroirs sur mobile. Les lignes se chargent par lots de 15 au scroll ; un bouton reste disponible.
+
+`src/components/backoffice/demo.ts` génère un jeu déterministe de 1 080 sessions synthétiques, ancré au 31 octobre 2026. Les métriques et filtres proviennent du même jeu de données ; aucune donnée visiteur n’est utilisée. Les dates sont fixes pour éviter les différences d’hydratation et conserver une démo reproductible.
+
+Les anciennes API privées `/api/backoffice/stats`, `/sessions`, `/sessions/[id]` et `/api/analytics/summary` restent protégées par authentification. Les routes publiques d’agrégats créées pendant l’itération précédente ont été retirées. Les permissions de la base et les correctifs de sécurité restent en place.
+
+Validation : `node --import tsx --import ./tests/helpers/server-only.ts --test tests/backoffice-demo.test.ts tests/backoffice.test.ts tests/security-auth.test.ts` ; `npx playwright test tests/backoffice.spec.ts --project=chromium` avec serveur local actif.
+
+## Historique de la sécurisation administrateur
+
+Les sections ci-dessous décrivent la sécurisation des données réelles. La démonstration publique décrite ci-dessus remplace la restriction globale des pages sans rouvrir les API privées.
+
 # Mise à jour sécurité (31 octobre 2026)
 
 Les détails de sessions, statistiques globales et pages backoffice sont désormais réservés à une session administrateur. Le consentement analytics ne donne aucun droit administrateur. `/api/backoffice/me` reste un accès visiteur, lié à un secret HttpOnly émis par le serveur, jamais au header `x-visitor-id`.

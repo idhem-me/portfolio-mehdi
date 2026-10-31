@@ -1,8 +1,7 @@
 "use client";
-import { useId, useMemo, useState, useSyncExternalStore } from "react";
+import { useId, useMemo, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { Activity, ArrowDownRight, ArrowUpRight } from "lucide-react";
-import useSWR from "swr";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AreaChart,
@@ -16,44 +15,21 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { track } from "@/lib/tracking/client";
-import { fetcher, distance } from "./data";
+import { demoSessions, getDemoStats } from "./demo";
+import { distance } from "./data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-type Point = { label: string; value: number };
-type Stats = {
-  current: Record<string, number>;
-  previous: Record<string, number> | null;
-  online: number;
-  series: Point[];
-  pages: Point[];
-  devices: Point[];
-  countries: Point[];
-};
-function subscribeLive(notify: () => void) {
-  const timer = setInterval(notify, 1000);
-  return () => clearInterval(timer);
-}
 export function Dashboard() {
-  const live = JSON.parse(
-    useSyncExternalStore(
-      subscribeLive,
-      () => JSON.stringify(track.snapshot().total),
-      () => "{}",
-    ),
-  ) as Record<string, number>;
   const t = useTranslations("backoffice"),
     locale = useLocale();
   const [range, setRange] = useState("7d");
-  const { data, error, mutate } = useSWR<Stats>(
-    "/api/backoffice/stats?range=" + range,
-    fetcher,
-    { refreshInterval: 30000 },
-  );
-  const { data: me } = useSWR<
-    Record<string, number> & { localSnapshot?: Record<string, number> }
-  >("/api/backoffice/me", fetcher, { refreshInterval: 30000 });
+  const data = useMemo(() => getDemoStats(range), [range]);
+  const me: Record<string, number> = Object.fromEntries(
+    Object.entries(demoSessions[0]).filter(
+      ([, value]) => typeof value === "number",
+    ),
+  ) as Record<string, number>;
+  me.pages = Object.keys(demoSessions[0].pages).length;
   const deviceChartData = useMemo(
     () =>
       data?.devices.map((device) => ({
@@ -79,7 +55,7 @@ export function Dashboard() {
     "mouse_px",
     "clicks",
     "games_played",
-  ];
+  ] as const;
   const reducedMotion = useReducedMotion();
   const gradientId = useId().replaceAll(":", "");
   const chartColors = [
@@ -130,22 +106,7 @@ export function Dashboard() {
           />
         </div>
       </header>
-      {error ? (
-        <div
-          role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3 text-sm"
-        >
-          {t("error")}{" "}
-          <Button variant="outline" onClick={() => mutate()}>
-            {t("retry")}
-          </Button>
-        </div>
-      ) : !data ? (
-        <div className="grid gap-3" role="status" aria-label={t("dashboard")}>
-          <div className="h-28 animate-pulse rounded-xl bg-muted" />
-          <div className="h-56 animate-pulse rounded-xl bg-muted" />
-        </div>
-      ) : null}
+      <p className="text-xs text-muted-foreground">{t("demoNotice")}</p>
       {data && (
         <>
           <Card size="sm" className="gap-0 py-0">
@@ -405,7 +366,7 @@ export function Dashboard() {
             ))}
             <Card size="sm" className="min-w-0">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>{t("mine")}</CardTitle>
+                <CardTitle>{t("demoSession")}</CardTitle>
                 <Activity
                   className="size-4 text-muted-foreground"
                   aria-hidden
@@ -426,33 +387,11 @@ export function Dashboard() {
                         {t(k)}
                       </dt>
                       <dd className="mt-0.5 text-lg font-semibold tabular-nums">
-                        {value(
-                          k,
-                          (me?.[k] || 0) +
-                            Math.max(
-                              0,
-                              (live[k] || 0) - (me?.localSnapshot?.[k] || 0),
-                            ),
-                        )}
+                        {value(k, me[k] || 0)}
                       </dd>
                     </div>
                   ))}
                 </dl>
-                <p className="border-t pt-2 text-[10px] leading-relaxed text-muted-foreground">
-                  {t("since")}
-                </p>
-                {me &&
-                  data.current.mouse_px > 0 &&
-                  data.current.sessions > 0 && (
-                    <p className="text-[11px] text-muted-foreground">
-                      {t("comparison", {
-                        ratio: number(
-                          (me.mouse_px || 0) /
-                            (data.current.mouse_px / data.current.sessions),
-                        ),
-                      })}
-                    </p>
-                  )}
               </CardContent>
             </Card>
           </div>

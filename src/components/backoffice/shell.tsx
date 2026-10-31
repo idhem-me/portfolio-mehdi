@@ -1,10 +1,7 @@
 "use client";
-import { SWRConfig } from "swr";
-import { LayoutDashboard, Table, MousePointer2 } from "lucide-react";
+import { LayoutDashboard, Table } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import { useAnalyticsConsent } from "@/lib/analytics/use-analytics-consent";
-import { Button } from "@/components/ui/button";
 import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import { DesignSystemSidebarButton } from "@/components/design-system/sidebar-button";
 import { DesignSystemScope } from "@/components/design-system/provider";
@@ -14,7 +11,6 @@ export const navigation = [
 ] as const;
 export function BackofficeShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("backoffice"),
-    c = useAnalyticsConsent(),
     path = usePathname();
   return (
     <div className="flex min-h-svh min-w-0">
@@ -45,27 +41,7 @@ export function BackofficeShell({ children }: { children: React.ReactNode }) {
         </nav>
       </DesignSystemScope>
       <main className="flex min-w-0 flex-1 flex-col p-4 pb-32 md:p-6">
-        {c.granted ? (
-          <SWRConfig value={{ provider: () => new Map() }}>
-            {children}
-          </SWRConfig>
-        ) : (
-          <div className="mx-auto flex min-h-[65vh] max-w-xl flex-col items-center justify-center gap-5 text-center">
-            <MousePointer2
-              className="size-16 text-muted-foreground"
-              aria-hidden
-            />
-            <h1 className="text-3xl font-semibold">{t("emptyTitle")}</h1>
-            <p className="text-muted-foreground">{t("emptyText")}</p>
-            <p className="text-muted-foreground">{t("emptyPrivacy")}</p>
-            <Button data-analytics-action="consent_accept" onClick={c.accept}>
-              {t("accept")}
-            </Button>
-            <Button variant="ghost" onClick={c.openPreferences}>
-              {t("cookies")}
-            </Button>
-          </div>
-        )}
+        {children}
       </main>
     </div>
   );
