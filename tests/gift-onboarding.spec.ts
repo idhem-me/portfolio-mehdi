@@ -109,3 +109,28 @@ test("gift tool opens with a collapsed sidebar and shares the tool link", async 
     )
     .toBe("http://localhost:3000/outils/listes-cadeaux");
 });
+
+test("mobile gift landing fits the viewport and uses secondary sharing", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await identityEnvironment(page);
+  await page.route("**/api/tetris/gifts", (route) =>
+    route.fulfill({ status: 401, json: { error: "Connexion requise" } }),
+  );
+  await page.goto("/outils/listes-cadeaux");
+  const share = page
+    .locator("main footer")
+    .getByRole("button", { name: "Partager", exact: true });
+  await expect(share).toHaveAttribute("data-variant", "secondary");
+  await expect(
+    page.getByRole("button", { name: "Continuer avec Google", exact: true }),
+  ).toBeEnabled();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => document.documentElement.scrollHeight - window.innerHeight,
+      ),
+    )
+    .toBeLessThanOrEqual(1);
+});

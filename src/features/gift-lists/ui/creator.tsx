@@ -164,10 +164,10 @@ function AccountMenu({ refresh }: { refresh: () => void }) {
 function ShareTool() {
   const [message, setMessage] = useState("");
   return (
-    <footer className="mt-auto pt-8 text-center">
+    <footer className="mt-auto pt-4 text-center md:pt-8">
       <Button
         type="button"
-        variant="primary"
+        variant="secondary"
         onClick={async () => {
           setMessage("");
           const url = window.location.origin + window.location.pathname;
@@ -218,7 +218,7 @@ export function CreatorDashboard() {
     <main
       lang="fr"
       dir="ltr"
-      className="mx-auto flex min-h-svh w-full max-w-4xl flex-col gap-8 px-6 py-10"
+      className="mx-auto flex min-h-[calc(100svh-max(1rem,env(safe-area-inset-top))-var(--control-height-icon)-1rem)] w-full max-w-4xl flex-col gap-6 px-6 py-6 md:min-h-svh md:gap-8 md:py-10"
     >
       <div className="flex items-center justify-between gap-4">
         <DocumentLink
