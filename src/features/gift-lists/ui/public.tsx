@@ -342,8 +342,23 @@ function PublicGiftListClient({ slug }: { slug: string }) {
     }
   });
   const origin = window.location.origin;
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState(() =>
+    new URLSearchParams(window.location.search).get("reservation") ===
+    "cancelled"
+      ? "Réservation annulée. Le cadeau ou le montant réservé est de nouveau disponible."
+      : "",
+  );
   const dismissNotice = useCallback(() => setNotice(""), []);
+  useEffect(() => {
+    const currentUrl = new URL(window.location.href);
+    if (currentUrl.searchParams.get("reservation") !== "cancelled") return;
+    currentUrl.searchParams.delete("reservation");
+    window.history.replaceState(
+      null,
+      "",
+      `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`,
+    );
+  }, []);
   const activeItem = data?.items.find((item) => item.id === selected);
   async function success(receipt: Receipt) {
     const updated = [
@@ -444,29 +459,30 @@ function PublicGiftListClient({ slug }: { slug: string }) {
                 </AccordionTrigger>
                 <AccordionContent className="px-4 pb-1 [&_a]:no-underline">
                   <ul className="divide-y divide-border border-t border-border">
-                    {receipts.map((receipt) => (
-                      <li
-                        key={receipt.token}
-                        className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
-                      >
-                        <span className="min-w-0 break-words font-medium">
-                          {receipt.title}
-                        </span>
-                        {origin && (
-                          <div className="flex shrink-0 flex-wrap items-start gap-2">
-                            <CopyLink
-                              value={`${origin}/listes/annuler#${receipt.token}`}
-                              label="Copier le lien"
-                            />
-                            <Button variant="ghost" asChild>
-                              <a href={`/listes/annuler#${receipt.token}`}>
-                                Annuler ma réservation
-                              </a>
-                            </Button>
-                          </div>
-                        )}
-                      </li>
-                    ))}
+                    {receipts.map((receipt) => {
+                      const cancelUrl = `/listes/annuler?retour=${encodeURIComponent(`/l/${data.slug}`)}#${receipt.token}`;
+                      return (
+                        <li
+                          key={receipt.token}
+                          className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <span className="min-w-0 break-words font-medium">
+                            {receipt.title}
+                          </span>
+                          {origin && (
+                            <div className="flex shrink-0 flex-wrap items-start gap-2">
+                              <CopyLink
+                                value={`${origin}${cancelUrl}`}
+                                label="Copier le lien"
+                              />
+                              <Button variant="ghost" asChild>
+                                <a href={cancelUrl}>Annuler ma réservation</a>
+                              </Button>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </AccordionContent>
               </AccordionItem>
@@ -600,16 +616,27 @@ export function CancelReservation() {
   );
 }
 function CancelReservationClient() {
+  const [returnTo] = useState(() => {
+    const candidate = new URLSearchParams(window.location.search).get("retour");
+    return candidate && /^\/l\/[a-f0-9]{20}$/.test(candidate)
+      ? candidate
+      : "/outils/listes-cadeaux";
+  });
   const [token] = useState(() => {
     const raw = window.location.hash.slice(1);
     return /^[a-f0-9]{64}$/.test(raw) ? raw : null;
   });
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
   const [error, setError] = useState("");
   const lock = useRef(false);
   useEffect(() => {
-    if (token) window.history.replaceState(null, "", window.location.pathname);
+    if (token) {
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+      );
+    }
   }, [token]);
   return (
     <main
@@ -619,9 +646,7 @@ function CancelReservationClient() {
     >
       <Gift className="size-10 text-foreground" aria-hidden="true" />
       <h1 className="text-3xl font-semibold">Annuler ma réservation</h1>
-      {done ? (
-        <Notice>Ta réservation est annulée.</Notice>
-      ) : !token ? (
+      {!token ? (
         <Notice error>
           Ce lien d’annulation est incomplet. Ouvre le lien personnel reçu lors
           de ta réservation.
@@ -629,7 +654,8 @@ function CancelReservationClient() {
       ) : (
         <>
           <p className="text-muted-foreground">
-            Le cadeau ou le montant déclaré sera à nouveau disponible.
+            Le cadeau ou le montant réservé sera de nouveau disponible dans la
+            liste.
           </p>
           {error && <Notice error>{error}</Notice>}
           <Button
@@ -642,7 +668,6 @@ function CancelReservationClient() {
               setError("");
               try {
                 await giftRequest("/api/gifts/cancel", { token });
-                setDone(true);
                 try {
                   for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
@@ -658,6 +683,9 @@ function CancelReservationClient() {
                 } catch {
                   /* Cancellation already succeeded remotely. */
                 }
+                window.location.replace(
+                  `${returnTo}?reservation=cancelled`,
+                );
               } catch (e) {
                 setError(errorText(e));
               } finally {
@@ -670,12 +698,9 @@ function CancelReservationClient() {
           </Button>
         </>
       )}
-      <DocumentLink
-        href="/outils/listes-cadeaux"
-        className="inline-flex min-h-11 items-center text-sm underline"
-      >
-        Créer ma propre liste
-      </DocumentLink>
+      <Button variant="outline" asChild>
+        <a href={returnTo}>Ne pas annuler ma réservation</a>
+      </Button>
     </main>
   );
 }
