@@ -67,7 +67,12 @@ function renderStroke(points: PaintPoint[], color: string) {
   path.style.touchAction = "none";
   svg.append(path);
   el.append(svg);
-  document.body.append(el);
+  // Keep strokes in the transformed page layer so fixed viewport coordinates
+  // match the pointer on mobile Safari too.
+  const host = document.querySelector<HTMLElement>(
+    ".page-tear-paper > :first-child",
+  );
+  (host ?? document.body).append(el);
   updatePath(el, points);
   return el;
 }
@@ -168,7 +173,15 @@ export function PaintTool({
     if (!palette) return;
     const align = () => {
       const rect = palette.getBoundingClientRect();
-      setExitPosition({ x: rect.left + rect.width / 2, y: rect.bottom + 8 });
+      const toolbarRect = palette
+        .closest<HTMLElement>("[data-paint-toolbar]")
+        ?.getBoundingClientRect();
+      setExitPosition({
+        x: toolbarRect
+          ? toolbarRect.left + toolbarRect.width / 2
+          : rect.left + rect.width / 2,
+        y: rect.bottom + 8,
+      });
       setPalettePosition({ left: rect.left, top: rect.top });
     };
     align();
@@ -290,16 +303,7 @@ export function PaintTool({
     const b = bounds();
     if (x < b.left + 6 || x > b.right - 6 || y < b.top + 6 || y > b.bottom - 6)
       return false;
-    return !Array.from(
-      document.querySelectorAll<HTMLElement>(
-        'button, input, [role="dialog"], [data-paint-controls]',
-      ),
-    ).some((el) => {
-      if (el === brushRef.current || el.closest("[data-paint-brush]"))
-        return false;
-      const r = el.getBoundingClientRect();
-      return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
-    });
+    return true;
   }
   function move(e: ReactPointerEvent<HTMLElement>) {
     const g = gestureRef.current;
@@ -309,25 +313,27 @@ export function PaintTool({
       x: e.clientX - g.offset.x + 4.675,
       y: e.clientY - g.offset.y + 37.675,
     };
-    if (!pointAt(point.x, point.y)) return;
     const previous = g.points.at(-1);
-    if (previous) {
-      const steps = Math.ceil(
-        Math.hypot(point.x - previous.x, point.y - previous.y) / 3,
-      );
-      for (let i = 1; i < steps; i++) {
-        if (
-          !pointAt(
-            previous.x + ((point.x - previous.x) * i) / steps,
-            previous.y + ((point.y - previous.y) * i) / steps,
-          )
-        )
-          return;
-      }
+    // Keep the live preview continuous across fast touch events. The old
+    // pointAt checks dropped the entire segment when any interpolated point
+    // crossed a toolbar/control edge, even though the pointer kept moving.
+    const steps = previous
+      ? Math.ceil(Math.hypot(point.x - previous.x, point.y - previous.y) / 3)
+      : 1;
+    const samples: PaintPoint[] = [];
+    for (let i = 1; i <= steps; i++) {
+      const sample = previous
+        ? {
+            x: previous.x + ((point.x - previous.x) * i) / steps,
+            y: previous.y + ((point.y - previous.y) * i) / steps,
+          }
+        : point;
+      if (pointAt(sample.x, sample.y)) samples.push(sample);
     }
-    samplePaintPoint(g.points, point);
+    if (!previous && !samples.length) samples.push(point);
+    for (const sample of samples) samplePaintPoint(g.points, sample);
     g.endpoint = point;
-    const preview = g.points.at(-1) === point ? g.points : [...g.points, point];
+    const preview = [...g.points, point];
     if (!g.el) g.el = renderStroke(preview, g.color);
     else updatePath(g.el, preview);
   }
@@ -490,7 +496,7 @@ export function PaintTool({
               )}
               <Button
                 type="button"
-                variant="secondary"
+                variant="primary"
                 className="fixed -translate-x-1/2 cursor-pointer whitespace-nowrap"
                 style={{ left: exitPosition.x, top: exitPosition.y }}
                 onPointerDown={(e) => e.stopPropagation()}

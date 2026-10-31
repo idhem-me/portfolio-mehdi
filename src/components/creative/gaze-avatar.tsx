@@ -280,8 +280,12 @@ export function GazeAvatar() {
     };
 
     const tryRequestPermission = async () => {
-      const DOE =
-        DeviceOrientationEvent as unknown as DeviceOrientationPermission;
+      const DOE = (
+        window as Window & {
+          DeviceOrientationEvent?: DeviceOrientationPermission;
+        }
+      ).DeviceOrientationEvent;
+      if (!DOE) return;
       if (typeof DOE.requestPermission === "function") {
         try {
           const result = await DOE.requestPermission();
@@ -289,7 +293,7 @@ export function GazeAvatar() {
         } catch {
           // Fall through to touch
         }
-      } else if ("DeviceOrientationEvent" in window) {
+      } else {
         attachOrientation();
       }
     };

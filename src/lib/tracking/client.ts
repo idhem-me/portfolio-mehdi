@@ -28,6 +28,11 @@ let currentPath = "";
 let lifetime: Record<string, number> = {};
 let pendingInfo: { id: string; delta: Record<string, number> } | null = null;
 let emitted = new Set<string>();
+function createId() {
+  return typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
 const colors = new Set<string>();
 const played = new Set<string>();
 function event(name: string) {
@@ -126,15 +131,15 @@ export function startTracking() {
       return;
     }
     void remove();
-    visitor = localStorage.getItem("backoffice_visitor") || crypto.randomUUID();
+    visitor = localStorage.getItem("backoffice_visitor") || createId();
     localStorage.setItem("backoffice_visitor", visitor);
     const oldActivity = Number(
       sessionStorage.getItem("backoffice_activity") || 0,
     );
     session =
       Date.now() - oldActivity > 1800000
-        ? crypto.randomUUID()
-        : sessionStorage.getItem("backoffice_session") || crypto.randomUUID();
+        ? createId()
+        : sessionStorage.getItem("backoffice_session") || createId();
     sessionStorage.setItem("backoffice_session", session);
     lifetime = {};
     pendingInfo = null;
@@ -209,7 +214,7 @@ export function startTracking() {
         const batch = {
           visitor_id: visitor,
           session_id: session,
-          batch_id: crypto.randomUUID(),
+          batch_id: createId(),
           delta: Object.fromEntries(
             Object.entries(values).map(([k, n]) => [
               k,
@@ -279,7 +284,7 @@ export function startTracking() {
       const now = Date.now();
       if (now - last > 1800000) {
         flush(true);
-        session = crypto.randomUUID();
+        session = createId();
         sessionStorage.setItem("backoffice_session", session);
         emitted.clear();
         colors.clear();
