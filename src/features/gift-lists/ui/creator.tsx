@@ -35,7 +35,7 @@ import {
   Confirm,
   OccasionTag,
   ListImage,
-  WhatsAppShare,
+  ListShareMenu,
   DocumentLink,
   useHydrated,
   CopyLink,
@@ -44,7 +44,6 @@ import {
   MerchantLink,
   Notice,
   giftRequest,
-  ShareQRCode,
 } from "./shared";
 
 const api = "/api/tetris/gifts";
@@ -431,14 +430,11 @@ export function CreatorList({ id }: { id: string }) {
                         </a>
                       </Button>
                     </div>
-                    <WhatsAppShare title={data.list.title} url={share} />
+                    <ListShareMenu title={data.list.title} url={share} />
                   </div>
                 </>
               )}
             </div>
-            {share && (
-              <ShareQRCode value={share} title={data.list.title} />
-            )}
           </section>
           {data.activity.hidden ? (
             <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-muted/40 p-5">

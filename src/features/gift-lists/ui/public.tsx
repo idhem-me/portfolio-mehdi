@@ -31,7 +31,7 @@ import {
   CopyLink,
   OccasionTag,
   ListImage,
-  WhatsAppShare,
+  ListShareMenu,
   DocumentLink,
   useHydrated,
   errorText,
@@ -565,7 +565,7 @@ function PublicGiftListClient({ slug }: { slug: string }) {
         </>
       )}
       {data && (
-        <WhatsAppShare title={data.title} url={`${origin}/l/${data.slug}`} />
+        <ListShareMenu title={data.title} url={`${origin}/l/${data.slug}`} />
       )}
       <footer className="pt-6 text-center">
         <DocumentLink

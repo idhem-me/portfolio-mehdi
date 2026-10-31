@@ -434,8 +434,9 @@ export function ItemForm({
               {(id) => (
                 <Input
                   id={id}
-                  type="url"
-                  maxLength={4096}
+                  type="text"
+                  inputMode="url"
+                  maxLength={250000}
                   value={image}
                   onChange={(e) => setImage(e.target.value)}
                 />

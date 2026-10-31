@@ -11,11 +11,18 @@ import {
   ExternalLink,
   MessageCircle,
   QrCode,
+  Share2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { QRCodeSVG } from "qrcode.react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -38,64 +45,61 @@ export function OccasionTag({
   return text ? <Badge variant="secondary">{text}</Badge> : null;
 }
 
-export function WhatsAppShare({ title, url }: { title: string; url: string }) {
-  const [shareError, setShareError] = useState("");
-  if (!url) return null;
-  const href = `https://wa.me/?text=${encodeURIComponent(`${title}\n${url}`)}`;
+export function ListShareMenu({ title, url }: { title: string; url: string }) {
+  const [qrOpen, setQrOpen] = useState(false);
+
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${title}\n${url}`)}`;
+
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-3">
-        <Button variant="secondary" asChild>
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            referrerPolicy="no-referrer"
-            title="Partager le lien dans une conversation ou un groupe WhatsApp"
+    <div className="space-y-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button type="button" variant="secondary">
+            <Share2 className="size-4" aria-hidden="true" />
+            Partager
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem
+            onSelect={() => {
+              window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+            }}
           >
-            <MessageCircle className="size-4" aria-hidden="true" />
-            Partager sur WhatsApp
-            <span className="sr-only"> (nouvel onglet)</span>
-          </a>
-        </Button>
-        <Button
-          variant="secondary"
-          type="button"
-          onClick={async () => {
-            setShareError("");
-            try {
-              if (navigator.share) {
-                await navigator.share({ title, text: title, url });
-              } else {
-                await navigator.clipboard.writeText(`${title}\n${url}`);
-                setShareError("Lien copié. Colle-le dans Messages.");
-                window.location.href = "sms:";
-              }
-            } catch (error) {
-              if (error instanceof Error && error.name === "AbortError") return;
-              setShareError(
-                "Le partage n’est pas disponible ici. Copie le lien pour l’envoyer dans Messages.",
-              );
-            }
-          }}
-        >
-          <MessageCircle className="size-4" aria-hidden="true" />
-          Partager par iMessage
-        </Button>
-      </div>
-      {shareError && (
-        <p role="status" className="text-sm text-muted-foreground">
-          {shareError}
-        </p>
-      )}
+            <MessageCircle aria-hidden="true" />
+            WhatsApp
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onSelect={() => {
+              window.location.href = `sms:&body=${encodeURIComponent(`${title}\n${url}`)}`;
+            }}
+          >
+            <MessageCircle aria-hidden="true" />
+            iMessage
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setQrOpen(true)}>
+            <QrCode aria-hidden="true" />
+            QR code
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <ShareQRCodeDialog
+        open={qrOpen}
+        onOpenChange={setQrOpen}
+        value={url}
+        title={title}
+      />
     </div>
   );
 }
 
-export function ShareQRCode({
+function ShareQRCodeDialog({
+  open,
+  onOpenChange,
   value,
   title,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   value: string;
   title: string;
 }) {
@@ -139,16 +143,20 @@ export function ShareQRCode({
       });
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ title, files: [file] });
-      } else {
-        const downloadUrl = URL.createObjectURL(png);
-        const link = document.createElement("a");
-        link.href = downloadUrl;
-        link.download = file.name;
-        link.click();
-        URL.revokeObjectURL(downloadUrl);
-        setMessage("QR code téléchargé. Tu peux maintenant le joindre à un message.");
+        try {
+          await navigator.share({ title, files: [file] });
+          return;
+        } catch (error) {
+          if (error instanceof Error && error.name === "AbortError") return;
+        }
       }
+      const downloadUrl = URL.createObjectURL(png);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = file.name;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
+      setMessage("QR code téléchargé. Tu peux maintenant le joindre à un message.");
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return;
       setMessage("Le QR code n’a pas pu être partagé. Réessaie.");
@@ -158,26 +166,38 @@ export function ShareQRCode({
   }
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="rounded-xl bg-white p-3">
-        <QRCodeSVG
-          ref={qrRef}
-          value={value}
-          size={256}
-          className="size-[88px]"
-          title="QR code de partage de la liste"
-        />
-      </div>
-      <Button variant="secondary" type="button" onClick={() => void shareQrCode()}>
-        <QrCode className="size-4" aria-hidden="true" />
-        Partager le QR code
-      </Button>
-      {message && (
-        <p role="status" className="max-w-56 text-center text-xs text-muted-foreground">
-          {message}
-        </p>
-      )}
-    </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>QR code de la liste</DialogTitle>
+          <DialogDescription>
+            Scanne ce code pour ouvrir « {title} ».
+          </DialogDescription>
+        </DialogHeader>
+        <div className="mx-auto flex w-fit items-center justify-center rounded-xl bg-white p-4">
+          <QRCodeSVG
+            ref={qrRef}
+            value={value}
+            size={256}
+            title="QR code de partage de la liste"
+          />
+        </div>
+        {message && (
+          <p role="status" className="text-center text-sm text-muted-foreground">
+            {message}
+          </p>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Fermer
+          </Button>
+          <Button variant="primary" onClick={() => void shareQrCode()}>
+            <QrCode className="size-4" aria-hidden="true" />
+            Partager le QR code
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
