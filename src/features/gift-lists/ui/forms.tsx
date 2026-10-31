@@ -108,6 +108,35 @@ export function ListForm({
                 />
               )}
             </Field>
+            <Field label="Type de liste">
+              {(id) => (
+                <Select
+                  id={id}
+                  label="Type de liste"
+                  value={value.occasion_type}
+                  options={occasions}
+                  onValueChange={(occasion_type) =>
+                    setValue({ ...value, occasion_type })
+                  }
+                />
+              )}
+            </Field>
+            {value.occasion_type === "other" && (
+              <Field label="Précise l’occasion (facultatif)">
+                {(id) => (
+                  <Input
+                    id={id}
+                    maxLength={80}
+                    placeholder="Crémaillère, départ en retraite…"
+                    value={value.occasion_label ?? ""}
+                    onChange={(event) =>
+                      setValue({ ...value, occasion_label: event.target.value })
+                    }
+                  />
+                )}
+              </Field>
+            )}
+
             <Field label="Image de la liste (facultatif)">
               {(id) => (
                 <Input
@@ -169,29 +198,6 @@ export function ListForm({
                 />
               )}
             </Field>
-            <Select
-              label="Occasion"
-              value={value.occasion_type}
-              options={occasions}
-              onValueChange={(occasion_type) =>
-                setValue({ ...value, occasion_type })
-              }
-            />
-            {value.occasion_type === "other" && (
-              <Field label="Précise l’occasion (facultatif)">
-                {(id) => (
-                  <Input
-                    id={id}
-                    maxLength={80}
-                    placeholder="Crémaillère, départ en retraite…"
-                    value={value.occasion_label ?? ""}
-                    onChange={(event) =>
-                      setValue({ ...value, occasion_label: event.target.value })
-                    }
-                  />
-                )}
-              </Field>
-            )}
             <Field
               label="Instructions de participation (facultatif)"
               hint="Lien ou IBAN, visible par les personnes ayant la liste."
@@ -208,7 +214,7 @@ export function ListForm({
                 />
               )}
             </Field>
-            <div className="space-y-2 rounded-xl border border-border p-4">
+            <div className="space-y-2 rounded-xl border border-border bg-muted p-4">
               <div className="flex items-center justify-between gap-4">
                 <span className="font-medium">Mode Surprise</span>
                 <Switch

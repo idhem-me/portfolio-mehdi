@@ -247,7 +247,8 @@ iPhone physique. Aucun déploiement n'a été lancé pendant cette intégration.
 
 - Accent réservé aux boutons d'entrée « Créer une liste » et « Ajouter un cadeau ».
   Les validations des formulaires, les réservations, les participations et le partage
-  WhatsApp utilisent Primary. Liens, jauges et tags utilisent les tokens neutres.
+  générique utilisent Primary. WhatsApp et iMessage utilisent Secondary.
+  Liens, jauges et tags utilisent les tokens neutres.
 - Le bouton de création d'en-tête est absent à l'état vide : seul le bouton
   « Créer ma première liste » est affiché.
 - Les occasions sont présentées en tags secondaires. « Autre occasion » affiche
@@ -262,7 +263,14 @@ iPhone physique. Aucun déploiement n'a été lancé pendant cette intégration.
   prix, après le nom du cadeau.
 - La suppression de la liste se trouve dans ses réglages, sur la même ligne que
   Annuler/Enregistrer, et conserve une confirmation.
-- Les liens d'annulation sont regroupés dans « Mes réservations », replié par défaut.
+- Les liens d'annulation sont regroupés dans l’accordéon du design system
+  « Mes réservations », replié par défaut, avec compteur et lignes séparées.
+- L’en-tête invité rapproche le titre, le tag et la description, sans séparateur.
+- Le lien d'entrée vers la création personnelle est centré en pied de page :
+  « À mon tour de créer une liste ». Le formulaire s'ouvre directement après
+  authentification via le paramètre `creer=1`.
+- La confirmation d'une réservation utilise le toast du design system en haut à
+  droite, refermable et masqué automatiquement après cinq secondes.
 - Un bouton « Partager sur WhatsApp » est placé en bas des vues créateur et invité.
   Il ouvre un message prérempli avec le titre et le lien court de la liste ; rien
   n'est envoyé automatiquement. La création d'un groupe se fait dans WhatsApp.
@@ -299,3 +307,7 @@ Les tests vérifient le réencodage et le retrait des métadonnées, le refus de
 formats et images trop volumineuses, l'import dans le formulaire, la persistance
 et l'affichage côté invité, ainsi que les données transmises au partage natif.
 L'application Messages elle-même et l'envoi iMessage ne sont pas automatisés.
+
+Le bloc de partage ne présente plus de séparateur. « Partager » apparaît en
+premier en Primary : il ouvre le partage natif, ou copie le lien si celui-ci est
+indisponible. WhatsApp et iMessage suivent en Secondary.

@@ -1,6 +1,6 @@
 "use client";
 import { useId, useState, useSyncExternalStore, type ReactNode } from "react";
-import { Gift, ExternalLink, MessageCircle } from "lucide-react";
+import { Gift, ExternalLink, MessageCircle, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -31,9 +31,32 @@ export function WhatsAppShare({ title, url }: { title: string; url: string }) {
   if (!url) return null;
   const href = `https://wa.me/?text=${encodeURIComponent(`${title}\n${url}`)}`;
   return (
-    <div className="space-y-3 border-t border-border pt-6">
+    <div className="space-y-3">
       <div className="flex flex-wrap gap-3">
-        <Button variant="primary" asChild>
+        <Button
+          variant="primary"
+          type="button"
+          onClick={async () => {
+            setShareError("");
+            try {
+              if (navigator.share)
+                await navigator.share({ title, text: title, url });
+              else {
+                await navigator.clipboard.writeText(url);
+                setShareError("Lien copié.");
+              }
+            } catch (error) {
+              if (error instanceof Error && error.name === "AbortError") return;
+              setShareError(
+                "Le partage est indisponible. Copie le lien de la liste pour l’envoyer.",
+              );
+            }
+          }}
+        >
+          <Share2 className="size-4" aria-hidden="true" />
+          Partager
+        </Button>
+        <Button variant="secondary" asChild>
           <a
             href={href}
             target="_blank"
@@ -47,7 +70,7 @@ export function WhatsAppShare({ title, url }: { title: string; url: string }) {
           </a>
         </Button>
         <Button
-          variant="primary"
+          variant="secondary"
           type="button"
           onClick={async () => {
             setShareError("");

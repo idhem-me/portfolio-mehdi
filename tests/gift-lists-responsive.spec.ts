@@ -85,7 +85,9 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
     await expect(
       page.getByLabel("Précise l’occasion (facultatif)", { exact: true }),
     ).toBeVisible();
-    await page.getByRole("combobox", { name: "Occasion", exact: true }).click();
+    await page
+      .getByRole("combobox", { name: "Type de liste", exact: true })
+      .click();
     await page
       .getByRole("option", { name: "Anniversaire", exact: true })
       .click();
@@ -111,7 +113,9 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
     await page
       .getByRole("button", { name: "Réglages de la liste", exact: true })
       .click();
-    await page.getByRole("combobox", { name: "Occasion", exact: true }).click();
+    await page
+      .getByRole("combobox", { name: "Type de liste", exact: true })
+      .click();
     await page
       .getByRole("option", { name: "Autre occasion", exact: true })
       .click();
@@ -197,6 +201,13 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
       .getAttribute("href");
     const response = await guest.goto(share!);
     await expect(
+      guest.getByRole("link", {
+        name: "À mon tour de créer une liste",
+        exact: true,
+      }),
+    ).toHaveAttribute("href", "/outils/listes-cadeaux?creer=1");
+    await expect(guest.locator("footer")).toHaveCSS("text-align", "center");
+    await expect(
       guest.getByAltText("Image de L’anniversaire de Camille", { exact: true }),
     ).toBeVisible();
     expect(response?.headers()["x-robots-tag"]).toContain("noindex");
@@ -223,6 +234,21 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
         },
       }),
     );
+    await expect(
+      guest.getByRole("button", { name: "Partager", exact: true }),
+    ).toHaveAttribute("data-variant", "primary");
+    await expect(
+      guest.getByRole("link", { name: /Partager sur WhatsApp/ }),
+    ).toHaveAttribute("data-variant", "secondary");
+    await expect(
+      guest.getByRole("button", { name: "Partager par iMessage", exact: true }),
+    ).toHaveAttribute("data-variant", "secondary");
+    await guest.getByRole("button", { name: "Partager", exact: true }).click();
+    expect(
+      await guest.evaluate(
+        () => (window as Window & { giftShare?: ShareData }).giftShare?.url,
+      ),
+    ).toContain(share!);
     await guest
       .getByRole("button", { name: "Partager par iMessage", exact: true })
       .click();
@@ -247,6 +273,12 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
     await guest
       .getByRole("button", { name: "Confirmer ma réservation", exact: true })
       .click();
+    const confirmation = guest
+      .getByRole("status")
+      .filter({ hasText: "Réservation confirmée." });
+    await expect(confirmation).toBeVisible();
+    await expect(confirmation).toHaveCSS("position", "fixed");
+    await expect(confirmation).toHaveCSS("right", "16px");
     await expect(
       guest.getByText("Déjà réservé par Alex Martin", { exact: true }),
     ).toBeVisible();
@@ -301,10 +333,17 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
       path: `/private/tmp/gifts-${info.project.name}-guest-mobile.png`,
       fullPage: true,
     });
-    await guest
-      .locator("summary")
-      .filter({ hasText: "Mes réservations" })
-      .click();
+    const reservations = guest.getByRole("button", {
+      name: "Mes réservations (2)",
+      exact: true,
+    });
+    await expect(reservations).toHaveAttribute("aria-expanded", "false");
+    await reservations.click();
+    await expect(reservations).toHaveAttribute("aria-expanded", "true");
+    await guest.screenshot({
+      path: `/private/tmp/gifts-${info.project.name}-reservations.png`,
+      fullPage: true,
+    });
     await guest
       .getByRole("link", { name: "Annuler ma réservation", exact: true })
       .first()
@@ -339,6 +378,16 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
       .getByRole("button", { name: "Supprimer la liste", exact: true })
       .click();
     await expect(page).toHaveURL(/\/outils\/listes-cadeaux$/);
+    await page.goto("/outils/listes-cadeaux?creer=1");
+    await expect(
+      page
+        .getByRole("dialog")
+        .getByRole("heading", { name: "Créer une liste", exact: true }),
+    ).toBeVisible();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Annuler", exact: true })
+      .click();
     expect(errors).toEqual([]);
     expect(analytics).toEqual([]);
   } finally {

@@ -2,6 +2,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { ArrowLeft, Gift, Plus, Settings, EyeOff, Heart } from "lucide-react";
 import { useRouter, Link } from "@/i18n/navigation";
@@ -49,7 +50,8 @@ function SignIn({ retry }: { retry: () => void }) {
 export function CreatorDashboard() {
   const identity = useIdentityState();
   const router = useRouter();
-  const [create, setCreate] = useState(false);
+  const searchParams = useSearchParams();
+  const [create, setCreate] = useState(() => searchParams.get("creer") === "1");
   const {
     data: response,
     error,
@@ -147,7 +149,7 @@ export function CreatorDashboard() {
           </Link>
         ))}
       </div>
-      {create && (
+      {create && data && (
         <ListForm
           onClose={() => setCreate(false)}
           onSave={async (value) => {

@@ -1,9 +1,22 @@
 "use client";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import useSWR from "swr";
-import { Gift, Heart } from "lucide-react";
+import { Gift, Heart, BookmarkCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Toast } from "@/components/ui/toast";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -330,6 +343,7 @@ function PublicGiftListClient({ slug }: { slug: string }) {
   });
   const origin = window.location.origin;
   const [notice, setNotice] = useState("");
+  const dismissNotice = useCallback(() => setNotice(""), []);
   const activeItem = data?.items.find((item) => item.id === selected);
   async function success(receipt: Receipt) {
     const updated = [
@@ -356,13 +370,6 @@ function PublicGiftListClient({ slug }: { slug: string }) {
       dir="ltr"
       className="mx-auto min-h-screen w-full max-w-5xl space-y-8 px-5 py-10 sm:px-8"
     >
-      <DocumentLink
-        href="/outils/listes-cadeaux"
-        className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground"
-      >
-        <Gift className="size-4" aria-hidden="true" />
-        Listes de cadeaux
-      </DocumentLink>
       {isLoading && <Notice>Ouverture de la liste…</Notice>}
       {error && (
         <div className="space-y-4">
@@ -379,7 +386,7 @@ function PublicGiftListClient({ slug }: { slug: string }) {
       )}
       {data && (
         <>
-          <header className="space-y-4 border-b border-border pb-8">
+          <header className="space-y-2">
             <ListImage
               src={data.cover_image}
               title={data.title}
@@ -409,45 +416,61 @@ function PublicGiftListClient({ slug }: { slug: string }) {
               </Button>
             </div>
           )}
-          {notice && (
-            <p role="status" className="text-sm text-muted-foreground">
-              {notice}
-            </p>
-          )}
+          <Toast
+            key={receipts.length}
+            message={notice || null}
+            onDismiss={dismissNotice}
+            placement="top-end"
+          />
           {receipts.length > 0 && (
-            <details
-              aria-label="Mes liens personnels d’annulation"
-              className="space-y-4 rounded-xl border border-border p-4"
+            <Accordion
+              type="single"
+              collapsible
+              className="rounded-xl border border-border bg-card"
             >
-              <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                Mes réservations ({receipts.length})
-              </summary>
-              <p className="text-sm text-muted-foreground">
-                Conserve ces liens pour annuler.
-              </p>
-              {receipts.map((receipt) => (
-                <div
-                  key={receipt.token}
-                  className="flex flex-wrap items-center justify-between gap-3"
+              <AccordionItem value="my-reservations" className="border-0">
+                <AccordionTrigger
+                  aria-label={`Mes réservations (${receipts.length})`}
+                  className="min-h-12 items-center gap-3 px-4 py-3 hover:no-underline"
                 >
-                  <p className="break-words text-sm">{receipt.title}</p>
-                  {origin && (
-                    <div className="flex flex-wrap items-start gap-3">
-                      <CopyLink
-                        value={`${origin}/listes/annuler#${receipt.token}`}
-                        label="Copier mon lien d’annulation"
-                      />
-                      <a
-                        href={`/listes/annuler#${receipt.token}`}
-                        className="inline-flex min-h-11 items-center text-sm underline"
+                  <span className="flex items-center gap-2">
+                    <BookmarkCheck
+                      className="size-4 text-muted-foreground"
+                      aria-hidden="true"
+                    />
+                    <span>Mes réservations</span>
+                    <Badge variant="secondary">{receipts.length}</Badge>
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-1 [&_a]:no-underline">
+                  <ul className="divide-y divide-border border-t border-border">
+                    {receipts.map((receipt) => (
+                      <li
+                        key={receipt.token}
+                        className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
                       >
-                        Annuler ma réservation
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </details>
+                        <span className="min-w-0 break-words font-medium">
+                          {receipt.title}
+                        </span>
+                        {origin && (
+                          <div className="flex shrink-0 flex-wrap items-start gap-2">
+                            <CopyLink
+                              value={`${origin}/listes/annuler#${receipt.token}`}
+                              label="Copier le lien"
+                            />
+                            <Button variant="ghost" asChild>
+                              <a href={`/listes/annuler#${receipt.token}`}>
+                                Annuler ma réservation
+                              </a>
+                            </Button>
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           )}
           {data.items.length === 0 && (
             <Notice>Cette liste ne contient pas encore de cadeau.</Notice>
@@ -544,6 +567,15 @@ function PublicGiftListClient({ slug }: { slug: string }) {
       {data && (
         <WhatsAppShare title={data.title} url={`${origin}/l/${data.slug}`} />
       )}
+      <footer className="pt-6 text-center">
+        <DocumentLink
+          href="/outils/listes-cadeaux?creer=1"
+          className="inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Gift className="size-4" aria-hidden="true" />À mon tour de créer une
+          liste
+        </DocumentLink>
+      </footer>
       {activeItem && data && (
         <ReserveForm
           key={activeItem.id}
