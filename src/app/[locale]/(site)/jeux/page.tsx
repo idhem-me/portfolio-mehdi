@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import { tetrisEnabled } from "@/features/tetris/flags";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ArrowRight, Blocks, Gamepad2, Hamburger, PlayingCardsFan } from "lucide-react";
+import { Blocks, Gamepad2, Hamburger, PlayingCardsFan } from "lucide-react";
 import { getGames } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -48,42 +48,43 @@ export default async function GamesPage({ params }: Props) {
   const page = getGames(locale);
 
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-8 px-6 py-12">
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-6 py-12">
       <header className="space-y-3">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {page.title}
           </h1>
           <PlayerIdentityProvider>
-            <PlayerProfileButton />
+            <PlayerProfileButton hideNickname showHelp={false} />
           </PlayerIdentityProvider>
         </div>
         <p className="text-muted-foreground">{page.intro}</p>
       </header>
 
-      <div className="space-y-8">
+      <div className="grid gap-4 sm:grid-cols-2">
         {page.caseStudies.map((study) => {
-          const Icon = study.slug === "clicker-burger"
-            ? Hamburger
-            : study.slug === "tetris"
-              ? Blocks
-              : study.slug === "cards"
-                ? PlayingCardsFan
-                : Gamepad2;
+          const Icon =
+            study.slug === "clicker-burger"
+              ? Hamburger
+              : study.slug === "tetris"
+                ? Blocks
+                : study.slug === "cards"
+                  ? PlayingCardsFan
+                  : Gamepad2;
           const cardClass = cn(
-            "flex items-center gap-4 rounded-xl border border-border bg-card p-5",
-            study.slug && "transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6",
+            study.slug &&
+              "transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           );
           const inner = (
             <>
               <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
-              <div className="min-w-0 flex-1 space-y-1">
+              <div className="min-w-0 space-y-2">
                 <h2 className="font-semibold">{study.title}</h2>
-                <p className="text-sm text-muted-foreground">{study.status}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {study.status}
+                </p>
               </div>
-              {study.slug ? (
-                <ArrowRight aria-hidden="true" className="size-5 shrink-0 rtl:rotate-180" />
-              ) : null}
             </>
           );
 

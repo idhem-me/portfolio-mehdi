@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   Files,
-  ArrowRight,
   Palette,
   ImageDown,
   Images,
@@ -29,106 +28,81 @@ export default async function ToolsPage({ params }: Props) {
   const converter = await getTranslations("imageConverter");
   const qr = await getTranslations("qrGenerator");
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-8 px-6 py-12">
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-6 py-12">
       <header className="space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {t("title")}
         </h1>
         <p className="text-muted-foreground">{t("intro")}</p>
       </header>
+      <div className="grid gap-4 sm:grid-cols-2">
       <a
         href={`${locale === "fr" ? "" : `/${locale}`}/outils/listes-cadeaux`}
         lang="fr"
-        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <Gift
-          aria-hidden="true"
-          className="size-6 shrink-0 text-muted-foreground"
-        />
-        <div className="min-w-0 flex-1 space-y-1">
+        <Gift aria-hidden="true" className="size-6 shrink-0 text-accent" />
+        <div className="min-w-0 space-y-2">
           <h2 className="font-semibold">Listes de cadeaux</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             Toutes tes envies, toutes les boutiques. Un lien à partager avec tes
             proches.
           </p>
         </div>
-        <ArrowRight
-          aria-hidden="true"
-          className="size-5 shrink-0 rtl:rotate-180"
-        />
       </a>
       <Link
         href="/outils/color-generator"
-        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Palette aria-hidden="true" className="size-6 shrink-0 text-accent" />
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 space-y-2">
           <h2 className="font-semibold">{color("title")}</h2>
-          <p className="text-sm text-muted-foreground">{color("intro")}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{color("intro")}</p>
         </div>
-        <ArrowRight
-          aria-hidden="true"
-          className="size-5 shrink-0 rtl:rotate-180"
-        />
       </Link>
       <Link
         href="/outils/fusion-pdf"
-        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Files aria-hidden="true" className="size-6 shrink-0 text-accent" />
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 space-y-2">
           <h2 className="font-semibold">{t("mergeTitle")}</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             {t("mergeDescription")}
           </p>
         </div>
-        <ArrowRight
-          aria-hidden="true"
-          className="size-5 shrink-0 rtl:rotate-180"
-        />
       </Link>
       <Link
         href="/outils/compression-image"
-        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ImageDown aria-hidden="true" className="size-6 shrink-0 text-accent" />
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 space-y-2">
           <h2 className="font-semibold">{compressor("title")}</h2>
-          <p className="text-sm text-muted-foreground">{compressor("intro")}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{compressor("intro")}</p>
         </div>
-        <ArrowRight
-          aria-hidden="true"
-          className="size-5 shrink-0 rtl:rotate-180"
-        />
       </Link>
       <Link
         href="/outils/conversion-image"
-        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Images aria-hidden="true" className="size-6 shrink-0 text-accent" />
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 space-y-2">
           <h2 className="font-semibold">{converter("title")}</h2>
-          <p className="text-sm text-muted-foreground">{converter("intro")}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{converter("intro")}</p>
         </div>
-        <ArrowRight
-          aria-hidden="true"
-          className="size-5 shrink-0 rtl:rotate-180"
-        />
       </Link>
       <Link
         href="/outils/qrcode"
-        className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <QrCode aria-hidden="true" className="size-6 shrink-0 text-accent" />
-        <div className="min-w-0 flex-1 space-y-1">
+        <div className="min-w-0 space-y-2">
           <h2 className="font-semibold">{qr("title")}</h2>
-          <p className="text-sm text-muted-foreground">{qr("intro")}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{qr("intro")}</p>
         </div>
-        <ArrowRight
-          aria-hidden="true"
-          className="size-5 shrink-0 rtl:rotate-180"
-        />
       </Link>
+      </div>
     </main>
   );
 }
