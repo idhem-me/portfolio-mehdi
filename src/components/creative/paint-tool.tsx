@@ -10,7 +10,7 @@ import {
   type RefObject,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { Undo2, BrushCleaning } from "lucide-react";
+import { Undo2, BrushCleaning, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import Matter from "matter-js";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
@@ -108,9 +108,8 @@ export function PaintTool({
   const [color, setColor] = useState<string>("primary");
   const [position, setPosition] = useState<PaintPoint | null>(null);
   const [paintMode, setPaintMode] = useState(false);
+  const [controlsOpen, setControlsOpen] = useState(false);
   const [exitPosition, setExitPosition] = useState({ x: 0, y: 0 });
-  const paletteRef = useRef<HTMLDivElement>(null);
-  const [palettePosition, setPalettePosition] = useState({ left: 0, top: 0 });
   const [count, setCount] = useState(0);
   const strokesRef = useRef<Stroke[]>([]);
   const gestureRef = useRef<{
@@ -169,24 +168,16 @@ export function PaintTool({
   }, [bridgeRef]);
   useEffect(() => {
     if (!paintMode) return;
-    const palette = paletteRef.current;
-    if (!palette) return;
     const align = () => {
-      const rect = palette.getBoundingClientRect();
-      const toolbarRect = palette
-        .closest<HTMLElement>("[data-paint-toolbar]")
-        ?.getBoundingClientRect();
+      const brushRect = brushRef.current?.getBoundingClientRect();
       setExitPosition({
-        x: toolbarRect
-          ? toolbarRect.left + toolbarRect.width / 2
-          : rect.left + rect.width / 2,
-        y: rect.bottom + 8,
+        x: brushRect ? brushRect.left - 8 : window.innerWidth - 50,
+        y: brushRect ? brushRect.top + brushRect.height / 2 : 36,
       });
-      setPalettePosition({ left: rect.left, top: rect.top });
     };
     align();
     const observer = new ResizeObserver(align);
-    observer.observe(palette.closest("[data-paint-toolbar]") ?? palette);
+    if (brushRef.current) observer.observe(brushRef.current);
     window.addEventListener("resize", align);
     window.addEventListener("scroll", align, true);
     return () => {
@@ -364,71 +355,27 @@ export function PaintTool({
     setCount(strokesRef.current.length);
     if (latestRef.current.isPlaying) addBodies();
   }
-  const brushButton = (
-    <button
-      ref={brushRef}
-      type="button"
-      data-analytics-gesture="paint_brush"
-      data-paint-brush
-      aria-label={t("brush")}
-      title={t("hint")}
-      className="pointer-events-auto touch-none cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-ring"
-      style={{
-        width: 44,
-        height: 44,
-        visibility: paintMode ? "hidden" : "visible",
-      }}
-      onClick={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        setPosition({
-          x: e.detail ? e.clientX - 4.675 : rect.left,
-          y: e.detail ? e.clientY - 37.675 : rect.top,
-        });
-        setPaintMode(true);
-        trackHomeInteraction("paint_grab", { color });
-      }}
-    >
-      <PaintBrush color={token(color)} />
-    </button>
-  );
-  const palette = (
-    <div
-      data-paint-controls
-      role="group"
-      aria-label={t("palette")}
-      className="flex gap-1 rounded-full border bg-background p-1"
-      onPointerDown={(e) => e.stopPropagation()}
-      onPointerMove={(e) => {
-        if (paintMode)
-          setPosition({ x: e.clientX - 4.675, y: e.clientY - 37.675 });
-      }}
-    >
-      {COLORS.map((c) => (
-        <button
-          key={c}
-          type="button"
-          data-analytics-action="paint_color"
-          data-analytics-value={c}
-          aria-label={t(c)}
-          aria-pressed={color === c}
-          onClick={() => setColor(c)}
-          className="size-7 sm:size-8 rounded-full p-1 focus-visible:outline-2 focus-visible:outline-ring"
-          style={{
-            outline: color === c ? "2px solid var(--foreground)" : undefined,
-            outlineOffset: -2,
-          }}
-        >
-          <span
-            className="block size-full rounded-full border border-foreground/15"
-            style={{ background: token(c) }}
-          />
-        </button>
-      ))}
-    </div>
-  );
   return (
-    <div className="paint-original-theme pointer-events-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-      <div className="size-11 shrink-0">{brushButton}</div>
+    <div className="paint-original-theme pointer-events-auto relative flex shrink-0 items-center gap-1.5 sm:gap-2">
+      <button ref={brushRef} type="button" aria-label={paintMode ? t("exit") : t("brush")} title={paintMode ? t("exit") : t("hint")} aria-expanded={controlsOpen} onClick={(e) => {
+        if (paintMode) { setPaintMode(false); setControlsOpen(false); trackHomeInteraction("paint_exit"); return; }
+        const rect = e.currentTarget.getBoundingClientRect();
+        setPosition({ x: rect.left, y: rect.top }); setControlsOpen(true); setPaintMode(true); trackHomeInteraction("paint_grab", { color });
+      }} className="flex size-[42px] items-center justify-center rounded-lg bg-secondary">
+        {paintMode ? <X className="size-6" aria-hidden="true" /> : <span className="flex size-8 items-center justify-center"><PaintBrush size={32} color={token(color)} /></span>}
+      </button>
+      {controlsOpen && <div data-paint-controls className="absolute left-1/2 top-12 z-20 flex -translate-x-1/2 flex-col items-center gap-2 rounded-2xl border bg-background p-2 shadow-lg">
+        <Button size="icon" variant="outline" className="size-10" aria-label={t("clear")} title={t("clear")} onClick={() => {
+          onClear();
+          setPaintMode(false);
+          setControlsOpen(false);
+          trackHomeInteraction("paint_exit");
+        }}><BrushCleaning aria-hidden="true" /></Button>
+        <div className="flex flex-col items-center gap-1" role="group" aria-label={t("palette")}>
+          {COLORS.map((c) => <button key={c} type="button" data-analytics-action="paint_color" data-analytics-value={c} aria-label={t(c)} aria-pressed={color === c} onClick={() => setColor(c)} className="size-8 rounded-full p-1 focus-visible:outline-2 focus-visible:outline-ring" style={{ outline: color === c ? "2px solid var(--foreground)" : undefined, outlineOffset: -2 }}><span className="block size-full rounded-full border border-foreground/15" style={{ background: token(c) }} /></button>)}
+        </div>
+        <Button size="icon" variant="outline" className="size-10" disabled={!count} aria-label={t("undo")} title={t("undo")} onClick={() => removeLast()}><Undo2 aria-hidden="true" /></Button>
+      </div>}
       {paintMode && position
         ? createPortal(
             <div
@@ -490,18 +437,19 @@ export function PaintTool({
                   className="paint-original-theme pointer-events-none fixed z-[47]"
                   style={{ left: position.x, top: position.y }}
                 >
-                  <PaintBrush color={token(color)} />
+                  <PaintBrush size={32} color={token(color)} />
                 </div>,
                 document.body,
               )}
               <Button
                 type="button"
                 variant="primary"
-                className="fixed -translate-x-1/2 cursor-pointer whitespace-nowrap"
+                className="fixed -translate-x-full -translate-y-1/2 cursor-pointer whitespace-nowrap"
                 style={{ left: exitPosition.x, top: exitPosition.y }}
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={() => {
                   setPaintMode(false);
+                  setControlsOpen(false);
                   trackHomeInteraction("paint_exit");
                 }}
               >
@@ -511,55 +459,6 @@ export function PaintTool({
             document.body,
           )
         : null}
-      <div ref={paletteRef} className="relative shrink-0">
-        <div
-          style={{ visibility: paintMode ? "hidden" : "visible" }}
-          inert={paintMode}
-        >
-          {paintMode ? (
-            <div className="h-[38px] w-[166px] sm:h-[42px] sm:w-[186px]" />
-          ) : (
-            palette
-          )}
-        </div>
-        {paintMode
-          ? createPortal(
-              <div
-                className="paint-original-theme fixed z-[46] cursor-none"
-                style={palettePosition}
-              >
-                {palette}
-              </div>,
-              document.body,
-            )
-          : null}
-      </div>
-      <div data-paint-controls className="flex gap-1">
-        <Button
-          size="icon"
-          variant="outline"
-          className="size-10 shrink-0"
-          disabled={!count}
-          aria-label={t("undo")}
-          title={t("undo")}
-          data-analytics-action="paint_undo"
-          onClick={() => removeLast()}
-        >
-          <Undo2 aria-hidden="true" />
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          className="size-10 shrink-0"
-          disabled={!count && !isPlaying}
-          aria-label={t("clear")}
-          title={t("clear")}
-          data-analytics-action="paint_clear"
-          onClick={onClear}
-        >
-          <BrushCleaning aria-hidden="true" />
-        </Button>
-      </div>
       <span className="sr-only" aria-live="polite">
         {t("count", { count })}
       </span>

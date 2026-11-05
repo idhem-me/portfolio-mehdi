@@ -1248,7 +1248,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
         <div
           data-paint-toolbar
           data-creative-hud
-          className={`pointer-events-none fixed top-[max(1rem,env(safe-area-inset-top))] end-0 left-0 z-[11] flex justify-center ${
+          className={`pointer-events-none fixed top-[max(1rem,env(safe-area-inset-top))] end-4 left-0 z-[46] flex justify-end ${
             state === "collapsed"
               ? "md:left-[var(--sidebar-width-icon)]"
               : "md:left-[var(--sidebar-width)]"
