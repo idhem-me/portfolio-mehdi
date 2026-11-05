@@ -65,6 +65,7 @@ function SignIn({ retry }: { retry: () => void }) {
           variant="primary"
           googleLabel="Continuer avec Google"
           layout="horizontal"
+          unavailableMessage="La connexion à ton compte est indisponible pour le moment. Réessaie dans quelques instants."
         />
         <p className="text-sm text-muted-foreground">
           Tes proches réservent sans compte.
@@ -82,7 +83,7 @@ function SignIn({ retry }: { retry: () => void }) {
             <p role="status">
               {!identity.online
                 ? "Reconnecte-toi à Internet pour continuer."
-                : "La connexion est momentanément indisponible."}
+                : "Impossible de vérifier la connexion à ton compte pour le moment."}
             </p>
             <Button
               variant="secondary"

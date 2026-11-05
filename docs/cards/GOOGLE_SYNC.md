@@ -20,22 +20,10 @@ La clé publiable peut être remplacée par l’ancienne `SUPABASE_ANON_KEY` et 
 4. Pour tester aussi Google depuis un iPhone sur le réseau local, autoriser dans Supabase le callback correspondant à l’adresse du Mac (actuellement `http://192.168.1.12:3000/api/tetris/auth/callback`). Les cookies sont HttpOnly et leur périmètre reste `/api/tetris`. Si le fournisseur impose HTTPS sur cet environnement, utiliser une URL de preview HTTPS autorisée au lieu de contourner une alerte de certificat.
 5. Relancer `npm run dev`. Le script écoute explicitement sur `0.0.0.0` pour permettre les tests sur le réseau local.
 
-## Activer Apple
-
-La connexion Apple réutilise le callback de l’application (`/api/tetris/auth/callback`) et ne nécessite pas de migration SQL. Chaque fournisseur crée son propre compte Supabase; les données Google ne sont pas fusionnées automatiquement avec un compte Apple portant la même adresse.
-
-1. Dans Apple Developer, crée un App ID avec la capacité « Sign in with Apple », puis un Services ID associé et une clé privée Sign in with Apple (`.p8`). Ajoute le domaine de ton projet Supabase et le callback `https://<projet>.supabase.co/auth/v1/callback` aux réglages Apple.
-2. Dans Supabase > Authentication > Providers > Apple, active le fournisseur et renseigne le Services ID et le secret client JWT généré avec le Team ID, le Key ID et la clé `.p8`. Garde la clé privée et le secret dans les champs sécurisés du fournisseur; ne les ajoute pas aux fichiers du dépôt.
-3. Dans Supabase > Authentication > URL Configuration, autorise `http://localhost:3000/api/tetris/auth/callback` et les callbacks HTTPS de preview/production utilisés par le site.
-4. Définis `APPLE_AUTH_ENABLED=true` dans l’environnement du site seulement une fois le fournisseur configuré dans Supabase. La valeur par défaut reste `false`, ce qui laisse le bouton Apple désactivé.
-5. Apple OAuth web ne fournit pas le nom complet. Le compte reste utilisable avec un nom générique si Apple ne renvoie pas de nom.
-
-Le secret client Apple doit être renouvelé tous les six mois. Programme son renouvellement dans Apple Developer et mets à jour le secret dans Supabase avant son expiration.
-
 ## Comportement
 
 - La bannière apparaît à partir de trois boosters finalisés et peut être masquée durablement avec « Continuer sur cet appareil ».
-- Les CTA Google et Apple utilisent les boutons et l’authentification partagés du portfolio.
+- Les CTA Google utilisent les boutons et l’authentification partagés du portfolio.
 - Si aucune sauvegarde n’existe sur le compte, la progression locale est importée une seule fois.
 - Un appareil vierge récupère la progression du compte : collection, exemplaires Shiny, statistiques, réserve horaire et booster en cours.
 - Les modifications locales sont envoyées avec une révision optimiste. Une ancienne révision n’écrase pas une sauvegarde plus récente.

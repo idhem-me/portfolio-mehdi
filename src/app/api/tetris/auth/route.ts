@@ -3,7 +3,6 @@ import { json } from "@/features/tetris/server/http";
 import { accountGate as gate } from "@/features/account/server/http";
 import {
   authClient,
-  appleConfigured,
   supabaseConfigured,
   verifiedAccountUser,
 } from "@/features/tetris/server/auth";
@@ -22,7 +21,7 @@ export async function GET(request: NextRequest) {
   return auth.apply(
     json({
       googleAvailable: true,
-      appleAvailable: appleConfigured(),
+      appleAvailable: false,
       user: auth.user
         ? {
             provider,

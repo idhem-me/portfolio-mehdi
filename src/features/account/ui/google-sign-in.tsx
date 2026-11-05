@@ -14,14 +14,6 @@ function GoogleMark() {
   );
 }
 
-function AppleMark() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5 shrink-0 fill-current">
-      <path d="M16.37 12.1c.02 2.17 1.9 2.9 1.92 2.91-.02.05-.3 1.04-.99 2.06-.6.88-1.23 1.75-2.22 1.77-.97.02-1.28-.57-2.4-.57-1.11 0-1.46.55-2.37.59-.95.04-1.67-.95-2.27-1.83-1.24-1.8-2.19-5.08-.92-7.3.63-1.1 1.76-1.8 2.98-1.82.93-.02 1.8.63 2.37.63.57 0 1.64-.78 2.77-.67.47.02 1.8.19 2.65 1.44-.07.04-1.58.92-1.56 2.79ZM14.55 6.51c.5-.6.84-1.43.75-2.26-.72.03-1.6.48-2.12 1.08-.47.54-.88 1.38-.77 2.19.81.06 1.64-.41 2.14-1.01Z" />
-    </svg>
-  );
-}
-
 export function ProviderSignIn({
   provider,
   draft,
@@ -29,19 +21,19 @@ export function ProviderSignIn({
   variant = "secondary",
   label,
   layout = "vertical",
+  unavailableMessage,
 }: {
-  provider: "google" | "apple";
+  provider: "google";
   draft?: ScoreDraft;
   disabled?: boolean;
   variant?: "primary" | "secondary";
   label?: string;
   layout?: "vertical" | "horizontal";
+  unavailableMessage?: string;
 }) {
   const state = useIdentityState();
-  const apple = provider === "apple";
-  const available = apple ? state.appleAvailable : state.googleAvailable;
+  const available = state.googleAvailable;
   const serverUnavailable = state.error.startsWith("Serveur injoignable");
-  const name = apple ? "Apple" : "Google";
   if (state.kind === "google" || state.kind === "apple") return null;
   return (
     <Button
@@ -64,8 +56,8 @@ export function ProviderSignIn({
         "Connexion en cours…"
       ) : (
         <>
-          {apple ? <AppleMark /> : <GoogleMark />}
-          {label ?? `Se connecter avec ${name}`}
+          <GoogleMark />
+          {label ?? "Se connecter avec Google"}
         </>
       )}
     </Button>
@@ -76,22 +68,20 @@ export function GoogleSignIn(props: Omit<Parameters<typeof ProviderSignIn>[0], "
   return <ProviderSignIn provider="google" {...props} />;
 }
 
-export function AppleSignIn(props: Omit<Parameters<typeof ProviderSignIn>[0], "provider">) {
-  return <ProviderSignIn provider="apple" {...props} />;
-}
-
 export function OAuthSignInButtons({
   variant = "secondary",
   googleLabel,
   draft,
   disabled = false,
   layout = "vertical",
+  unavailableMessage,
 }: {
   variant?: "primary" | "secondary";
   googleLabel?: string;
   draft?: ScoreDraft;
   disabled?: boolean;
   layout?: "vertical" | "horizontal";
+  unavailableMessage?: string;
 }) {
   const state = useIdentityState();
   return (
@@ -110,22 +100,9 @@ export function OAuthSignInButtons({
         disabled={disabled}
         layout={layout}
       />
-      <AppleSignIn
-        variant={variant}
-        draft={draft}
-        disabled={disabled}
-        layout={layout}
-      />
       {state.error.startsWith("Serveur injoignable") && (
         <p className="basis-full text-sm text-muted-foreground" role="status">
-          Connexion temporairement indisponible. Tu peux jouer ; tes records restent sauvegardés sur cet appareil.
-        </p>
-      )}
-      {!state.error.startsWith("Serveur injoignable") && state.loaded && !state.loading && state.appleAvailable === false && (
-        <p
-          className={`text-xs text-muted-foreground ${layout === "horizontal" ? "basis-full" : ""}`}
-        >
-          La connexion Apple n’est pas activée dans cet environnement.
+          {unavailableMessage ?? "Connexion temporairement indisponible."}
         </p>
       )}
     </div>
