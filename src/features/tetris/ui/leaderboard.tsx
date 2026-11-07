@@ -1,4 +1,6 @@
 "use client";
+import { useTranslations } from "next-intl";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +22,7 @@ export function Leaderboard({
   onOpenChange: (open: boolean) => void;
 }) {
   const identity = useIdentityState();
+  const t = useTranslations("ui");
   const [rows, setRows] = useState<
       | {
           name: string;
@@ -70,33 +73,34 @@ export function Leaderboard({
           ) : rows.length === 0 ? (
             <p>Aucun score.</p>
           ) : (
-            <ol className="space-y-4">
-              {rows.map((row, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-3 border-b border-border pb-4"
-                >
-                  <Avatar className="size-9">
-                    {row.avatar && (
-                      <AvatarImage
-                        src={row.avatar}
-                        alt=""
-                        referrerPolicy="no-referrer"
-                      />
-                    )}
-                    <AvatarFallback>
-                      {row.name.slice(0, 1).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="min-w-0 flex-1 truncate" title={row.name}>
-                    {row.rank}. {row.name}
-                  </span>
-                  <span className="shrink-0 text-right tabular-nums">
-                    {row.score.toLocaleString("fr")}
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <Table className="table-fixed">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-16">{t("rank")}</TableHead>
+                  <TableHead>{t("player")}</TableHead>
+                  <TableHead className="w-24 text-end">{t("score")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((row, i) => (
+                  <TableRow key={i}>
+                    <TableCell className="tabular-nums">{row.rank}</TableCell>
+                    <TableCell>
+                      <span className="flex min-w-0 items-center gap-2">
+                        <Avatar className="size-9 shrink-0">
+                          {row.avatar && (
+                            <AvatarImage src={row.avatar} alt="" referrerPolicy="no-referrer" />
+                          )}
+                          <AvatarFallback>{row.name.slice(0, 1).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="truncate" title={row.name}>{row.name}</span>
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-end tabular-nums">{row.score.toLocaleString("fr")}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
           {identity.scores.length > 0 && (
             <section aria-label="Scores sur cet appareil">

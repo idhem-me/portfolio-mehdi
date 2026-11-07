@@ -12,7 +12,7 @@ export function Slider({
     <Primitive.Root
       data-slot="slider"
       className={cn(
-        "relative flex h-8 w-full touch-none items-center select-none",
+        "relative flex h-8 min-h-(--touch-target-size) w-full touch-none items-center select-none",
         className,
       )}
       {...props}

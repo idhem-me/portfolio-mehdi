@@ -1,45 +1,6 @@
-.game-settings-panel[data-slot="sheet-content"] {
-  --game-settings-padding: calc(var(--spacing) * 6);
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  height: 100dvh;
-  max-height: 100dvh;
-  overflow: hidden;
-  overscroll-behavior: contain;
-  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
-}
-
-.game-settings-header[data-slot="sheet-header"] {
-  position: sticky;
-  z-index: 1;
-  top: 0;
-  flex: none;
-  padding: calc(var(--game-settings-padding) * 1.2)
-    calc(var(--game-settings-padding) + var(--control-height-lg))
-    var(--game-settings-padding) var(--game-settings-padding);
-  border-bottom: 1px solid var(--border);
-  background: var(--popover);
-}
-
-.game-settings-panel > [data-slot="sheet-close"] {
-  position: absolute;
-  z-index: 2;
-  top: max(calc(var(--spacing) * 4), env(safe-area-inset-top));
-  right: max(calc(var(--spacing) * 4), env(safe-area-inset-right));
-  background: var(--popover);
-}
-
 .game-settings-scroll {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--game-settings-padding);
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: calc(var(--game-settings-padding) / 2) var(--game-settings-padding)
-    var(--game-settings-padding);
+  display: grid;
+  gap: var(--settings-modal-padding);
   line-height: 1.7;
 }
 
@@ -215,15 +176,5 @@
   .game-settings-segmented > button {
     flex-direction: column;
     white-space: normal;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .game-settings-panel,
-  [data-slot="sheet-overlay"]:has(+ .game-settings-panel) {
-    scroll-behavior: auto;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
   }
 }

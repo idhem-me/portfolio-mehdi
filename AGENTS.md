@@ -35,11 +35,18 @@ Suivre le [déroulé des phases 0 à 6](docs/agents/workflow.md).
 
 - `npm run dev`, `npm run build`, `npm run start`.
 - `npm run lint`, `npm run typecheck`.
-- `npm test` couvre le moteur Tetris. Compléter avec `npm run test:burger`, `npm run test:cards`, `npm run test:security` et les suites ciblées.
+- `npm test` couvre le moteur Tetris et le registre des démos Playground. Compléter avec `npm run test:burger`, `npm run test:cards`, `npm run test:security` et les suites ciblées.
 - `npm run test:tetris:browser` lance toutes les suites Playwright malgré son nom. `npm run test:tools` lance les tests image Chromium. Playwright attend un serveur déjà démarré.
 - Primitives dans `src/components/ui`, adaptateurs dans `src/components/design-system`, tokens globaux dans `src/app/globals.css`. Consulter [la documentation existante](docs/designsystem.md), [l’inventaire](docs/design-system/inventory.md) et maintenir la vitrine `/playground` et la page de comparaison `/playground/design-systems`.
 - Consulter le guide du design system avant de modifier les styles globaux. Importer uniquement les composants Shadcn nécessaires et présenter chaque primitive Shadcn de `src/components/ui` avec ses variantes sur `/playground`.
 - Préserver la mise en page actuelle du site avec sa barre latérale rétractable, son contenu centré (`max-w-3xl`) et ses contrastes doux.
+
+## Couverture du Playground
+
+- Pour tout composant créé ou modifié, utiliser les tokens du DS pour la couleur, la typographie, les espacements, les rayons et les cibles. Un nouveau token sémantique doit avoir un usage nommé et une démo qui en montre l’effet.
+- Tout changement visuel du design system doit apparaître dans le Playground dans le même lot. Mettre à jour la démo réelle et son ancre pour toute primitive, variante, état ou modification de token. Présenter les compositions réutilisables avec des données fictives.
+- Pour chaque contrôle autonome concerné, présenter les densités Desktop et Mobile. Le mode Auto choisit Mobile sous 768 px de viewport. Vérifier la zone d’activation mobile de 44 × 44 px CSS, y compris dans les menus et dialogues. Documenter les exceptions et vérifier le focus clavier.
+- Consigner les primitives locales dans [le relevé dédié](docs/design-system/playground-local-components.md). Mettre à jour [la couverture](docs/design-system/playground-coverage.md) quand une démo ou une exception change. Garder les références aux jeux masqués dans la documentation interne.
 
 ## Synchronisation i18n
 

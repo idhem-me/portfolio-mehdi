@@ -142,11 +142,14 @@ export function OpeningScene({
   const [loading, setLoading] = useState(false);
   const [advanceRequest, setAdvanceRequest] = useState(0);
 
-  useEffect(() => {
+  const [presentationOpenId, setPresentationOpenId] = useState(open?.openId);
+  if (presentationOpenId !== open?.openId) {
+    setPresentationOpenId(open?.openId);
     setSummaryLimit(50);
     setSummaryFilter("new");
     setAdvanceRequest(0);
-  }, [open?.openId]);
+  }
+
   const start = async (quantity: number) => {
     if (starting.current || !ready) return;
     if (

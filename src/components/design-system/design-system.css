@@ -8,6 +8,7 @@ html[data-design-system="github"],
   --border: var(--borderColor-default);
   --primary: var(--button-primary-bgColor);
   --primary-foreground: var(--button-primary-fgColor);
+  --primary-inverse: var(--muted);
   --card: var(--bgColor-default);
   --card-foreground: var(--fgColor-default);
   --popover: var(--overlay-bgColor);
@@ -19,9 +20,9 @@ html[data-design-system="github"],
   --ring: var(--focus-outlineColor);
   --sidebar-ring: var(--focus-outlineColor);
   --radius: var(--borderRadius-medium);
-  --control-height: var(--control-medium-size, 32px);
-  --control-height-sm: var(--control-small-size, 28px);
-  --control-height-lg: var(--control-large-size, 40px);
+  --control-height: max(var(--touch-target-size), var(--control-medium-size, 32px));
+  --control-height-sm: max(var(--touch-target-size), var(--control-small-size, 28px));
+  --control-height-lg: max(var(--touch-target-size), var(--control-large-size, 40px));
   --control-text: var(--text-body-size-medium, 14px);
   --secondary: var(--bgColor-muted);
   --secondary-foreground: var(--fgColor-default);
@@ -163,6 +164,14 @@ html[data-design-system="github"] .ds-dialog {
 .ds-button {
   max-width: 100%;
 }
+.ds-button,
+.ds-button[data-component="IconButton"],
+.ds-choice-overlay [role="menuitemradio"],
+[data-slot="dropdown-menu-item"],
+.ds-provider-switch {
+  min-block-size: var(--touch-target-size);
+  min-inline-size: var(--touch-target-size);
+}
 .ds-button [data-component="text"] {
   display: inline-flex;
   align-items: center;
@@ -214,6 +223,7 @@ html[data-design-system="adobe"],
   --border: var(--spectrum-gray-300, #d5d5d5);
   --primary: var(--spectrum-accent-background-color-default, #0265dc);
   --primary-foreground: var(--spectrum-gray-50, #fff);
+  --primary-inverse: var(--muted);
   --card: var(--spectrum-gray-50, #fff);
   --card-foreground: var(--spectrum-gray-800, #222);
   --popover: var(--spectrum-gray-50, #fff);
@@ -245,6 +255,7 @@ html.dark[data-design-system="adobe"],
   --border: var(--spectrum-gray-300, #4b4b4b);
   --primary: var(--spectrum-accent-background-color-default, #1473e6);
   --primary-foreground: #fff;
+  --primary-inverse: var(--muted);
   --card: var(--spectrum-gray-50, #1d1d1d);
   --card-foreground: var(--spectrum-gray-800, #f8f8f8);
   --popover: var(--spectrum-gray-50, #1d1d1d);
@@ -430,7 +441,7 @@ html[data-design-system="adobe"] .ds-dialog {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 32px;
+  min-height: max(32px, var(--touch-target-size));
   padding: 0 14px;
   border-radius: var(--spectrum-alias-border-radius-regular, 4px);
   border: 2px solid transparent;

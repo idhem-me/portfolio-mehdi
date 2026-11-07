@@ -1,5 +1,11 @@
 # Plan de nettoyage et de structuration
 
+## Ticket complémentaire proposé · index du Playground fixe
+
+**Phase 4 · Validé, placement et largeur précisés par le propriétaire.** Sur `/playground`, garder l’index des composants fixé au bord extérieur de la fenêtre pendant le défilement et l’élargir à 16 rem. À partir du breakpoint actuel de 64 rem, limiter sa hauteur au viewport et permettre son propre défilement. Le masquer sous ce breakpoint, préserver les ancres et le comportement RTL, et ne pas changer les URL ni le texte visible.
+
+Fichiers prévus : `src/app/[locale]/(site)/playground/catalog.tsx`, `tests/playground-responsive.spec.ts`, `docs/design-system/CHANGELOG.md`. Aucun déplacement ni suppression. Recette prévue : vérifier qu’après défilement l’index reste dans le viewport, que sa liste peut défiler indépendamment, que les liens d’ancre fonctionnent en LTR et RTL, et qu’il reste masqué sur mobile; puis lint, typecheck, build et suites de tests conformément aux règles du dépôt.
+
 **Phase 4 · En attente de validation explicite.** Ce plan couvre les opérations listées. Toute suppression supplémentaire, modification du masquage ou idée produit demande sa propre décision. Voir [backlog](product/backlog.md), [architecture](architecture.md) et [inventaire des URL](audit/inventory.md).
 
 ## Arborescence cible

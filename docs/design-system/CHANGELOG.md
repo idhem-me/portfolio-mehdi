@@ -1,5 +1,27 @@
 # Changelog du design system
 
+## Catalogue du Playground
+
+- Chaque composant et ses variantes sont réunis dans un bloc de surface `primary-inverse`, avec le nom du composant comme seul titre.
+- L’index et les démonstrations suivent l’ordre alphabétique. L’index de 16 rem s’affiche au bord extérieur de la fenêtre à partir de 64 rem, reste fixe pendant le défilement et peut défiler indépendamment si sa liste dépasse le viewport. Les liens existants conservent leurs ancres.
+
+## Deux variantes de modale
+
+- `SettingsModal` propose `center` et `right` dans le même exemple du Playground. Le panneau droit coulisse sur ordinateur et les deux variantes sont plein écran en densité Mobile.
+- Les réglages des jeux utilisent la variante droite, comme avant la mutualisation du conteneur.
+
+## Modale de réglages et tableaux
+
+- `SettingsModal` réutilise le dialogue du DS. Ses tokens pilotent la largeur, l’espacement, le rayon et la hauteur selon la densité. Elle est centrée sur ordinateur et plein écran en mobile.
+- `Table` fournit les éléments natifs d’un tableau et une action de tri. Les sessions du backoffice et le classement de jeu partagent ce rendu.
+- Les démos génériques du Playground permettent de modifier un réglage et de trier des données fictives.
+
+## Couverture et densité du Playground
+
+- Index des démos, exemples Sidebar et thème local, tailles icône et contrôles natifs. Le registre relie les primitives et adaptateurs aux démos.
+- La densité Auto passe en mobile sous 768 px. Les deux densités forcées couvrent aussi les éléments ouverts en portail dans la vitrine.
+- Les pastilles du pinceau, le sélecteur de couleur, le Switch et le Slider illustrent l’agrandissement des cibles tactiles. Le suivi des écarts par composant est accessible dans `/playground/local-components`.
+
 ## En cours
 
 - Cartographie des primitives, adaptateurs, tokens et vitrines existants dans [l’inventaire](inventory.md).
@@ -17,3 +39,9 @@ Pour chaque évolution, consigner le composant, les états, les thèmes et la re
 ## Comparaison sur une page distincte
 
 - Le sous-menu ouvre la vitrine sur `/playground` et la comparaison sur `/playground/design-systems`. Le titre et la grille de comparaison sont centrés dans le panneau de contenu. L’alias `/playground/github-vs-adobe` redirige vers la comparaison.
+
+## Vérification des nouvelles compositions
+
+- Lint à zéro erreur et zéro avertissement. TypeScript, build et quatre suites Node réussis.
+- Dix scénarios Chromium et WebKit réussis, dont la modale centrée et plein écran, le retour du focus au déclencheur du jeu et le tri au clavier.
+- Tri ascendant et descendant vérifiés sur le tableau de démonstration du backoffice. Les entrées des jeux masqués restent dans l’inventaire interne.

@@ -21,6 +21,7 @@ Toutes les couleurs sémantiques sont des design tokens dans `src/app/globals.cs
 | `--background` / `--foreground` | Fond et texte de page |
 | `--card` / `--popover` | Surfaces surélevées |
 | `--primary` | Action principale neutre |
+| `--primary-inverse` | Surface de démonstration du Playground, issue de la palette du thème actif |
 | `--secondary` / `--muted` | Surfaces secondaires / atténuées |
 | `--accent` | **Couleur marque** `#0071E3` (`oklch(0.563 0.193 256.156)` light ; légèrement plus clair en dark) |
 | `--accent-foreground` | Texte sur accent (blanc) |
@@ -39,11 +40,12 @@ Utiliser les utilitaires Tailwind (`bg-accent`, `text-accent-foreground`, etc.) 
 
 ## Densité / Touch
 
-Tokens de sizing interactif dans `src/app/globals.css`. Breakpoint mobile : **&lt;768px** (aligné sur `useIsMobile` / `max-width: 767px`).
+Tokens de sizing interactif dans `src/app/globals.css`. Breakpoint mobile : **&lt;768px** (aligné sur `useIsMobile` / `width < 768px`).
 
 | Token | Desktop | Mobile |
 |-------|---------|--------|
 | `--control-height-*` (+ icons) | 24–36px | **44px** (`2.75rem`) |
+| `--touch-target-size` | 0 px (taille intrinsèque du contrôle) | **44 px** de zone active |
 | `--control-text` / `--control-text-xs` | 14px / 12px | **16px** |
 | `--menu-item-min-height` / `--menu-item-text` | auto / 14px | **44px** / **16px** |
 | `--sidebar-menu-height` / `--sidebar-menu-text` | 32px / 14px | **44px** / **16px** |
@@ -52,11 +54,13 @@ Tokens de sizing interactif dans `src/app/globals.css`. Breakpoint mobile : **&l
 
 Overrides (**dans `@layer base`**, avec les defaults desktop) — Tailwind v4 fusionne les règles adjacentes dans ce layer ; des defaults unlayered battraient toujours les overrides :
 
-- `@media (max-width: 767px)` sur `:root:not([data-density="desktop"])` → valeurs mobile
+- `@media (width < 768px)` sur `:root:not([data-density="desktop"])` → valeurs mobile
 - `[data-density="mobile"]` → force mobile (playground, sans resize)
 - `[data-density="desktop"]` → force desktop même sous 768px
 
-Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, le sélecteur applique `data-density` à la vitrine de composants.
+Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, le mode Auto suit le viewport. Les modes forcés appliquent `data-density` à la vitrine et à ses portails. La navigation du site conserve sa densité responsive.
+
+Le registre de couverture associe chaque module du DS à une démo ou à une exception d’infrastructure. `npm test` contrôle sa couverture. Les tests navigateur contrôlent les ancres, les cibles et le retour du focus. Les [composants locaux](design-system/playground-local-components.md) sont suivis sur `/playground/local-components`.
 
 ## Button — variante `accent`
 
@@ -92,3 +96,9 @@ pendant le chargement. `--home-paper-line` et `--home-paper-rule` dérivent du g
 La marge rouge est à 56 px du bord gauche sur desktop, 14 px sous 768 px ; le
 quadrillage conserve sa taille sur mobile. Ces tokens sont indépendants du
 papier des aperçus de projets (`--paper-grid`).
+
+## Modale de réglages et tableau
+
+- `SettingsModal` compose `Dialog` avec un titre, une description, une fermeture et un corps défilant. Utiliser les tokens `--settings-modal-*` pour la géométrie et les niveaux d’affichage. Choisir la variante `center` pour une fenêtre centrée ou `right` pour un panneau coulissant à droite. En mode Auto, les deux prennent tout l’écran sous 768 px. Le panneau droit réutilise les tokens de largeur de `Sheet` et respecte la préférence de mouvement réduit. Fournir le déclencheur ou sa référence pour restituer le focus.
+- `Table`, `TableHeader`, `TableRow`, `TableHead` et `TableCell` conservent la sémantique HTML. `TableSortButton` rend l’action de tri. Poser `aria-sort` uniquement sur l’en-tête de la colonne triée et laisser la logique de données au parent.
+- Réutiliser les tokens sémantiques du DS pour les couleurs, la typographie, les espacements et les tailles tactiles. Créer un token dédié lorsqu’une dimension a une signification commune et doit varier par densité, et montrer son effet dans le Playground.

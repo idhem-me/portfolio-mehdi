@@ -6,6 +6,7 @@ import {
   useId,
   useContext,
   useState,
+  useSyncExternalStore,
   useEffect,
   type ReactNode,
 } from "react";
@@ -63,28 +64,27 @@ const SPECTRUM_LOCALES: Record<string, string> = {
   zh: "zh-CN",
 };
 
+function subscribeDocumentLanguage(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+  return () => observer.disconnect();
+}
+
+function readSpectrumLocale() {
+  const language = document.documentElement.lang.split("-")[0];
+  return SPECTRUM_LOCALES[language] ?? "fr-FR";
+}
+
 /** Deliberately memory-only, above locale layouts so language navigation preserves it. */
 export function DesignSystemProvider({ children }: { children: ReactNode }) {
   const [designSystem, setDesignSystemState] = useState<DesignSystem>("mehdi");
-  const [locale, setLocale] = useState("fr-FR");
-  const [colorScheme, setColorScheme] = useState<"light" | "dark">("light");
+  const locale = useSyncExternalStore(subscribeDocumentLanguage, readSpectrumLocale, () => "fr-FR");
   const { resolvedTheme } = useTheme();
+  const colorScheme = resolvedTheme === "dark" ? "dark" : "light";
   const setDesignSystem = useCallback((value: DesignSystem) => {
     if (value === "adobe" && !adobeDesignSystemEnabled) return;
     setDesignSystemState(value);
   }, []);
-  useEffect(() => {
-    if (designSystem === "adobe" && !adobeDesignSystemEnabled) {
-      setDesignSystemState("mehdi");
-    }
-  }, [designSystem]);
-  useEffect(() => {
-    const lang = document.documentElement.lang?.split("-")[0] || "fr";
-    setLocale(SPECTRUM_LOCALES[lang] ?? "fr-FR");
-  }, []);
-  useEffect(() => {
-    setColorScheme(resolvedTheme === "dark" ? "dark" : "light");
-  }, [resolvedTheme]);
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.designSystem = designSystem;
@@ -162,23 +162,33 @@ export function useDesignSystemAttributes() {
   } as const;
 }
 
+const DesignSystemPortalHost = createContext<HTMLDivElement | undefined>(undefined);
+
+export function useDesignSystemPortalHost() {
+  return useContext(DesignSystemPortalHost);
+}
+
 export function DesignSystemScope({
   children,
   className = "contents",
   portalRoot = false,
+  scopeRadixPortals = false,
 }: {
   children: ReactNode;
   className?: string;
   portalRoot?: boolean;
+  scopeRadixPortals?: boolean;
 }) {
   const attributes = useDesignSystemAttributes();
   const portalId = useId();
+  const [portalHost, setPortalHost] = useState<HTMLDivElement>();
   const registerHost = useCallback(
     (node: HTMLDivElement | null) => {
       // Primer has no unregister API; release references to the old navigation tree.
       registerPortalRoot(node ?? document.createElement("div"), portalId);
+      if (scopeRadixPortals) setPortalHost(node ?? undefined);
     },
-    [portalId],
+    [portalId, scopeRadixPortals],
   );
   const content = (
     <div {...attributes} className={`ds-scope ${className}`}>
@@ -190,7 +200,11 @@ export function DesignSystemScope({
   // retained by Next.js Activity, and keeps mobile menus inside the focus trap.
   return portalRoot ? (
     <PortalContext.Provider value={{ portalContainerName: portalId }}>
-      {content}
+      {scopeRadixPortals ? (
+        <DesignSystemPortalHost.Provider value={portalHost}>
+          {content}
+        </DesignSystemPortalHost.Provider>
+      ) : content}
     </PortalContext.Provider>
   ) : (
     content

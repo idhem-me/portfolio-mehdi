@@ -1,5 +1,6 @@
 "use client";
 
+import { useDesignSystemPortalHost } from "@/components/design-system/provider";
 import { NativeButton } from "@/components/design-system/native-controls";
 
 import { useTranslations } from "next-intl";
@@ -16,6 +17,7 @@ export function ColorPicker({
   color: string;
   onChange: (color: string) => void;
 }) {
+  const container = useDesignSystemPortalHost();
   const t = useTranslations("colorGenerator");
   return (
     <Popover.Root>
@@ -23,11 +25,11 @@ export function ColorPicker({
         <NativeButton
           type="button"
           aria-label={t("picker")}
-          className="size-9 shrink-0 rounded-full border border-foreground/15 shadow-sm outline-none transition-shadow hover:ring-4 hover:ring-ring/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="size-9 min-h-(--touch-target-size) min-w-(--touch-target-size) shrink-0 rounded-full border border-foreground/15 shadow-sm outline-none transition-shadow hover:ring-4 hover:ring-ring/15 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           style={{ backgroundColor: color }}
         />
       </Popover.Trigger>
-      <Popover.Portal>
+      <Popover.Portal container={container}>
         <Popover.Content
           aria-label={t("picker")}
           align="start"

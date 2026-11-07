@@ -35,7 +35,7 @@ export function Switch({
           aria-describedby={props["aria-describedby"]}
           onChange={change}
           buttonType={props.type}
-          className={className}
+          className={cn("ds-provider-switch", className)}
         />
         {props.name && checked && (
           <input
@@ -57,7 +57,7 @@ export function Switch({
           isSelected={checked}
           onChange={change}
           aria-label={props["aria-label"] || "Switch"}
-          UNSAFE_className={className}
+          UNSAFE_className={cn("ds-provider-switch", className)}
         >
           {props["aria-label"] || ""}
         </SpectrumSwitch>
@@ -77,14 +77,16 @@ export function Switch({
       ref={ref}
       data-slot="switch"
       className={cn(
-        "peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border border-transparent bg-input shadow-xs transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary",
+        "peer group inline-flex min-h-(--touch-target-size) w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       {...props}
       checked={checked}
       onCheckedChange={change}
     >
-      <Primitive.Thumb className="pointer-events-none block size-5 rounded-full bg-background shadow-sm transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0" />
+      <span className="pointer-events-none inline-flex h-6 w-full items-center rounded-full border border-transparent bg-input shadow-xs group-data-[state=checked]:bg-primary">
+        <Primitive.Thumb className="block size-5 rounded-full bg-background shadow-sm transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0" />
+      </span>
     </Primitive.Root>
   );
 }

@@ -4,6 +4,7 @@ Priorités P0 (à traiter avant réorganisation), P1 (important), P2 (après sta
 
 | ID / lot | Titre et périmètre | Responsable | Priorité / effort | Critères d’acceptation |
 | --- | --- | --- | --- | --- |
+| DS-03b / 4 | Garder fixe l’index des composants du Playground sur grand écran | Designer | P2 / S | L’index de 16 rem reste au bord extérieur pendant le défilement, défile dans sa propre zone si nécessaire, garde les ancres LTR/RTL et reste masqué sous 64 rem. Voir le ticket complémentaire dans [le plan](../PLAN.md). |
 | SEC-01 / 1 | Reconstituer et vérifier le schéma cadeaux et les grants | Back-end + sécurité | P0 / L | Installation à blanc et chemin déjà provisionné passent. Anonyme et compte tiers sont refusés sur les opérations privées, partage et annulation compatibles. Migrations seules. |
 | SEC-03 / 1 | Caractériser et, après décision explicite, corriger la visibilité cachée | Sécurité | P0 / M | Matrice de 7 locales, 2 jeux, flags, alias et boutique. Aucun lien, référencement ou entrée sitemap. Tout changement du mécanisme a son feu vert distinct. |
 | QA-01 / prérequis du lot 1 | Rétablir une base reproductible | Architecte | P0 / M | Lint passe, unitaires séparés de Playwright, découverte navigateur sans CSS/serveur importés hors contexte, noms de scripts documentés. Build local reproductible et suites vérifiées. |

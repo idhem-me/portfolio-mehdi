@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* Bundle component styles with their density tokens for Tailwind. */
+@import "../components/ui/settings-modal.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -37,6 +39,7 @@
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
+  --color-primary-inverse: var(--primary-inverse);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
@@ -66,6 +69,7 @@
   --primary: var(--mehdi-primary);
   --mehdi-primary-foreground: oklch(0.985 0 0);
   --primary-foreground: var(--mehdi-primary-foreground);
+  --primary-inverse: var(--mehdi-primary-foreground);
   --mehdi-secondary: oklch(0.967 0.001 286.375);
   --secondary: var(--mehdi-secondary);
   --mehdi-secondary-foreground: oklch(0.21 0.006 285.885);
@@ -132,6 +136,7 @@
   --primary: var(--mehdi-primary);
   --mehdi-primary-foreground: oklch(0.21 0.006 285.885);
   --primary-foreground: var(--mehdi-primary-foreground);
+  --primary-inverse: var(--mehdi-primary-foreground);
   --mehdi-secondary: oklch(0.274 0.006 286.033);
   --secondary: var(--mehdi-secondary);
   --mehdi-secondary-foreground: oklch(0.985 0 0);
@@ -201,6 +206,15 @@
 
   /* Desktop (défaut) */
   :root {
+    --dialog-scrim: oklch(0 0 0 / 0.4);
+    --settings-modal-layer: 80;
+    --settings-modal-overlay-layer: calc(var(--settings-modal-layer) - 1);
+    --settings-modal-padding: calc(var(--spacing) * 6);
+    --touch-target-size: 0px;
+    --settings-modal-gutter: var(--settings-modal-padding);
+    --settings-modal-width: var(--container-xl);
+    --settings-modal-height: max-content;
+    --settings-modal-radius: var(--radius-2xl);
     --control-height-xs: 1.5rem; /* 24px */
     --control-height-sm: 1.75rem; /* 28px */
     --mehdi-control-height: 2rem;
@@ -235,8 +249,13 @@
   }
 
   /* Viewport mobile (<768px), sauf force desktop playground */
-  @media (max-width: 767px) {
+  @media (width < 768px) {
     :root:not([data-density="desktop"]) {
+      --touch-target-size: 2.75rem;
+      --settings-modal-gutter: 0px;
+      --settings-modal-width: none;
+      --settings-modal-height: 100dvh;
+      --settings-modal-radius: 0px;
       --control-height-xs: 2.75rem;
       --control-height-sm: 2.75rem;
       --mehdi-control-height: 2.75rem;
@@ -274,6 +293,11 @@
   /* Force playground (sans resize) */
   html[data-density="mobile"],
   [data-density="mobile"] {
+    --touch-target-size: 2.75rem;
+    --settings-modal-gutter: 0px;
+    --settings-modal-width: none;
+    --settings-modal-height: 100dvh;
+    --settings-modal-radius: 0px;
     --control-height-xs: 2.75rem;
     --control-height-sm: 2.75rem;
     --mehdi-control-height: 2.75rem;
@@ -309,6 +333,11 @@
 
   html[data-density="desktop"],
   [data-density="desktop"] {
+    --touch-target-size: 0px;
+    --settings-modal-gutter: var(--settings-modal-padding);
+    --settings-modal-width: var(--container-xl);
+    --settings-modal-height: max-content;
+    --settings-modal-radius: var(--radius-2xl);
     --control-height-xs: 1.5rem;
     --control-height-sm: 1.75rem;
     --mehdi-control-height: 2rem;
