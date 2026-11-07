@@ -21,7 +21,6 @@ export function ProviderSignIn({
   variant = "secondary",
   label,
   layout = "vertical",
-  unavailableMessage,
 }: {
   provider: "google";
   draft?: ScoreDraft;

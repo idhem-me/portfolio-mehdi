@@ -6,6 +6,7 @@ import {
   useId,
   useContext,
   useState,
+  useSyncExternalStore,
   useEffect,
   type ReactNode,
 } from "react";
@@ -63,28 +64,27 @@ const SPECTRUM_LOCALES: Record<string, string> = {
   zh: "zh-CN",
 };
 
+function subscribeDocumentLanguage(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
+  return () => observer.disconnect();
+}
+
+function readSpectrumLocale() {
+  const language = document.documentElement.lang.split("-")[0];
+  return SPECTRUM_LOCALES[language] ?? "fr-FR";
+}
+
 /** Deliberately memory-only, above locale layouts so language navigation preserves it. */
 export function DesignSystemProvider({ children }: { children: ReactNode }) {
   const [designSystem, setDesignSystemState] = useState<DesignSystem>("mehdi");
-  const [locale, setLocale] = useState("fr-FR");
-  const [colorScheme, setColorScheme] = useState<"light" | "dark">("light");
+  const locale = useSyncExternalStore(subscribeDocumentLanguage, readSpectrumLocale, () => "fr-FR");
   const { resolvedTheme } = useTheme();
+  const colorScheme = resolvedTheme === "dark" ? "dark" : "light";
   const setDesignSystem = useCallback((value: DesignSystem) => {
     if (value === "adobe" && !adobeDesignSystemEnabled) return;
     setDesignSystemState(value);
   }, []);
-  useEffect(() => {
-    if (designSystem === "adobe" && !adobeDesignSystemEnabled) {
-      setDesignSystemState("mehdi");
-    }
-  }, [designSystem]);
-  useEffect(() => {
-    const lang = document.documentElement.lang?.split("-")[0] || "fr";
-    setLocale(SPECTRUM_LOCALES[lang] ?? "fr-FR");
-  }, []);
-  useEffect(() => {
-    setColorScheme(resolvedTheme === "dark" ? "dark" : "light");
-  }, [resolvedTheme]);
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.designSystem = designSystem;

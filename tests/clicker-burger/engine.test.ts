@@ -21,7 +21,6 @@ import {
   gameDateISO,
   OWNERSHIP_CAP,
   burgersPerClick,
-  capitalMultiplier,
 } from "../../src/features/clicker-burger/engine/game";
 import {
   parseSave,

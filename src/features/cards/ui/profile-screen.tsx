@@ -3,7 +3,7 @@
 import { Personalization } from "../avatar/personalization";
 import { useCardsAccount } from "../account/client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,16 +27,23 @@ import {
   uniqueOwnedCount,
 } from "../persistence/repository";
 
+function subscribeProfileLocation(onChange: () => void) {
+  window.addEventListener("popstate", onChange);
+  return () => window.removeEventListener("popstate", onChange);
+}
+
+function readProfileTab() {
+  return new URLSearchParams(window.location.search).get("section") === "perso"
+    ? "perso" as const
+    : "stats" as const;
+}
+
 export function ProfileScreen({ save }: { save: CardsSave }) {
   const account = useCardsAccount();
   const [ratesOpen, setRatesOpen] = useState(false);
-  const [tab, setTab] = useState<"stats" | "perso">("stats");
+  const initialTab = useSyncExternalStore(subscribeProfileLocation, readProfileTab, () => "stats" as const);
+  const [selectedTab, setTab] = useState<"stats" | "perso">();
   const progress = catalogProgress(save);
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("section") === "perso")
-      setTab("perso");
-  }, []);
 
   return (
     <div className="cards-profile space-y-6">
@@ -47,7 +54,7 @@ export function ProfileScreen({ save }: { save: CardsSave }) {
       </p>
 
       <Tabs
-        value={tab}
+        value={selectedTab ?? initialTab}
         onValueChange={(value) => {
           const next = value as "stats" | "perso";
           setTab(next);

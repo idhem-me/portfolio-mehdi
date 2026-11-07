@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useIdentityState } from "@/features/account/client-store";
 import { useSettings } from "./state/usePreferences";
 import { useNotices } from "./state/useNotices";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import {
   ArrowLeft,
   ChefHat,
@@ -205,6 +205,7 @@ export default function App({
     }
     haptic(kind, current, iosSwitch.current);
   };
+  const effectFeedback = useEffectEvent(feedback);
   useEffect(() => {
     if (!panel) return;
     const ids = (JSON.parse(groupSignature) as Record<string, string[]>)[panel];
@@ -212,7 +213,7 @@ export default function App({
   }, [panel, groupSignature, markNotices]);
   useEffect(() => {
     if (!game.ready) return;
-    const ids = groups.missions;
+    const { missions: ids } = JSON.parse(groupSignature) as { missions: string[] };
     if (ids.length) markNotices("missions", ids);
   }, [game.ready, groupSignature, markNotices]);
   useEffect(() => {
@@ -252,7 +253,7 @@ export default function App({
       noticedTotal.current = noveltyCount;
       return;
     }
-    if (noveltyCount > noticedTotal.current) feedback("novelty");
+    if (noveltyCount > noticedTotal.current) effectFeedback("novelty");
     noticedTotal.current = noveltyCount;
   }, [noveltyCount]);
   useEffect(() => {
@@ -262,7 +263,7 @@ export default function App({
     }
     if (levelNoticeRef.current !== game.levelNotice) {
       levelNoticeRef.current = game.levelNotice;
-      feedback("levelUp");
+      effectFeedback("levelUp");
     }
   }, [game.levelNotice]);
   const cook = () => {

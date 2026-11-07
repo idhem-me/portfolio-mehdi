@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { cn } from "@/lib/utils";
@@ -233,14 +233,15 @@ export function GazeAvatar() {
     }
   }, []);
 
+  const onWink = useEffectEvent((event: Event) => {
+    winkRef.current = (event as CustomEvent<Wink | null>).detail ?? null;
+    commitSrc(poseSrc());
+  });
+
   useEffect(() => {
-    const onWink = (e: Event) => {
-      const wink = (e as CustomEvent<Wink | null>).detail ?? null;
-      winkRef.current = wink;
-      commitSrc(poseSrc());
-    };
-    window.addEventListener(WINK_EVENT, onWink);
-    return () => window.removeEventListener(WINK_EVENT, onWink);
+    const listener = (event: Event) => onWink(event);
+    window.addEventListener(WINK_EVENT, listener);
+    return () => window.removeEventListener(WINK_EVENT, listener);
   }, []);
 
   useEffect(() => {
