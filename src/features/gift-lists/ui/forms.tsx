@@ -338,6 +338,17 @@ export function ItemForm({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (lock.current || extracting || preparingItemImage) return;
+    const parsedPrice = price === "" ? null : Number(price.replace(",", "."));
+    if (
+      (parsedPrice !== null &&
+        (!Number.isFinite(parsedPrice) ||
+          parsedPrice < 0 ||
+          parsedPrice > 999999999.99)) ||
+      (group && (parsedPrice === null || parsedPrice <= 0))
+    ) {
+      setError("Indique un prix valide, supérieur à zéro pour un cadeau commun.");
+      return;
+    }
     lock.current = true;
     setBusy(true);
     setError("");
@@ -346,7 +357,7 @@ export function ItemForm({
         title,
         url: url || null,
         image_url: image || null,
-        price: price === "" ? null : Number(price.replace(",", ".")),
+        price: parsedPrice,
         is_group_gift: group,
         priority,
       });
@@ -420,10 +431,10 @@ export function ItemForm({
               {(id) => (
                 <Input
                   id={id}
-                  type="number"
-                  min={group ? "0.01" : "0"}
-                  max="999999999.99"
-                  step="0.01"
+                  type="text"
+                  inputMode="decimal"
+                  pattern="[0-9]+([.,][0-9]{1,2})?"
+                  title="Un prix avec au maximum deux décimales (ex. : 19,99)."
                   required={group}
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
