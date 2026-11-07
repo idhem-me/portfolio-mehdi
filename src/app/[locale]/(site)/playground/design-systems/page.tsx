@@ -144,7 +144,7 @@ function DesignSystemColumn({
             className="flex min-w-0 flex-col gap-6 rounded-xl border border-border bg-background p-5"
           >
             <header className="space-y-1 border-b border-border pb-4">
-              <h3 className="text-lg font-semibold tracking-tight">{label}</h3>
+              <h2 className="text-lg font-semibold tracking-tight">{label}</h2>
               <p className="text-sm text-muted-foreground">{subtitle}</p>
             </header>
 
@@ -275,31 +275,29 @@ function DesignSystemColumn({
   );
 }
 
-export function DesignSystemsComparison() {
+export default function DesignSystemsComparison() {
   const t = useTranslations("playground");
 
   return (
     <section
-      id="comparer"
-      tabIndex={-1}
       aria-labelledby="comparison-title"
-      className="@container mx-auto w-full max-w-7xl space-y-8 px-6 py-12"
+      className="@container mx-auto w-full max-w-5xl space-y-8 px-6 py-12"
     >
-      <header className="space-y-2">
-        <h2
+      <header className="space-y-2 text-center">
+        <h1
           id="comparison-title"
           className="text-2xl font-semibold tracking-tight"
         >
           {t("compare")}
-        </h2>
-        <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
+        </h1>
+        <p className="mx-auto max-w-prose text-sm leading-relaxed text-muted-foreground">
           {t("comparisonIntro")}
         </p>
       </header>
 
       <div
         data-compare-grid=""
-        className="grid gap-6 @2xl:grid-cols-2 @5xl:grid-cols-3"
+        className={`grid gap-6 @2xl:grid-cols-2 ${ENABLED_DESIGN_SYSTEMS.length === 3 ? "@4xl:grid-cols-3" : ""}`}
       >
         {ENABLED_DESIGN_SYSTEMS.map((system) => (
           <DesignSystemColumn key={system.id} {...system} />

@@ -86,7 +86,8 @@ export function AppSidebar() {
       href: "/playground",
       label: playground("title"),
       icon: PanelsTopLeft,
-      match: (path: string) => path === "/playground",
+      match: (path: string) =>
+        path === "/playground" || path.startsWith("/playground/"),
     },
     {
       href: "/backoffice",

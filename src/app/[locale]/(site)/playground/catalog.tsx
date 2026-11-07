@@ -109,8 +109,6 @@ export function PlaygroundCatalog() {
 
   return (
     <section
-      id="catalogue"
-      tabIndex={-1}
       aria-labelledby="playground-title"
       data-density={density}
       className="mx-auto w-full max-w-3xl space-y-12 px-6 py-12"

@@ -35,8 +35,8 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return ["", ...locales.map((locale) => `/${locale}`)].map((prefix) => ({
-      source: `${prefix}/playground/:legacy(design-systems|github-vs-adobe)`,
-      destination: `${prefix === "/fr" ? "" : prefix}/playground#comparer`,
+      source: `${prefix}/playground/github-vs-adobe`,
+      destination: `${prefix === "/fr" ? "" : prefix}/playground/design-systems`,
       permanent: true,
     }));
   },

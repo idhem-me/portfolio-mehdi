@@ -2,38 +2,32 @@
 
 import { Columns2, PanelsTopLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useSyncExternalStore } from "react";
+import { Link, usePathname } from "@/i18n/navigation";
 import {
   SectionNavigation,
   SectionNavigationItem,
 } from "@/components/layout/section-navigation";
 
-function subscribeToHash(onChange: () => void) {
-  window.addEventListener("hashchange", onChange);
-  return () => window.removeEventListener("hashchange", onChange);
-}
-
 export function PlaygroundNavigation() {
   const t = useTranslations("playground");
-  const comparing = useSyncExternalStore(
-    subscribeToHash,
-    () => window.location.hash === "#comparer",
-    () => false,
-  );
+  const comparing = usePathname() === "/playground/design-systems";
 
   return (
     <SectionNavigation label={t("title")}>
       <SectionNavigationItem active={!comparing}>
-        <a href="#catalogue" aria-current={!comparing ? "location" : undefined}>
+        <Link href="/playground" aria-current={!comparing ? "page" : undefined}>
           <PanelsTopLeft aria-hidden />
           <span>{t("title")}</span>
-        </a>
+        </Link>
       </SectionNavigationItem>
       <SectionNavigationItem active={comparing}>
-        <a href="#comparer" aria-current={comparing ? "location" : undefined}>
+        <Link
+          href="/playground/design-systems"
+          aria-current={comparing ? "page" : undefined}
+        >
           <Columns2 aria-hidden />
           <span>{t("compare")}</span>
-        </a>
+        </Link>
       </SectionNavigationItem>
     </SectionNavigation>
   );

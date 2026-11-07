@@ -386,7 +386,7 @@ test("site uses real Spectrum components, retains navigation choice and resets o
   expect(errors).toEqual([]);
 });
 
-test("playground navigation switches sections with the keyboard", async ({
+test("playground navigation opens a separate comparison page with the keyboard", async ({
   page,
 }) => {
   await page.goto("/");
@@ -402,14 +402,23 @@ test("playground navigation switches sections with the keyboard", async ({
   const nav = page.getByRole("navigation", { name: "Playground", exact: true });
   const catalogue = nav.getByRole("link", { name: "Playground" });
   const compare = nav.getByRole("link", { name: "Comparer" });
-  await expect(catalogue).toHaveAttribute("aria-current", "location");
+  await expect(catalogue).toHaveAttribute("aria-current", "page");
+  await page.keyboard.press("End");
+  await expect(page.locator("[data-compare-grid]")).toHaveCount(0);
+  await expect(page).toHaveURL(/\/playground$/);
+
   await compare.focus();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/#comparer$/);
-  await expect(compare).toHaveAttribute("aria-current", "location");
-  await expect(page.locator("#comparer")).toBeFocused();
+  await expect(page).toHaveURL(/\/playground\/design-systems$/);
+  await expect(compare).toHaveAttribute("aria-current", "page");
+  await expect(
+    page.getByRole("heading", { name: "Comparer", exact: true }),
+  ).toBeInViewport();
+  await expect(
+    page.getByRole("heading", { name: "Playground", exact: true }),
+  ).toHaveCount(0);
   await page.goBack();
-  await expect(catalogue).toHaveAttribute("aria-current", "location");
+  await expect(catalogue).toHaveAttribute("aria-current", "page");
 });
 
 test("playground keeps the mobile menu and section links in Arabic", async ({
@@ -426,7 +435,7 @@ test("playground keeps the mobile menu and section links in Arabic", async ({
   await menu.getByRole("link", { name: "مساحة التجربة" }).click();
   await expect(menu).toBeHidden();
   await nav.getByRole("link", { name: "مقارنة" }).click();
-  await expect(page).toHaveURL(/\/ar\/playground#comparer$/);
+  await expect(page).toHaveURL(/\/ar\/playground\/design-systems$/);
   await expect(
     page.getByRole("heading", { name: "مقارنة", exact: true }),
   ).toBeInViewport();
@@ -435,18 +444,14 @@ test("playground keeps the mobile menu and section links in Arabic", async ({
   ).toBeLessThanOrEqual(391);
 });
 
-for (const path of [
-  "/playground/design-systems",
-  "/playground/github-vs-adobe",
-  "/en/playground/design-systems",
-]) {
-  test(`legacy Playground link redirects to comparison: ${path}`, async ({
+for (const prefix of ["", "/en"]) {
+  test(`legacy Playground link redirects to comparison: ${prefix || "/fr"}`, async ({
     page,
   }) => {
-    await page.goto(path);
-    const expected = path.startsWith("/en") ? "/en/playground" : "/playground";
-    expect(new URL(page.url()).pathname).toBe(expected);
-    await expect(page).toHaveURL(/#comparer$/);
+    await page.goto(`${prefix}/playground/github-vs-adobe`);
+    expect(new URL(page.url()).pathname).toBe(
+      `${prefix}/playground/design-systems`,
+    );
     await expect(page.locator("#comparison-title")).toBeInViewport();
   });
 }
@@ -454,7 +459,21 @@ for (const path of [
 test("playground comparison renders every enabled system", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/playground#comparer");
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await page.goto("/playground/design-systems");
+  const grid = page.locator("[data-compare-grid]");
+  const content = page.getByRole("main");
+  const nav = page.getByRole("navigation", { name: "Playground" });
+  const gridBox = (await grid.boundingBox())!;
+  const contentBox = (await content.boundingBox())!;
+  const navBox = (await nav.boundingBox())!;
+  const availableLeft = navBox.x + navBox.width;
+  const availableRight = contentBox.x + contentBox.width;
+  expect(
+    Math.abs(
+      gridBox.x + gridBox.width / 2 - (availableLeft + availableRight) / 2,
+    ),
+  ).toBeLessThan(2);
   await expect(
     page.getByRole("heading", { name: "Comparer", exact: true }),
   ).toBeVisible();

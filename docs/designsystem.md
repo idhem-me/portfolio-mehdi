@@ -10,7 +10,7 @@ Le site peut basculer entre trois systèmes via le sélecteur sidebar (mémoire 
 | `github` | Primer React + remap CSS dans `design-system.css` |
 | `adobe` | React Spectrum 1 (`@adobe/react-spectrum`) + remap CSS — **flag** `NEXT_PUBLIC_ENABLE_ADOBE_DS` (off par défaut) |
 
-État : `DesignSystemProvider` (`src/components/design-system/provider.tsx`). Registre : `DESIGN_SYSTEMS` / UI : `ENABLED_DESIGN_SYSTEMS`. Les adaptateurs UI branchent sur `useDesignSystem()` (Button, Input, Avatar, Badge, Switch, Dialog, Tabs, DropdownMenu, sidebar, choice-menu, etc.). Comparaison visuelle des DS activés : `/playground#comparer`.
+État : `DesignSystemProvider` (`src/components/design-system/provider.tsx`). Registre : `DESIGN_SYSTEMS` / UI : `ENABLED_DESIGN_SYSTEMS`. Les adaptateurs UI branchent sur `useDesignSystem()` (Button, Input, Avatar, Badge, Switch, Dialog, Tabs, DropdownMenu, sidebar, choice-menu, etc.). Comparaison visuelle des DS activés : `/playground/design-systems`.
 
 ## Couleurs (tokens)
 
