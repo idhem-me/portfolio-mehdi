@@ -16,6 +16,14 @@
     "tools": "الأدوات",
     "backoffice": "Backoffice"
   },
+  "ui": {
+    "close": "إغلاق",
+    "rank": "الترتيب",
+    "player": "اللاعب",
+    "score": "النتيجة",
+    "settingsTitle": "الإعدادات",
+    "gameSettingsDescription": "إعدادات {game}."
+  },
   "playground": {
     "title": "مساحة التجربة",
     "compare": "مقارنة",
@@ -47,8 +55,11 @@
     "colors": "منتقي الألوان وبطاقات العينات",
     "caseStudies": "التفاعلات في دراسات الحالة",
     "settings": "عناصر التحكّم في إعدادات اللعبة",
-    "tetris": "عناصر التحكّم في Tetris",
-    "switchSlider": "مساحات تفعيل المفتاح وشريط التمرير"
+    "switchSlider": "مساحات تفعيل المفتاح وشريط التمرير",
+    "openSettings": "فتح الإعدادات",
+    "settingsDemoHint": "تُطبّق الإعدادات فورًا.",
+    "notifications": "الإشعارات",
+    "tableDemo": "لوحة ترتيب تجريبية"
   },
   "theme": {
     "enableLight": "تفعيل الوضع الفاتح",

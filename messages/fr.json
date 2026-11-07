@@ -16,6 +16,14 @@
     "tools": "Outils",
     "backoffice": "Backoffice"
   },
+  "ui": {
+    "close": "Fermer",
+    "rank": "Rang",
+    "player": "Joueur",
+    "score": "Score",
+    "settingsTitle": "Réglages",
+    "gameSettingsDescription": "Réglages de {game}."
+  },
   "playground": {
     "title": "Playground",
     "compare": "Comparer",
@@ -47,8 +55,11 @@
     "colors": "Sélecteur de couleur et cartes du nuancier",
     "caseStudies": "Interactions des études de cas",
     "settings": "Contrôles des réglages de jeu",
-    "tetris": "Commandes de Tetris",
-    "switchSlider": "Cibles du Switch et du Slider"
+    "switchSlider": "Cibles du Switch et du Slider",
+    "openSettings": "Ouvrir les réglages",
+    "settingsDemoHint": "Les réglages sont appliqués immédiatement.",
+    "notifications": "Notifications",
+    "tableDemo": "Classement de démonstration"
   },
   "theme": {
     "enableLight": "Activer le mode clair",

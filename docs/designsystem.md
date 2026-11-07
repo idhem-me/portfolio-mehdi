@@ -95,3 +95,9 @@ pendant le chargement. `--home-paper-line` et `--home-paper-rule` dérivent du g
 La marge rouge est à 56 px du bord gauche sur desktop, 14 px sous 768 px ; le
 quadrillage conserve sa taille sur mobile. Ces tokens sont indépendants du
 papier des aperçus de projets (`--paper-grid`).
+
+## Modale de réglages et tableau
+
+- `SettingsModal` compose `Dialog` avec un titre, une description, une fermeture et un corps défilant. Utiliser les tokens `--settings-modal-*` pour la géométrie et les niveaux d’affichage. Le mode Auto affiche un panneau centré dès 768 px et plein écran sous 768 px. Fournir le déclencheur ou sa référence pour restituer le focus.
+- `Table`, `TableHeader`, `TableRow`, `TableHead` et `TableCell` conservent la sémantique HTML. `TableSortButton` rend l’action de tri. Poser `aria-sort` uniquement sur l’en-tête de la colonne triée et laisser la logique de données au parent.
+- Réutiliser les tokens sémantiques du DS pour les couleurs, la typographie, les espacements et les tailles tactiles. Créer un token dédié lorsqu’une dimension a une signification commune et doit varier par densité, et montrer son effet dans le Playground.

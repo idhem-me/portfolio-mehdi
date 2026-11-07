@@ -60,11 +60,12 @@ export function DialogContent({
     <Primitive.Portal container={container}>
       <Primitive.Overlay
         className={cn(
-          "fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs",
+          "fixed inset-0 z-[100] bg-(--dialog-scrim) backdrop-blur-xs",
           overlayClassName,
         )}
       />
       <Primitive.Content
+        data-slot="dialog-content"
         data-cards-theme={scopedTheme}
         className={cn(
           "fixed left-1/2 top-1/2 z-[101] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-background p-6 text-foreground shadow-xl outline-none",
@@ -75,9 +76,9 @@ export function DialogContent({
         {...props}
       >
         {designSystem === "github" ? (
-          <PrimerDialog.Body>{children}</PrimerDialog.Body>
+          <PrimerDialog.Body className="dialog-adapter-body">{children}</PrimerDialog.Body>
         ) : designSystem === "adobe" ? (
-          <Content>{children}</Content>
+          <Content UNSAFE_className="dialog-adapter-body">{children}</Content>
         ) : (
           children
         )}

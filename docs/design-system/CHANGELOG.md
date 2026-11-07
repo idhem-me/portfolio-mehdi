@@ -1,5 +1,11 @@
 # Changelog du design system
 
+## Modale de réglages et tableaux
+
+- `SettingsModal` réutilise le dialogue du DS. Ses tokens pilotent la largeur, l’espacement, le rayon et la hauteur selon la densité. Elle est centrée sur ordinateur et plein écran en mobile.
+- `Table` fournit les éléments natifs d’un tableau et une action de tri. Les sessions du backoffice et le classement de jeu partagent ce rendu.
+- Les démos génériques du Playground permettent de modifier un réglage et de trier des données fictives.
+
 ## Couverture et densité du Playground
 
 - Index des démos, exemples Sidebar et thème local, tailles icône et contrôles natifs. Le registre relie les primitives et adaptateurs aux démos.
@@ -23,3 +29,9 @@ Pour chaque évolution, consigner le composant, les états, les thèmes et la re
 ## Comparaison sur une page distincte
 
 - Le sous-menu ouvre la vitrine sur `/playground` et la comparaison sur `/playground/design-systems`. Le titre et la grille de comparaison sont centrés dans le panneau de contenu. L’alias `/playground/github-vs-adobe` redirige vers la comparaison.
+
+## Vérification des nouvelles compositions
+
+- Lint à zéro erreur et zéro avertissement. TypeScript, build et quatre suites Node réussis.
+- Dix scénarios Chromium et WebKit réussis, dont la modale centrée et plein écran, le retour du focus au déclencheur du jeu et le tri au clavier.
+- Tri ascendant et descendant vérifiés sur le tableau de démonstration du backoffice. Les entrées des jeux masqués restent dans l’inventaire interne.

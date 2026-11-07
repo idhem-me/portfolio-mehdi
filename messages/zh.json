@@ -16,6 +16,14 @@
     "tools": "工具",
     "backoffice": "Backoffice"
   },
+  "ui": {
+    "close": "关闭",
+    "rank": "名次",
+    "player": "玩家",
+    "score": "得分",
+    "settingsTitle": "设置",
+    "gameSettingsDescription": "{game}的设置。"
+  },
   "playground": {
     "title": "组件体验区",
     "compare": "比较",
@@ -47,8 +55,11 @@
     "colors": "颜色选择器和色样卡片",
     "caseStudies": "案例研究交互",
     "settings": "游戏设置控件",
-    "tetris": "Tetris 控件",
-    "switchSlider": "开关和滑块的触控区域"
+    "switchSlider": "开关和滑块的触控区域",
+    "openSettings": "打开设置",
+    "settingsDemoHint": "设置会立即生效。",
+    "notifications": "通知",
+    "tableDemo": "示例排行榜"
   },
   "theme": {
     "enableLight": "启用浅色模式",

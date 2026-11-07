@@ -9,11 +9,10 @@ const items = [
   { id: "LOCAL-01", key: "paint", demo: "paint-color", addressed: true },
   { id: "LOCAL-02", key: "giftFields", demo: "native-controls" },
   { id: "LOCAL-03", key: "giftActions", demo: "button" },
-  { id: "LOCAL-04", key: "sessions" },
+  { id: "LOCAL-04", key: "sessions", demo: "table" },
   { id: "LOCAL-05", key: "colors", demo: "color-picker" },
   { id: "LOCAL-06", key: "caseStudies" },
-  { id: "LOCAL-07", key: "settings" },
-  { id: "LOCAL-08", key: "tetris" },
+  { id: "LOCAL-07", key: "settings", demo: "settings-modal" },
   { id: "LOCAL-09", key: "switchSlider", demo: "switch", addressed: true },
 ] as const;
 

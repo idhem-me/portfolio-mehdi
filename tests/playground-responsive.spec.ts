@@ -55,6 +55,7 @@ test("the local components page works in every locale", async ({ page }) => {
     await page.goto(`${prefix}/playground/local-components`);
     await expect(page.locator("#LOCAL-01")).toBeVisible();
     await expect(page.locator("#LOCAL-09")).toBeVisible();
+    await expect(page.locator("#LOCAL-08, #LOCAL-10")).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(321);
     await expect(page.locator("#LOCAL-01 a")).toHaveAttribute("href", `${prefix}/playground#paint-color`);
     if (locale === "ar") await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
@@ -74,4 +75,51 @@ test("Primer keeps mobile targets in the dark Playground", async ({ page }) => {
   const menuTrigger = page.locator("#dropdown-menu").getByRole("button", { name: "Items", exact: true });
   await menuTrigger.click();
   await expectTouchTarget(page.getByRole("menuitem", { name: "Profil", exact: true }));
+});
+
+test("the settings modal and sortable table follow the active density", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/playground");
+
+  const trigger = page.getByRole("button", { name: "Ouvrir les réglages" });
+  await trigger.click();
+  const modal = page.getByRole("dialog", { name: "Réglages", exact: true });
+  const desktop = (await modal.boundingBox())!;
+  expect(desktop.width).toBeLessThan(1280);
+  expect(Math.abs(desktop.x * 2 + desktop.width - 1280)).toBeLessThan(2);
+  const toggle = modal.getByRole("switch", { name: "Notifications" });
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-checked", "false");
+  await page.keyboard.press("Escape");
+  await expect(trigger).toBeFocused();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await trigger.click();
+  await expect(modal).toHaveCSS("width", "390px");
+  await expect(modal).toHaveCSS("height", "844px");
+  await expectTouchTarget(modal.getByRole("button", { name: "Fermer" }));
+  await expect(toggle).toHaveAttribute("aria-checked", "false");
+  await modal.getByRole("button", { name: "Fermer" }).click();
+  await expect(trigger).toBeFocused();
+
+  const table = page.getByRole("table", { name: "Classement de démonstration" });
+  const score = table.getByRole("button", { name: "Score" });
+  await expectTouchTarget(score);
+  await score.focus();
+  await page.keyboard.press("Enter");
+  await expect(table.getByRole("columnheader", { name: "Score" })).toHaveAttribute("aria-sort", "ascending");
+  await expect(table.getByRole("row").nth(1)).toContainText("Sam");
+});
+
+test("shared settings return focus to the game's original trigger", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/jeux/clicker-burger");
+  const trigger = page.getByRole("button", { name: "Réglages", exact: true }).first();
+  await trigger.click();
+  const modal = page.getByRole("dialog", { name: "Réglages", exact: true });
+  await expect(modal).toContainText("Clicker Burger");
+  await expectTouchTarget(modal.getByRole("button", { name: "Fermer" }));
+  await page.keyboard.press("Escape");
+  await expect(modal).toBeHidden();
+  await expect(trigger).toBeFocused();
 });

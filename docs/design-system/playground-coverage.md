@@ -15,7 +15,7 @@ Une composition absente peut être ajoutée comme scénario si elle définit une
 | \[locale\]/(game)/cards/page.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(game)/jeux/cards/page.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(game)/jeux/clicker-burger/page.tsx | Absente · route ou structure de page | — |
-| \[locale\]/(game)/jeux/tetris/page.tsx | Absente · route ou structure de page | — |
+| \[locale\]/(game)/jeux/tetris/page.tsx | Hors vitrine publique · jeu masqué | — |
 | \[locale\]/(gifts)/l/\[slug\]/page.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(gifts)/listes/\[slug\]/page.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(gifts)/listes/annuler/page.tsx | Absente · route ou structure de page | — |
@@ -95,7 +95,7 @@ Une composition absente peut être ajoutée comme scénario si elle définit une
 | game-account-settings.tsx | Absente · contrôles partagés de jeu sans scénario | button |
 | game-appearance-settings.tsx | Absente · contrôles partagés de jeu sans scénario | button |
 | game-feel-settings.tsx | Absente · contrôles partagés de jeu sans scénario | badge, button, native-controls |
-| game-settings/GameSettingsPanel.tsx | Absente · contrôles partagés de jeu sans scénario | sheet |
+| game-settings/GameSettingsPanel.tsx | Démo générique du conteneur dans SettingsModal | settings-modal |
 | game-settings/primitives/SettingsButton.tsx | Absente · contrôles partagés de jeu sans scénario | button |
 | game-settings/primitives/SettingsCard.tsx | Absente · contrôles partagés de jeu sans scénario | — |
 | game-settings/primitives/SettingsSection.tsx | Absente · contrôles partagés de jeu sans scénario | — |
@@ -147,11 +147,13 @@ Une composition absente peut être ajoutée comme scénario si elle définit une
 | scoped-theme.tsx | Démo dans ScopedTheme | — |
 | select.tsx | Démo dans le catalogue · états à vérifier | provider |
 | separator.tsx | Démo dans le catalogue · états à vérifier | — |
+| settings-modal.tsx | Démo dans SettingsModal | button, dialog |
 | sheet.tsx | Démo dans le catalogue · états à vérifier | button |
 | sidebar.tsx | Démo interactive dans Sidebar | button, input, separator, sheet, skeleton, tooltip |
 | skeleton.tsx | Démo dans le catalogue · états à vérifier | provider |
 | slider.tsx | Démo dans le catalogue · états à vérifier | — |
 | switch.tsx | Démo dans le catalogue · états à vérifier | provider |
+| table.tsx | Démo dans Table | button |
 | tabs.tsx | Démo dans le catalogue · états à vérifier | provider |
 | toast.tsx | Démo dans le catalogue · états à vérifier | native-controls |
 | tooltip.tsx | Démo dans le catalogue · états à vérifier | — |
@@ -217,10 +219,10 @@ Une composition absente peut être ajoutée comme scénario si elle définit une
 
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
 | --- | --- | --- |
-| App.tsx | Hors vitrine publique · jeu masqué | badge, button, native-controls, tabs |
-| client.tsx | Hors vitrine publique · jeu masqué | provider |
-| components/LevelUp.tsx | Hors vitrine publique · jeu masqué | button, dialog |
-| components/Sheet.tsx | Hors vitrine publique · jeu masqué | button, sheet |
+| App.tsx | Absente · composition de fonctionnalité | badge, button, native-controls, tabs |
+| client.tsx | Absente · composition de fonctionnalité | provider |
+| components/LevelUp.tsx | Absente · composition de fonctionnalité | button, dialog |
+| components/Sheet.tsx | Absente · composition de fonctionnalité | button, sheet |
 
 ## `src/features/color-generator`
 
@@ -279,15 +281,15 @@ Une composition absente peut être ajoutée comme scénario si elle définit une
 
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
 | --- | --- | --- |
-| feel/line-celebration.tsx | Absente · composition de fonctionnalité | — |
-| render/board.tsx | Absente · composition de fonctionnalité | — |
-| ui/game-over.tsx | Absente · composition de fonctionnalité | button, card |
-| ui/gameplay-background.tsx | Absente · composition de fonctionnalité | — |
-| ui/google-sign-in.tsx | Absente · composition de fonctionnalité | — |
-| ui/identity-selector.tsx | Absente · composition de fonctionnalité | — |
-| ui/leaderboard.tsx | Absente · composition de fonctionnalité | avatar, button, sheet |
-| ui/piece-shape.tsx | Absente · composition de fonctionnalité | — |
-| ui/player-identity.tsx | Absente · composition de fonctionnalité | — |
-| ui/player-profile.tsx | Absente · composition de fonctionnalité | — |
-| ui/tetris-cover.tsx | Absente · composition de fonctionnalité | — |
-| ui/tetris.tsx | Absente · composition de fonctionnalité | badge, button, card, native-controls, provider, separator, sheet |
+| feel/line-celebration.tsx | Hors vitrine publique · jeu masqué | — |
+| render/board.tsx | Hors vitrine publique · jeu masqué | — |
+| ui/game-over.tsx | Hors vitrine publique · jeu masqué | button, card |
+| ui/gameplay-background.tsx | Hors vitrine publique · jeu masqué | — |
+| ui/google-sign-in.tsx | Hors vitrine publique · jeu masqué | — |
+| ui/identity-selector.tsx | Hors vitrine publique · jeu masqué | — |
+| ui/leaderboard.tsx | Hors vitrine publique · jeu masqué | avatar, button, sheet |
+| ui/piece-shape.tsx | Hors vitrine publique · jeu masqué | — |
+| ui/player-identity.tsx | Hors vitrine publique · jeu masqué | — |
+| ui/player-profile.tsx | Hors vitrine publique · jeu masqué | — |
+| ui/tetris-cover.tsx | Hors vitrine publique · jeu masqué | — |
+| ui/tetris.tsx | Hors vitrine publique · jeu masqué | badge, button, card, native-controls, provider, separator, sheet |

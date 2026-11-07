@@ -48,6 +48,8 @@ import { DesignSystemSwitcher } from "@/components/design-system/switcher";
 import { PaintColorButton } from "@/components/creative/paint-color-button";
 import { ColorPicker } from "@/features/color-generator/ui/ColorPicker";
 import { demoAnchors } from "./coverage";
+import { SettingsModal } from "@/components/ui/settings-modal";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSortButton } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -663,6 +665,14 @@ export function PlaygroundCatalog() {
           </div>
         </Section>
 
+        <Section title="SettingsModal">
+          <SettingsModalDemo />
+        </Section>
+
+        <Section title="Table">
+          <TableDemo />
+        </Section>
+
         <Section title="ColorPicker">
           <ColorPicker color={demoColor} onChange={setDemoColor} />
         </Section>
@@ -683,5 +693,65 @@ function ScopedThemeDemo() {
         <DialogClose asChild><Button variant="outline">{t("close")}</Button></DialogClose>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function SettingsModalDemo() {
+  const t = useTranslations("playground");
+  const ui = useTranslations("ui");
+  const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState(true);
+  return (
+    <SettingsModal
+      open={open}
+      onOpenChange={setOpen}
+      trigger={<Button variant="outline">{t("openSettings")}</Button>}
+      title={ui("settingsTitle")}
+      description={t("settingsDemoHint")}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <span>{t("notifications")}</span>
+        <Switch aria-label={t("notifications")} checked={notifications} onCheckedChange={setNotifications} />
+      </div>
+    </SettingsModal>
+  );
+}
+
+const demoScores = [
+  { rank: 1, player: "Ada", score: 1200 },
+  { rank: 2, player: "Lin", score: 940 },
+  { rank: 3, player: "Sam", score: 680 },
+];
+
+function TableDemo() {
+  const t = useTranslations("playground");
+  const ui = useTranslations("ui");
+  const [direction, setDirection] = useState<"ascending" | "descending">("descending");
+  const rows = direction === "descending" ? demoScores : [...demoScores].reverse();
+  return (
+    <div className="overflow-x-auto rounded-lg border border-border">
+      <Table aria-label={t("tableDemo")}>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{ui("rank")}</TableHead>
+            <TableHead>{ui("player")}</TableHead>
+            <TableHead aria-sort={direction} className="text-end">
+              <TableSortButton direction={direction} onClick={() => setDirection(direction === "descending" ? "ascending" : "descending")}>
+                {ui("score")}
+              </TableSortButton>
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <TableRow key={row.rank}>
+              <TableCell className="tabular-nums">{row.rank}</TableCell>
+              <TableCell>{row.player}</TableCell>
+              <TableCell className="text-end tabular-nums">{row.score}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

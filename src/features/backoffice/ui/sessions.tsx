@@ -10,9 +10,11 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSortButton,
+} from "@/components/ui/table";
 import { Select } from "@/components/ui/select";
 import {
-  ArrowUpDown,
   Monitor,
   RotateCcw,
   Smartphone,
@@ -27,7 +29,6 @@ import { DateRangeSelect } from "@/components/ui/date-range-select";
 
 import { DEMO_NOW, filterDemoSessions } from "./demo";
 
-const SORTABLE = ["started_at", "active_ms", "clicks", "mouse_px"] as const;
 
 function sessionId(row: Row) {
   const match = row.short_label.match(/#[A-Za-z0-9]+/);
@@ -325,9 +326,9 @@ function SessionList() {
       ) : (
         <>
           <div className="hidden rounded-xl border @min-[48rem]:block">
-            <table className="w-full table-fixed text-left text-sm [overflow-wrap:anywhere]">
-              <thead className="sticky top-0 z-10 bg-muted/80 backdrop-blur">
-                <tr>
+            <Table className="table-fixed [overflow-wrap:anywhere]">
+              <TableHeader className="sticky top-0 z-10 bg-muted/80 backdrop-blur">
+                <TableRow>
                   {(
                     [
                       ["sessions", "started_at"],
@@ -339,48 +340,32 @@ function SessionList() {
                       ["device", null],
                       ["status", null],
                     ] as const
-                  ).map(([labelKey, sortKey]) => (
-                    <th
-                      className="group/col border-b border-border p-3 text-sm font-medium text-muted-foreground first:w-[24%]"
-                      key={labelKey}
-                    >
-                      {sortKey &&
-                      SORTABLE.includes(
-                        sortKey as (typeof SORTABLE)[number],
-                      ) ? (
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-1 rounded-md py-1 text-start text-sm font-medium outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                          onClick={() => {
-                            const p = new URLSearchParams(search.toString());
-                            p.set("sort", sortKey);
-                            p.set(
-                              "order",
-                              search.get("sort") === sortKey &&
-                                search.get("order") === "asc"
-                                ? "desc"
-                                : "asc",
-                            );
-                            router.replace(path + "?" + p);
-                          }}
-                        >
-                          {t(labelKey)}
-                          <ArrowUpDown
-                            className={cn(
-                              "size-3.5 shrink-0 opacity-0 transition-opacity group-hover/col:opacity-100 group-focus-within/col:opacity-100",
-                              search.get("sort") === sortKey && "opacity-100",
-                            )}
-                            aria-hidden
-                          />
-                        </button>
-                      ) : (
-                        t(labelKey)
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
+                  ).map(([labelKey, sortKey]) => {
+                    const direction =
+                      sortKey && search.get("sort") === sortKey
+                        ? search.get("order") === "asc" ? "ascending" : "descending"
+                        : undefined;
+                    return (
+                      <TableHead key={labelKey} aria-sort={direction} className="first:w-[24%]">
+                        {sortKey ? (
+                          <TableSortButton
+                            direction={direction}
+                            onClick={() => {
+                              const p = new URLSearchParams(search.toString());
+                              p.set("sort", sortKey);
+                              p.set("order", direction === "ascending" ? "desc" : "asc");
+                              router.replace(path + "?" + p);
+                            }}
+                          >
+                            {t(labelKey)}
+                          </TableSortButton>
+                        ) : t(labelKey)}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {rows.map((r) => {
                   const id = sessionId(r);
                   const started = new Intl.DateTimeFormat(locale, {
@@ -389,14 +374,11 @@ function SessionList() {
                   }).format(new Date(r.started_at));
                   const isOnline = online(r);
                   return (
-                    <tr
+                    <TableRow
                       key={r.id}
-                      className={
-                        "border-b border-border " +
-                        (r.isCurrent ? "bg-primary/5" : "")
-                      }
+                      className={r.isCurrent ? "bg-primary/5" : undefined}
                     >
-                      <td className="p-3">
+                      <TableCell>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -407,19 +389,19 @@ function SessionList() {
                             {id}
                             {r.isMe ? " · " + t("you") : ""}
                           </span>
-                          <span className="text-[10px] font-normal text-muted-foreground">
+                          <span className="text-xs font-normal text-muted-foreground">
                             {started}
                           </span>
                         </Button>
-                      </td>
+                      </TableCell>
                       {["active_ms", "pages", "clicks", "mouse_px"].map((k) => (
-                        <td className="p-3" key={k}>
+                        <TableCell key={k}>
                           {k === "pages"
                             ? Object.values(r.pages).reduce((a, b) => a + b, 0)
                             : metric(r, k)}
-                        </td>
+                        </TableCell>
                       ))}
-                      <td className="p-3">
+                      <TableCell>
                         {r.country ? (
                           <span className="inline-flex items-center gap-2">
                             <CountryFlag country={r.country} locale={locale} />
@@ -430,8 +412,8 @@ function SessionList() {
                         ) : (
                           <CountryFlag country={r.country} locale={locale} />
                         )}
-                      </td>
-                      <td className="p-3">
+                      </TableCell>
+                      <TableCell>
                         <span
                           className="inline-flex"
                           title={
@@ -447,8 +429,8 @@ function SessionList() {
                               : r.device}
                           </span>
                         </span>
-                      </td>
-                      <td className="p-3">
+                      </TableCell>
+                      <TableCell>
                         <span
                           className={cn(
                             "inline-block size-2.5 rounded-full",
@@ -457,12 +439,12 @@ function SessionList() {
                           title={isOnline ? t("online") : t("offline")}
                           aria-label={isOnline ? t("online") : t("offline")}
                         />
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
           <div className="space-y-3 @min-[48rem]:hidden">
             {rows.map((r) => {

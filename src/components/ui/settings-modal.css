@@ -1,0 +1,43 @@
+.settings-modal[data-slot="dialog-content"] {
+  inset: 0;
+  z-index: var(--settings-modal-layer);
+  display: flex;
+  flex-direction: column;
+  inline-size: calc(100% - 2 * var(--settings-modal-gutter));
+  max-inline-size: var(--settings-modal-width);
+  block-size: var(--settings-modal-height);
+  max-block-size: calc(100dvh - 2 * var(--settings-modal-gutter));
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  translate: none;
+  border-radius: var(--settings-modal-radius);
+}
+
+.settings-modal .settings-modal-header {
+  position: relative;
+  flex: none;
+  padding-block: max(var(--settings-modal-padding), env(safe-area-inset-top))
+    var(--settings-modal-padding);
+  padding-inline: var(--settings-modal-padding)
+    calc(2 * var(--settings-modal-padding) + var(--control-height-icon));
+  border-block-end: 1px solid var(--border);
+}
+
+.settings-modal .settings-modal-close {
+  position: absolute;
+  inset-block-start: max(var(--settings-modal-padding), env(safe-area-inset-top));
+  inset-inline-end: var(--settings-modal-padding);
+}
+
+.settings-modal .settings-modal-body {
+  min-block-size: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--settings-modal-padding);
+  padding-block-end: max(var(--settings-modal-padding), env(safe-area-inset-bottom));
+}
+
+.settings-modal > .dialog-adapter-body {
+  display: contents;
+}

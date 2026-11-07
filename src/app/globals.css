@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* Bundle component styles with their density tokens for Tailwind. */
+@import "../components/ui/settings-modal.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -201,7 +203,15 @@
 
   /* Desktop (défaut) */
   :root {
+    --dialog-scrim: oklch(0 0 0 / 0.4);
+    --settings-modal-layer: 80;
+    --settings-modal-overlay-layer: calc(var(--settings-modal-layer) - 1);
+    --settings-modal-padding: calc(var(--spacing) * 6);
     --touch-target-size: 0px;
+    --settings-modal-gutter: var(--settings-modal-padding);
+    --settings-modal-width: var(--container-xl);
+    --settings-modal-height: max-content;
+    --settings-modal-radius: var(--radius-2xl);
     --control-height-xs: 1.5rem; /* 24px */
     --control-height-sm: 1.75rem; /* 28px */
     --mehdi-control-height: 2rem;
@@ -239,6 +249,10 @@
   @media (width < 768px) {
     :root:not([data-density="desktop"]) {
       --touch-target-size: 2.75rem;
+      --settings-modal-gutter: 0px;
+      --settings-modal-width: none;
+      --settings-modal-height: 100dvh;
+      --settings-modal-radius: 0px;
       --control-height-xs: 2.75rem;
       --control-height-sm: 2.75rem;
       --mehdi-control-height: 2.75rem;
@@ -277,6 +291,10 @@
   html[data-density="mobile"],
   [data-density="mobile"] {
     --touch-target-size: 2.75rem;
+    --settings-modal-gutter: 0px;
+    --settings-modal-width: none;
+    --settings-modal-height: 100dvh;
+    --settings-modal-radius: 0px;
     --control-height-xs: 2.75rem;
     --control-height-sm: 2.75rem;
     --mehdi-control-height: 2.75rem;
@@ -313,6 +331,10 @@
   html[data-density="desktop"],
   [data-density="desktop"] {
     --touch-target-size: 0px;
+    --settings-modal-gutter: var(--settings-modal-padding);
+    --settings-modal-width: var(--container-xl);
+    --settings-modal-height: max-content;
+    --settings-modal-radius: var(--radius-2xl);
     --control-height-xs: 1.5rem;
     --control-height-sm: 1.75rem;
     --mehdi-control-height: 2rem;

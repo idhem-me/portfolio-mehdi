@@ -24,6 +24,8 @@ export const demoAnchors = {
   NativeControls: "native-controls",
   PaintColor: "paint-color",
   ColorPicker: "color-picker",
+  SettingsModal: "settings-modal",
+  Table: "table",
 } as const;
 
 // Provider and flags supply infrastructure. The button implementations are
@@ -42,11 +44,13 @@ export const componentCoverage = {
     "scoped-theme": demoAnchors.ScopedTheme,
     "select": demoAnchors.Select,
     "separator": demoAnchors.Separator,
+    "settings-modal": demoAnchors.SettingsModal,
     "sheet": demoAnchors.Sheet,
     "sidebar": demoAnchors.Sidebar,
     "skeleton": demoAnchors.Skeleton,
     "slider": demoAnchors.Slider,
     "switch": demoAnchors.Switch,
+    "table": demoAnchors.Table,
     "tabs": demoAnchors.Tabs,
     "toast": demoAnchors.Toast,
     "tooltip": demoAnchors.Tooltip,

@@ -43,6 +43,7 @@ Suivre le [déroulé des phases 0 à 6](docs/agents/workflow.md).
 
 ## Couverture du Playground
 
+- Pour tout composant créé ou modifié, utiliser les tokens du DS pour la couleur, la typographie, les espacements, les rayons et les cibles. Un nouveau token sémantique doit avoir un usage nommé et une démo qui en montre l’effet.
 - Tout changement visuel du design system doit apparaître dans le Playground dans le même lot. Mettre à jour la démo réelle et son ancre pour toute primitive, variante, état ou modification de token. Présenter les compositions réutilisables avec des données fictives.
 - Pour chaque contrôle autonome concerné, présenter les densités Desktop et Mobile. Le mode Auto choisit Mobile sous 768 px de viewport. Vérifier la zone d’activation mobile de 44 × 44 px CSS, y compris dans les menus et dialogues. Documenter les exceptions et vérifier le focus clavier.
 - Consigner les primitives locales dans [le relevé dédié](docs/design-system/playground-local-components.md). Mettre à jour [la couverture](docs/design-system/playground-coverage.md) quand une démo ou une exception change. Garder les références aux jeux masqués dans la documentation interne.
