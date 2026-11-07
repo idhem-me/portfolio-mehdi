@@ -1,0 +1,26 @@
+# Inventaire du design system
+
+## Sources et tokens
+
+- `src/app/globals.css` définit les surfaces et textes sémantiques (background, foreground, card, popover), actions (primary, accent, secondary, destructive), feedback (success, warning), contours (border, input, ring) et la famille sidebar. `:root`, `.dark` et `@theme inline` alimentent Tailwind.
+- Densité et espacements interactifs via `--control-height-*`, `--control-text-*`, `--menu-*`, `--sidebar-*` et `--sheet-*`. Les cibles mobiles principales passent à 44 px sous 768 px. Les espacements de composition suivent Tailwind.
+- Familles `--radius-*` et ombres d’élévation via tokens/classes. Les effets de l’accent et des jeux mêlent transitions, keyframes et valeurs locales. Préserver l’identité des effets propres aux jeux lors des migrations.
+- Polices dans `src/app/layout.tsx`, Google Sans, Geist Mono, Noto Sans SC et Noto Sans Arabic local. `globals.css` applique les familles par locale. Le thème système suit l’OS via next-themes.
+- `DesignSystemProvider` et `design-system.css` adaptent Mehdi (Radix/Shadcn), GitHub (Primer), Adobe (Spectrum, flag). Les vitrines `/playground` et `/playground/design-systems` sont la référence visuelle. Le [guide DS existant](../designsystem.md) détaille tokens et variantes.
+
+## Composants et conventions d’usage
+
+| Surface | Contrat et états à documenter en vitrine | Usage |
+| --- | --- | --- |
+| Button | `variant` default/primary, outline, secondary, ghost, destructive, accent, link. `size` default, xs/sm/lg et quatre formats icon. `asChild`, disabled, focus, hover, active et invalid selon variante. | Une action principale par bloc. Nom accessible pour icône seule. Pour attente, désactiver l’action et communiquer la progression. |
+| Input et Select | Attributs natifs ou primitives Radix, value/defaultValue selon surface, disabled et invalid. Le bouton de Select déclenche une liste d’options. | Label explicite, aide et erreur associées. Réserver NativeInput au fichier et aux entrées HTML spécialisées. |
+| Dialog et Sheet | Root contrôlé ou non, trigger, content, title et description. Overlay, focus, fermeture clavier. Sheet ajoute le placement. | Conserver titre accessible et retour du focus. Éviter un overlay local pour un dialogue ordinaire. |
+| DropdownMenu, ChoiceMenu et DateRangeSelect | Ouverture, valeur, items et état actif. Adaptations de fournisseur selon le composant. | Séparer menu d’actions et choix de valeur, vérifier sélection et clavier. |
+| Tabs et Accordion | Valeur et item, navigation clavier, état sélectionné ou ouvert. | Associer déclencheur et panneau. Ne pas cacher des actions urgentes derrière un onglet. |
+| Switch et Slider | Contrôles de valeur, callbacks, bornes et pas pour Slider, disabled et focus. | Donner un nom et une valeur perceptible. Tester clavier et tactile. |
+| Card, Badge et Separator | Slots de contenu et variantes selon primitive. Badge indique un état, Card organise la lecture. | Éviter la couleur seule pour exprimer un statut. Employer une vraie action si la carte est interactive. |
+| Avatar, Skeleton, Toast et Tooltip | Image et fallback, chargement, notification et description contextuelle. | Donner un texte accessible si l’avatar porte une identité. Tooltip complète le nom accessible. Annoncer chargement et erreurs critiques. |
+| Sidebar, SidebarButton, SidebarTrigger et Switcher | Contexte ouvert/réduit, état actif, mobile et fournisseur DS. | Vérifier navigation et ordre du focus à sept locales. Tester icônes et placement en RTL. |
+| ScopedTheme et NativeControls | Thème local et contrôles HTML spécialisés. | Garder la sémantique et les attributs HTML. Préserver contraste et états si le thème est forcé. |
+
+Les adaptateurs de `src/components/design-system/` comprennent aussi le bouton Mehdi de base et le registre de flags. Les réglages `components/games/game-settings` composent des contrôles de jeu partagés. Préférer une composition de primitives pour le chrome, avec rendu de scène propre à la feature. La parité de chaque prop et de chaque état entre fournisseurs reste à vérifier en navigateur.
