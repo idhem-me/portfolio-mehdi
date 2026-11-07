@@ -11,7 +11,7 @@ import {
 } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { CaseStudyImage } from "@/lib/content";
-import { ThemePairImage } from "@/components/case-study/theme-image";
+import { ThemePairImage } from "@/features/case-study/ui/theme-image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";

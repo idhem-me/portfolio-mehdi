@@ -4,7 +4,7 @@
 
 Le dashboard reprend l’interface d’origine : périodes 24 h / 7 j / 30 j / 90 j, comparaisons, courbe, appareils, pays, pages et exemple de session. Les sessions reprennent les drapeaux, icônes appareil, états simulés, filtres date/pays/appareil/page, tris, fiches latérales sur ordinateur et tiroirs sur mobile. Les lignes se chargent par lots de 15 au scroll ; un bouton reste disponible.
 
-`src/components/backoffice/demo.ts` génère un jeu déterministe de 1 080 sessions synthétiques, ancré au 31 octobre 2026. Les métriques et filtres proviennent du même jeu de données ; aucune donnée visiteur n’est utilisée. Les dates sont fixes pour éviter les différences d’hydratation et conserver une démo reproductible.
+`src/features/backoffice/ui/demo.ts` génère un jeu déterministe de 1 080 sessions synthétiques, ancré au 31 octobre 2026. Les métriques et filtres proviennent du même jeu de données ; aucune donnée visiteur n’est utilisée. Les dates sont fixes pour éviter les différences d’hydratation et conserver une démo reproductible.
 
 Les anciennes API privées `/api/backoffice/stats`, `/sessions`, `/sessions/[id]` et `/api/analytics/summary` restent protégées par authentification. Les routes publiques d’agrégats créées pendant l’itération précédente ont été retirées. Les permissions de la base et les correctifs de sécurité restent en place.
 
@@ -66,15 +66,15 @@ Les tests navigateur interceptent les statistiques après consentement ; le test
 - [src/app/api/backoffice/stats/route.ts](/Users/mehdi/code/portfolio-mehdi/src/app/api/backoffice/stats/route.ts)
 - [src/app/api/cron/purge/route.ts](/Users/mehdi/code/portfolio-mehdi/src/app/api/cron/purge/route.ts)
 - [src/app/api/track/route.ts](/Users/mehdi/code/portfolio-mehdi/src/app/api/track/route.ts)
-- [src/components/backoffice/dashboard.tsx](/Users/mehdi/code/portfolio-mehdi/src/components/backoffice/dashboard.tsx)
-- [src/components/backoffice/data.ts](/Users/mehdi/code/portfolio-mehdi/src/components/backoffice/data.ts)
-- [src/components/backoffice/sessions.tsx](/Users/mehdi/code/portfolio-mehdi/src/components/backoffice/sessions.tsx)
-- [src/components/backoffice/shell.tsx](/Users/mehdi/code/portfolio-mehdi/src/components/backoffice/shell.tsx)
+- [src/features/backoffice/ui/dashboard.tsx](/Users/mehdi/code/portfolio-mehdi/src/features/backoffice/ui/dashboard.tsx)
+- [src/features/backoffice/ui/data.ts](/Users/mehdi/code/portfolio-mehdi/src/features/backoffice/ui/data.ts)
+- [src/features/backoffice/ui/sessions.tsx](/Users/mehdi/code/portfolio-mehdi/src/features/backoffice/ui/sessions.tsx)
+- [src/features/backoffice/ui/shell.tsx](/Users/mehdi/code/portfolio-mehdi/src/features/backoffice/ui/shell.tsx)
 - [src/lib/analytics/use-analytics-consent.ts](/Users/mehdi/code/portfolio-mehdi/src/lib/analytics/use-analytics-consent.ts)
 - [src/lib/backoffice/server.ts](/Users/mehdi/code/portfolio-mehdi/src/lib/backoffice/server.ts)
 - [src/lib/tracking/client.ts](/Users/mehdi/code/portfolio-mehdi/src/lib/tracking/client.ts)
 - [src/lib/tracking/limits.ts](/Users/mehdi/code/portfolio-mehdi/src/lib/tracking/limits.ts)
-- [src/lib/tracking/provider.tsx](/Users/mehdi/code/portfolio-mehdi/src/lib/tracking/provider.tsx)
+- [src/components/analytics/tracking-provider.tsx](/Users/mehdi/code/portfolio-mehdi/src/components/analytics/tracking-provider.tsx)
 - [supabase/migrations/20261030122415_backoffice.sql](/Users/mehdi/code/portfolio-mehdi/supabase/migrations/20261030122415_backoffice.sql)
 - [tests/backoffice.spec.ts](/Users/mehdi/code/portfolio-mehdi/tests/backoffice.spec.ts)
 - [tests/backoffice.test.ts](/Users/mehdi/code/portfolio-mehdi/tests/backoffice.test.ts)
@@ -100,10 +100,10 @@ Les tests navigateur interceptent les statistiques après consentement ; le test
 - [src/features/cards/ui/opening/opening-scene.tsx](/Users/mehdi/code/portfolio-mehdi/src/features/cards/ui/opening/opening-scene.tsx)
 - [src/features/clicker-burger/App.tsx](/Users/mehdi/code/portfolio-mehdi/src/features/clicker-burger/App.tsx)
 - [src/features/tetris/ui/tetris.tsx](/Users/mehdi/code/portfolio-mehdi/src/features/tetris/ui/tetris.tsx)
-- [src/lib/analytics/analytics-root.tsx](/Users/mehdi/code/portfolio-mehdi/src/lib/analytics/analytics-root.tsx)
+- [src/components/analytics/analytics-root.tsx](/Users/mehdi/code/portfolio-mehdi/src/components/analytics/analytics-root.tsx)
 - [src/lib/analytics/consent.ts](/Users/mehdi/code/portfolio-mehdi/src/lib/analytics/consent.ts)
 - [src/lib/analytics/events.ts](/Users/mehdi/code/portfolio-mehdi/src/lib/analytics/events.ts)
-- [src/lib/analytics/provider.tsx](/Users/mehdi/code/portfolio-mehdi/src/lib/analytics/provider.tsx)
+- [src/components/analytics/posthog-provider.tsx](/Users/mehdi/code/portfolio-mehdi/src/components/analytics/posthog-provider.tsx)
 
 ## Fichiers ajoutés lors du diagnostic
 

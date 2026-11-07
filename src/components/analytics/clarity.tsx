@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { getConsent, subscribeConsent, type ConsentStatus } from "./consent";
+import { getConsent, subscribeConsent, type ConsentStatus } from "../../lib/analytics/consent";
 
 declare global {
   interface Window {

@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { BrowserWindow } from "@/components/media/browser-window";
-import { LightboxTrigger } from "@/components/case-study/image-lightbox";
+import { LightboxTrigger } from "@/features/case-study/ui/image-lightbox";
 import { Button } from "@/components/ui/button";
 import type { CaseStudyImage } from "@/lib/content";
 import { cn } from "@/lib/utils";

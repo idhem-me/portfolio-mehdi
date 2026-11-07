@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CompanyLogo } from "@/components/cv/company-logo";
+import { CompanyLogo } from "@/features/cv/ui/company-logo";
 import type { Experience } from "@/lib/content";
 
 export function ExperienceCard({ experience }: { experience: Experience }) {

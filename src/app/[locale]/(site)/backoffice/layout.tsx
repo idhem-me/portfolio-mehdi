@@ -1,4 +1,4 @@
-import { BackofficeShell } from "@/components/backoffice/shell";
+import { BackofficeShell } from "@/features/backoffice/ui/shell";
 export const metadata = {
   title: "Backoffice",
   robots: { index: false, follow: false },

@@ -24,7 +24,7 @@ import {
   ImageConversionError,
   isSupportedImage,
   type ImageOutputFormat,
-} from "@/lib/image-converter";
+} from "@/features/image-conversion/engine/image-converter";
 
 type Entry = {
   id: string;

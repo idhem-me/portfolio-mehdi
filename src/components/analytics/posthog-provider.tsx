@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
-import { getConsent, subscribeConsent, type ConsentStatus } from "./consent";
+import { getConsent, subscribeConsent, type ConsentStatus } from "../../lib/analytics/consent";
 
 function getPosthogHost() {
   return (

@@ -6,7 +6,7 @@ import {
   getConsent,
   subscribeConsent,
   type ConsentStatus,
-} from "./consent";
+} from "../../lib/analytics/consent";
 
 /** Vercel Web Analytics — chargé uniquement après consentement RGPD. */
 export function VercelAnalytics() {

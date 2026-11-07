@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Check, AlertCircle, Copy, Download, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { Swatch } from "@/lib/color-generator";
+import type { Swatch } from "@/features/color-generator/engine/color-generator";
 export function SwatchesGrid({
   palette,
   name,

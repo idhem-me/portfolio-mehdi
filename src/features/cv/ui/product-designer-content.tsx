@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator";
-import { ExperienceCard } from "@/components/cv/experience-card";
-import { RolePillars } from "@/components/cv/role-pillars";
-import { SkillsTabs } from "@/components/cv/skills-tabs";
+import { ExperienceCard } from "@/features/cv/ui/experience-card";
+import { RolePillars } from "@/features/cv/ui/role-pillars";
+import { SkillsTabs } from "@/features/cv/ui/skills-tabs";
 import { getExperiences, getProductDesigner, getSkills } from "@/lib/content";
 
 export function ProductDesignerContent({ locale }: { locale: string }) {

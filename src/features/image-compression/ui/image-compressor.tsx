@@ -14,7 +14,7 @@ import {
   compressedFilename,
   useImageCompression,
   type CompressionFormat,
-} from "@/hooks/useImageCompression";
+} from "@/features/image-compression/ui/use-image-compression";
 import { cn } from "@/lib/utils";
 
 export function ImageCompressor() {

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { onboardingConfig } from "../src/features/tetris/engine/opening";
+import { onboardingConfig } from "../../src/features/tetris/engine/opening";
 
 declare global {
   interface Window {

@@ -15,7 +15,7 @@ import {
   normalizeHex,
   type Settings,
   type InputFormat,
-} from "@/lib/color-generator";
+} from "@/features/color-generator/engine/color-generator";
 function ChannelInput({
   value,
   onValue,

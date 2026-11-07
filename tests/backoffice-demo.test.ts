@@ -4,7 +4,7 @@ import {
   demoSessions,
   filterDemoSessions,
   getDemoStats,
-} from "../src/components/backoffice/demo";
+} from "../src/features/backoffice/ui/demo";
 test("synthetic session filters, ordering and dashboard totals share one dataset", () => {
   assert.equal(demoSessions.length, 1080);
   assert.equal(new Set(demoSessions.map((r) => r.id)).size, 1080);

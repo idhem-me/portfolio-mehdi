@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { CaseStudyStory } from "@/components/case-study/case-study-story";
+import { CaseStudyStory } from "@/features/case-study/ui/case-study-story";
 import { getCaseStudy } from "@/lib/content";
 import { routing } from "@/i18n/routing";
 

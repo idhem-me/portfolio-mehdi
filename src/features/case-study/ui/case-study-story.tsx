@@ -3,14 +3,14 @@
 import { ArrowLeft } from "lucide-react";
 import type { CaseStudyContent, CaseStudyImage } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
-import { CaseStudyBody } from "@/components/case-study/case-study-body";
-import { ScrollReveal } from "@/components/case-study/scroll-reveal";
-import { CaseStudySlider } from "@/components/case-study/case-study-slider";
-import { ImageLightboxProvider } from "@/components/case-study/image-lightbox";
+import { CaseStudyBody } from "@/features/case-study/ui/case-study-body";
+import { ScrollReveal } from "@/features/case-study/ui/scroll-reveal";
+import { CaseStudySlider } from "@/features/case-study/ui/case-study-slider";
+import { ImageLightboxProvider } from "@/features/case-study/ui/image-lightbox";
 import {
   ThemeImage,
   ThemeImageGroup,
-} from "@/components/case-study/theme-image";
+} from "@/features/case-study/ui/theme-image";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";

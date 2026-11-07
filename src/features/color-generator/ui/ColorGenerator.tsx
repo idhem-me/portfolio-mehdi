@@ -14,7 +14,7 @@ import {
   type InputFormat,
   type ExportFormat,
   type ColorSpace,
-} from "@/lib/color-generator";
+} from "@/features/color-generator/engine/color-generator";
 import { ControlPanel } from "./ControlPanel";
 import { SwatchesGrid } from "./SwatchesGrid";
 import { CodeExport } from "./CodeExport";

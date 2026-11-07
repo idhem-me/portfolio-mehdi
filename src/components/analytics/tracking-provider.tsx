@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { startTracking, track } from "./client";
+import { startTracking, track } from "../../lib/tracking/client";
 export function TrackingProvider() {
   const path = usePathname();
   useEffect(startTracking, []);

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { captureFlow, setup } from "./helpers/v3";
+import { captureFlow, setup } from "../helpers/v3";
 const enabled = process.env.TETRIS_TEST_DISABLED !== "true";
 test("games feature gate, legacy redirect, metadata and sitemap", async ({
   page,

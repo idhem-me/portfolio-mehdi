@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { Check, Copy, AlertCircle } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import type { ColorSpace, ExportFormat } from "@/lib/color-generator";
+import type { ColorSpace, ExportFormat } from "@/features/color-generator/engine/color-generator";
 export function CodeExport({
   code,
   format,

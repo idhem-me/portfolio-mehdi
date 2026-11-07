@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { QRCodeGenerator } from "@/components/QRCodeGenerator";
+import { QRCodeGenerator } from "@/features/qr-code/ui/qr-code-generator";
 
 type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
