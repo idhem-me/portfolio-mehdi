@@ -16,6 +16,12 @@
     "tools": "Tools",
     "backoffice": "Backoffice"
   },
+  "playground": {
+    "title": "Playground",
+    "compare": "Compare",
+    "intro": "Explore the components and their variants.",
+    "comparisonIntro": "See the same components and their tokens side by side in each available design system."
+  },
   "theme": {
     "enableLight": "Enable light mode",
     "enableDark": "Enable dark mode",

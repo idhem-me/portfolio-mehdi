@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import Link from "next/link";
+import { useCallback, useState, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import {
   ENABLED_DESIGN_SYSTEMS,
   DesignSystemForce,
@@ -72,18 +72,7 @@ const NATIVE_TOKENS: Record<DesignSystem, readonly string[]> = {
   ],
 };
 
-function TokenSwatch({
-  name,
-  scope,
-}: {
-  name: string;
-  scope: HTMLElement | null;
-}) {
-  const [value, setValue] = useState("");
-  useEffect(() => {
-    if (!scope) return;
-    setValue(getComputedStyle(scope).getPropertyValue(name).trim());
-  }, [name, scope]);
+function TokenSwatch({ name, value }: { name: string; value?: string }) {
   return (
     <div className="flex items-center gap-2 text-xs">
       <span
@@ -121,7 +110,22 @@ function DesignSystemColumn({
   label,
   subtitle,
 }: (typeof ENABLED_DESIGN_SYSTEMS)[number]) {
-  const [root, setRoot] = useState<HTMLElement | null>(null);
+  const [tokens, setTokens] = useState<Record<string, string>>({});
+  const readTokens = useCallback(
+    (node: HTMLElement | null) => {
+      if (!node) return;
+      const style = getComputedStyle(node);
+      setTokens(
+        Object.fromEntries(
+          [...SEMANTIC_TOKENS, ...NATIVE_TOKENS[id]].map((name) => [
+            name,
+            style.getPropertyValue(name).trim(),
+          ]),
+        ),
+      );
+    },
+    [id],
+  );
   const [checked, setChecked] = useState(true);
 
   return (
@@ -135,7 +139,7 @@ function DesignSystemColumn({
       >
         <DesignSystemScope className="flex min-w-0 flex-col">
           <section
-            ref={setRoot}
+            ref={readTokens}
             data-compare-column={id}
             className="flex min-w-0 flex-col gap-6 rounded-xl border border-border bg-background p-5"
           >
@@ -168,7 +172,11 @@ function DesignSystemColumn({
             </ComponentBlock>
 
             <ComponentBlock label="Checkbox">
-              <NativeInput type="checkbox" defaultChecked aria-label="Accepter" />
+              <NativeInput
+                type="checkbox"
+                defaultChecked
+                aria-label="Accepter"
+              />
               <span className="text-sm">Accepter</span>
             </ComponentBlock>
 
@@ -245,7 +253,7 @@ function DesignSystemColumn({
                 </p>
                 <div className="space-y-1.5">
                   {SEMANTIC_TOKENS.map((name) => (
-                    <TokenSwatch key={name} name={name} scope={root} />
+                    <TokenSwatch key={name} name={name} value={tokens[name]} />
                   ))}
                 </div>
               </div>
@@ -255,7 +263,7 @@ function DesignSystemColumn({
                 </p>
                 <div className="space-y-1.5">
                   {NATIVE_TOKENS[id].map((name) => (
-                    <TokenSwatch key={name} name={name} scope={root} />
+                    <TokenSwatch key={name} name={name} value={tokens[name]} />
                   ))}
                 </div>
               </div>
@@ -267,37 +275,34 @@ function DesignSystemColumn({
   );
 }
 
-export default function DesignSystemsComparePage() {
+export default function DesignSystemsComparison() {
+  const t = useTranslations("playground");
+
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-8 px-6 py-12">
-      <header className="space-y-2">
-        <p className="text-sm text-muted-foreground">
-          <Link
-            href="/playground"
-            className="underline-offset-4 hover:text-foreground hover:underline"
-          >
-            ← Playground
-          </Link>
-        </p>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Design systems
+    <section
+      aria-labelledby="comparison-title"
+      className="@container mx-auto w-full max-w-5xl space-y-8 px-6 py-12"
+    >
+      <header className="space-y-2 text-center">
+        <h1
+          id="comparison-title"
+          className="text-2xl font-semibold tracking-tight"
+        >
+          {t("compare")}
         </h1>
-        <p className="max-w-prose text-sm leading-relaxed text-muted-foreground">
-          Comparaison côte à côte de tous les design systems activés (
-          {ENABLED_DESIGN_SYSTEMS.map((system) => system.label).join(", ")}
-          ), avec le même jeu de composants et leurs tokens. Indépendant du
-          switcher global.
+        <p className="mx-auto max-w-prose text-sm leading-relaxed text-muted-foreground">
+          {t("comparisonIntro")}
         </p>
       </header>
 
       <div
         data-compare-grid=""
-        className="grid gap-6 md:grid-cols-2 xl:grid-cols-3"
+        className={`grid gap-6 @2xl:grid-cols-2 ${ENABLED_DESIGN_SYSTEMS.length === 3 ? "@4xl:grid-cols-3" : ""}`}
       >
         {ENABLED_DESIGN_SYSTEMS.map((system) => (
           <DesignSystemColumn key={system.id} {...system} />
         ))}
       </div>
-    </main>
+    </section>
   );
 }

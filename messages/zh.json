@@ -16,6 +16,12 @@
     "tools": "工具",
     "backoffice": "Backoffice"
   },
+  "playground": {
+    "title": "组件体验区",
+    "compare": "比较",
+    "intro": "探索各个组件及其变体。",
+    "comparisonIntro": "并排比较每个可用设计系统中的相同组件及其设计令牌。"
+  },
   "theme": {
     "enableLight": "启用浅色模式",
     "enableDark": "启用深色模式",

@@ -56,7 +56,7 @@ Overrides (**dans `@layer base`**, avec les defaults desktop) — Tailwind v4 fu
 - `[data-density="mobile"]` → force mobile (playground, sans resize)
 - `[data-density="desktop"]` → force desktop même sous 768px
 
-Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, un toggle synchronise `document.documentElement.dataset.density`.
+Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, le sélecteur applique `data-density` à la vitrine de composants.
 
 ## Button — variante `accent`
 

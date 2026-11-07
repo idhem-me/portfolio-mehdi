@@ -20,7 +20,6 @@ function isDashboardAuthPath(pathname: string) {
 function isLocaleExempt(pathname: string) {
   return (
     pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/playground") ||
     pathname.startsWith("/api")
   );
 }

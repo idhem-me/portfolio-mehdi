@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import { hostname, networkInterfaces } from "node:os";
 import createNextIntlPlugin from "next-intl/plugin";
+import { locales } from "./src/i18n/routing";
 
 /** Aligné avec `SVG_CONTENT_SECURITY_POLICY` dans `src/lib/sanitize-svg.ts`. */
 const SVG_CSP =
@@ -31,6 +32,13 @@ const nextConfig: NextConfig = {
   images: {
     contentSecurityPolicy: SVG_CSP,
     contentDispositionType: "attachment",
+  },
+  async redirects() {
+    return ["", ...locales.map((locale) => `/${locale}`)].map((prefix) => ({
+      source: `${prefix}/playground/github-vs-adobe`,
+      destination: `${prefix === "/fr" ? "" : prefix}/playground/design-systems`,
+      permanent: true,
+    }));
   },
   async headers() {
     return [

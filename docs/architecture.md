@@ -4,7 +4,7 @@
 
 | Couche | Responsabilité et convention |
 | --- | --- |
-| `src/app` | Routes, layouts, métadonnées, lecture de la locale et contrôles serveur. Les groupes actuels restent en place pour limiter le risque sur les URL et les layouts. `(playground)` reste la vitrine interne du DS. |
+| `src/app` | Routes, layouts, métadonnées, lecture de la locale et contrôles serveur. Les groupes actuels restent en place pour limiter le risque sur les URL et les layouts. La vitrine `/playground` et la comparaison `/playground/design-systems` utilisent le layout du site et partagent un panneau secondaire. |
 | `src/features/<nom>` | UI, domaine et données propres à une expérience. Sous-dossiers `ui/`, `server/`, `engine/` ou `persistence/` uniquement s’ils ont une responsabilité distincte. Nom du dossier en kebab-case. |
 | `src/components` | Primitives DS, layout, media et UI utilisée par plusieurs domaines. Conserver les réglages communs aux jeux et les composants créatifs tant que leurs usages croisés subsistent. |
 | `src/lib` | Fonctions et intégrations transverses sans rendu React. Conserver les contrats d’analytics séparés de la collecte backoffice, et regrouper leurs points de montage dans `components/analytics`. |
