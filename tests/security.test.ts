@@ -235,7 +235,7 @@ test("Clarity receives withdrawal and unloads its already-running document", asy
     await import("typescript");
   const { runInNewContext } = await import("node:vm");
   const source = transpileModule(
-    readFileSync("src/lib/analytics/clarity.tsx", "utf8"),
+    readFileSync("src/components/analytics/clarity.tsx", "utf8"),
     {
       compilerOptions: {
         module: ModuleKind.CommonJS,

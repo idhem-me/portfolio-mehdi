@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ProductDesignerContent } from "@/components/cv/product-designer-content";
+import { ProductDesignerContent } from "@/features/cv/ui/product-designer-content";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   ExperienceCard,
   ExperienceListItem,
-} from "@/components/cv/experience-card";
+} from "@/features/cv/ui/experience-card";
 import { getAbout, getExperiences, getProfile } from "@/lib/content";
 import { routing } from "@/i18n/routing";
 

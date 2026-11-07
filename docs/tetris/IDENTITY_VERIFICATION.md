@@ -3,7 +3,7 @@
 ## Résultats
 
 - `npm test` : **108/108** passent. Le moteur existant reste inchangé par cette correction. Tests réels SQLite, libSQL et PostgreSQL/PGlite : profils, conservation des records, isolation privée, propriété des sessions et confirmations idempotentes. Test de la route Google avec client Supabase SSR réel et fournisseur simulé : contrôle de l’origine et du nonce, échange d’ID token, cookies HttpOnly, absence de jetons de session dans la réponse publique.
-- **41/41 parcours Playwright** passent sur Chromium desktop, Chrome Android émulé Pixel 7 et WebKit iPhone 13. Commande : `TETRIS_TEST_BASE_URL=http://localhost:3001 npx playwright test tests/identity-profile.spec.ts tests/profile.spec.ts tests/responsive-player-v2.spec.ts tests/v2.spec.ts tests/tetris.spec.ts --project=chromium --project=webkit-iphone --project=android-chrome`.
+- **41/41 parcours Playwright** passent sur Chromium desktop, Chrome Android émulé Pixel 7 et WebKit iPhone 13. Commande : `TETRIS_TEST_BASE_URL=http://localhost:3001 npx playwright test tests/identity-profile.spec.ts tests/profile.spec.ts tests/responsive-player-v2.spec.ts tests/v2.spec.ts tests/tetris/tetris.spec.ts --project=chromium --project=webkit-iphone --project=android-chrome`.
 - `npm run lint` : zéro erreur, avertissement préexistant `commitSrc` dans gaze-avatar.
 - `npm run typecheck` : succès.
 - `npm run build` : succès, avertissement préexistant des métriques de fallback Google Sans.

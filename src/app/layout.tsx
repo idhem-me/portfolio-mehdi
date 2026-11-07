@@ -4,7 +4,7 @@ import { Geist_Mono, Google_Sans, Noto_Sans_SC } from "next/font/google";
 import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "@/components/layout/theme-provider";
-import { AnalyticsRoot } from "@/lib/analytics/analytics-root";
+import { AnalyticsRoot } from "@/components/analytics/analytics-root";
 import { profileMeta } from "@/data/profile-meta";
 import frMessages from "../../messages/fr.json";
 import { DesignSystemProvider } from "@/components/design-system/provider";
