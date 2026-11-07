@@ -1585,18 +1585,3 @@
 .burger-dashboard .game-header {
   align-items: flex-start;
 }
-.burger-dashboard .burger-breadcrumb {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(var(--spacing) * 2);
-  margin-bottom: calc(var(--spacing) * 4);
-  font-size: var(--control-text-xs);
-  color: var(--muted-foreground);
-}
-.burger-dashboard .burger-breadcrumb:hover {
-  color: var(--foreground);
-}
-.burger-dashboard .burger-breadcrumb:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 4px;
-}

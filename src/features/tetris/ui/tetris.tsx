@@ -441,17 +441,12 @@ function TetrisGame({
         <div className="lava-lobby">
           <header className="lava-lobby-header">
             <div>
-              <Link
-                href="/jeux"
-                className="lava-breadcrumb"
-                aria-label="Retour aux jeux"
-              >
-                <ArrowLeft
-                  className="size-4 rtl:rotate-180"
-                  aria-hidden="true"
-                />
-                Jeux
-              </Link>
+              <Button asChild variant="ghost" size="sm" className="mb-4">
+                <Link href="/jeux" aria-label="Retour aux jeux">
+                  <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+                  Jeux
+                </Link>
+              </Button>
               <h1>Tetris</h1>
               <p>Un classique, une pièce à la fois.</p>
             </div>

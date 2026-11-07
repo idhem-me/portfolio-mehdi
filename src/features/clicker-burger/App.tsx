@@ -473,15 +473,16 @@ export default function App({
     <div className="clicker-burger burger-dashboard">
       <header className="game-header">
         <div className="burger-heading">
-          <Link
-            href={backHref}
-            className="burger-breadcrumb"
-            aria-label="Retour aux jeux"
-            onClick={() => game.persist()}
-          >
-            <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-            Jeux
-          </Link>
+          <Button asChild variant="ghost" size="sm" className="mb-4">
+            <Link
+              href={backHref}
+              aria-label="Retour aux jeux"
+              onClick={() => game.persist()}
+            >
+              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
+              Jeux
+            </Link>
+          </Button>
           <h1>Clicker Burger</h1>
         </div>
         <div className="header-actions">

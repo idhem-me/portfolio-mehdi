@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { ColorGenerator } from "@/features/color-generator/ui/ColorGenerator";
 type Props = { params: Promise<{ locale: string }> };
@@ -16,13 +17,12 @@ export default async function ColorGeneratorPage({ params }: Props) {
   const tools = await getTranslations("tools");
   return (
     <main className="mx-auto w-full max-w-7xl space-y-8 px-4 py-8 sm:px-6 sm:py-12">
-      <Link
-        href="/outils"
-        className="inline-flex min-h-11 items-center gap-2 rounded-md text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <ArrowLeft aria-hidden="true" className="size-4 rtl:rotate-180" />
-        {tools("back")}
-      </Link>
+      <Button asChild variant="ghost" size="sm">
+        <Link href="/outils">
+          <ArrowLeft aria-hidden="true" className="size-4 rtl:rotate-180" />
+          {tools("back")}
+        </Link>
+      </Button>
       <header className="space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {t("title")}

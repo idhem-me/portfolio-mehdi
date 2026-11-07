@@ -1,10 +1,3 @@
-import { cardsEnabled } from "@/features/cards/flags";
-import {
-  clickerBurgerEnabled,
-  clickerBurgerPublic,
-} from "@/features/clicker-burger/flags";
-import { notFound } from "next/navigation";
-import { tetrisEnabled } from "@/features/tetris/flags";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Blocks, Gamepad2, Hamburger, PlayingCardsFan } from "lucide-react";
@@ -21,14 +14,12 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  if (!tetrisEnabled && !clickerBurgerEnabled && !cardsEnabled) notFound();
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "metadata" });
   const page = getGames(locale);
 
   return {
     title: t("games"),
-    robots: { index: clickerBurgerPublic, follow: clickerBurgerPublic },
     description: page.title,
     alternates: {
       languages: Object.fromEntries(
@@ -42,7 +33,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GamesPage({ params }: Props) {
-  if (!tetrisEnabled && !clickerBurgerEnabled && !cardsEnabled) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
   const page = getGames(locale);
