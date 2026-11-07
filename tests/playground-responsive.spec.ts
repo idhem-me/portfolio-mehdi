@@ -143,31 +143,36 @@ test("shared settings return focus to the game's original trigger", async ({ pag
   await expect(trigger).toBeFocused();
 });
 
-test("the catalog index stays to the right and tracks the catalog order", async ({ page }) => {
+test("the catalog index is on the right and scrolls with the page", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("analytics_consent", "denied"));
   await page.setViewportSize({ width: 1600, height: 900 });
-  await page.goto("/playground#settings-modal");
+  await page.goto("/playground");
 
   const catalog = page.locator('[aria-labelledby="playground-title"]');
   const index = catalog.getByRole("navigation");
   const toolbar = catalog.getByRole("group", { name: "Densité", exact: true });
-  const heading = catalog.locator("#settings-modal h2");
+  const heading = catalog.locator("#table h2");
 
-  await expect(index).toBeVisible();
-  await expect(heading).toBeInViewport();
-  expect((await heading.boundingBox())!.y).toBeGreaterThan(
-    (await toolbar.boundingBox())!.y + (await toolbar.boundingBox())!.height,
-  );
+  await expect(index).toBeInViewport();
   expect((await index.boundingBox())!.x).toBeGreaterThan(
     (await heading.boundingBox())!.x + (await heading.boundingBox())!.width,
   );
   const headings = await catalog.locator("section h2").allTextContents();
   expect(headings).toEqual([...headings].sort((a, b) => a.localeCompare(b, "en")));
   expect(await index.getByRole("link").allTextContents()).toEqual(headings);
-  expect(await index.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+  await expect(index).toHaveCSS("overflow-y", "visible");
+  const lastLink = index.getByRole("link").last();
+  await page.evaluate(() => window.scrollBy(0, 320));
+  await expect(lastLink).toBeInViewport();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  expect(await index.evaluate((el) => el.scrollTop)).toBe(0);
+
   await index.getByRole("link", { name: "Table", exact: true }).click();
   await expect(page).toHaveURL(/#table$/);
-  await expect(index).toBeInViewport();
+  await expect(heading).toBeInViewport();
+  expect((await heading.boundingBox())!.y).toBeGreaterThan(
+    (await toolbar.boundingBox())!.y + (await toolbar.boundingBox())!.height,
+  );
 
   await page.goto("/ar/playground#table");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
