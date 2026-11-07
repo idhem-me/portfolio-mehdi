@@ -48,7 +48,7 @@ import { DesignSystemSwitcher } from "@/components/design-system/switcher";
 import { PaintColorButton } from "@/components/creative/paint-color-button";
 import { ColorPicker } from "@/features/color-generator/ui/ColorPicker";
 import { demoAnchors } from "./coverage";
-import { SettingsModal } from "@/components/ui/settings-modal";
+import { SettingsModal, type SettingsModalVariant } from "@/components/ui/settings-modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSortButton } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -699,21 +699,35 @@ function ScopedThemeDemo() {
 function SettingsModalDemo() {
   const t = useTranslations("playground");
   const ui = useTranslations("ui");
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<SettingsModalVariant | null>(null);
   const [notifications, setNotifications] = useState(true);
   return (
-    <SettingsModal
-      open={open}
-      onOpenChange={setOpen}
-      trigger={<Button variant="outline">{t("openSettings")}</Button>}
-      title={ui("settingsTitle")}
-      description={t("settingsDemoHint")}
-    >
-      <div className="flex items-center justify-between gap-4">
-        <span>{t("notifications")}</span>
-        <Switch aria-label={t("notifications")} checked={notifications} onCheckedChange={setNotifications} />
-      </div>
-    </SettingsModal>
+    <div className="flex flex-wrap gap-3">
+      {(["center", "right"] as const).map((variant) => (
+        <SettingsModal
+          key={variant}
+          variant={variant}
+          open={open === variant}
+          onOpenChange={(next) => setOpen(next ? variant : null)}
+          trigger={
+            <Button variant="outline">
+              {t(variant === "center" ? "openSettings" : "openSettingsPanel")}
+            </Button>
+          }
+          title={ui("settingsTitle")}
+          description={t("settingsDemoHint")}
+        >
+          <div className="flex items-center justify-between gap-4">
+            <span>{t("notifications")}</span>
+            <Switch
+              aria-label={t("notifications")}
+              checked={notifications}
+              onCheckedChange={setNotifications}
+            />
+          </div>
+        </SettingsModal>
+      ))}
+    </div>
   );
 }
 

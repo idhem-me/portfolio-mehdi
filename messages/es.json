@@ -56,7 +56,8 @@
     "caseStudies": "Interacciones de los casos de estudio",
     "settings": "Controles de configuración del juego",
     "switchSlider": "Áreas de interacción del interruptor y el deslizador",
-    "openSettings": "Abrir ajustes",
+    "openSettings": "Ventana centrada",
+    "openSettingsPanel": "Panel derecho",
     "settingsDemoHint": "Los ajustes se aplican de inmediato.",
     "notifications": "Notificaciones",
     "tableDemo": "Clasificación de ejemplo"

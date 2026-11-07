@@ -38,6 +38,7 @@ export function GameSettingsPanel({
   const t = useTranslations("ui");
   return (
     <SettingsModal
+      variant="right"
       open={open}
       onOpenChange={(next) => {
         if (!next) onClose();

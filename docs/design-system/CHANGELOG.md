@@ -1,5 +1,10 @@
 # Changelog du design system
 
+## Deux variantes de modale
+
+- `SettingsModal` propose `center` et `right` dans le même exemple du Playground. Le panneau droit coulisse sur ordinateur et les deux variantes sont plein écran en densité Mobile.
+- Les réglages des jeux utilisent la variante droite, comme avant la mutualisation du conteneur.
+
 ## Modale de réglages et tableaux
 
 - `SettingsModal` réutilise le dialogue du DS. Ses tokens pilotent la largeur, l’espacement, le rayon et la hauteur selon la densité. Elle est centrée sur ordinateur et plein écran en mobile.

@@ -56,7 +56,8 @@
     "caseStudies": "Interaktionen in Fallstudien",
     "settings": "Steuerelemente der Spieleinstellungen",
     "switchSlider": "Zielflächen von Schalter und Schieberegler",
-    "openSettings": "Einstellungen öffnen",
+    "openSettings": "Zentrierter Dialog",
+    "openSettingsPanel": "Rechtes Seitenpanel",
     "settingsDemoHint": "Änderungen werden sofort übernommen.",
     "notifications": "Benachrichtigungen",
     "tableDemo": "Beispielrangliste"

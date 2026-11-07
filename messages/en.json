@@ -56,7 +56,8 @@
     "caseStudies": "Case study interactions",
     "settings": "Game settings controls",
     "switchSlider": "Switch and slider targets",
-    "openSettings": "Open settings",
+    "openSettings": "Centered dialog",
+    "openSettingsPanel": "Right-side panel",
     "settingsDemoHint": "Settings apply immediately.",
     "notifications": "Notifications",
     "tableDemo": "Example leaderboard"

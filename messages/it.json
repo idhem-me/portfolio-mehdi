@@ -56,7 +56,8 @@
     "caseStudies": "Interazioni nei casi di studio",
     "settings": "Controlli delle impostazioni di gioco",
     "switchSlider": "Aree interattive di interruttore e cursore",
-    "openSettings": "Apri impostazioni",
+    "openSettings": "Finestra centrata",
+    "openSettingsPanel": "Pannello a destra",
     "settingsDemoHint": "Le impostazioni si applicano subito.",
     "notifications": "Notifiche",
     "tableDemo": "Classifica di esempio"

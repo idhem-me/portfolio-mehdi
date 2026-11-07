@@ -56,7 +56,8 @@
     "caseStudies": "التفاعلات في دراسات الحالة",
     "settings": "عناصر التحكّم في إعدادات اللعبة",
     "switchSlider": "مساحات تفعيل المفتاح وشريط التمرير",
-    "openSettings": "فتح الإعدادات",
+    "openSettings": "نافذة في الوسط",
+    "openSettingsPanel": "لوحة على اليمين",
     "settingsDemoHint": "تُطبّق الإعدادات فورًا.",
     "notifications": "الإشعارات",
     "tableDemo": "لوحة ترتيب تجريبية"

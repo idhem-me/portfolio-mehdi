@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
+export type SettingsModalVariant = "center" | "right";
+
 export function SettingsModal({
   open,
   onOpenChange,
@@ -23,6 +25,7 @@ export function SettingsModal({
   description,
   children,
   className,
+  variant = "center",
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -32,6 +35,7 @@ export function SettingsModal({
   description: string;
   children: ReactNode;
   className?: string;
+  variant?: SettingsModalVariant;
 }) {
   const t = useTranslations("ui");
   return (
@@ -39,6 +43,7 @@ export function SettingsModal({
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent
         className={cn("settings-modal", className)}
+        data-variant={variant}
         overlayClassName="z-(--settings-modal-overlay-layer)"
         onCloseAutoFocus={(event) => {
           if (triggerRef?.current?.isConnected) {

@@ -56,7 +56,8 @@
     "caseStudies": "案例研究交互",
     "settings": "游戏设置控件",
     "switchSlider": "开关和滑块的触控区域",
-    "openSettings": "打开设置",
+    "openSettings": "居中弹窗",
+    "openSettingsPanel": "右侧面板",
     "settingsDemoHint": "设置会立即生效。",
     "notifications": "通知",
     "tableDemo": "示例排行榜"

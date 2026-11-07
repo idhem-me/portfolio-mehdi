@@ -81,7 +81,7 @@ test("the settings modal and sortable table follow the active density", async ({
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/playground");
 
-  const trigger = page.getByRole("button", { name: "Ouvrir les réglages" });
+  const trigger = page.getByRole("button", { name: "Fenêtre centrée" });
   await trigger.click();
   const modal = page.getByRole("dialog", { name: "Réglages", exact: true });
   const desktop = (await modal.boundingBox())!;
@@ -102,6 +102,25 @@ test("the settings modal and sortable table follow the active density", async ({
   await modal.getByRole("button", { name: "Fermer" }).click();
   await expect(trigger).toBeFocused();
 
+  const panelTrigger = page.getByRole("button", { name: "Panneau à droite" });
+  await panelTrigger.click();
+  await expect(modal).toHaveCSS("width", "390px");
+  await expect(modal).toHaveCSS("height", "844px");
+  await page.keyboard.press("Escape");
+  await expect(panelTrigger).toBeFocused();
+
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await panelTrigger.click();
+  await expect(modal).toHaveCSS("height", "900px");
+  await expect.poll(async () => {
+    const box = await modal.boundingBox();
+    return box ? Math.round(box.x + box.width) : 0;
+  }).toBe(1280);
+  expect((await modal.boundingBox())!.width).toBeLessThan(1280);
+  await page.keyboard.press("Escape");
+  await expect(panelTrigger).toBeFocused();
+
+  await page.setViewportSize({ width: 390, height: 844 });
   const table = page.getByRole("table", { name: "Classement de démonstration" });
   const score = table.getByRole("button", { name: "Score" });
   await expectTouchTarget(score);

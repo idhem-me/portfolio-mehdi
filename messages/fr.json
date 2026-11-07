@@ -56,7 +56,8 @@
     "caseStudies": "Interactions des études de cas",
     "settings": "Contrôles des réglages de jeu",
     "switchSlider": "Cibles du Switch et du Slider",
-    "openSettings": "Ouvrir les réglages",
+    "openSettings": "Fenêtre centrée",
+    "openSettingsPanel": "Panneau à droite",
     "settingsDemoHint": "Les réglages sont appliqués immédiatement.",
     "notifications": "Notifications",
     "tableDemo": "Classement de démonstration"
