@@ -73,12 +73,7 @@ export default async function proxy(request: NextRequest) {
     !clickerBurgerEnabled && gamePath === "/jeux/clicker-burger";
   const hiddenCards =
     !cardsEnabled && (gamePath === "/jeux/cards" || gamePath === "/cards");
-  const hiddenGames =
-    !tetrisEnabled &&
-    !clickerBurgerEnabled &&
-    !cardsEnabled &&
-    gamePath === "/jeux";
-  if (hiddenTetris || hiddenBurger || hiddenCards || hiddenGames) {
+  if (hiddenTetris || hiddenBurger || hiddenCards) {
     return new NextResponse("Not Found", {
       status: 404,
       headers: { "X-Robots-Tag": "noindex" },

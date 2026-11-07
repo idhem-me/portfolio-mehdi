@@ -4,6 +4,11 @@
   "intro": "互动探索，为玩耍的乐趣而设计。",
   "caseStudies": [
     {
+      "title": "宝可梦",
+      "status": "移动宝可梦",
+      "slug": "pokemon"
+    },
+    {
       "title": "Clicker Burger",
       "status": "放置游戏",
       "slug": "clicker-burger",

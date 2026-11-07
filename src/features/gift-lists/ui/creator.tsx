@@ -239,13 +239,12 @@ export function CreatorDashboard() {
       className="mx-auto flex min-h-[calc(100svh-max(1rem,env(safe-area-inset-top))-var(--control-height-icon)-1rem)] w-full max-w-4xl flex-col gap-6 px-6 py-6 md:min-h-svh md:gap-8 md:py-10"
     >
       <div className="flex items-center justify-between gap-4">
-        <DocumentLink
-          href="/outils"
-          className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground"
-        >
-          <ArrowLeft className="size-4" aria-hidden="true" />
-          Tous les outils
-        </DocumentLink>
+        <Button asChild variant="ghost" size="sm">
+          <DocumentLink href="/outils">
+            <ArrowLeft className="size-4" aria-hidden="true" />
+            Tous les outils
+          </DocumentLink>
+        </Button>
         <AccountMenu refresh={() => void mutate()} />
       </div>
       <header className="flex flex-wrap items-start justify-between gap-5">

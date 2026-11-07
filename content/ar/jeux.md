@@ -4,6 +4,11 @@
   "intro": "استكشافات تفاعلية، مصممة من أجل متعة اللعب.",
   "caseStudies": [
     {
+      "title": "بوكيمون",
+      "status": "حرّك بوكيمون",
+      "slug": "pokemon"
+    },
+    {
       "title": "Clicker Burger",
       "status": "لعبة خمول",
       "slug": "clicker-burger",

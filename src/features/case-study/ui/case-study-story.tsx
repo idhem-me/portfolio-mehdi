@@ -40,13 +40,12 @@ export function CaseStudyStory({ study, children }: CaseStudyStoryProps) {
     <ImageLightboxProvider>
     <article className="mx-auto w-full max-w-3xl space-y-16 px-6 py-12">
       <ScrollReveal>
-        <Link
-          href="/realisations"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5 rtl:rotate-180" aria-hidden />
-          {study.backLabel}
-        </Link>
+        <Button asChild variant="ghost" size="sm">
+          <Link href="/realisations">
+            <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden />
+            {study.backLabel}
+          </Link>
+        </Button>
       </ScrollReveal>
 
       <header className="space-y-4">

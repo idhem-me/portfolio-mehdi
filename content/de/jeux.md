@@ -4,6 +4,11 @@
   "intro": "Interaktive Erkundungen, gemacht für den Spaß am Spielen.",
   "caseStudies": [
     {
+      "title": "Pokémon",
+      "status": "Ein Pokémon bewegen",
+      "slug": "pokemon"
+    },
+    {
       "title": "Clicker Burger",
       "status": "Idle-Spiel",
       "slug": "clicker-burger",

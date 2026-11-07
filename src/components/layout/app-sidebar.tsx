@@ -1,6 +1,4 @@
 "use client";
-import { cardsEnabled } from "@/features/cards/flags";
-import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 
 import {
   LayoutDashboard,
@@ -40,8 +38,6 @@ import { openAnalyticsPreferences } from "@/lib/analytics/consent";
 import { AnalyticsEvents } from "@/lib/analytics/events";
 import { usePathname } from "@/i18n/navigation";
 
-import { tetrisEnabled } from "@/features/tetris/flags";
-
 export function AppSidebar() {
   const t = useTranslations("nav");
   const playground = useTranslations("playground");
@@ -72,16 +68,12 @@ export function AppSidebar() {
       icon: Wrench,
       match: (path: string) => path.startsWith("/outils"),
     },
-    ...(tetrisEnabled || clickerBurgerEnabled || cardsEnabled
-      ? [
-          {
-            href: "/jeux",
-            label: t("games"),
-            icon: Gamepad2,
-            match: (path: string) => path.startsWith("/jeux"),
-          },
-        ]
-      : []),
+    {
+      href: "/jeux",
+      label: t("games"),
+      icon: Gamepad2,
+      match: (path: string) => path.startsWith("/jeux"),
+    },
     {
       href: "/playground",
       label: playground("title"),

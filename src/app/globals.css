@@ -572,7 +572,9 @@ html.locale-ar body {
 }
 
 .home-paper-background {
+  --home-paper-overlay: color-mix(in oklch, var(--background) 55%, transparent);
   background-image:
+    linear-gradient(var(--home-paper-overlay), var(--home-paper-overlay)),
     linear-gradient(to right,
       transparent var(--home-paper-margin-left),
       var(--home-paper-margin) var(--home-paper-margin-left),
@@ -583,11 +585,12 @@ html.locale-ar body {
     linear-gradient(to bottom, var(--home-paper-line) 1px, transparent 1px);
   background-size:
     100% 100%,
+    100% 100%,
     var(--home-paper-cell) var(--home-paper-cell),
     var(--home-paper-cell) var(--home-paper-cell),
     var(--home-paper-subline) var(--home-paper-subline);
   background-position: left top;
-  background-repeat: no-repeat, repeat, repeat, repeat;
+  background-repeat: no-repeat, no-repeat, repeat, repeat, repeat;
 }
 
 @media (max-width: 767px) {
