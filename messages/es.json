@@ -16,6 +16,12 @@
     "tools": "Herramientas",
     "backoffice": "Backoffice"
   },
+  "playground": {
+    "title": "Playground",
+    "compare": "Comparar",
+    "intro": "Explora los componentes y sus variantes.",
+    "comparisonIntro": "Compara en paralelo los mismos componentes y sus tokens en cada sistema de diseño disponible."
+  },
   "theme": {
     "enableLight": "Activar el modo claro",
     "enableDark": "Activar el modo oscuro",

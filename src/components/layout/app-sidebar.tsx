@@ -4,6 +4,7 @@ import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
 
 import {
   LayoutDashboard,
+  PanelsTopLeft,
   Cookie,
   Layers,
   UserRound,
@@ -43,6 +44,7 @@ import { tetrisEnabled } from "@/features/tetris/flags";
 
 export function AppSidebar() {
   const t = useTranslations("nav");
+  const playground = useTranslations("playground");
   const privacy = useTranslations("backoffice");
   const pathname = usePathname();
   const { isMobile, setOpenMobile } = useSidebar();
@@ -80,6 +82,12 @@ export function AppSidebar() {
           },
         ]
       : []),
+    {
+      href: "/playground",
+      label: playground("title"),
+      icon: PanelsTopLeft,
+      match: (path: string) => path === "/playground",
+    },
     {
       href: "/backoffice",
       label: t("backoffice"),

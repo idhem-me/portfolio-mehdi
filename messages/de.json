@@ -16,6 +16,12 @@
     "tools": "Werkzeuge",
     "backoffice": "Backoffice"
   },
+  "playground": {
+    "title": "Playground",
+    "compare": "Vergleichen",
+    "intro": "Entdecke die Komponenten und ihre Varianten.",
+    "comparisonIntro": "Dieselben Komponenten und ihre Tokens in allen verfügbaren Designsystemen im direkten Vergleich."
+  },
   "theme": {
     "enableLight": "Hellen Modus aktivieren",
     "enableDark": "Dunklen Modus aktivieren",

@@ -10,7 +10,7 @@ Le site peut basculer entre trois systèmes via le sélecteur sidebar (mémoire 
 | `github` | Primer React + remap CSS dans `design-system.css` |
 | `adobe` | React Spectrum 1 (`@adobe/react-spectrum`) + remap CSS — **flag** `NEXT_PUBLIC_ENABLE_ADOBE_DS` (off par défaut) |
 
-État : `DesignSystemProvider` (`src/components/design-system/provider.tsx`). Registre : `DESIGN_SYSTEMS` / UI : `ENABLED_DESIGN_SYSTEMS`. Les adaptateurs UI branchent sur `useDesignSystem()` (Button, Input, Avatar, Badge, Switch, Dialog, Tabs, DropdownMenu, sidebar, choice-menu, etc.). Comparaison visuelle des DS activés : `/playground/design-systems`.
+État : `DesignSystemProvider` (`src/components/design-system/provider.tsx`). Registre : `DESIGN_SYSTEMS` / UI : `ENABLED_DESIGN_SYSTEMS`. Les adaptateurs UI branchent sur `useDesignSystem()` (Button, Input, Avatar, Badge, Switch, Dialog, Tabs, DropdownMenu, sidebar, choice-menu, etc.). Comparaison visuelle des DS activés : `/playground#comparer`.
 
 ## Couleurs (tokens)
 
@@ -56,7 +56,7 @@ Overrides (**dans `@layer base`**, avec les defaults desktop) — Tailwind v4 fu
 - `[data-density="mobile"]` → force mobile (playground, sans resize)
 - `[data-density="desktop"]` → force desktop même sous 768px
 
-Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, un toggle synchronise `document.documentElement.dataset.density`.
+Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, le sélecteur applique `data-density` à la vitrine de composants.
 
 ## Button — variante `accent`
 

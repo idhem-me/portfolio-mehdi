@@ -1,6 +1,5 @@
 import { test, expect } from "@playwright/test";
 import { adobeDesignSystemEnabled } from "../src/components/design-system/flags";
-import { ENABLED_DESIGN_SYSTEMS } from "../src/components/design-system/provider";
 
 async function choose(
   page: import("@playwright/test").Page,
@@ -387,16 +386,79 @@ test("site uses real Spectrum components, retains navigation choice and resets o
   expect(errors).toEqual([]);
 });
 
-test("design systems compare page renders every enabled system", async ({
+test("playground navigation switches sections with the keyboard", async ({
   page,
 }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Playground", exact: true }).click();
+  await expect(page).toHaveURL(/\/playground$/);
+
+  const sidebar = page.locator('[data-slot="sidebar"]');
+  await page.locator('[data-sidebar="trigger"]').click();
+  await expect(sidebar).toHaveAttribute("data-state", "collapsed");
+  await page.locator('[data-sidebar="trigger"]').click();
+  await expect(sidebar).toHaveAttribute("data-state", "expanded");
+
+  const nav = page.getByRole("navigation", { name: "Playground", exact: true });
+  const catalogue = nav.getByRole("link", { name: "Playground" });
+  const compare = nav.getByRole("link", { name: "Comparer" });
+  await expect(catalogue).toHaveAttribute("aria-current", "location");
+  await compare.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/#comparer$/);
+  await expect(compare).toHaveAttribute("aria-current", "location");
+  await expect(page.locator("#comparer")).toBeFocused();
+  await page.goBack();
+  await expect(catalogue).toHaveAttribute("aria-current", "location");
+});
+
+test("playground keeps the mobile menu and section links in Arabic", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/ar/playground");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  const nav = page.getByRole("navigation", { name: "مساحة التجربة" });
+  await expect(nav).toHaveCSS("position", "fixed");
+
+  await page.locator('[data-analytics-action="menu_open"]').click();
+  const menu = page.locator("#mobile-navigation");
+  await menu.getByRole("link", { name: "مساحة التجربة" }).click();
+  await expect(menu).toBeHidden();
+  await nav.getByRole("link", { name: "مقارنة" }).click();
+  await expect(page).toHaveURL(/\/ar\/playground#comparer$/);
+  await expect(
+    page.getByRole("heading", { name: "مقارنة", exact: true }),
+  ).toBeInViewport();
+  expect(
+    await page.evaluate(() => document.documentElement.scrollWidth),
+  ).toBeLessThanOrEqual(391);
+});
+
+for (const path of [
+  "/playground/design-systems",
+  "/playground/github-vs-adobe",
+  "/en/playground/design-systems",
+]) {
+  test(`legacy Playground link redirects to comparison: ${path}`, async ({
+    page,
+  }) => {
+    await page.goto(path);
+    const expected = path.startsWith("/en") ? "/en/playground" : "/playground";
+    expect(new URL(page.url()).pathname).toBe(expected);
+    await expect(page).toHaveURL(/#comparer$/);
+    await expect(page.locator("#comparison-title")).toBeInViewport();
+  });
+}
+
+test("playground comparison renders every enabled system", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/playground/design-systems");
+  await page.goto("/playground#comparer");
   await expect(
-    page.getByRole("heading", { name: "Design systems", exact: true }),
+    page.getByRole("heading", { name: "Comparer", exact: true }),
   ).toBeVisible();
-  for (const { id } of ENABLED_DESIGN_SYSTEMS) {
+  for (const id of ["mehdi", "github"]) {
     const column = page.locator(`[data-compare-column="${id}"]`);
     await expect(column).toBeVisible();
     await expect(column.getByText("Tokens sémantiques")).toBeVisible();
