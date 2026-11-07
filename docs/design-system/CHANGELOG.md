@@ -1,5 +1,10 @@
 # Changelog du design system
 
+## Catalogue du Playground
+
+- Chaque composant et ses variantes sont réunis dans un bloc de surface `primary-inverse`, avec le nom du composant comme seul titre.
+- L’index et les démonstrations suivent l’ordre alphabétique. L’index reste visible à droite à partir de 64 rem de largeur disponible. Les liens existants conservent leurs ancres.
+
 ## Deux variantes de modale
 
 - `SettingsModal` propose `center` et `right` dans le même exemple du Playground. Le panneau droit coulisse sur ordinateur et les deux variantes sont plein écran en densité Mobile.

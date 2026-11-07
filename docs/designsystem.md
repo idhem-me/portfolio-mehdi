@@ -21,6 +21,7 @@ Toutes les couleurs sémantiques sont des design tokens dans `src/app/globals.cs
 | `--background` / `--foreground` | Fond et texte de page |
 | `--card` / `--popover` | Surfaces surélevées |
 | `--primary` | Action principale neutre |
+| `--primary-inverse` | Surface de démonstration du Playground, issue de la palette du thème actif |
 | `--secondary` / `--muted` | Surfaces secondaires / atténuées |
 | `--accent` | **Couleur marque** `#0071E3` (`oklch(0.563 0.193 256.156)` light ; légèrement plus clair en dark) |
 | `--accent-foreground` | Texte sur accent (blanc) |

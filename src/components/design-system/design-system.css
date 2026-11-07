@@ -8,6 +8,7 @@ html[data-design-system="github"],
   --border: var(--borderColor-default);
   --primary: var(--button-primary-bgColor);
   --primary-foreground: var(--button-primary-fgColor);
+  --primary-inverse: var(--muted);
   --card: var(--bgColor-default);
   --card-foreground: var(--fgColor-default);
   --popover: var(--overlay-bgColor);
@@ -222,6 +223,7 @@ html[data-design-system="adobe"],
   --border: var(--spectrum-gray-300, #d5d5d5);
   --primary: var(--spectrum-accent-background-color-default, #0265dc);
   --primary-foreground: var(--spectrum-gray-50, #fff);
+  --primary-inverse: var(--muted);
   --card: var(--spectrum-gray-50, #fff);
   --card-foreground: var(--spectrum-gray-800, #222);
   --popover: var(--spectrum-gray-50, #fff);
@@ -253,6 +255,7 @@ html.dark[data-design-system="adobe"],
   --border: var(--spectrum-gray-300, #4b4b4b);
   --primary: var(--spectrum-accent-background-color-default, #1473e6);
   --primary-foreground: #fff;
+  --primary-inverse: var(--muted);
   --card: var(--spectrum-gray-50, #1d1d1d);
   --card-foreground: var(--spectrum-gray-800, #f8f8f8);
   --popover: var(--spectrum-gray-50, #1d1d1d);

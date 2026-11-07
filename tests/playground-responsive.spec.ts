@@ -142,3 +142,65 @@ test("shared settings return focus to the game's original trigger", async ({ pag
   await expect(modal).toBeHidden();
   await expect(trigger).toBeFocused();
 });
+
+test("the catalog index stays to the right and tracks the catalog order", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("analytics_consent", "denied"));
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await page.goto("/playground#settings-modal");
+
+  const catalog = page.locator('[aria-labelledby="playground-title"]');
+  const index = catalog.getByRole("navigation");
+  const toolbar = catalog.getByRole("group", { name: "Densité", exact: true });
+  const heading = catalog.locator("#settings-modal h2");
+
+  await expect(index).toBeVisible();
+  await expect(heading).toBeInViewport();
+  expect((await heading.boundingBox())!.y).toBeGreaterThan(
+    (await toolbar.boundingBox())!.y + (await toolbar.boundingBox())!.height,
+  );
+  expect((await index.boundingBox())!.x).toBeGreaterThan(
+    (await heading.boundingBox())!.x + (await heading.boundingBox())!.width,
+  );
+  const headings = await catalog.locator("section h2").allTextContents();
+  expect(headings).toEqual([...headings].sort((a, b) => a.localeCompare(b, "en")));
+  expect(await index.getByRole("link").allTextContents()).toEqual(headings);
+  expect(await index.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+  await index.getByRole("link", { name: "Table", exact: true }).click();
+  await expect(page).toHaveURL(/#table$/);
+  await expect(index).toBeInViewport();
+
+  await page.goto("/ar/playground#table");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(index).toBeVisible();
+  expect((await index.boundingBox())!.x).toBeGreaterThan(
+    (await catalog.locator("#table h2").boundingBox())!.x,
+  );
+});
+
+test("narrow catalogs use the same primary-inverse surface without horizontal overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.goto("/ar/playground");
+
+  const catalog = page.locator('[aria-labelledby="playground-title"]');
+  const cards = catalog.locator("section > .bg-primary-inverse");
+  await expect(catalog.getByRole("navigation")).toBeHidden();
+  await expect(cards).toHaveCount(Object.keys(demoAnchors).length);
+  const colors = () => cards.evaluateAll((elements) =>
+    Array.from(new Set(elements.map((el) => getComputedStyle(el).backgroundColor))),
+  );
+
+  await page.emulateMedia({ colorScheme: "light" });
+  const light = await colors();
+  expect(light).toHaveLength(1);
+  expect(light[0]).not.toBe("rgba(0, 0, 0, 0)");
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect.poll(colors).not.toEqual(light);
+  expect(await colors()).toHaveLength(1);
+
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect.poll(
+      () => page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(width + 1);
+  }
+});
