@@ -18,9 +18,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 6. Préserver toutes les URL publiques dans les sept langues. Tout changement d’URL impose une redirection dans `next.config.ts` et des tests des anciennes URL.
 7. Conserver le masquage des deux jeux cachés. Aucun lien, navigation, sitemap ou indexation. Le mécanisme nécessite une validation explicite pour évoluer.
 8. Utiliser le design system en place pour toute nouvelle primitive UI ou tout nouveau token.
-9. Traduire tout nouveau texte visible en ar, de, en, es, fr, it, zh. Consigner les traductions incertaines dans `docs/i18n-review.md`. Conserver les règles Cursor de synchronisation.
+9. Traduire tout nouveau texte visible en ar, de, en, es, fr, it, zh. Consigner les traductions incertaines dans `docs/i18n-review.md` et suivre les règles de synchronisation ci-dessous.
 10. Rester sur Supabase Free et Vercel Hobby, sans dépendance payante ni service externe supplémentaire.
-11. Enrichir AGENTS.md et les règles Cursor en conservant leur contenu. Lors de la pérennisation, AGENTS.md devient la référence et Cursor y renvoie ou reste synchronisé.
+11. Tenir à jour `AGENTS.md`, source de référence des règles du dépôt.
 12. Après chaque lot, vérifier lint, typecheck, build et tests. Consigner les commandes bloquées par l’environnement avec leur cause.
 13. Utiliser des commits conventionnels (`chore:`, `refactor:`, `fix:`, `feat:`), un par ticket si possible.
 
@@ -38,3 +38,13 @@ Suivre le [déroulé des phases 0 à 6](docs/agents/workflow.md).
 - `npm test` couvre le moteur Tetris. Compléter avec `npm run test:burger`, `npm run test:cards`, `npm run test:security` et les suites ciblées.
 - `npm run test:tetris:browser` lance toutes les suites Playwright malgré son nom. `npm run test:tools` lance les tests image Chromium. Playwright attend un serveur déjà démarré.
 - Primitives dans `src/components/ui`, adaptateurs dans `src/components/design-system`, tokens globaux dans `src/app/globals.css`. Consulter [la documentation existante](docs/designsystem.md), [l’inventaire](docs/design-system/inventory.md) et maintenir les vitrines `/playground` et `/playground/design-systems`.
+- Consulter le guide du design system avant de modifier les styles globaux. Importer uniquement les composants Shadcn nécessaires et présenter chaque primitive Shadcn de `src/components/ui` avec ses variantes sur `/playground`.
+- Préserver la mise en page actuelle du site avec sa barre latérale rétractable, son contenu centré (`max-w-3xl`) et ses contrastes doux.
+
+## Synchronisation i18n
+
+- Après une modification de `content/fr/` ou de `messages/fr.json`, synchroniser les six autres langues dans le même changement, sauf instruction explicite de différer la traduction. Conserver chemins, clés, imbrication, structure des listes, URL, coordonnées, chemins des logos et initiales.
+- Utiliser `messages/{locale}.json` pour les libellés d’interface et `content/{locale}/` pour le contenu éditorial ou structuré. Formater les métadonnées en JSON indenté entre les délimiteurs `---` des fichiers Markdown.
+- Conserver les noms propres et les noms de produits. Utiliser le chinois simplifié (`zh`) et l’arabe standard moderne (`ar`).
+- Limiter la synchronisation du contenu aux surfaces localisées. Une traduction de contenu ne justifie pas de modifier les routes dashboard, playground ou API.
+- Mettre à jour les imports statiques de `src/i18n/messages.ts` seulement si un fichier de langue est ajouté.

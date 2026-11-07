@@ -11,7 +11,7 @@
 
 Locales générées : `en`, `zh`, `ar`, `es`, `it`, `de`.
 
-Après une modification FR, demande à l’agent Cursor de synchroniser (la règle `.cursor/rules/i18n-content.mdc` s’applique quand ces fichiers sont dans le contexte).
+Après une modification du contenu français, suivre les [règles de synchronisation i18n](../AGENTS.md#synchronisation-i18n) pour les six autres langues.
 
 ## Règles
 

@@ -18,7 +18,7 @@
 - Proxy pour locale, masquage et redirections rapides. Vérifier l’identité et l’autorisation au point d’accès aux données. Éviter la double consultation de session mesurée sur les mêmes parcours.
 - Garder `vendor/deepmerge` et `vendor/minimatch-compat` tant que la correction amont, la compatibilité ESLint et les tests ne sont pas démontrés. Les overrides sont déjà en place. `public/vendor` est un miroir navigateur versionné, alimenté par `scripts/sync-image-compression.mjs`. Revoir sa génération séparément après avoir prouvé le contrat de chargement.
 - Les imports dynamiques, scripts, overrides et chemins d’assets font partie de la recherche de code mort. Aucun retrait proposé à partir d’une absence de grep ou de Knip seul.
-- Les règles Cursor et l’ancien guide DS gardent leurs points d’entrée. En phase 6, les relier aux règles de référence et garder la contrainte de documentation des primitives dans le playground.
+- `AGENTS.md` centralise les règles i18n et design system. Le guide DS détaille les conventions UI et le playground présente les primitives avec leurs variantes.
 
 ## Ajouter un outil ou un jeu
 

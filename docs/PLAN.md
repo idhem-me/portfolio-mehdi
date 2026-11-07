@@ -8,7 +8,6 @@ Arborescence des dossiers de travail. Les sous-dossiers internes existants, les 
 
 ```text
 .
-├── .cursor/rules/
 ├── content/{ar,de,en,es,fr,it,zh}/case-studies/
 ├── docs/
 │   ├── agents/
@@ -73,7 +72,9 @@ Arborescence des dossiers de travail. Les sous-dossiers internes existants, les 
 | `tools/tetris/capture-covers.mjs` | `scripts/tetris/capture-covers.mjs` | Convention commune aux scripts. Le dossier tools se vide. |
 | `tests/{tetris,tetris-audio}.spec.ts` | `tests/tetris/` avec les mêmes noms | Découverte par feature, imports helpers et moteur mis à jour. |
 
-**Suppressions de fichiers proposées dans cette version du plan : aucune.** Les déplacements conservent le contenu et les références. Toute dépendance candidate sera identifiée avec ses usages et proposée à validation avant retrait. Aucun changement d’URL prévu, donc aucune redirection nouvelle. Si une URL doit changer, arrêter le ticket et soumettre le mapping complet et les redirections `next.config.ts`.
+**Retrait des règles Cursor demandé séparément.** Supprimer `.cursor/rules/i18n-content.mdc` et `.cursorrules` après transfert des consignes i18n, UI et design system dans `AGENTS.md`. Cursor n’est plus utilisé et les règles du dépôt ont ainsi une source unique.
+
+Les déplacements conservent le contenu et les références. Toute autre suppression doit être justifiée et validée. Aucun changement d’URL prévu, donc aucune redirection nouvelle. Si une URL doit changer, arrêter le ticket et soumettre le mapping complet et les redirections `next.config.ts`.
 
 ## Ordre des lots
 
@@ -84,7 +85,7 @@ Arborescence des dossiers de travail. Les sous-dossiers internes existants, les 
 5. **Back-end, jeux et produit.** Gardes pages, validation CSP/consentement, fabriques et types après migration, mesures et reprise, game feel et parcours de découverte. Séparer les changements selon leurs dépendances.
 6. **Disruption.** Développer uniquement les idées retenues explicitement et avec leur critère de succès. Voir [les cinq propositions](audit/disruption.md).
 
-La phase 6 de pérennisation suit ces six lots de la phase 5. Relier README et Cursor à AGENTS.md, finaliser changelog, architecture et fiches, puis faire un passage de relais avec commandes, état et priorités.
+La phase 6 de pérennisation suit ces six lots de la phase 5. Relier le README à AGENTS.md, finaliser changelog, architecture et fiches, puis faire un passage de relais avec commandes, état et priorités.
 
 ## Risques et recette
 
@@ -107,8 +108,6 @@ La phase 6 de pérennisation suit ces six lots de la phase 5. Relier README et C
 
 ```text
 .
-├── .cursor/
-│   └── rules/
 ├── content/
 │   ├── ar/
 │   │   └── case-studies/
