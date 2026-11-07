@@ -1,7 +1,7 @@
 "use client";
 
 import { ActionList } from "@primer/react";
-import { useDesignSystem } from "@/components/design-system/provider";
+import { useDesignSystem, useDesignSystemPortalHost } from "@/components/design-system/provider";
 import { useScopedTheme } from "./scoped-theme";
 import * as React from "react";
 import { cn } from "cn";
@@ -49,9 +49,10 @@ function DropdownMenuContent({
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   const scopedTheme = useScopedTheme();
+  const container = useDesignSystemPortalHost();
   const { designSystem } = useDesignSystem();
   return (
-    <DropdownMenuPrimitive.Portal>
+    <DropdownMenuPrimitive.Portal container={container}>
       <DropdownMenuPrimitive.Content
         data-cards-theme={scopedTheme}
         data-slot="dropdown-menu-content"

@@ -201,6 +201,7 @@
 
   /* Desktop (défaut) */
   :root {
+    --touch-target-size: 0px;
     --control-height-xs: 1.5rem; /* 24px */
     --control-height-sm: 1.75rem; /* 28px */
     --mehdi-control-height: 2rem;
@@ -235,8 +236,9 @@
   }
 
   /* Viewport mobile (<768px), sauf force desktop playground */
-  @media (max-width: 767px) {
+  @media (width < 768px) {
     :root:not([data-density="desktop"]) {
+      --touch-target-size: 2.75rem;
       --control-height-xs: 2.75rem;
       --control-height-sm: 2.75rem;
       --mehdi-control-height: 2.75rem;
@@ -274,6 +276,7 @@
   /* Force playground (sans resize) */
   html[data-density="mobile"],
   [data-density="mobile"] {
+    --touch-target-size: 2.75rem;
     --control-height-xs: 2.75rem;
     --control-height-sm: 2.75rem;
     --mehdi-control-height: 2.75rem;
@@ -309,6 +312,7 @@
 
   html[data-density="desktop"],
   [data-density="desktop"] {
+    --touch-target-size: 0px;
     --control-height-xs: 1.5rem;
     --control-height-sm: 1.75rem;
     --mehdi-control-height: 2rem;

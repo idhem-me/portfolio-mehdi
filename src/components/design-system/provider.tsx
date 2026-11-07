@@ -162,23 +162,33 @@ export function useDesignSystemAttributes() {
   } as const;
 }
 
+const DesignSystemPortalHost = createContext<HTMLDivElement | undefined>(undefined);
+
+export function useDesignSystemPortalHost() {
+  return useContext(DesignSystemPortalHost);
+}
+
 export function DesignSystemScope({
   children,
   className = "contents",
   portalRoot = false,
+  scopeRadixPortals = false,
 }: {
   children: ReactNode;
   className?: string;
   portalRoot?: boolean;
+  scopeRadixPortals?: boolean;
 }) {
   const attributes = useDesignSystemAttributes();
   const portalId = useId();
+  const [portalHost, setPortalHost] = useState<HTMLDivElement>();
   const registerHost = useCallback(
     (node: HTMLDivElement | null) => {
       // Primer has no unregister API; release references to the old navigation tree.
       registerPortalRoot(node ?? document.createElement("div"), portalId);
+      if (scopeRadixPortals) setPortalHost(node ?? undefined);
     },
-    [portalId],
+    [portalId, scopeRadixPortals],
   );
   const content = (
     <div {...attributes} className={`ds-scope ${className}`}>
@@ -190,7 +200,11 @@ export function DesignSystemScope({
   // retained by Next.js Activity, and keeps mobile menus inside the focus trap.
   return portalRoot ? (
     <PortalContext.Provider value={{ portalContainerName: portalId }}>
-      {content}
+      {scopeRadixPortals ? (
+        <DesignSystemPortalHost.Provider value={portalHost}>
+          {content}
+        </DesignSystemPortalHost.Provider>
+      ) : content}
     </PortalContext.Provider>
   ) : (
     content

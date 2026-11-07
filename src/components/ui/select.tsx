@@ -3,7 +3,7 @@
 import { useLocale } from "next-intl";
 import { Select as Primitive } from "radix-ui";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
-import { useDesignSystemAttributes } from "@/components/design-system/provider";
+import { useDesignSystemAttributes, useDesignSystemPortalHost } from "@/components/design-system/provider";
 import { useScopedTheme } from "./scoped-theme";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,7 @@ export function Select({
   const locale = useLocale();
   const attributes = useDesignSystemAttributes();
   const scopedTheme = useScopedTheme();
+  const container = useDesignSystemPortalHost();
   const selected = options.find((option) => option.value === value);
   const chipEmpty = Boolean(placeholder && value === placeholder);
   return (
@@ -73,7 +74,7 @@ export function Select({
           <ChevronDown className="size-3.5" aria-hidden />
         </Primitive.Icon>
       </Primitive.Trigger>
-      <Primitive.Portal>
+      <Primitive.Portal container={container}>
         <Primitive.Content
           {...attributes}
           data-cards-theme={scopedTheme}

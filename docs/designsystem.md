@@ -39,11 +39,12 @@ Utiliser les utilitaires Tailwind (`bg-accent`, `text-accent-foreground`, etc.) 
 
 ## Densité / Touch
 
-Tokens de sizing interactif dans `src/app/globals.css`. Breakpoint mobile : **&lt;768px** (aligné sur `useIsMobile` / `max-width: 767px`).
+Tokens de sizing interactif dans `src/app/globals.css`. Breakpoint mobile : **&lt;768px** (aligné sur `useIsMobile` / `width < 768px`).
 
 | Token | Desktop | Mobile |
 |-------|---------|--------|
 | `--control-height-*` (+ icons) | 24–36px | **44px** (`2.75rem`) |
+| `--touch-target-size` | 0 px (taille intrinsèque du contrôle) | **44 px** de zone active |
 | `--control-text` / `--control-text-xs` | 14px / 12px | **16px** |
 | `--menu-item-min-height` / `--menu-item-text` | auto / 14px | **44px** / **16px** |
 | `--sidebar-menu-height` / `--sidebar-menu-text` | 32px / 14px | **44px** / **16px** |
@@ -52,11 +53,13 @@ Tokens de sizing interactif dans `src/app/globals.css`. Breakpoint mobile : **&l
 
 Overrides (**dans `@layer base`**, avec les defaults desktop) — Tailwind v4 fusionne les règles adjacentes dans ce layer ; des defaults unlayered battraient toujours les overrides :
 
-- `@media (max-width: 767px)` sur `:root:not([data-density="desktop"])` → valeurs mobile
+- `@media (width < 768px)` sur `:root:not([data-density="desktop"])` → valeurs mobile
 - `[data-density="mobile"]` → force mobile (playground, sans resize)
 - `[data-density="desktop"]` → force desktop même sous 768px
 
-Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, le sélecteur applique `data-density` à la vitrine de composants.
+Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, le mode Auto suit le viewport. Les modes forcés appliquent `data-density` à la vitrine et à ses portails. La navigation du site conserve sa densité responsive.
+
+Le registre de couverture associe chaque module du DS à une démo ou à une exception d’infrastructure. `npm test` contrôle sa couverture. Les tests navigateur contrôlent les ancres, les cibles et le retour du focus. Les [composants locaux](design-system/playground-local-components.md) sont suivis sur `/playground/local-components`.
 
 ## Button — variante `accent`
 

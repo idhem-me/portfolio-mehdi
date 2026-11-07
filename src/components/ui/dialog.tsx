@@ -1,13 +1,14 @@
 "use client";
 import { Dialog as PrimerDialog, Text } from "@primer/react";
 import { Content, Heading } from "@adobe/react-spectrum";
-import { useDesignSystem } from "@/components/design-system/provider";
+import { useDesignSystem, useDesignSystemPortalHost } from "@/components/design-system/provider";
 import { useScopedTheme } from "./scoped-theme";
 import * as React from "react";
 import { Dialog as Primitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 export const Dialog = Primitive.Root;
 export const DialogTrigger = Primitive.Trigger;
+export const DialogClose = Primitive.Close;
 export function DialogTitle(
   props: React.ComponentProps<typeof Primitive.Title>,
 ) {
@@ -53,9 +54,10 @@ export function DialogContent({
   overlayClassName?: string;
 }) {
   const scopedTheme = useScopedTheme();
+  const container = useDesignSystemPortalHost();
   const { designSystem } = useDesignSystem();
   return (
-    <Primitive.Portal>
+    <Primitive.Portal container={container}>
       <Primitive.Overlay
         className={cn(
           "fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs",

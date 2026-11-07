@@ -1,5 +1,11 @@
 # Changelog du design system
 
+## Couverture et densité du Playground
+
+- Index des démos, exemples Sidebar et thème local, tailles icône et contrôles natifs. Le registre relie les primitives et adaptateurs aux démos.
+- La densité Auto passe en mobile sous 768 px. Les deux densités forcées couvrent aussi les éléments ouverts en portail dans la vitrine.
+- Les pastilles du pinceau, le sélecteur de couleur, le Switch et le Slider illustrent l’agrandissement des cibles tactiles. Le suivi des écarts par composant est accessible dans `/playground/local-components`.
+
 ## En cours
 
 - Cartographie des primitives, adaptateurs, tokens et vitrines existants dans [l’inventaire](inventory.md).

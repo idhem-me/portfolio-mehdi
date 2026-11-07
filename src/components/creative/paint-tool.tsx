@@ -1,4 +1,5 @@
 "use client";
+import { PaintColorButton } from "./paint-color-button";
 import { track as usage } from "@/lib/tracking/client";
 
 import "./paint-tool.css";
@@ -361,20 +362,30 @@ export function PaintTool({
         if (paintMode) { setPaintMode(false); setControlsOpen(false); trackHomeInteraction("paint_exit"); return; }
         const rect = e.currentTarget.getBoundingClientRect();
         setPosition({ x: rect.left, y: rect.top }); setControlsOpen(true); setPaintMode(true); trackHomeInteraction("paint_grab", { color });
-      }} className="flex size-[42px] items-center justify-center rounded-lg bg-secondary">
+      }} className="flex size-[42px] min-h-(--touch-target-size) min-w-(--touch-target-size) items-center justify-center rounded-lg bg-secondary">
         {paintMode ? <X className="size-6" aria-hidden="true" /> : <span className="flex size-8 items-center justify-center"><PaintBrush size={32} color={token(color)} /></span>}
       </button>
       {controlsOpen && <div data-paint-controls className="absolute left-1/2 top-12 z-20 flex -translate-x-1/2 flex-col items-center gap-2 rounded-2xl border bg-background p-2 shadow-lg">
-        <Button size="icon" variant="outline" className="size-10" aria-label={t("clear")} title={t("clear")} onClick={() => {
+        <Button size="icon" variant="outline" className="size-10 min-h-(--touch-target-size) min-w-(--touch-target-size)" aria-label={t("clear")} title={t("clear")} onClick={() => {
           onClear();
           setPaintMode(false);
           setControlsOpen(false);
           trackHomeInteraction("paint_exit");
         }}><BrushCleaning aria-hidden="true" /></Button>
         <div className="flex flex-col items-center gap-1" role="group" aria-label={t("palette")}>
-          {COLORS.map((c) => <button key={c} type="button" data-analytics-action="paint_color" data-analytics-value={c} aria-label={t(c)} aria-pressed={color === c} onClick={() => setColor(c)} className="size-8 rounded-full p-1 focus-visible:outline-2 focus-visible:outline-ring" style={{ outline: color === c ? "2px solid var(--foreground)" : undefined, outlineOffset: -2 }}><span className="block size-full rounded-full border border-foreground/15" style={{ background: token(c) }} /></button>)}
+          {COLORS.map((c) => (
+            <PaintColorButton
+              key={c}
+              color={token(c)}
+              selected={color === c}
+              label={t(c)}
+              onClick={() => setColor(c)}
+              data-analytics-action="paint_color"
+              data-analytics-value={c}
+            />
+          ))}
         </div>
-        <Button size="icon" variant="outline" className="size-10" disabled={!count} aria-label={t("undo")} title={t("undo")} onClick={() => removeLast()}><Undo2 aria-hidden="true" /></Button>
+        <Button size="icon" variant="outline" className="size-10 min-h-(--touch-target-size) min-w-(--touch-target-size)" disabled={!count} aria-label={t("undo")} title={t("undo")} onClick={() => removeLast()}><Undo2 aria-hidden="true" /></Button>
       </div>}
       {paintMode && position
         ? createPortal(

@@ -7,9 +7,9 @@ test("brush cursor moves freely, draws with left click and exits with right clic
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
   await page.getByRole("button", { name: "Refuser", exact: true }).click();
+  await page.getByRole("button", { name: "Pinceau", exact: true }).click();
   await page.getByRole("button", { name: "Succès", exact: true }).click();
   await page.screenshot({ path: "/private/tmp/portfolio-toolbar-desktop.png" });
-  await page.getByRole("button", { name: "Pinceau", exact: true }).click();
   const mode = page.locator("[data-paint-mode]");
   await expect(mode).toBeVisible();
   await expect(mode).toHaveCSS("cursor", "none");
@@ -74,7 +74,7 @@ test("touch drawing remains available with an explicit exit button", async ({
     touchPoints: [],
   });
   await expect(page.locator("[data-paint-stroke]")).toHaveCount(1);
-  await page
+  await page.locator("[data-paint-mode]")
     .getByRole("button", { name: "Quitter le pinceau", exact: true })
     .tap();
   await expect(page.locator("[data-paint-mode]")).toHaveCount(0);
@@ -215,10 +215,13 @@ for (const touch of [false, true]) {
     await expect(
       page.locator("[data-paint-cursor] [data-paint-bristles]"),
     ).toHaveAttribute("fill", "var(--success)");
-    await activate("Quitter le pinceau");
+    const exit = page.locator("[data-paint-mode]")
+      .getByRole("button", { name: "Quitter le pinceau", exact: true });
+    if (touch) await exit.tap();
+    else await exit.click();
     await expect(page.locator("[data-paint-mode]")).toHaveCount(0);
     await expect(
-      page.locator("[data-paint-brush] [data-paint-bristles]"),
+      page.getByRole("button", { name: "Pinceau", exact: true }).locator("[data-paint-bristles]"),
     ).toHaveAttribute("fill", "var(--success)");
     await expect(page.locator("html")).not.toHaveCSS("overflow", "hidden");
     await context.close();

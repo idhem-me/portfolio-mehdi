@@ -393,7 +393,7 @@ test("playground navigation opens a separate comparison page with the keyboard",
   await page.getByRole("link", { name: "Playground", exact: true }).click();
   await expect(page).toHaveURL(/\/playground$/);
 
-  const sidebar = page.locator('[data-slot="sidebar"]');
+  const sidebar = page.locator('[data-slot="sidebar"][data-state]');
   await page.locator('[data-sidebar="trigger"]').click();
   await expect(sidebar).toHaveAttribute("data-state", "collapsed");
   await page.locator('[data-sidebar="trigger"]').click();

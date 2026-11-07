@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { Check, Menu } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
@@ -38,6 +40,14 @@ import {
 import { DateRangeSelect } from "@/components/ui/date-range-select";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { ScopedTheme, useScopedTheme } from "@/components/ui/scoped-theme";
+import { Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider } from "@/components/ui/sidebar";
+import { DesignSystemChoiceMenu } from "@/components/design-system/choice-menu";
+import { NativeButton, NativeInput, NativeTextarea } from "@/components/design-system/native-controls";
+import { DesignSystemSwitcher } from "@/components/design-system/switcher";
+import { PaintColorButton } from "@/components/creative/paint-color-button";
+import { ColorPicker } from "@/features/color-generator/ui/ColorPicker";
+import { demoAnchors } from "./coverage";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -63,7 +73,8 @@ import { DesignSystemScope } from "@/components/design-system/provider";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-type Density = "desktop" | "mobile";
+const densities = ["auto", "desktop", "mobile"] as const;
+type Density = (typeof densities)[number];
 
 const SAFE_SVG_DEMO = `<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 15h-2v-2h2Zm0-4h-2V7h2Z"/></svg>`;
 
@@ -74,12 +85,12 @@ function Section({
   description,
   children,
 }: {
-  title: string;
+  title: keyof typeof demoAnchors;
   description?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-4">
+    <section id={demoAnchors[title]} className="scroll-mt-40 space-y-4">
       <div>
         <h2 className="text-base font-semibold tracking-tight">{title}</h2>
         {description ? (
@@ -93,9 +104,14 @@ function Section({
 
 export function PlaygroundCatalog() {
   const t = useTranslations("playground");
-  const [density, setDensity] = useState<Density>("desktop");
+  const [density, setDensity] = useState<Density>("auto");
   const [selectValue, setSelectValue] = useState("mehdi");
   const [chipValue, setChipValue] = useState("all");
+  const [sidebarChoice, setSidebarChoice] = useState("a");
+  const paint = useTranslations("home.paint");
+  const [paintColor, setPaintColor] = useState("primary");
+  const [demoColor, setDemoColor] = useState("#0071E3");
+  const nativeLabelId = useId();
   const [switchOn, setSwitchOn] = useState(true);
   const [sliderValue, setSliderValue] = useState([40]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -110,10 +126,10 @@ export function PlaygroundCatalog() {
   return (
     <section
       aria-labelledby="playground-title"
-      data-density={density}
+      data-density={density === "auto" ? undefined : density}
       className="mx-auto w-full max-w-3xl space-y-12 px-6 py-12"
     >
-      <DesignSystemScope portalRoot className="space-y-12">
+      <DesignSystemScope portalRoot scopeRadixPortals className="space-y-12">
         <header className="space-y-2">
           <h1
             id="playground-title"
@@ -129,59 +145,48 @@ export function PlaygroundCatalog() {
         <div className="sticky top-0 z-40 -mx-6 border-b border-border bg-background/95 px-6 py-3 backdrop-blur supports-backdrop-filter:bg-background/80">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium">Densité</p>
-              <p className="text-xs text-muted-foreground">
-                Force les tokens Desktop / Mobile sans redimensionner la fenêtre
-                (
-                <code className="rounded bg-muted px-1 py-0.5">
-                  data-density
-                </code>
-                ).
-              </p>
+              <p className="text-sm font-medium">{t("densityLabel")}</p>
+              <p className="text-xs text-muted-foreground">{t("densityHint")}</p>
             </div>
             <div
-              className="inline-flex rounded-lg bg-muted p-[3px]"
+              className="inline-flex flex-wrap rounded-lg bg-muted p-[3px]"
               role="group"
-              aria-label="Densité d’affichage"
+              aria-label={t("densityLabel")}
             >
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                aria-pressed={density === "desktop"}
-                className={cn(
-                  "rounded-md",
-                  density === "desktop" &&
-                    "bg-background text-foreground shadow-sm hover:bg-background",
-                )}
-                onClick={() => setDensity("desktop")}
-              >
-                Desktop
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                aria-pressed={density === "mobile"}
-                className={cn(
-                  "rounded-md",
-                  density === "mobile" &&
-                    "bg-background text-foreground shadow-sm hover:bg-background",
-                )}
-                onClick={() => setDensity("mobile")}
-              >
-                Mobile
-              </Button>
+              {densities.map((option) => (
+                <Button
+                  key={option}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-pressed={density === option}
+                  className={cn(
+                    "rounded-md",
+                    density === option &&
+                      "bg-background text-foreground shadow-sm hover:bg-background",
+                  )}
+                  onClick={() => setDensity(option)}
+                >
+                  {t(option)}
+                </Button>
+              ))}
             </div>
           </div>
         </div>
 
         <Separator />
 
+        <nav aria-label={t("componentIndex")} className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
+          {Object.entries(demoAnchors).map(([title, anchor]) => (
+            <a key={anchor} className="inline-flex min-h-(--control-height) items-center underline underline-offset-4" href={`#${anchor}`}>{title}</a>
+          ))}
+        </nav>
+
         <Section title="Button" description="Variantes et tailles">
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
               <Button variant="default">Default</Button>
+              <Button variant="primary">Primary</Button>
               <Button variant="accent">Accent</Button>
               <Button variant="secondary">Secondary</Button>
               <Button variant="outline">Outline</Button>
@@ -195,6 +200,11 @@ export function PlaygroundCatalog() {
               <Button size="default">Default</Button>
               <Button size="lg">LG</Button>
               <Button disabled>Disabled</Button>
+              {(["icon-xs", "icon-sm", "icon", "icon-lg"] as const).map((size) => (
+                <Button key={size} size={size} aria-label={`${t("iconButton")} ${size}`}>
+                  <Check aria-hidden />
+                </Button>
+              ))}
             </div>
           </div>
         </Section>
@@ -599,13 +609,79 @@ export function PlaygroundCatalog() {
         <Separator />
 
         <Section title="Sidebar">
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>SidebarProvider + AppSidebar</CardTitle>
-            </CardHeader>
-          </Card>
+          <SidebarProvider resizable={false} keyboardShortcut={false} className="!min-h-0 rounded-xl border">
+            <Sidebar collapsible="none" className="max-w-full rounded-xl p-2">
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton isActive>
+                    <Menu aria-hidden />
+                    {t("componentIndex")}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <DesignSystemChoiceMenu
+                  label={t("exampleChoice")}
+                  value={sidebarChoice}
+                  icon={<Check aria-hidden />}
+                  choices={[{ value: "a", label: "A" }, { value: "b", label: "B" }]}
+                  onChange={setSidebarChoice}
+                  analyticsAction="playground_choice"
+                />
+                <DesignSystemSwitcher />
+              </SidebarMenu>
+            </Sidebar>
+          </SidebarProvider>
+        </Section>
+
+        <Section title="ScopedTheme">
+          <ScopedTheme value="playground">
+            <ScopedThemeDemo />
+          </ScopedTheme>
+        </Section>
+
+        <Section title="NativeControls">
+          <div className="flex flex-wrap items-center gap-3">
+            <NativeButton type="button" className="min-h-(--control-height) rounded-md border px-3">
+              {t("nativeButton")}
+            </NativeButton>
+            <NativeInput aria-label={t("exampleInput")} className="min-h-(--control-height) rounded-md border px-3" />
+          </div>
+          <label htmlFor={nativeLabelId} className="block text-sm">{t("exampleText")}</label>
+          <NativeTextarea id={nativeLabelId} aria-label={t("exampleText")} className="min-h-24 w-full rounded-md border p-3" />
+        </Section>
+
+        <Section title="PaintColor">
+          <div className="flex flex-wrap gap-2" role="group" aria-label={paint("palette")}>
+            {(["primary", "accent", "warning", "success", "destructive"] as const).map((color) => (
+              <PaintColorButton
+                key={color}
+                color={`var(--${color})`}
+                selected={paintColor === color}
+                label={paint(color === "destructive" ? "danger" : color)}
+                onClick={() => setPaintColor(color)}
+              />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="ColorPicker">
+          <ColorPicker color={demoColor} onChange={setDemoColor} />
         </Section>
       </DesignSystemScope>
     </section>
+  );
+}
+
+function ScopedThemeDemo() {
+  const t = useTranslations("playground");
+  const scoped = useScopedTheme() === "playground";
+  return (
+    <Dialog>
+      <DialogTrigger asChild><Button variant="outline">{t("scopedTheme")}</Button></DialogTrigger>
+      <DialogContent className={scoped ? "border-accent" : undefined}>
+        <DialogTitle>{t("scopedTheme")}</DialogTitle>
+        <DialogDescription>{t("scopedThemeHint")}</DialogDescription>
+        <DialogClose asChild><Button variant="outline">{t("close")}</Button></DialogClose>
+      </DialogContent>
+    </Dialog>
   );
 }

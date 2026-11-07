@@ -1,5 +1,6 @@
 "use client"
 
+import { useDesignSystemPortalHost } from "@/components/design-system/provider";
 import { useScopedTheme } from "./scoped-theme"
 import * as React from "react"
 import { cn } from "cn"
@@ -27,7 +28,8 @@ function SheetClose({
 function SheetPortal({
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Portal>) {
-  return <SheetPrimitive.Portal data-slot="sheet-portal" {...props} />
+  const container = useDesignSystemPortalHost();
+  return <SheetPrimitive.Portal container={container} data-slot="sheet-portal" {...props} />
 }
 
 function SheetOverlay({

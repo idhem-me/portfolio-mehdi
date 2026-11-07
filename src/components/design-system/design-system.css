@@ -19,9 +19,9 @@ html[data-design-system="github"],
   --ring: var(--focus-outlineColor);
   --sidebar-ring: var(--focus-outlineColor);
   --radius: var(--borderRadius-medium);
-  --control-height: var(--control-medium-size, 32px);
-  --control-height-sm: var(--control-small-size, 28px);
-  --control-height-lg: var(--control-large-size, 40px);
+  --control-height: max(var(--touch-target-size), var(--control-medium-size, 32px));
+  --control-height-sm: max(var(--touch-target-size), var(--control-small-size, 28px));
+  --control-height-lg: max(var(--touch-target-size), var(--control-large-size, 40px));
   --control-text: var(--text-body-size-medium, 14px);
   --secondary: var(--bgColor-muted);
   --secondary-foreground: var(--fgColor-default);
@@ -162,6 +162,14 @@ html[data-design-system="github"] .ds-dialog {
 /* Original layout classes still control responsive sizing, never the fallback button recipe. */
 .ds-button {
   max-width: 100%;
+}
+.ds-button,
+.ds-button[data-component="IconButton"],
+.ds-choice-overlay [role="menuitemradio"],
+[data-slot="dropdown-menu-item"],
+.ds-provider-switch {
+  min-block-size: var(--touch-target-size);
+  min-inline-size: var(--touch-target-size);
 }
 .ds-button [data-component="text"] {
   display: inline-flex;
@@ -430,7 +438,7 @@ html[data-design-system="adobe"] .ds-dialog {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 32px;
+  min-height: max(32px, var(--touch-target-size));
   padding: 0 14px;
   border-radius: var(--spectrum-alias-border-radius-regular, 4px);
   border: 2px solid transparent;
