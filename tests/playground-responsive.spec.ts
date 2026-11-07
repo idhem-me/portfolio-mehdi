@@ -143,7 +143,7 @@ test("shared settings return focus to the game's original trigger", async ({ pag
   await expect(trigger).toBeFocused();
 });
 
-test("the catalog index is on the right and scrolls with the page", async ({ page }) => {
+test("the catalog index stays fixed while the page scrolls", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("analytics_consent", "denied"));
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto("/playground");
@@ -160,13 +160,23 @@ test("the catalog index is on the right and scrolls with the page", async ({ pag
   const headings = await catalog.locator("section h2").allTextContents();
   expect(headings).toEqual([...headings].sort((a, b) => a.localeCompare(b, "en")));
   expect(await index.getByRole("link").allTextContents()).toEqual(headings);
-  await expect(index).toHaveCSS("overflow-y", "visible");
+  await expect(index).toHaveCSS("position", "fixed");
+  await expect(index).toHaveCSS("overflow-y", "auto");
+  expect(await index.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+
+  const initialBounds = (await index.boundingBox())!;
+  expect(initialBounds.x + initialBounds.width).toBeCloseTo(1600 - 24, 0);
+  expect(initialBounds.width).toBeGreaterThanOrEqual(256);
   const lastLink = index.getByRole("link").last();
   await page.evaluate(() => window.scrollBy(0, 320));
-  await expect(lastLink).toBeInViewport();
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
-  expect(await index.evaluate((el) => el.scrollTop)).toBe(0);
+  const scrolledBounds = (await index.boundingBox())!;
+  expect(scrolledBounds.x).toBeCloseTo(initialBounds.x, 0);
+  expect(scrolledBounds.y).toBeCloseTo(initialBounds.y, 0);
+  await index.evaluate((el) => { el.scrollTop = el.scrollHeight; });
+  await expect(lastLink).toBeInViewport();
 
+  await index.evaluate((el) => { el.scrollTop = 0; });
   await index.getByRole("link", { name: "Table", exact: true }).click();
   await expect(page).toHaveURL(/#table$/);
   await expect(heading).toBeInViewport();
@@ -177,9 +187,7 @@ test("the catalog index is on the right and scrolls with the page", async ({ pag
   await page.goto("/ar/playground#table");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(index).toBeVisible();
-  expect((await index.boundingBox())!.x).toBeGreaterThan(
-    (await catalog.locator("#table h2").boundingBox())!.x,
-  );
+  expect((await index.boundingBox())!.x).toBeCloseTo(24, 0);
 });
 
 test("narrow catalogs use the same primary-inverse surface without horizontal overflow", async ({ page }) => {

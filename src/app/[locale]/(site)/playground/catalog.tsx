@@ -601,7 +601,7 @@ export function PlaygroundCatalog() {
 
         <nav
           aria-label={t("componentIndex")}
-          className="hidden self-start border-l border-border pl-3 text-sm @min-[64rem]:col-start-2 @min-[64rem]:row-start-1 @min-[64rem]:block @min-[64rem]:rtl:col-start-1"
+          className="fixed end-6 top-6 z-10 hidden max-h-[calc(100dvh-3rem)] w-64 overflow-y-auto overscroll-contain border-s border-border bg-background/95 ps-3 text-sm @min-[64rem]:block"
         >
           <p className="mb-2 font-medium">{t("componentIndex")}</p>
           <ul>

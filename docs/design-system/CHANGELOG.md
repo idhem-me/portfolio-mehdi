@@ -3,7 +3,7 @@
 ## Catalogue du Playground
 
 - Chaque composant et ses variantes sont réunis dans un bloc de surface `primary-inverse`, avec le nom du composant comme seul titre.
-- L’index et les démonstrations suivent l’ordre alphabétique. L’index s’affiche à droite à partir de 64 rem de largeur disponible et défile avec la page. Les liens existants conservent leurs ancres.
+- L’index et les démonstrations suivent l’ordre alphabétique. L’index de 16 rem s’affiche au bord extérieur de la fenêtre à partir de 64 rem, reste fixe pendant le défilement et peut défiler indépendamment si sa liste dépasse le viewport. Les liens existants conservent leurs ancres.
 
 ## Deux variantes de modale
 
