@@ -1,5 +1,11 @@
 # Changelog du design system
 
+## Typographie Fun
+
+- Bricolage Grotesque est appliquée au texte latin du thème Fun via `--font-sans`. Sobre conserve Google Sans ; l’arabe, le chinois et la monospace gardent leurs familles dédiées.
+- Le Playground présente la typographie dans la composition Fun et expose `--font-sans` dans le comparatif.
+- Lint, typecheck, build isolé, suites Node et test Playwright ciblé passent. La suite Playwright complète a été partiellement bloquée par le panneau d’erreur de l’instance Next déjà active, qui interceptait certains clics.
+
 ## Frutiger Aero et Liquid Glass
 
 - Le sélecteur et le comparatif proposent les quatre thèmes en développement et limitent la production à Sobre et Fun. Les anciens liens du comparatif redirigent toujours vers sa page actuelle.

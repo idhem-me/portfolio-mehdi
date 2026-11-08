@@ -34,6 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const SEMANTIC_TOKENS = [
+  "--font-sans",
   "--background",
   "--foreground",
   "--muted",

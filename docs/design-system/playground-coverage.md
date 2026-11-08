@@ -6,7 +6,7 @@ Une composition absente peut être ajoutée comme scénario si elle définit une
 
 ## Thème Fun
 
-La composition `#fun` couvre la carte, le champ, les actions jaune et orange, le dialogue et leurs états de focus et de pression. Les démos `#button`, `#card`, `#input`, `#select`, `#switch`, `#sidebar`, `#dropdown-menu`, `#dialog` et `#sheet` montrent les primitives quand Fun est sélectionné. Les cartes des listes de réalisations et d’outils partagent les tokens de relief montrés à `#card`. Le comparatif montre la palette du mode actif et héberge les portails dans chaque colonne.
+La composition `#fun` couvre la carte, le champ, les actions jaune et orange, le dialogue et leurs états de focus et de pression ; ses textes montrent la famille Bricolage Grotesque. Les démos `#button`, `#card`, `#input`, `#select`, `#switch`, `#sidebar`, `#dropdown-menu`, `#dialog` et `#sheet` montrent les primitives quand Fun est sélectionné. Les cartes des listes de réalisations et d’outils partagent les tokens de relief montrés à `#card`. Le comparatif expose aussi `--font-sans` dans chaque colonne et héberge les portails dans leur thème.
 
 ## Frutiger Aero et Liquid Glass
 

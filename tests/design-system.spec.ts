@@ -496,3 +496,40 @@ test("Fun compares independently and the Playground demo keeps focus and mobile 
   await page.keyboard.press("Escape");
   await expect(preview).toBeFocused();
 });
+
+test("font tokens follow theme while Arabic, Chinese and monospace retain their fonts", async ({
+  page,
+}) => {
+  await page.goto("/playground/design-systems");
+  await choose(page, "Fun");
+  const fun = page.locator('[data-compare-column="fun"]');
+  const sobre = page.locator('[data-compare-column="mehdi"]');
+  await expect(page.locator("body")).toHaveCSS("font-family", /Bricolage Grotesque/);
+  await expect(fun).toHaveCSS("font-family", /Bricolage Grotesque/);
+  await expect(sobre).toHaveCSS("font-family", /Google Sans/);
+  await expect(fun.getByText("--font-sans", { exact: true }).locator("..")).toContainText(
+    "Bricolage Grotesque",
+  );
+  await expect(sobre.getByText("--font-sans", { exact: true }).locator("..")).toContainText(
+    "Google Sans",
+  );
+
+  await page.getByRole("button", { name: "Activer le mode sombre", exact: true }).click();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  await expect(page.locator("body")).toHaveCSS("font-family", /Bricolage Grotesque/);
+  await page.getByRole("button", { name: "Activer le mode clair", exact: true }).click();
+
+  for (const [locale, expectedLocaleFont] of [
+    ["ar", "notoSansArabic"],
+    ["zh", "Noto Sans SC"],
+  ] as const) {
+    await page.goto(`/${locale}/playground/design-systems`);
+    const fun = page.locator('[data-compare-column="fun"]');
+    const sobre = page.locator('[data-compare-column="mehdi"]');
+    await expect(page.locator("html")).toHaveAttribute("data-design-system", "fun");
+    await expect(page.locator("body")).toHaveCSS("font-family", new RegExp(expectedLocaleFont));
+    await expect(fun).toHaveCSS("font-family", /Bricolage Grotesque/);
+    await expect(sobre).toHaveCSS("font-family", /Google Sans/);
+    await expect(fun.locator("code").first()).toHaveCSS("font-family", /Geist Mono/);
+  }
+});

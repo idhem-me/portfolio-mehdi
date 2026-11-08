@@ -1,6 +1,11 @@
 import { SiteAccountProvider } from "@/features/account/provider";
 import type { Metadata } from "next";
-import { Geist_Mono, Google_Sans, Noto_Sans_SC } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  Geist_Mono,
+  Google_Sans,
+  Noto_Sans_SC,
+} from "next/font/google";
 import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "@/components/layout/theme-provider";
@@ -21,7 +26,13 @@ import "@/components/design-system/liquid-glass.css";
 const googleSans = Google_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-sans",
+  variable: "--font-google-sans",
+  display: "swap",
+});
+
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-bricolage",
   display: "swap",
 });
 
@@ -65,7 +76,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       dir="ltr"
       data-design-system={DEFAULT_DESIGN_SYSTEM}
       suppressHydrationWarning
-      className={`${googleSans.variable} ${geistMono.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
+      className={`${googleSans.variable} ${bricolageGrotesque.variable} ${geistMono.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <head>
         <script
@@ -80,7 +91,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body
-        className={`${googleSans.className} min-h-full bg-background text-foreground`}
+        className="min-h-full bg-background text-foreground"
       >
         <ThemeProvider
           attribute="class"

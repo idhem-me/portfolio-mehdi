@@ -55,6 +55,10 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+:root {
+  --font-sans: var(--font-google-sans);
+}
+
 :root,
 :where(.ds-compare-scope) {
   color-scheme: light;
@@ -200,7 +204,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground;
   }
   html {
     @apply font-sans;

@@ -10,3 +10,8 @@
 .ds-portal-host > div {
   pointer-events: auto;
 }
+
+.ds-scope {
+  --font-sans: var(--font-google-sans);
+  font-family: var(--font-sans);
+}
