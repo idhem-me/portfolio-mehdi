@@ -211,7 +211,9 @@ for (const touch of [false, true]) {
     );
     await page.evaluate(() => window.dispatchEvent(new Event("scroll")));
     await activate("Succès");
+    const strokeColor = await strokes.first().evaluate((stroke) => getComputedStyle(stroke).stroke);
     await page.evaluate(() => document.documentElement.classList.add("dark"));
+    await expect(strokes.first()).toHaveCSS("stroke", strokeColor);
     await expect(
       page.locator("[data-paint-cursor] [data-paint-bristles]"),
     ).toHaveAttribute("fill", "var(--success)");

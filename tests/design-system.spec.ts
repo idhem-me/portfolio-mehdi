@@ -1,9 +1,8 @@
-import { test, expect } from "@playwright/test";
-import { adobeDesignSystemEnabled } from "../src/components/design-system/flags";
+import { test, expect, type Locator, type Page } from "@playwright/test";
 
 async function choose(
-  page: import("@playwright/test").Page,
-  name: "GitHub" | "Sobre" | "Fun" | "Adobe",
+  page: Page,
+  name: "Sobre" | "Fun" | "Frutiger Aero" | "Liquid Glass",
 ) {
   const trigger = page.locator(
     '[data-analytics-action="design_system_open"]:visible',
@@ -21,79 +20,82 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test("site uses real Primer components, retains navigation choice and resets on reload", async ({
-  page,
-}) => {
-  const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/");
-  const cta = page.locator(".home-paper-ctas").getByRole("link").first();
-  await expect(cta).not.toHaveAttribute("data-component", "Button");
-  const original = await cta.evaluate((el) => ({
-    color: getComputedStyle(el).color,
-    background: getComputedStyle(el).backgroundColor,
-  }));
-  await choose(page, "GitHub");
-  await expect(cta).toHaveAttribute("data-component", "Button");
-  await expect(
-    page.locator(".home-paper-status [data-component=Label]"),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Design system", exact: true }),
-  ).toBeFocused();
-  await page.screenshot({ path: "/tmp/design-system-github-desktop.png" });
-  await cta.click();
-  await expect(page).toHaveURL(/realisations$/);
-  await expect(
-    page.getByRole("button", { name: "Design system", exact: true }),
-  ).toContainText("GitHub");
-  await page.getByRole("link", { name: "Accueil", exact: true }).click();
-  await expect(cta).toHaveAttribute("data-component", "Button");
-  await page
-    .getByRole("button", { name: "Design system", exact: true })
-    .click();
-  await page.keyboard.press("Escape");
-  await expect(
-    page.getByRole("button", { name: "Design system", exact: true }),
-  ).toBeFocused();
-  await page
-    .getByRole("button", { name: "Activer le mode sombre", exact: true })
-    .click();
-  await expect(
-    page.locator(".ds-scope[data-design-system=github]").first(),
-  ).toHaveAttribute("data-color-mode", "dark");
-  await page.screenshot({ path: "/tmp/design-system-github-dark.png" });
-  await page
-    .getByRole("button", { name: "Activer le mode clair", exact: true })
-    .click();
-  await choose(page, "Sobre");
-  await expect(cta).not.toHaveAttribute("data-component", "Button");
-  expect(
-    await cta.evaluate((el) => ({
-      color: getComputedStyle(el).color,
-      background: getComputedStyle(el).backgroundColor,
-    })),
-  ).toEqual(original);
-  await choose(page, "GitHub");
-  await page.reload();
-  await expect(
-    page.getByRole("button", { name: "Design system", exact: true }),
-  ).toContainText("Sobre");
-  expect(
-    await page.evaluate(() =>
-      Object.keys(localStorage).filter((key) =>
-        /design.?system|primer/i.test(key),
-      ),
-    ),
-  ).toEqual([]);
-  expect(errors).toEqual([]);
+const themeOptions = [
+  ["Frutiger Aero", "frutiger-aero"],
+  ["Liquid Glass", "liquid-glass"],
+] as const;
+
+function token(locator: Locator, name: string) {
+  return locator.evaluate(
+    (element, property) => getComputedStyle(element).getPropertyValue(property).trim(),
+    name,
+  );
+}
+
+test("the switcher offers the four active themes and falls back for retired choices", async ({ page }) => {
+  for (const retired of ["github", "adobe"]) {
+    await page.goto("/");
+    await page.evaluate((value) => localStorage.setItem("portfolio-design-system", value), retired);
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-design-system", "mehdi");
+    const trigger = page.locator('[data-analytics-action="design_system_open"]:visible');
+    await trigger.click();
+    await expect(page.getByRole("menuitemradio")).toHaveText([
+      "Sobre", "Fun", "Frutiger Aero", "Liquid Glass",
+    ]);
+    await expect(page.getByRole("menuitemradio", { name: "Sobre" })).toBeChecked();
+    await page.keyboard.press("Escape");
+    await expect(trigger).toBeFocused();
+  }
 });
 
-test("Primer language menu retains choice and collapsed sidebar stays usable", async ({
+for (const [name, id] of themeOptions) {
+  test(`${name} recolors the site, survives reload and opens on standalone routes`, async ({ page, context }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(error.message));
+    await page.goto("/");
+    const root = page.locator("html");
+    const body = page.locator("body");
+    const initial = await token(body, "--background");
+    const cta = page.locator(".home-paper-ctas").getByRole("link").first();
+    const originalButton = await token(cta, "box-shadow");
+    await choose(page, name);
+    await expect(root).toHaveAttribute("data-design-system", id);
+    await expect.poll(() => token(body, "--background")).not.toBe(initial);
+    await expect.poll(() => token(cta, "box-shadow")).not.toBe(originalButton);
+    const light = await token(body, "--background");
+
+    await page.getByRole("button", { name: "Activer le mode sombre", exact: true }).click();
+    await expect(root).toHaveClass(/dark/);
+    await expect.poll(() => token(body, "--background")).not.toBe(light);
+    await page.getByRole("button", { name: "Activer le mode clair", exact: true }).click();
+    await expect.poll(() => token(body, "--background")).toBe(light);
+
+    await cta.click();
+    await expect(page).toHaveURL(/realisations$/);
+    await expect(root).toHaveAttribute("data-design-system", id);
+    await page.reload();
+    await expect(root).toHaveAttribute("data-design-system", id);
+    await expect.poll(() => token(body, "--background")).toBe(light);
+
+    const standalone = await context.newPage();
+    await standalone.goto("/dashboard/login");
+    await expect(standalone.getByRole("button", { name: "Se connecter" })).toBeVisible();
+    await expect(standalone.locator("html")).toHaveAttribute("data-design-system", id);
+    await expect.poll(() => token(standalone.locator("body"), "--background")).toBe(light);
+    await standalone.close();
+
+    await choose(page, "Sobre");
+    await expect.poll(() => token(body, "--background")).toBe(initial);
+    expect(errors).toEqual([]);
+  });
+}
+
+test("Frutiger Aero language menu retains choice and collapsed sidebar stays usable", async ({
   page,
 }) => {
   await page.goto("/");
-  await choose(page, "GitHub");
+  await choose(page, "Frutiger Aero");
   await page.locator("[data-analytics-action=language_open]").click();
   await page
     .getByRole("menuitemradio", { name: "English", exact: true })
@@ -101,7 +103,7 @@ test("Primer language menu retains choice and collapsed sidebar stays usable", a
   await expect(page).toHaveURL(/\/en$/);
   await expect(
     page.getByRole("button", { name: "Design system", exact: true }),
-  ).toContainText("GitHub");
+  ).toContainText("Frutiger Aero");
   await page
     .getByRole("button", {
       name: /Close.*panel|Collapse.*sidebar|Fermer le panel/i,
@@ -113,65 +115,10 @@ test("Primer language menu retains choice and collapsed sidebar stays usable", a
   await choose(page, "Sobre");
 });
 
-test("mobile design system menus work inside the navigation dialog", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+test("Frutiger Aero keeps avatar and gravity controls working", async ({ page }) => {
   await page.goto("/");
-  await page
-    .getByRole("button", { name: "Ouvrir le menu", exact: true })
-    .click();
-  await choose(page, "GitHub");
-  await expect(page.locator("#mobile-navigation")).toBeVisible();
-  await page.screenshot({ path: "/tmp/design-system-github-mobile.png" });
-  await page.locator("[data-analytics-action=language_open]").click();
-  await page
-    .getByRole("menuitemradio", { name: "Français", exact: true })
-    .click();
-  await choose(page, "Sobre");
-  await choose(page, "GitHub");
-  await page
-    .locator("#mobile-navigation")
-    .getByRole("link", { name: "Accueil", exact: true })
-    .click();
-  await expect(page.locator("#mobile-navigation")).toBeHidden();
-  await expect(
-    page.locator(".home-paper-ctas [data-component=Button]"),
-  ).toHaveCount(3);
-});
-
-test("contact uses Primer throughout and switching back restores Sobre", async ({
-  page,
-}) => {
-  await page.goto("/contact");
-  const content = page.locator('[data-slot="sidebar-inset"]');
-  const heading = content.getByRole("heading", { level: 1 });
-  const originalFont = await heading.evaluate(
-    (el) => getComputedStyle(el).fontFamily,
-  );
-  await choose(page, "GitHub");
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-design-system",
-    "github",
-  );
-  await expect(
-    content.locator('[data-component="Button"]').first(),
-  ).toBeVisible();
-  expect(
-    await heading.evaluate((el) => getComputedStyle(el).fontFamily),
-  ).not.toBe(originalFont);
-  await choose(page, "Sobre");
-  await expect(content.locator('[data-component="Button"]')).toHaveCount(0);
-  expect(await heading.evaluate((el) => getComputedStyle(el).fontFamily)).toBe(
-    originalFont,
-  );
-});
-
-test("Primer keeps avatar and gravity controls working", async ({ page }) => {
-  await page.goto("/");
-  await choose(page, "GitHub");
+  await choose(page, "Frutiger Aero");
   const play = page.locator('[data-analytics-action="gravity_play"]');
-  await expect(play).toHaveAttribute("data-component", "Button");
   await play.click();
   const config = page.locator('[data-analytics-action="gravity_config"]');
   await expect(config).toBeVisible();
@@ -181,7 +128,7 @@ test("Primer keeps avatar and gravity controls working", async ({ page }) => {
   await expect(play).toBeVisible({ timeout: 10000 });
   await expect(
     page.getByRole("button", { name: "Design system", exact: true }),
-  ).toContainText("GitHub");
+  ).toContainText("Frutiger Aero");
 });
 
 for (const path of [
@@ -196,48 +143,38 @@ for (const path of [
   "/realisations/onewallet",
   "/realisations/trusted-interactions",
 ]) {
-  test(`Primer applies to ${path} without overflowing or throwing`, async ({
+  test(`Frutiger Aero applies to ${path} without overflowing or throwing`, async ({
     page,
   }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(path);
-    await choose(page, "GitHub");
+    const body = page.locator("body");
+    const original = await token(body, "--background");
+    await choose(page, "Frutiger Aero");
     await expect(page.locator("html")).toHaveAttribute(
       "data-design-system",
-      "github",
+      "frutiger-aero",
     );
-    expect(
-      await page.evaluate(() =>
-        getComputedStyle(document.documentElement)
-          .getPropertyValue("--background")
-          .trim(),
-      ),
-    ).not.toBe("");
+    await expect.poll(() => token(body, "--background")).not.toBe(original);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth + 1,
       ),
     ).toBe(true);
-    await page.screenshot({
-      path: `/tmp/design-system-${path.replaceAll("/", "-")}.png`,
-    });
     expect(errors).toEqual([]);
   });
 }
 
-test("Primer QR fields, select, sliders, switch and download remain functional", async ({
+test("Frutiger Aero QR fields, select, sliders, switch and download remain functional", async ({
   page,
 }) => {
   await page.goto("/outils/qrcode");
-  await choose(page, "GitHub");
-  await page.locator("#qr-content").fill("https://example.com/primer");
+  await choose(page, "Frutiger Aero");
+  await page.locator("#qr-content").fill("https://example.com/themed");
   await expect(page.locator("#qr-content")).toHaveValue(
-    "https://example.com/primer",
+    "https://example.com/themed",
   );
-  await expect(
-    page.locator('[data-component="TextInput"]').first(),
-  ).toBeVisible();
   await page.locator("#qr-level").click();
   await page.getByRole("option", { name: "H", exact: true }).click();
   await page.locator("#qr-logo").setInputFiles({
@@ -248,14 +185,14 @@ test("Primer QR fields, select, sliders, switch and download remain functional",
       "base64",
     ),
   });
-  const toggle = page.getByRole("button", {
+  const toggle = page.getByRole("switch", {
     name: "Effacer les points sous le logo",
   });
   await expect(toggle).toBeVisible();
-  const checked = await toggle.getAttribute("aria-pressed");
+  const checked = await toggle.getAttribute("aria-checked");
   await toggle.click();
   await expect(toggle).toHaveAttribute(
-    "aria-pressed",
+    "aria-checked",
     checked === "true" ? "false" : "true",
   );
 
@@ -267,123 +204,63 @@ test("Primer QR fields, select, sliders, switch and download remain functional",
   expect((await download).suggestedFilename()).toBe("qrcode.svg");
   await choose(page, "Sobre");
   await expect(page.locator("#qr-content")).toHaveValue(
-    "https://example.com/primer",
+    "https://example.com/themed",
   );
 });
 
-test("Primer tabs preserve keyboard selection and export content", async ({
+test("Frutiger Aero tabs preserve keyboard selection and export content", async ({
   page,
 }) => {
   await page.goto("/outils/color-generator");
-  await choose(page, "GitHub");
+  await choose(page, "Frutiger Aero");
   const css = page.getByRole("tab", { name: "CSS", exact: true });
   await css.focus();
   await page.keyboard.press("ArrowRight");
   const tailwind = page.getByRole("tab", { name: "Tailwind", exact: true });
   await expect(tailwind).toHaveAttribute("aria-selected", "true");
-  await expect(tailwind).toHaveAttribute("data-component", "Button");
   await expect(page.getByRole("tabpanel")).toContainText("colors");
-  await page.screenshot({ path: "/tmp/design-system-primer-tabs.png" });
 });
 
-test("Primer choice survives navigation into the standalone burger game", async ({
+test("Frutiger Aero choice survives navigation into the standalone burger game", async ({
   page,
 }) => {
   await page.goto("/jeux");
-  await choose(page, "GitHub");
+  await choose(page, "Frutiger Aero");
   await page.locator('a[href="/jeux/clicker-burger"]').first().click();
   await expect(page).toHaveURL(/clicker-burger$/);
   await expect(page.locator("html")).toHaveAttribute(
     "data-design-system",
-    "github",
+    "frutiger-aero",
   );
-  await expect(page.locator('[data-component="Button"]').first()).toBeVisible();
+  await expect(page.getByRole("button", { name: "Réglages", exact: true })).toBeVisible();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth + 1,
     ),
   ).toBe(true);
-  await page.screenshot({ path: "/tmp/design-system-primer-burger.png" });
 });
 
-test("Primer game settings and feedback dialog keep focus and dismiss correctly", async ({
+test("Frutiger Aero game settings and feedback dialog keep focus and dismiss correctly", async ({
   page,
 }) => {
   await page.goto("/jeux");
-  await choose(page, "GitHub");
+  await choose(page, "Frutiger Aero");
   await page.locator('a[href="/jeux/clicker-burger"]').first().click();
   await page.getByRole("button", { name: "Réglages", exact: true }).click();
-  const settings = page.getByRole("dialog");
+  const settings = page.getByRole("dialog", { name: "Réglages" });
   await expect(settings).toBeVisible();
   await settings.getByRole("button", { name: "Retour", exact: true }).click();
   const feedback = page.getByRole("dialog", { name: /Retour :/ });
-  await expect(
-    feedback.locator('[data-component="Dialog.Body"]'),
-  ).toBeVisible();
+  await expect(feedback).toBeVisible();
   await feedback
     .locator("textarea")
-    .fill("Un essai local du formulaire Primer.");
+    .fill("Un essai local du formulaire Frutiger Aero.");
   await expect(feedback.locator("textarea")).toHaveValue(
-    "Un essai local du formulaire Primer.",
+    "Un essai local du formulaire Frutiger Aero.",
   );
-  await page.screenshot({ path: "/tmp/design-system-primer-feedback.png" });
   await page.keyboard.press("Escape");
   await expect(feedback).toBeHidden();
   await expect(settings).toBeVisible();
-});
-
-test("site uses real Spectrum components, retains navigation choice and resets on reload", async ({
-  page,
-}) => {
-  test.skip(
-    !adobeDesignSystemEnabled,
-    "Adobe DS flag NEXT_PUBLIC_ENABLE_ADOBE_DS is off",
-  );
-  const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/");
-  const cta = page.locator(".home-paper-ctas").getByRole("link").first();
-  await choose(page, "Adobe");
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-design-system",
-    "adobe",
-  );
-  await expect(
-    page.locator(".home-paper-status [data-spectrum-status]").first(),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Design system", exact: true }),
-  ).toBeFocused();
-  await cta.click();
-  await expect(page).toHaveURL(/realisations$/);
-  await expect(
-    page.getByRole("button", { name: "Design system", exact: true }),
-  ).toContainText("Adobe");
-  await page.getByRole("link", { name: "Accueil", exact: true }).click();
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-design-system",
-    "adobe",
-  );
-  await page
-    .getByRole("button", { name: "Activer le mode sombre", exact: true })
-    .click();
-  await expect(
-    page.locator(".ds-scope[data-design-system=adobe]").first(),
-  ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Activer le mode clair", exact: true })
-    .click();
-  await choose(page, "Sobre");
-  await expect(page.locator("html")).toHaveAttribute(
-    "data-design-system",
-    "mehdi",
-  );
-  await choose(page, "Adobe");
-  await page.reload();
-  await expect(
-    page.getByRole("button", { name: "Design system", exact: true }),
-  ).toContainText("Sobre");
-  expect(errors).toEqual([]);
 });
 
 test("playground navigation opens a separate comparison page with the keyboard", async ({
@@ -447,13 +324,13 @@ test("playground keeps the mobile menu and section links in Arabic", async ({
   ).toBeLessThanOrEqual(391);
 });
 
-for (const prefix of ["", "/en"]) {
-  test(`legacy Playground link redirects to comparison: ${prefix || "/fr"}`, async ({
+for (const prefix of ["", "/fr", "/ar", "/de", "/en", "/es", "/it", "/zh"]) {
+  test(`legacy Playground link redirects to comparison: ${prefix || "/"}`, async ({
     page,
   }) => {
     await page.goto(`${prefix}/playground/github-vs-adobe`);
     expect(new URL(page.url()).pathname).toBe(
-      `${prefix}/playground/design-systems`,
+      `${prefix === "/fr" ? "" : prefix}/playground/design-systems`,
     );
     await expect(page.locator("#comparison-title")).toBeInViewport();
   });
@@ -480,16 +357,47 @@ test("playground comparison renders every enabled system", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Comparer", exact: true }),
   ).toBeVisible();
-  for (const id of ["mehdi", "fun", "github"]) {
+  for (const id of ["mehdi", "fun", "frutiger-aero", "liquid-glass"]) {
     const column = page.locator(`[data-compare-column="${id}"]`);
     await expect(column).toBeVisible();
     await expect(column.getByText("Tokens sémantiques")).toBeVisible();
     await expect(column.getByText(/Tokens natifs/)).toBeVisible();
   }
-  await expect(page.locator('[data-compare-column="adobe"]')).toHaveCount(
-    adobeDesignSystemEnabled ? 1 : 0,
-  );
+  await expect(page.locator("[data-compare-column]")).toHaveCount(4);
   expect(errors).toEqual([]);
+});
+
+test("the new themes keep their own palettes in comparison and in its portals", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await page.goto("/playground/design-systems");
+  const columns = page.locator("[data-compare-column]");
+  const backgrounds = await Promise.all(
+    (await columns.all()).map((column) => token(column, "--background")),
+  );
+  expect(new Set(backgrounds).size).toBe(4);
+
+  await choose(page, "Liquid Glass");
+  await expect(page.locator("html")).toHaveAttribute("data-design-system", "liquid-glass");
+  for (const [index, column] of (await columns.all()).entries()) {
+    await expect.poll(() => token(column, "--background")).toBe(backgrounds[index]);
+  }
+
+  for (const [, id] of themeOptions) {
+    const column = page.locator(`[data-compare-column="${id}"]`);
+    const scope = column.locator("..");
+    const popover = await token(column, "--popover");
+    const menu = column.getByRole("button", { name: "Actions" });
+    await menu.click();
+    await expect.poll(() => token(scope.getByRole("menu"), "--popover")).toBe(popover);
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeFocused();
+    const dialog = column.getByRole("button", { name: "Ouvrir dialog" });
+    await dialog.click();
+    await expect.poll(() => token(scope.getByRole("dialog"), "--popover")).toBe(popover);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeFocused();
+  }
 });
 
 for (const path of [
@@ -497,10 +405,10 @@ for (const path of [
   "/outils/color-generator",
   "/ar/outils/qrcode",
 ]) {
-  test(`mobile Primer layout and controls at ${path}`, async ({ page }) => {
+  test(`mobile Liquid Glass layout and controls at ${path}`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(path);
-    await choose(page, "GitHub");
+    await choose(page, "Liquid Glass");
     await page.locator('[data-analytics-action="menu_close"]').click();
     await expect(page.locator("#mobile-navigation")).toBeHidden();
     expect(
@@ -516,10 +424,6 @@ for (const path of [
     }
     if (path.startsWith("/ar"))
       await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-    await page.screenshot({
-      path: `/tmp/design-system-mobile-${path.replaceAll("/", "-")}.png`,
-      fullPage: true,
-    });
   });
 }
 
@@ -543,7 +447,7 @@ test("Fun keeps its palette across routes and languages and follows light and da
   await expect(root).toHaveAttribute("lang", "en");
   await expect(root).toHaveAttribute("data-design-system", "fun");
   await page.reload();
-  await expect(root).toHaveAttribute("data-design-system", "mehdi");
+  await expect(root).toHaveAttribute("data-design-system", "fun");
 });
 
 test("Fun compares independently and the Playground demo keeps focus and mobile sizing", async ({ page }) => {

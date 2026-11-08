@@ -2,16 +2,16 @@
 
 ## Multi design systems
 
-Le site peut basculer entre les systèmes activés via le sélecteur sidebar (mémoire seule, reset au reload) :
+Le sélecteur de la barre latérale propose Sobre et Fun en production. Les quatre thèmes partagent les primitives Shadcn et Radix. Frutiger Aero et Liquid Glass sont activés uniquement avec `npm run dev`, y compris dans le catalogue et le comparatif.
 
-| Valeur | Implémentation |
-|--------|----------------|
-| `mehdi` (Sobre) | Shadcn / Radix et tokens locaux (`globals.css`) |
-| `fun` (Fun) | Mêmes primitives, palettes clair et sombre et tokens de relief (`fun.css`) |
-| `github` | Primer React + remap CSS dans `design-system.css` |
-| `adobe` | React Spectrum 1 (`@adobe/react-spectrum`) + remap CSS — **flag** `NEXT_PUBLIC_ENABLE_ADOBE_DS` (off par défaut) |
+| Valeur | Thème | Tokens |
+|--------|-------|--------|
+| `mehdi` | Sobre | Palette locale dans `globals.css` |
+| `fun` | Fun | Palettes et relief dans `fun.css` |
+| `frutiger-aero` | Frutiger Aero | Dégradés et reflets nacrés dans `frutiger-aero.css` |
+| `liquid-glass` | Liquid Glass | Verre teinté et reflets dans `liquid-glass.css` |
 
-État : `DesignSystemProvider` (`src/components/design-system/provider.tsx`). Registre : `DESIGN_SYSTEMS` / UI : `ENABLED_DESIGN_SYSTEMS`. Les adaptateurs UI branchent sur `useDesignSystem()` (Button, Input, Avatar, Badge, Switch, Dialog, Tabs, DropdownMenu, sidebar, choice-menu, etc.). Comparaison visuelle des DS activés : `/playground/design-systems`.
+Le registre `DESIGN_SYSTEMS` alimente le sélecteur et le comparatif. Le choix est enregistré dans le navigateur sous `portfolio-design-system` et appliqué à la racine du document avant le premier affichage. Sobre sert de repli. Le réglage clair ou sombre reste indépendant. Les portails du comparatif restent dans le périmètre de leur colonne.
 
 ## Fun
 
@@ -20,6 +20,14 @@ Fun suit le thème clair ou sombre du site. Sobre reste le style initial. Les pa
 Les contours des contrôles et surfaces utilisent `--fun-control-border` et `--fun-surface-border`. Les ombres `--fun-control-shadow`, `--fun-surface-shadow` et `--fun-pressed-shadow` distinguent relief et pression. Les tokens de mouvement commandent le soulèvement et l’enfoncement des boutons. En mouvement réduit, la pression reste perceptible par l’ombre. Le focus conserve un contour visible, y compris sur les cartes de navigation.
 
 [La démo Fun](/playground#fun) montre une carte, un formulaire, deux actions et un dialogue. Les états des primitives restent visibles à leurs ancres et les nuanciers du comparatif suivent le réglage clair ou sombre du site.
+
+## Frutiger Aero et Liquid Glass
+
+[Frutiger Aero](/playground#frutiger-aero) associe des dégradés ciel, eau et vert à des surfaces nacrées. La palette sombre prend des tons océan et turquoise. Les boutons combinent un reflet au survol et une courte pression de 150 ms.
+
+[Liquid Glass](/playground#liquid-glass) garde les surfaces de lecture opaques et applique un verre teinté à la navigation et aux éléments superposés. Le contour, le reflet et le flou du verre sont pilotés par des tokens. Une surface opaque prend le relais si le flou est indisponible ou que la transparence réduite est demandée. La pression dure 180 ms.
+
+Les deux thèmes respectent le mouvement réduit et proposent une composition de démonstration avec carte, champ, actions et dialogue. Les palettes propres aux jeux et les couleurs des contenus créés ou exportés restent distinctes du thème d’interface.
 
 ## Couleurs (tokens)
 

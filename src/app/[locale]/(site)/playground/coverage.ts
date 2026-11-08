@@ -9,8 +9,10 @@ export const demoAnchors = {
   DateRangeSelect: "date-range-select",
   Dialog: "dialog",
   DropdownMenu: "dropdown-menu",
+  "Frutiger Aero": "frutiger-aero",
   Fun: "fun",
   Input: "input",
+  "Liquid Glass": "liquid-glass",
   NativeControls: "native-controls",
   PaintColor: "paint-color",
   SafeSvg: "safe-svg",
@@ -29,7 +31,7 @@ export const demoAnchors = {
   Tooltip: "tooltip",
 } as const;
 
-// Provider and flags supply infrastructure. The button implementations are
+// The provider and registry supply infrastructure. The button implementations are
 // exercised through the public Button adapter and the sidebar adapters in Sidebar.
 export const componentCoverage = {
   ui: {
@@ -59,10 +61,10 @@ export const componentCoverage = {
   "design-system": {
     button: demoAnchors.Button,
     "choice-menu": demoAnchors.Sidebar,
-    flags: null,
     "mehdi-button": demoAnchors.Button,
     "native-controls": demoAnchors.NativeControls,
     provider: null,
+    registry: null,
     "sidebar-button": demoAnchors.Sidebar,
     switcher: demoAnchors.Sidebar,
   },

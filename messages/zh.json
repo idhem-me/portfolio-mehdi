@@ -49,8 +49,8 @@
     "descriptions": {
       "mehdi": "Shadcn / Radix 与本地设计令牌",
       "fun": "色彩明快、富有立体感的趣味文具",
-      "github": "Primer React 与 Primer 设计令牌",
-      "adobe": "React Spectrum 1 与 Spectrum 设计令牌"
+      "frutiger-aero": "天空与水面的渐变、珠光表面和亮面按钮",
+      "liquid-glass": "有色玻璃、柔和反光和不透明的阅读区域"
     }
   },
   "nav": {
@@ -76,6 +76,18 @@
     "gameSettingsDescription": "{game}的设置。"
   },
   "playground": {
+    "themeExamples": {
+      "frutiger-aero": {
+        "title": "潟湖笔记",
+        "field": "潟湖名称",
+        "sample": "绿松石潟湖"
+      },
+      "liquid-glass": {
+        "title": "玻璃工作室",
+        "field": "系列名称",
+        "sample": "晨光倒影"
+      }
+    },
     "funDemo": {
       "title": "海报工坊",
       "description": "试试立体按钮，打开你的海报预览。",
@@ -95,6 +107,7 @@
     "desktop": "桌面端",
     "mobile": "移动端",
     "componentIndex": "组件索引",
+    "sidebarDemoIndex": "索引",
     "iconButton": "图标按钮",
     "exampleChoice": "选择示例",
     "nativeButton": "原生按钮",

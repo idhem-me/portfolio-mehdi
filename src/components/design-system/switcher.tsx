@@ -1,15 +1,15 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { MarkGithubIcon } from "@primer/octicons-react";
-import { Palette, Sparkles } from "lucide-react";
+import { Droplet, Leaf, Palette, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DesignSystemChoiceMenu } from "./choice-menu";
 import {
-  ENABLED_DESIGN_SYSTEMS,
+  DESIGN_SYSTEMS,
   useDesignSystem,
   type DesignSystem,
 } from "./provider";
+import { isDesignSystem } from "./registry";
 
 function SobreIcon() {
   return (
@@ -24,28 +24,11 @@ function SobreIcon() {
   );
 }
 
-function AdobeIcon() {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      width={16}
-      height={16}
-      className="size-4 shrink-0"
-      aria-hidden
-    >
-      <path
-        fill="currentColor"
-        d="M9.77 2H14v12h-3.25L9.77 2ZM2 14h3.26L6.23 2H2v12Zm5.12-4.46L8.5 5.2l1.38 4.34H7.12Z"
-      />
-    </svg>
-  );
-}
-
 const ICONS: Record<DesignSystem, ReactNode> = {
   mehdi: <SobreIcon />,
   fun: <Sparkles className="size-4 shrink-0" aria-hidden />,
-  github: <MarkGithubIcon size={16} className="size-4 shrink-0" />,
-  adobe: <AdobeIcon />,
+  "frutiger-aero": <Leaf className="size-4 shrink-0" aria-hidden />,
+  "liquid-glass": <Droplet className="size-4 shrink-0" aria-hidden />,
 };
 
 export function DesignSystemSwitcher() {
@@ -54,15 +37,17 @@ export function DesignSystemSwitcher() {
   return (
     <DesignSystemChoiceMenu
       label={t("label")}
-      title="Design System"
+      title={t("label")}
       value={designSystem}
       icon={<Palette className="size-4 shrink-0" />}
-      choices={ENABLED_DESIGN_SYSTEMS.map((system) => ({
+      choices={DESIGN_SYSTEMS.map((system) => ({
         value: system.id,
         label: system.label,
         icon: ICONS[system.id],
       }))}
-      onChange={(value) => setDesignSystem(value as DesignSystem)}
+      onChange={(value) => {
+        if (isDesignSystem(value)) setDesignSystem(value);
+      }}
       analyticsAction="design_system"
     />
   );

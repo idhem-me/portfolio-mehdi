@@ -49,8 +49,8 @@
     "descriptions": {
       "mehdi": "Shadcn / Radix et tokens locaux",
       "fun": "Papeterie pop, couleurs vives et relief",
-      "github": "Primer React et tokens Primer",
-      "adobe": "React Spectrum 1 et tokens Spectrum"
+      "frutiger-aero": "Dégradés ciel et eau, surfaces nacrées et boutons bombés",
+      "liquid-glass": "Verre teinté, reflets doux et surfaces de lecture opaques"
     }
   },
   "nav": {
@@ -76,6 +76,18 @@
     "gameSettingsDescription": "Réglages de {game}."
   },
   "playground": {
+    "themeExamples": {
+      "frutiger-aero": {
+        "title": "Carnet des lagons",
+        "field": "Nom du lagon",
+        "sample": "Lagon turquoise"
+      },
+      "liquid-glass": {
+        "title": "Atelier de verre",
+        "field": "Nom de la collection",
+        "sample": "Reflets du matin"
+      }
+    },
     "funDemo": {
       "title": "Atelier d’affiches",
       "description": "Essayez les boutons en relief et ouvrez l’aperçu de votre affiche.",
@@ -95,6 +107,7 @@
     "desktop": "Ordinateur",
     "mobile": "Mobile",
     "componentIndex": "Index des composants",
+    "sidebarDemoIndex": "Index",
     "iconButton": "Bouton icône",
     "exampleChoice": "Exemple de sélection",
     "nativeButton": "Bouton natif",

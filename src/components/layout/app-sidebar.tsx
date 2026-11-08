@@ -104,7 +104,7 @@ export function AppSidebar() {
   if (isMobile) {
     return (
       <Sidebar>
-        <DesignSystemScope portalRoot className="flex size-full flex-col">
+        <DesignSystemScope className="flex size-full flex-col">
           <MobileMenuButton close />
           <div className="mobile-navigation-body">
             <nav aria-label={t("menu")} className="mobile-navigation-links">
@@ -150,7 +150,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" variant="sidebar">
-      <DesignSystemScope portalRoot className="flex size-full flex-col">
+      <DesignSystemScope className="flex size-full flex-col">
         <SidebarHeader className="gap-0 p-0">
           <MobileBrandBar />
         </SidebarHeader>

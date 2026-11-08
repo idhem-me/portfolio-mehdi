@@ -1,8 +1,5 @@
 "use client";
 
-import { Label } from "@primer/react";
-import { Badge as SpectrumBadge } from "@adobe/react-spectrum";
-import { useDesignSystem } from "@/components/design-system/provider";
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
@@ -38,38 +35,6 @@ function Badge({
   ...props
 }: React.ComponentProps<"span"> &
   VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
-  const { designSystem } = useDesignSystem();
-  if (designSystem === "github" && !asChild)
-    return (
-      <Label
-        {...props}
-        variant={
-          variant === "destructive"
-            ? "danger"
-            : variant === "default"
-              ? "accent"
-              : "secondary"
-        }
-        data-slot="badge"
-        className={className}
-      />
-    );
-  if (designSystem === "adobe" && !asChild)
-    return (
-      <SpectrumBadge
-        variant={
-          variant === "destructive"
-            ? "negative"
-            : variant === "default"
-              ? "info"
-              : "neutral"
-        }
-        data-slot="badge"
-        UNSAFE_className={className}
-      >
-        {props.children}
-      </SpectrumBadge>
-    );
   const Comp = asChild ? Slot.Root : "span";
 
   return (

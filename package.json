@@ -19,11 +19,7 @@
     "test:security": "node --import tsx --import ./tests/helpers/server-only.ts --test tests/security*.test.ts"
   },
   "dependencies": {
-    "@adobe/react-spectrum": "^3.47.7",
     "@libsql/client": "^0.18.0",
-    "@primer/octicons-react": "19.42.0",
-    "@primer/primitives": "11.10.0",
-    "@primer/react": "38.43.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
     "@vercel/analytics": "^2.0.1",

@@ -49,8 +49,8 @@
     "descriptions": {
       "mehdi": "Shadcn / Radix und lokale Design-Tokens",
       "fun": "Verspieltes Papierdesign mit kräftigen Farben und Relief",
-      "github": "Primer React und Primer-Design-Tokens",
-      "adobe": "React Spectrum 1 und Spectrum-Design-Tokens"
+      "frutiger-aero": "Himmel- und Wasserverläufe, perlmuttartige Flächen und glänzende Schaltflächen",
+      "liquid-glass": "Getöntes Glas, sanfte Reflexe und blickdichte Leseflächen"
     }
   },
   "nav": {
@@ -76,6 +76,18 @@
     "gameSettingsDescription": "Einstellungen für {game}."
   },
   "playground": {
+    "themeExamples": {
+      "frutiger-aero": {
+        "title": "Lagunen-Notizbuch",
+        "field": "Name der Lagune",
+        "sample": "Türkislagune"
+      },
+      "liquid-glass": {
+        "title": "Glasatelier",
+        "field": "Name der Kollektion",
+        "sample": "Morgenreflexe"
+      }
+    },
     "funDemo": {
       "title": "Posterwerkstatt",
       "description": "Probiere die erhabenen Schaltflächen aus und öffne die Vorschau deines Posters.",
@@ -95,6 +107,7 @@
     "desktop": "Desktop",
     "mobile": "Mobil",
     "componentIndex": "Komponentenübersicht",
+    "sidebarDemoIndex": "Index",
     "iconButton": "Symbolschaltfläche",
     "exampleChoice": "Auswahlbeispiel",
     "nativeButton": "Native Schaltfläche",

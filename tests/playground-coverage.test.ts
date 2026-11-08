@@ -15,7 +15,7 @@ test("each design system module has a Playground demo or an infrastructure excep
     for (const [module, anchor] of Object.entries(entries)) {
       if (anchor === null) {
         assert.equal(directory, "design-system");
-        assert.match(module, /^(flags|provider)$/);
+        assert.match(module, /^(provider|registry)$/);
       } else {
         assert.ok(validAnchors.has(anchor), `Missing demo anchor for ${module}`);
       }

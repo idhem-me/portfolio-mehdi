@@ -584,15 +584,17 @@ html.locale-ar body {
       transparent calc(var(--home-paper-margin-left) + 1px)),
     linear-gradient(to right, var(--home-paper-rule) 1px, transparent 1px),
     linear-gradient(to bottom, var(--home-paper-rule) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--home-paper-line) 1px, transparent 1px);
+    linear-gradient(to bottom, var(--home-paper-line) 1px, transparent 1px),
+    var(--home-paper-backdrop, none);
   background-size:
     100% 100%,
     100% 100%,
     var(--home-paper-cell) var(--home-paper-cell),
     var(--home-paper-cell) var(--home-paper-cell),
-    var(--home-paper-subline) var(--home-paper-subline);
+    var(--home-paper-subline) var(--home-paper-subline),
+    100% 100%;
   background-position: left top;
-  background-repeat: no-repeat, no-repeat, repeat, repeat, repeat;
+  background-repeat: no-repeat, no-repeat, repeat, repeat, repeat, no-repeat;
 }
 
 @media (max-width: 767px) {

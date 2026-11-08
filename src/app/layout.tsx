@@ -8,17 +8,15 @@ import { AnalyticsRoot } from "@/components/analytics/analytics-root";
 import { profileMeta } from "@/data/profile-meta";
 import frMessages from "../../messages/fr.json";
 import { DesignSystemProvider } from "@/components/design-system/provider";
-import "@primer/primitives/dist/css/base/size/size.css";
-import "@primer/primitives/dist/css/base/typography/typography.css";
-import "@primer/primitives/dist/css/functional/size/border.css";
-import "@primer/primitives/dist/css/functional/size/radius.css";
-import "@primer/primitives/dist/css/functional/size/size.css";
-import "@primer/primitives/dist/css/functional/typography/typography.css";
-import "@primer/primitives/dist/css/functional/themes/light.css";
-import "@primer/primitives/dist/css/functional/themes/dark.css";
+import {
+  DEFAULT_DESIGN_SYSTEM,
+  initialDesignSystemScript,
+} from "@/components/design-system/registry";
 import "./globals.css";
 import "@/components/design-system/design-system.css";
 import "@/components/design-system/fun.css";
+import "@/components/design-system/frutiger-aero.css";
+import "@/components/design-system/liquid-glass.css";
 
 const googleSans = Google_Sans({
   subsets: ["latin"],
@@ -65,10 +63,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="fr"
       dir="ltr"
+      data-design-system={DEFAULT_DESIGN_SYSTEM}
       suppressHydrationWarning
       className={`${googleSans.variable} ${geistMono.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <head>
+        <script
+          id="initial-design-system"
+          dangerouslySetInnerHTML={{ __html: initialDesignSystemScript }}
+        />
         <script
           id="initial-theme"
           dangerouslySetInnerHTML={{

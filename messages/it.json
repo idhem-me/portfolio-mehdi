@@ -49,8 +49,8 @@
     "descriptions": {
       "mehdi": "Shadcn / Radix e token locali",
       "fun": "Cartoleria giocosa con colori vivaci e rilievo",
-      "github": "Primer React e token di Primer",
-      "adobe": "React Spectrum 1 e token di Spectrum"
+      "frutiger-aero": "Sfumature di cielo e acqua, superfici perlate e pulsanti lucidi",
+      "liquid-glass": "Vetro colorato, riflessi delicati e superfici di lettura opache"
     }
   },
   "nav": {
@@ -76,6 +76,18 @@
     "gameSettingsDescription": "Impostazioni di {game}."
   },
   "playground": {
+    "themeExamples": {
+      "frutiger-aero": {
+        "title": "Taccuino delle lagune",
+        "field": "Nome della laguna",
+        "sample": "Laguna turchese"
+      },
+      "liquid-glass": {
+        "title": "Atelier del vetro",
+        "field": "Nome della collezione",
+        "sample": "Riflessi del mattino"
+      }
+    },
     "funDemo": {
       "title": "Laboratorio di poster",
       "description": "Prova i pulsanti in rilievo e apri l’anteprima del tuo poster.",
@@ -95,6 +107,7 @@
     "desktop": "Desktop",
     "mobile": "Mobile",
     "componentIndex": "Indice dei componenti",
+    "sidebarDemoIndex": "Indice",
     "iconButton": "Pulsante con icona",
     "exampleChoice": "Esempio di selezione",
     "nativeButton": "Pulsante nativo",

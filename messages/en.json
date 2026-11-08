@@ -49,8 +49,8 @@
     "descriptions": {
       "mehdi": "Shadcn / Radix and local tokens",
       "fun": "Playful stationery with bright colors and depth",
-      "github": "Primer React and Primer tokens",
-      "adobe": "React Spectrum 1 and Spectrum tokens"
+      "frutiger-aero": "Sky and water gradients, pearly surfaces and glossy buttons",
+      "liquid-glass": "Tinted glass, soft reflections and opaque reading surfaces"
     }
   },
   "nav": {
@@ -76,6 +76,18 @@
     "gameSettingsDescription": "Settings for {game}."
   },
   "playground": {
+    "themeExamples": {
+      "frutiger-aero": {
+        "title": "Lagoon notebook",
+        "field": "Lagoon name",
+        "sample": "Turquoise Lagoon"
+      },
+      "liquid-glass": {
+        "title": "Glass studio",
+        "field": "Collection name",
+        "sample": "Morning Reflections"
+      }
+    },
     "funDemo": {
       "title": "Poster workshop",
       "description": "Try the raised buttons and open a preview of your poster.",
@@ -95,6 +107,7 @@
     "desktop": "Desktop",
     "mobile": "Mobile",
     "componentIndex": "Component index",
+    "sidebarDemoIndex": "Index",
     "iconButton": "Icon button",
     "exampleChoice": "Selection example",
     "nativeButton": "Native button",

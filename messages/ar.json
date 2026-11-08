@@ -49,8 +49,8 @@
     "descriptions": {
       "mehdi": "Shadcn / Radix ورموز تصميم محلية",
       "fun": "قرطاسية مرحة بألوان زاهية وتأثير بارز",
-      "github": "Primer React ورموز تصميم Primer",
-      "adobe": "React Spectrum 1 ورموز تصميم Spectrum"
+      "frutiger-aero": "تدرجات السماء والماء وأسطح لؤلؤية وأزرار لامعة",
+      "liquid-glass": "زجاج ملوّن وانعكاسات ناعمة وأسطح قراءة معتمة"
     }
   },
   "nav": {
@@ -76,6 +76,18 @@
     "gameSettingsDescription": "إعدادات {game}."
   },
   "playground": {
+    "themeExamples": {
+      "frutiger-aero": {
+        "title": "دفتر البحيرات الساحلية",
+        "field": "اسم البحيرة",
+        "sample": "البحيرة الفيروزية"
+      },
+      "liquid-glass": {
+        "title": "ورشة الزجاج",
+        "field": "اسم المجموعة",
+        "sample": "انعكاسات الصباح"
+      }
+    },
     "funDemo": {
       "title": "ورشة الملصقات",
       "description": "جرّب الأزرار البارزة وافتح معاينة ملصقك.",
@@ -95,6 +107,7 @@
     "desktop": "سطح المكتب",
     "mobile": "الهاتف",
     "componentIndex": "فهرس المكوّنات",
+    "sidebarDemoIndex": "الفهرس",
     "iconButton": "زر بأيقونة",
     "exampleChoice": "مثال على الاختيار",
     "nativeButton": "زر أصلي",

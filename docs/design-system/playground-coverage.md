@@ -8,6 +8,10 @@ Une composition absente peut être ajoutée comme scénario si elle définit une
 
 La composition `#fun` couvre la carte, le champ, les actions jaune et orange, le dialogue et leurs états de focus et de pression. Les démos `#button`, `#card`, `#input`, `#select`, `#switch`, `#sidebar`, `#dropdown-menu`, `#dialog` et `#sheet` montrent les primitives quand Fun est sélectionné. Les cartes des listes de réalisations et d’outils partagent les tokens de relief montrés à `#card`. Le comparatif montre la palette du mode actif et héberge les portails dans chaque colonne.
 
+## Frutiger Aero et Liquid Glass
+
+Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème, les surfaces opaques, un formulaire et son dialogue d’aperçu. Les actions exposent les reflets et la pression. Les dialogues montrent la matière superposée dans leur thème local. Ces démos suivent les densités Auto, Desktop et Mobile et le réglage clair ou sombre du site.
+
 ## `src/app`
 
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |

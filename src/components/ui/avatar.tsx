@@ -1,8 +1,5 @@
 "use client";
 
-import { Avatar as PrimerAvatar } from "@primer/react";
-import { Avatar as SpectrumAvatar } from "@adobe/react-spectrum";
-import { useDesignSystem } from "@/components/design-system/provider";
 import * as React from "react";
 import { cn } from "cn";
 import { Avatar as AvatarPrimitive } from "radix-ui";
@@ -31,28 +28,6 @@ function AvatarImage({
   className,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
-  const { designSystem } = useDesignSystem();
-  if (designSystem === "github" && typeof props.src === "string")
-    return (
-      <AvatarPrimitive.Image {...props} asChild className={className}>
-        <PrimerAvatar
-          src={props.src ?? ""}
-          alt={props.alt ?? ""}
-          style={{ width: "100%", height: "100%" }}
-        />
-      </AvatarPrimitive.Image>
-    );
-  if (designSystem === "adobe" && typeof props.src === "string")
-    return (
-      <AvatarPrimitive.Image {...props} asChild className={className}>
-        <SpectrumAvatar
-          src={props.src ?? ""}
-          alt={props.alt ?? ""}
-          size="avatar-size-500"
-          UNSAFE_style={{ width: "100%", height: "100%" }}
-        />
-      </AvatarPrimitive.Image>
-    );
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"

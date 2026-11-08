@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  DesignSystemScope,
-  useDesignSystem,
-} from "@/components/design-system/provider";
+import { DesignSystemScope } from "@/components/design-system/provider";
 import { usePathname } from "@/i18n/navigation";
 import { ConsentBanner } from "@/components/analytics/consent-banner";
 import { AppSidebar } from "@/components/layout/app-sidebar";
@@ -13,7 +10,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { designSystem } = useDesignSystem();
 
   const giftTool = pathname.startsWith("/outils/listes-cadeaux");
 
@@ -28,13 +24,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SidebarInset
           className={
             pathname === "/"
-              ? `min-w-0 home-paper-background ${
-                  designSystem === "github"
-                    ? "github-home"
-                    : designSystem === "adobe"
-                      ? "adobe-home"
-                      : ""
-                }`
+              ? "min-w-0 home-paper-background"
               : "min-w-0"
           }
         >

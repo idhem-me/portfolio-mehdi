@@ -1,0 +1,182 @@
+:is(html, .ds-scope)[data-design-system="frutiger-aero"] {
+  --aero-canvas: #e8f9f7;
+  --aero-surface: #f7ffff;
+  --aero-ink: #10394b;
+  --aero-muted: #ddf3ef;
+  --aero-muted-ink: #365861;
+  --aero-sky: #9adafa;
+  --aero-lime: #c8ed9c;
+  --aero-action: #075a83;
+  --aero-accent: #245f20;
+  --aero-on-action: #f7ffff;
+  --aero-edge: #739aa3;
+  --aero-control-edge: #527985;
+  --aero-focus: #075a83;
+  --aero-danger: #9c2946;
+  --aero-success: #246730;
+  --aero-warning: #79450b;
+  --aero-glint: rgb(255 255 255 / 13%);
+  --aero-bubble: rgb(255 255 255 / 56%);
+  --aero-depth: rgb(15 68 93 / 18%);
+  --aero-bevel: rgb(15 68 93 / 18%);
+
+  --aero-skyline: linear-gradient(150deg, var(--aero-sky), var(--aero-canvas) 50%, var(--aero-lime));
+  --aero-backdrop:
+    radial-gradient(circle at 88% 10%, transparent 1.6rem, var(--aero-bubble) 1.75rem, transparent 2rem),
+    radial-gradient(circle at 91% 18%, var(--aero-bubble), transparent 1rem),
+    var(--aero-skyline);
+  --aero-panel-sheen: linear-gradient(155deg, var(--aero-surface), var(--aero-muted));
+  --aero-button-sheen: linear-gradient(var(--aero-glint), transparent 50%, var(--aero-bevel));
+  --aero-button-shadow: inset 0 1px var(--aero-glint), 0 2px 3px var(--aero-depth);
+  --aero-button-pressed-shadow: inset 0 2px 3px var(--aero-depth);
+  --aero-panel-shadow: inset 0 1px var(--aero-glint), 0 6px 14px var(--aero-depth);
+  --aero-hover-brightness: 1.05;
+  --aero-press-travel: 1px;
+  --aero-motion-duration: 150ms;
+  --aero-motion-easing: ease-out;
+
+  --background: var(--aero-canvas);
+  --foreground: var(--aero-ink);
+  --card: var(--aero-surface);
+  --card-foreground: var(--aero-ink);
+  --popover: var(--aero-surface);
+  --popover-foreground: var(--aero-ink);
+  --primary: var(--aero-action);
+  --primary-foreground: var(--aero-on-action);
+  --primary-inverse: var(--aero-surface);
+  --secondary: var(--aero-muted);
+  --secondary-foreground: var(--aero-ink);
+  --muted: var(--aero-muted);
+  --muted-foreground: var(--aero-muted-ink);
+  --accent: var(--aero-accent);
+  --accent-foreground: var(--aero-on-action);
+  --destructive: var(--aero-danger);
+  --success: var(--aero-success);
+  --success-foreground: var(--aero-on-action);
+  --warning: var(--aero-warning);
+  --warning-foreground: var(--aero-on-action);
+  --border: var(--aero-edge);
+  --input: var(--aero-control-edge);
+  --ring: var(--aero-focus);
+  --chart-1: var(--aero-action);
+  --chart-2: var(--aero-accent);
+  --chart-3: #97452d;
+  --chart-4: #6e44a4;
+  --chart-5: #127367;
+  --sidebar: var(--aero-surface);
+  --sidebar-foreground: var(--aero-ink);
+  --sidebar-primary: var(--aero-action);
+  --sidebar-primary-foreground: var(--aero-on-action);
+  --sidebar-accent: var(--aero-muted);
+  --sidebar-accent-foreground: var(--aero-ink);
+  --sidebar-border: var(--aero-edge);
+  --sidebar-ring: var(--aero-focus);
+}
+
+html.dark[data-design-system="frutiger-aero"],
+.dark .ds-scope[data-design-system="frutiger-aero"] {
+  --aero-canvas: #102b3b;
+  --aero-surface: #173847;
+  --aero-ink: #edfff9;
+  --aero-muted: #224655;
+  --aero-muted-ink: #b3d3d4;
+  --aero-sky: #164965;
+  --aero-lime: #245335;
+  --aero-action: #8ddaf6;
+  --aero-accent: #b2e887;
+  --aero-on-action: #102b3b;
+  --aero-edge: #638893;
+  --aero-control-edge: #84a8ad;
+  --aero-focus: #c0f2ff;
+  --aero-danger: #ffb3c8;
+  --aero-success: #a7e6a3;
+  --aero-warning: #ffcf8e;
+  --aero-glint: rgb(255 255 255 / 18%);
+  --aero-bubble: rgb(197 252 255 / 22%);
+  --aero-depth: rgb(1 18 30 / 35%);
+  --aero-bevel: rgb(1 18 30 / 20%);
+  --chart-3: #ffb689;
+  --chart-4: #cfb1ff;
+  --chart-5: #82d7bc;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(html, .ds-scope)[data-design-system="frutiger-aero"] {
+    --aero-press-travel: 0px;
+    --aero-motion-duration: 0ms;
+  }
+}
+
+html[data-design-system="frutiger-aero"] body {
+  background-image: var(--aero-backdrop);
+}
+
+@scope (:is(html, .ds-scope)[data-design-system="frutiger-aero"]) to (.ds-scope[data-design-system]:not([data-design-system="frutiger-aero"])) {
+  :is([data-slot="sidebar-inset"]:not(.home-paper-background), [data-theme-canvas], [data-compare-column]) {
+    background-image: var(--aero-backdrop);
+  }
+
+  .home-paper-background {
+    --home-paper-backdrop: var(--aero-skyline);
+  }
+
+  :is([data-slot="sidebar-inner"], [data-slot="section-navigation"], .mobile-navigation-panel) {
+    background-image: var(--aero-panel-sheen);
+  }
+
+  :is([data-slot="card"], [data-slot="portfolio-card"], [data-slot="dialog-content"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="select-content"]) {
+    box-shadow: var(--aero-panel-shadow);
+  }
+
+  [data-slot="button"]:not([data-variant="ghost"], [data-variant="link"]) {
+    background-image: var(--aero-button-sheen);
+    box-shadow: var(--aero-button-shadow);
+    translate: none;
+    transition-property: filter, translate, box-shadow, background-color, color;
+    transition-duration: var(--aero-motion-duration);
+    transition-timing-function: var(--aero-motion-easing);
+  }
+
+  [data-slot="button"][data-variant="accent"]::before {
+    content: none;
+    animation: none;
+  }
+
+  [data-slot="button"]:is([data-variant="default"], [data-variant="primary"]) {
+    background-color: var(--primary);
+  }
+
+  [data-slot="button"][data-variant="accent"] {
+    background-color: var(--accent);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    [data-slot="button"]:not([data-variant="ghost"], [data-variant="link"], :disabled, [aria-disabled="true"]):hover {
+      filter: brightness(var(--aero-hover-brightness));
+    }
+  }
+
+  [data-slot="button"]:not([data-variant="ghost"], [data-variant="link"], :disabled, [aria-disabled="true"]):active {
+    box-shadow: var(--aero-button-pressed-shadow);
+    translate: 0 var(--aero-press-travel);
+  }
+
+  :is([data-slot="button"], [data-slot="input"], [data-slot="select-trigger"], [data-slot="switch"], [data-slot="sidebar-menu-button"], [data-slot="portfolio-card"]):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+
+    @media (forced-colors: active) {
+      outline-color: Highlight;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :is([data-slot="dialog-content"], [data-slot="sheet-content"], [data-slot="sheet-overlay"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="select-content"], .mobile-navigation-panel) {
+      animation: none;
+    }
+
+    [data-slot="switch"] > span > span {
+      transition-duration: var(--aero-motion-duration);
+    }
+  }
+}

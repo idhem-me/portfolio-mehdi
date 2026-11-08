@@ -74,6 +74,8 @@ function renderStroke(points: PaintPoint[], color: string) {
     ".page-tear-paper > :first-child",
   );
   (host ?? document.body).append(el);
+  // Preserve the color used to create this stroke when the interface theme changes.
+  path.style.stroke = getComputedStyle(path).stroke;
   updatePath(el, points);
   return el;
 }

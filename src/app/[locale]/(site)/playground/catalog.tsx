@@ -49,6 +49,7 @@ import "@/components/creative/paint-tool.css";
 import { PaintColorButton } from "@/components/creative/paint-color-button";
 import { ColorPicker } from "@/features/color-generator/ui/ColorPicker";
 import { demoAnchors } from "./coverage";
+import { EXPERIMENTAL_THEMES_ENABLED } from "@/components/design-system/registry";
 import { SettingsModal, type SettingsModalVariant } from "@/components/ui/settings-modal";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSortButton } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
@@ -75,13 +76,19 @@ import { SafeSvg } from "@/components/media/safe-svg";
 import {
   DesignSystemForce,
   DesignSystemScope,
-  ENABLED_DESIGN_SYSTEMS,
+  DESIGN_SYSTEMS,
 } from "@/components/design-system/provider";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 const densities = ["auto", "desktop", "mobile"] as const;
 type Density = (typeof densities)[number];
+
+const visibleDemoAnchors = Object.entries(demoAnchors).filter(
+  ([, anchor]) =>
+    EXPERIMENTAL_THEMES_ENABLED ||
+    (anchor !== demoAnchors["Frutiger Aero"] && anchor !== demoAnchors["Liquid Glass"]),
+);
 
 const SAFE_SVG_DEMO = `<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm1 15h-2v-2h2Zm0-4h-2V7h2Z"/></svg>`;
 
@@ -133,7 +140,7 @@ export function PlaygroundCatalog() {
       data-density={density === "auto" ? undefined : density}
       className="@container w-full"
     >
-      <DesignSystemScope portalRoot scopeRadixPortals className="mx-auto grid w-full max-w-3xl gap-6 px-6 py-10 @min-[64rem]:max-w-5xl @min-[64rem]:grid-cols-[minmax(0,1fr)_10rem] @min-[64rem]:rtl:grid-cols-[10rem_minmax(0,1fr)]">
+      <DesignSystemScope scopeRadixPortals className="mx-auto grid w-full max-w-3xl gap-6 px-6 py-10 @min-[64rem]:max-w-5xl @min-[64rem]:grid-cols-[minmax(0,1fr)_10rem] @min-[64rem]:rtl:grid-cols-[10rem_minmax(0,1fr)]">
         <div className="min-w-0 max-w-3xl space-y-8 @min-[64rem]:col-start-1 @min-[64rem]:row-start-1 @min-[64rem]:rtl:col-start-2">
           <header>
             <h1
@@ -353,8 +360,14 @@ export function PlaygroundCatalog() {
             </div>
           </Section>
 
+          {EXPERIMENTAL_THEMES_ENABLED && (
+            <Section title="Frutiger Aero">
+              <ThemeDemo theme="frutiger-aero" />
+            </Section>
+          )}
+
           <Section title="Fun">
-            <FunDemo />
+            <ThemeDemo theme="fun" />
           </Section>
 
           <Section title="Input">
@@ -364,6 +377,12 @@ export function PlaygroundCatalog() {
               <Input type="email" defaultValue="exemple@email.com" />
             </div>
           </Section>
+
+          {EXPERIMENTAL_THEMES_ENABLED && (
+            <Section title="Liquid Glass">
+              <ThemeDemo theme="liquid-glass" />
+            </Section>
+          )}
 
           <Section title="NativeControls">
             <div className="flex flex-wrap items-center gap-3">
@@ -449,7 +468,7 @@ export function PlaygroundCatalog() {
                   label={designSystem("label")}
                   value={selectValue}
                   onValueChange={setSelectValue}
-                  options={ENABLED_DESIGN_SYSTEMS.map(({ id, label }) => ({
+                  options={DESIGN_SYSTEMS.map(({ id, label }) => ({
                     value: id,
                     label,
                   }))}
@@ -529,7 +548,7 @@ export function PlaygroundCatalog() {
                   <SidebarMenuItem>
                     <SidebarMenuButton isActive>
                       <Menu aria-hidden />
-                      {t("componentIndex")}
+                      {t("sidebarDemoIndex")}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <DesignSystemChoiceMenu
@@ -638,7 +657,7 @@ export function PlaygroundCatalog() {
         >
           <p className="mb-2 font-medium">{t("componentIndex")}</p>
           <ul>
-            {Object.entries(demoAnchors).map(([title, anchor]) => (
+            {visibleDemoAnchors.map(([title, anchor]) => (
               <li key={anchor}>
                 <a
                   className="flex min-h-(--control-height) items-center rounded-md px-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
@@ -655,56 +674,70 @@ export function PlaygroundCatalog() {
   );
 }
 
-function FunDemo() {
+function ThemeDemo({ theme }: { theme: "fun" | "frutiger-aero" | "liquid-glass" }) {
   const t = useTranslations("playground.funDemo");
+  const examples = useTranslations("playground.themeExamples");
+  const descriptions = useTranslations("designSystem.descriptions");
+  const title = theme === "fun" ? t("title") : examples(`${theme}.title`);
+  const field = theme === "fun" ? t("field") : examples(`${theme}.field`);
+  const sample = theme === "fun" ? t("sample") : examples(`${theme}.sample`);
+  const description = theme === "fun" ? t("description") : descriptions(theme);
   const fieldId = useId();
   const [preview, setPreview] = useState("");
 
   return (
-    <DesignSystemForce value="fun">
-      <DesignSystemScope portalRoot scopeRadixPortals>
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("title")}</CardTitle>
-            <CardDescription>{t("description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Dialog>
-              <form
-                className="space-y-4"
-                onSubmit={(event) => event.preventDefault()}
-              >
-                <div className="space-y-2">
-                  <label htmlFor={fieldId} className="text-sm font-medium">
-                    {t("field")}
-                  </label>
-                  <Input id={fieldId} name="workshop" defaultValue={t("sample")} />
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <DialogTrigger asChild>
-                    <Button
-                      type="button"
-                      onClick={(event) => {
-                        const form = event.currentTarget.form;
-                        if (form) setPreview(String(new FormData(form).get("workshop") ?? ""));
-                      }}
-                    >
-                      {t("preview")}
-                    </Button>
-                  </DialogTrigger>
-                  <Button type="reset" variant="secondary">{t("reset")}</Button>
-                </div>
-              </form>
-              <DialogContent>
-                <DialogTitle>{t("preview")}</DialogTitle>
-                <DialogDescription>{preview || t("sample")}</DialogDescription>
-                <DialogClose asChild>
-                  <Button className="mt-4" variant="secondary">{t("close")}</Button>
-                </DialogClose>
-              </DialogContent>
-            </Dialog>
-          </CardContent>
-        </Card>
+    <DesignSystemForce value={theme}>
+      <DesignSystemScope
+        scopeRadixPortals
+        className={theme === "fun" ? "contents" : "ds-compare-scope"}
+      >
+        <div
+          data-theme-canvas={theme === "fun" ? undefined : ""}
+          className={theme === "fun" ? "contents" : "rounded-xl bg-background p-3 sm:p-6"}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle>{title}</CardTitle>
+              <CardDescription>{description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Dialog>
+                <form
+                  className="space-y-4"
+                  onSubmit={(event) => event.preventDefault()}
+                >
+                  <div className="space-y-2">
+                    <label htmlFor={fieldId} className="text-sm font-medium">
+                      {field}
+                    </label>
+                    <Input id={fieldId} name="workshop" defaultValue={sample} />
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <DialogTrigger asChild>
+                      <Button
+                        type="button"
+                        onClick={(event) => {
+                          const form = event.currentTarget.form;
+                          if (form) setPreview(String(new FormData(form).get("workshop") ?? ""));
+                        }}
+                      >
+                        {t("preview")}
+                      </Button>
+                    </DialogTrigger>
+                    <Button type="reset" variant="secondary">{t("reset")}</Button>
+                  </div>
+                </form>
+                <DialogContent>
+                  <DialogTitle>{t("preview")}</DialogTitle>
+                  <DialogDescription>{preview || sample}</DialogDescription>
+                  <DialogClose asChild>
+                    <Button className="mt-4" variant="secondary">{t("close")}</Button>
+                  </DialogClose>
+                </DialogContent>
+              </Dialog>
+            </CardContent>
+          </Card>
+        </div>
       </DesignSystemScope>
     </DesignSystemForce>
   );

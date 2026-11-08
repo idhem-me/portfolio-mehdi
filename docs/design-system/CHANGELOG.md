@@ -1,5 +1,13 @@
 # Changelog du design system
 
+## Frutiger Aero et Liquid Glass
+
+- Le sélecteur et le comparatif proposent les quatre thèmes en développement et limitent la production à Sobre et Fun. Les anciens liens du comparatif redirigent toujours vers sa page actuelle.
+- Le thème choisi suit les changements de langue et les rechargements. Il s’applique aux interfaces du site indépendamment du mode clair ou sombre.
+- Les deux compositions du Playground montrent les palettes et effets de matière avec les primitives locales.
+- Le lint, le typecheck, le build et les quatre suites Node passent. La recette ciblée couvre Chromium, Android Chrome et WebKit iPhone, avec navigation tactile, focus, densité, persistance et transparence réduite. Le build signale l’avertissement de secours Google Sans.
+- La suite image passe huit cas sur neuf. L’assertion de compression lit l’aperçu via `fetch(blob:)`, bloqué par `connect-src` dans la politique actuelle du site.
+
 ## Accent et pinceau
 
 - Fun affiche la variante Accent en violet dans les deux modes. Le pinceau utilise cette variante et sa commande de sortie reste alignée à côté de lui. La palette et les deux boutons sont visibles dans PaintColor.

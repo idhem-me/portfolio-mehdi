@@ -92,7 +92,7 @@ html.dark[data-design-system="fun"],
 }
 
 /* A forced Playground column is a boundary even when Fun is active globally. */
-@scope (:is(html, .ds-scope)[data-design-system="fun"]) to (.ds-scope:not([data-design-system="fun"])) {
+@scope (:is(html, .ds-scope)[data-design-system="fun"]) to (.ds-scope[data-design-system]:not([data-design-system="fun"])) {
   [data-slot="button"]:is([data-variant="default"], [data-variant="primary"]) {
     --fun-button-fill: var(--fun-yellow);
     --fun-button-text: var(--fun-on-action);

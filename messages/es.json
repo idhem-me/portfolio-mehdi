@@ -49,8 +49,8 @@
     "descriptions": {
       "mehdi": "Shadcn / Radix y tokens locales",
       "fun": "Papelería divertida con colores vivos y relieve",
-      "github": "Primer React y tokens de Primer",
-      "adobe": "React Spectrum 1 y tokens de Spectrum"
+      "frutiger-aero": "Degradados de cielo y agua, superficies nacaradas y botones brillantes",
+      "liquid-glass": "Vidrio tintado, reflejos suaves y superficies de lectura opacas"
     }
   },
   "nav": {
@@ -76,6 +76,18 @@
     "gameSettingsDescription": "Ajustes de {game}."
   },
   "playground": {
+    "themeExamples": {
+      "frutiger-aero": {
+        "title": "Cuaderno de lagunas",
+        "field": "Nombre de la laguna",
+        "sample": "Laguna turquesa"
+      },
+      "liquid-glass": {
+        "title": "Taller de vidrio",
+        "field": "Nombre de la colección",
+        "sample": "Reflejos de la mañana"
+      }
+    },
     "funDemo": {
       "title": "Taller de carteles",
       "description": "Prueba los botones en relieve y abre la vista previa de tu cartel.",
@@ -95,6 +107,7 @@
     "desktop": "Escritorio",
     "mobile": "Móvil",
     "componentIndex": "Índice de componentes",
+    "sidebarDemoIndex": "Índice",
     "iconButton": "Botón con icono",
     "exampleChoice": "Ejemplo de selección",
     "nativeButton": "Botón nativo",

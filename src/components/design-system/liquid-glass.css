@@ -1,0 +1,193 @@
+:is(html, .ds-scope)[data-design-system="liquid-glass"] {
+  --glass-canvas: #eaf0fb;
+  --glass-paper: #f8faff;
+  --glass-ink: #18283f;
+  --glass-muted: #e0e9f6;
+  --glass-muted-ink: #455a73;
+  --glass-action: #244f97;
+  --glass-accent: #514295;
+  --glass-on-action: #fbfcff;
+  --glass-edge: #788eac;
+  --glass-control-edge: #5f7596;
+  --glass-focus: #1e56ac;
+  --glass-danger: #9c2946;
+  --glass-success: #216344;
+  --glass-warning: #79450b;
+  --glass-material-tint: #eff5ff;
+  --glass-specular: rgb(255 255 255 / 83%);
+  --glass-depth: rgb(25 57 104 / 19%);
+  --glass-aurora: #cbd8f6;
+  --glass-horizon: #e1d8f7;
+  --glass-highlight: rgb(255 255 255 / 15%);
+
+  --glass-skyline: radial-gradient(ellipse at 85% 5%, var(--glass-aurora), transparent 55%);
+  --glass-backdrop:
+    var(--glass-skyline),
+    radial-gradient(ellipse at 6% 90%, var(--glass-horizon), transparent 48%);
+  --glass-material-opacity: 87%;
+  --glass-material-blur: 14px;
+  --glass-material-saturation: 1.12;
+  --glass-material-shadow: inset 0 1px var(--glass-specular), 0 6px 20px var(--glass-depth);
+  --glass-control-shadow: inset 0 1px var(--glass-highlight), 0 2px 5px var(--glass-depth);
+  --glass-pressed-shadow: inset 0 2px 4px var(--glass-depth);
+  --glass-press-scale: 0.98;
+  --glass-motion-duration: 180ms;
+  --glass-motion-easing: cubic-bezier(0.2, 0.7, 0.25, 1);
+
+  --background: var(--glass-canvas);
+  --foreground: var(--glass-ink);
+  --card: var(--glass-paper);
+  --card-foreground: var(--glass-ink);
+  --popover: var(--glass-paper);
+  --popover-foreground: var(--glass-ink);
+  --primary: var(--glass-action);
+  --primary-foreground: var(--glass-on-action);
+  --primary-inverse: var(--glass-paper);
+  --secondary: var(--glass-muted);
+  --secondary-foreground: var(--glass-ink);
+  --muted: var(--glass-muted);
+  --muted-foreground: var(--glass-muted-ink);
+  --accent: var(--glass-accent);
+  --accent-foreground: var(--glass-on-action);
+  --destructive: var(--glass-danger);
+  --success: var(--glass-success);
+  --success-foreground: var(--glass-on-action);
+  --warning: var(--glass-warning);
+  --warning-foreground: var(--glass-on-action);
+  --border: var(--glass-edge);
+  --input: var(--glass-control-edge);
+  --ring: var(--glass-focus);
+  --chart-1: var(--glass-action);
+  --chart-2: var(--glass-accent);
+  --chart-3: #136b69;
+  --chart-4: #9c455c;
+  --chart-5: #735714;
+  --sidebar: var(--glass-material-tint);
+  --sidebar-foreground: var(--glass-ink);
+  --sidebar-primary: var(--glass-action);
+  --sidebar-primary-foreground: var(--glass-on-action);
+  --sidebar-accent: var(--glass-muted);
+  --sidebar-accent-foreground: var(--glass-ink);
+  --sidebar-border: var(--glass-edge);
+  --sidebar-ring: var(--glass-focus);
+}
+
+html.dark[data-design-system="liquid-glass"],
+.dark .ds-scope[data-design-system="liquid-glass"] {
+  --glass-canvas: #141e30;
+  --glass-paper: #222e44;
+  --glass-ink: #f1f6ff;
+  --glass-muted: #30405a;
+  --glass-muted-ink: #becbe0;
+  --glass-action: #a4c9ff;
+  --glass-accent: #cec1ff;
+  --glass-on-action: #18243a;
+  --glass-edge: #7488a8;
+  --glass-control-edge: #8599bb;
+  --glass-focus: #c7deff;
+  --glass-danger: #ffb3c8;
+  --glass-success: #a1e5bc;
+  --glass-warning: #ffcf8e;
+  --glass-material-tint: #26344c;
+  --glass-specular: rgb(213 232 255 / 30%);
+  --glass-depth: rgb(3 8 20 / 40%);
+  --glass-aurora: #223e65;
+  --glass-horizon: #3c2d61;
+  --glass-highlight: rgb(255 255 255 / 18%);
+  --chart-3: #83d5cf;
+  --chart-4: #ffacc8;
+  --chart-5: #f2d17e;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(html, .ds-scope)[data-design-system="liquid-glass"] {
+    --glass-press-scale: 1;
+    --glass-motion-duration: 0ms;
+  }
+}
+
+html[data-design-system="liquid-glass"] body {
+  background-image: var(--glass-backdrop);
+}
+
+@scope (:is(html, .ds-scope)[data-design-system="liquid-glass"]) to (.ds-scope[data-design-system]:not([data-design-system="liquid-glass"])) {
+  :is([data-slot="sidebar-inset"]:not(.home-paper-background), [data-theme-canvas], [data-compare-column]) {
+    background-image: var(--glass-backdrop);
+  }
+
+  .home-paper-background {
+    --home-paper-backdrop: var(--glass-skyline);
+  }
+
+  :is([data-slot="sidebar-inner"], [data-slot="section-navigation"], [data-slot="dialog-content"], [data-slot="sheet-content"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="select-content"], .mobile-navigation-panel) {
+    background-color: var(--glass-material-tint);
+    box-shadow: var(--glass-material-shadow);
+    border-color: var(--border);
+
+    @supports (backdrop-filter: blur(1px)) {
+      background-color: color-mix(in srgb, var(--glass-material-tint) var(--glass-material-opacity), transparent);
+      backdrop-filter: blur(var(--glass-material-blur)) saturate(var(--glass-material-saturation));
+    }
+
+    @media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+      background-color: var(--glass-material-tint);
+      backdrop-filter: none;
+    }
+  }
+
+  [data-slot="button"]:not([data-variant="ghost"], [data-variant="link"]) {
+    box-shadow: var(--glass-control-shadow);
+    border-radius: var(--radius-4xl);
+    translate: none;
+    transition-property: scale, box-shadow, background-color, color;
+    transition-duration: var(--glass-motion-duration);
+    transition-timing-function: var(--glass-motion-easing);
+  }
+
+  [data-slot="button"][data-variant="accent"]::before {
+    content: none;
+    animation: none;
+  }
+
+  [data-slot="button"]:is([data-variant="default"], [data-variant="primary"]) {
+    background-color: var(--primary);
+  }
+
+  [data-slot="button"][data-variant="accent"] {
+    background-color: var(--accent);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    [data-slot="portfolio-card"]:is(a, button):hover {
+      background-color: var(--muted);
+    }
+
+    [data-slot="button"]:not([data-variant="ghost"], [data-variant="link"], :disabled, [aria-disabled="true"]):hover {
+      box-shadow: inset 0 1px var(--glass-specular), var(--glass-control-shadow);
+    }
+  }
+
+  [data-slot="button"]:not([data-variant="ghost"], [data-variant="link"], :disabled, [aria-disabled="true"]):active {
+    box-shadow: var(--glass-pressed-shadow);
+    scale: var(--glass-press-scale);
+  }
+
+  :is([data-slot="button"], [data-slot="input"], [data-slot="select-trigger"], [data-slot="switch"], [data-slot="sidebar-menu-button"], [data-slot="portfolio-card"]):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+
+    @media (forced-colors: active) {
+      outline-color: Highlight;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :is([data-slot="dialog-content"], [data-slot="sheet-content"], [data-slot="sheet-overlay"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="select-content"], .mobile-navigation-panel) {
+      animation: none;
+    }
+
+    [data-slot="switch"] > span > span {
+      transition-duration: var(--glass-motion-duration);
+    }
+  }
+}

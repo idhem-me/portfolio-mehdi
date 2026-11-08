@@ -62,20 +62,72 @@ test("the local components page works in every locale", async ({ page }) => {
   }
 });
 
-test("Primer keeps mobile targets in the dark Playground", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "dark" });
-  await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto("/playground");
-  await page.getByRole("button", { name: "Mobile", exact: true }).click();
-  const switcher = page.locator("#sidebar").getByRole("button", { name: "Design system", exact: true });
-  await switcher.click();
-  await page.getByRole("menuitemradio", { name: "GitHub", exact: true }).click();
-  await expect(page.locator("[aria-labelledby=playground-title] > .ds-scope")).toHaveAttribute("data-color-mode", "dark");
-  await expectTouchTarget(page.locator("section#button").getByRole("button", { name: "Bouton icône icon-xs", exact: true }));
-  const menuTrigger = page.locator("#dropdown-menu").getByRole("button", { name: "Items", exact: true });
-  await menuTrigger.click();
-  await expectTouchTarget(page.getByRole("menuitem", { name: "Profil", exact: true }));
+test("mobile theme and language menus work inside the navigation dialog", async ({ page, hasTouch }) => {
+  await page.addInitScript(() => localStorage.setItem("analytics_consent", "denied"));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const activate = (target: Locator) => hasTouch ? target.tap() : target.click();
+  const open = page.getByRole("button", { name: "Ouvrir le menu", exact: true });
+  await activate(open);
+  const mobile = page.locator("#mobile-navigation");
+  const choose = async (name: string) => {
+    if (!await mobile.isVisible()) await activate(open);
+    await activate(mobile.locator('[data-analytics-action="design_system_open"]'));
+    const option = page.getByRole("menuitemradio", { name, exact: true });
+    await expect(option).toBeVisible();
+    await activate(option);
+    await expect(option).toBeHidden();
+  };
+  await choose("Frutiger Aero");
+  await expect(mobile).toBeVisible();
+  await activate(mobile.locator('[data-analytics-action="language_open"]'));
+  const french = page.getByRole("menuitemradio", { name: "Français", exact: true });
+  await activate(french);
+  await expect(french).toBeHidden();
+  await choose("Sobre");
+  await choose("Liquid Glass");
+  await activate(mobile.getByRole("link", { name: "Accueil", exact: true }));
+  await expect(mobile).toBeHidden();
+  await expect(page.locator("html")).toHaveAttribute("data-design-system", "liquid-glass");
 });
+
+for (const [name, id] of [
+  ["Frutiger Aero", "frutiger-aero"],
+  ["Liquid Glass", "liquid-glass"],
+] as const) {
+  test(`${name} keeps mobile targets and focus in the dark Playground`, async ({ page }) => {
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await page.addInitScript(() => localStorage.setItem("analytics_consent", "denied"));
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto("/playground");
+    await page.getByRole("button", { name: "Mobile", exact: true }).click();
+    const switcher = page.locator("#sidebar").getByRole("button", { name: "Design system", exact: true });
+    await switcher.click();
+    await page.getByRole("menuitemradio", { name, exact: true }).click();
+    await expect(page.locator("html")).toHaveClass(/dark/);
+    await expect(page.locator("html")).toHaveAttribute("data-design-system", id);
+
+    const iconButton = page.locator("section#button").getByRole("button", { name: "Bouton icône icon-xs", exact: true });
+    await expectTouchTarget(iconButton);
+    const menuTrigger = page.locator("#dropdown-menu").getByRole("button", { name: "Items", exact: true });
+    await menuTrigger.click();
+    await expectTouchTarget(page.getByRole("menuitem", { name: "Profil", exact: true }));
+    await page.keyboard.press("Escape");
+    await expect(menuTrigger).toBeFocused();
+
+    const demo = page.locator(`section#${id}`);
+    const preview = demo.getByRole("button", { name: "Aperçu" });
+    await expectTouchTarget(preview);
+    await expect(preview).toHaveCSS("transition-duration", "0s");
+    await demo.getByRole("textbox").fill("Projet de démonstration");
+    await preview.click();
+    const dialog = demo.getByRole("dialog");
+    await expect(dialog).toContainText("Projet de démonstration");
+    await expectTouchTarget(dialog.getByRole("button", { name: "Fermer" }));
+    await page.keyboard.press("Escape");
+    await expect(preview).toBeFocused();
+  });
+}
 
 test("the settings modal and sortable table follow the active density", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });

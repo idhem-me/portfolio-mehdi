@@ -16,6 +16,7 @@ export function SectionNavigation({
     <DesignSystemScope className="contents">
       <nav
         aria-label={label}
+        data-slot="section-navigation"
         className="fixed left-1/2 bottom-[calc(2rem+env(safe-area-inset-bottom))] z-30 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border border-sidebar-border bg-sidebar p-1 text-sidebar-foreground shadow-lg md:sticky md:left-auto md:z-0 md:top-0 md:bottom-auto md:h-dvh md:w-44 md:max-w-none md:translate-x-0 md:shrink-0 md:self-start md:overflow-y-auto md:rounded-none md:border-0 md:border-e md:p-2 md:shadow-none"
       >
         <SidebarMenu className="w-auto flex-row flex-wrap justify-center gap-1 md:w-full md:flex-col md:justify-start">
