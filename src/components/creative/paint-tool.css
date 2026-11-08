@@ -1,5 +1,5 @@
-/* Painting is a creative tool with its own appearance, including body portals. */
-.paint-original-theme {
+/* Fun uses its own palette for the brush, including artwork rendered in body portals. */
+:root:not([data-design-system="fun"]) .paint-original-theme {
   --background: var(--mehdi-background);
   --foreground: var(--mehdi-foreground);
   --primary: var(--mehdi-primary);

@@ -227,3 +227,36 @@ for (const touch of [false, true]) {
     await context.close();
   });
 }
+
+test("Fun uses the accent for the brush and keeps the exit aligned on mobile", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.addInitScript(() => {
+    localStorage.setItem("analytics_consent", "denied");
+    localStorage.setItem("theme", "light");
+  });
+  await page.goto("/");
+  await page.locator('[data-analytics-action="design_system_open"]:visible').click();
+  await page.getByRole("menuitemradio", { name: "Fun", exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  const toolbar = page.locator("[data-paint-toolbar]");
+  const brush = toolbar.getByRole("button", { name: "Pinceau", exact: true });
+  await expect(brush).toHaveAttribute("data-variant", "accent");
+  await expect(brush).toHaveCSS("height", "44px");
+  await expect(brush).toHaveCSS("background-color", "rgb(99, 52, 198)");
+  await brush.click();
+
+  const exit = page.locator("[data-paint-mode]").getByRole("button", {
+    name: "Quitter le pinceau",
+    exact: true,
+  });
+  const exitBox = (await exit.boundingBox())!;
+  const brushBox = (await toolbar.getByRole("button", {
+    name: "Quitter le pinceau",
+    exact: true,
+  }).boundingBox())!;
+  expect(brushBox.x - (exitBox.x + exitBox.width)).toBeCloseTo(8, 0);
+  expect(exitBox.y + exitBox.height / 2).toBeCloseTo(brushBox.y + brushBox.height / 2, 0);
+  await exit.click();
+  await expect(brush).toBeVisible();
+  await expect(page.locator("[data-paint-stroke]")).toHaveCount(0);
+});

@@ -78,7 +78,7 @@ La composition `#fun` couvre la carte, le champ, les actions jaune et orange, le
 | gravity-playground.tsx | Absente · interaction propre à l’accueil | button, native-controls, sidebar |
 | paint-brush.tsx | Absente · interaction propre à l’accueil | — |
 | paint-color-button.tsx | Démo dans PaintColor | — |
-| paint-tool.tsx | Absente · interaction propre à l’accueil | mehdi-button |
+| paint-tool.tsx | PaintColor pour les boutons et la palette. Le dessin est testé sur l’accueil. | button |
 
 ## `src/components/design-system`
 

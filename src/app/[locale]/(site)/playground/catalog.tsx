@@ -45,6 +45,8 @@ import { Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvid
 import { DesignSystemChoiceMenu } from "@/components/design-system/choice-menu";
 import { NativeButton, NativeInput, NativeTextarea } from "@/components/design-system/native-controls";
 import { DesignSystemSwitcher } from "@/components/design-system/switcher";
+import { PaintBrush } from "@/components/creative/paint-brush";
+import "@/components/creative/paint-tool.css";
 import { PaintColorButton } from "@/components/creative/paint-color-button";
 import { ColorPicker } from "@/features/color-generator/ui/ColorPicker";
 import { demoAnchors } from "./coverage";
@@ -112,6 +114,7 @@ export function PlaygroundCatalog() {
   const [sidebarChoice, setSidebarChoice] = useState("a");
   const paint = useTranslations("home.paint");
   const [paintColor, setPaintColor] = useState("primary");
+  const [paintOpen, setPaintOpen] = useState(false);
   const [demoColor, setDemoColor] = useState("#0071E3");
   const nativeLabelId = useId();
   const [switchOn, setSwitchOn] = useState(true);
@@ -375,16 +378,35 @@ export function PlaygroundCatalog() {
           </Section>
 
           <Section title="PaintColor">
-            <div className="flex flex-wrap gap-2" role="group" aria-label={paint("palette")}>
-              {(["primary", "accent", "warning", "success", "destructive"] as const).map((color) => (
-                <PaintColorButton
-                  key={color}
-                  color={`var(--${color})`}
-                  selected={paintColor === color}
-                  label={paint(color === "destructive" ? "danger" : color)}
-                  onClick={() => setPaintColor(color)}
-                />
-              ))}
+            <div className="paint-original-theme space-y-3">
+              <div className="flex items-center justify-end gap-2">
+                {paintOpen && (
+                  <Button variant="primary" onClick={() => setPaintOpen(false)}>
+                    {paint("exit")}
+                  </Button>
+                )}
+                <Button
+                  variant="accent"
+                  size="icon"
+                  className="size-[42px] min-h-(--touch-target-size) min-w-(--touch-target-size)"
+                  aria-label={paint("brush")}
+                  aria-expanded={paintOpen}
+                  onClick={() => setPaintOpen(!paintOpen)}
+                >
+                  <PaintBrush size={32} className="size-8" color={`var(--${paintColor})`} />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2" role="group" aria-label={paint("palette")}>
+                {(["primary", "accent", "warning", "success", "destructive"] as const).map((color) => (
+                  <PaintColorButton
+                    key={color}
+                    color={`var(--${color})`}
+                    selected={paintColor === color}
+                    label={paint(color === "destructive" ? "danger" : color)}
+                    onClick={() => setPaintColor(color)}
+                  />
+                ))}
+              </div>
             </div>
           </Section>
 

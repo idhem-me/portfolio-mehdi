@@ -15,7 +15,7 @@ Le site peut basculer entre les systèmes activés via le sélecteur sidebar (m�
 
 ## Fun
 
-Fun suit le thème clair ou sombre du site. Sobre reste le style initial. Les palettes de Fun sont définies dans `src/components/design-system/fun.css` et alimentent les tokens sémantiques des surfaces, textes, liens, bordures, états et focus. Les valeurs de couleur restent dans les définitions de tokens. Les actions principales et secondaires utilisent respectivement `--fun-yellow` et `--fun-orange` avec `--fun-on-action`. Les liens et la sélection utilisent le violet de la palette active.
+Fun suit le thème clair ou sombre du site. Sobre reste le style initial. Les palettes de Fun sont définies dans `src/components/design-system/fun.css` et alimentent les tokens sémantiques des surfaces, textes, liens, bordures, états et focus. Les valeurs de couleur restent dans les définitions de tokens. Les actions principales et secondaires utilisent respectivement `--fun-yellow` et `--fun-orange` avec `--fun-on-action`. La variante Accent, les liens et la sélection utilisent le violet de la palette active. La variante Accent est visible dans le comparatif.
 
 Les contours des contrôles et surfaces utilisent `--fun-control-border` et `--fun-surface-border`. Les ombres `--fun-control-shadow`, `--fun-surface-shadow` et `--fun-pressed-shadow` distinguent relief et pression. Les tokens de mouvement commandent le soulèvement et l’enfoncement des boutons. En mouvement réduit, la pression reste perceptible par l’ombre. Le focus conserve un contour visible, y compris sur les cartes de navigation.
 
@@ -85,6 +85,8 @@ Le registre de couverture associe chaque module du DS à une démo ou à une exc
 
 
 ### Couleurs sémantiques du pinceau
+
+Le pinceau utilise le bouton Accent. « Quitter le pinceau » utilise le bouton Principal et reste centré à côté du pinceau dans le sens de lecture. La [démo PaintColor](/playground#paint-color) réunit ces boutons et les pastilles. Dans Fun, le trait Principal utilise la couleur du texte, ce qui le distingue de l’Accent violet.
 
 Le pinceau de l’accueil utilise `primary`, `accent`, `warning`, `success` et
 `destructive` (libellé « Danger »). `warning` et `success` possèdent des variantes

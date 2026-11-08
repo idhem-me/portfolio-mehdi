@@ -1,5 +1,9 @@
 # Changelog du design system
 
+## Accent et pinceau
+
+- Fun affiche la variante Accent en violet dans les deux modes. Le pinceau utilise cette variante et sa commande de sortie reste alignée à côté de lui. La palette et les deux boutons sont visibles dans PaintColor.
+
 ## Fun et Sobre
 
 - Le sélecteur propose Fun et affiche Sobre pour le style local initial. Fun suit le thème clair ou sombre et conserve le comportement de navigation du sélecteur.

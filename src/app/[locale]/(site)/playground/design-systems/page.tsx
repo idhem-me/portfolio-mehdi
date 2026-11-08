@@ -170,6 +170,7 @@ function DesignSystemColumn({
             <ComponentBlock label="Button">
               <Button variant="default">Primary</Button>
               <Button variant="secondary">Secondary</Button>
+              <Button variant="accent">Accent</Button>
               <Button variant="ghost">Ghost</Button>
             </ComponentBlock>
 

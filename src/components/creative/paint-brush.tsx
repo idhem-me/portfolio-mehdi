@@ -1,12 +1,15 @@
 export function PaintBrush({
   size = 44,
   color = "var(--primary)",
+  className,
 }: {
   size?: number;
   color?: string;
+  className?: string;
 }) {
   return (
     <svg
+      className={className}
       width={size}
       height={size}
       aria-hidden="true"

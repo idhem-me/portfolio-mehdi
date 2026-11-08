@@ -16,7 +16,7 @@ import { createPortal } from "react-dom";
 import Matter from "matter-js";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/design-system/mehdi-button";
+import { Button } from "@/components/ui/button";
 import { PaintBrush } from "./paint-brush";
 import {
   createPaintBody,
@@ -110,7 +110,7 @@ export function PaintTool({
   const [position, setPosition] = useState<PaintPoint | null>(null);
   const [paintMode, setPaintMode] = useState(false);
   const [controlsOpen, setControlsOpen] = useState(false);
-  const [exitPosition, setExitPosition] = useState({ x: 0, y: 0 });
+  const [exitPosition, setExitPosition] = useState({ inlineEnd: 0, y: 0 });
   const [count, setCount] = useState(0);
   const strokesRef = useRef<Stroke[]>([]);
   const gestureRef = useRef<{
@@ -122,7 +122,7 @@ export function PaintTool({
     color: string;
     scroll: string;
   } | null>(null);
-  const brushRef = useRef<HTMLButtonElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const latestRef = useRef({ getSession, options, isPlaying });
   useEffect(() => {
     latestRef.current = { getSession, options, isPlaying };
@@ -170,15 +170,17 @@ export function PaintTool({
   useEffect(() => {
     if (!paintMode) return;
     const align = () => {
-      const brushRect = brushRef.current?.getBoundingClientRect();
+      const brushRect = toolbarRef.current?.getBoundingClientRect();
+      if (!brushRect) return;
+      const rtl = document.documentElement.dir === "rtl";
       setExitPosition({
-        x: brushRect ? brushRect.left - 8 : window.innerWidth - 50,
-        y: brushRect ? brushRect.top + brushRect.height / 2 : 36,
+        inlineEnd: (rtl ? brushRect.right : window.innerWidth - brushRect.left) + 8,
+        y: brushRect.top + brushRect.height / 2,
       });
     };
     align();
     const observer = new ResizeObserver(align);
-    if (brushRef.current) observer.observe(brushRef.current);
+    if (toolbarRef.current) observer.observe(toolbarRef.current);
     window.addEventListener("resize", align);
     window.addEventListener("scroll", align, true);
     return () => {
@@ -357,14 +359,34 @@ export function PaintTool({
     if (latestRef.current.isPlaying) addBodies();
   }
   return (
-    <div className="paint-original-theme pointer-events-auto relative flex shrink-0 items-center gap-1.5 sm:gap-2">
-      <button ref={brushRef} type="button" aria-label={paintMode ? t("exit") : t("brush")} title={paintMode ? t("exit") : t("hint")} aria-expanded={controlsOpen} onClick={(e) => {
-        if (paintMode) { setPaintMode(false); setControlsOpen(false); trackHomeInteraction("paint_exit"); return; }
-        const rect = e.currentTarget.getBoundingClientRect();
-        setPosition({ x: rect.left, y: rect.top }); setControlsOpen(true); setPaintMode(true); trackHomeInteraction("paint_grab", { color });
-      }} className="flex size-[42px] min-h-(--touch-target-size) min-w-(--touch-target-size) items-center justify-center rounded-lg bg-secondary">
-        {paintMode ? <X className="size-6" aria-hidden="true" /> : <span className="flex size-8 items-center justify-center"><PaintBrush size={32} color={token(color)} /></span>}
-      </button>
+    <div ref={toolbarRef} className="paint-original-theme pointer-events-auto relative flex shrink-0 items-center gap-1.5 sm:gap-2">
+      <Button asChild size="icon" variant="accent" className="size-[42px] min-h-(--touch-target-size) min-w-(--touch-target-size)">
+        <button
+          type="button"
+          aria-label={paintMode ? t("exit") : t("brush")}
+          title={paintMode ? t("exit") : t("hint")}
+          aria-expanded={controlsOpen}
+          onClick={(event) => {
+            if (paintMode) {
+              setPaintMode(false);
+              setControlsOpen(false);
+              trackHomeInteraction("paint_exit");
+              return;
+            }
+            const rect = event.currentTarget.getBoundingClientRect();
+            setPosition({ x: rect.left, y: rect.top });
+            setControlsOpen(true);
+            setPaintMode(true);
+            trackHomeInteraction("paint_grab", { color });
+          }}
+        >
+          {paintMode ? <X className="size-6" aria-hidden="true" /> : (
+            <span className="flex size-8 items-center justify-center">
+              <PaintBrush size={32} className="size-8" color={token(color)} />
+            </span>
+          )}
+        </button>
+      </Button>
       {controlsOpen && <div data-paint-controls className="absolute left-1/2 top-12 z-20 flex -translate-x-1/2 flex-col items-center gap-2 rounded-2xl border bg-background p-2 shadow-lg">
         <Button size="icon" variant="outline" className="size-10 min-h-(--touch-target-size) min-w-(--touch-target-size)" aria-label={t("clear")} title={t("clear")} onClick={() => {
           onClear();
@@ -452,20 +474,24 @@ export function PaintTool({
                 </div>,
                 document.body,
               )}
-              <Button
-                type="button"
-                variant="primary"
-                className="fixed -translate-x-full -translate-y-1/2 cursor-pointer whitespace-nowrap"
-                style={{ left: exitPosition.x, top: exitPosition.y }}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => {
-                  setPaintMode(false);
-                  setControlsOpen(false);
-                  trackHomeInteraction("paint_exit");
-                }}
+              <div
+                className="fixed -translate-y-1/2"
+                style={{ insetInlineEnd: exitPosition.inlineEnd, top: exitPosition.y }}
+                onPointerDown={(event) => event.stopPropagation()}
               >
-                {t("exit")}
-              </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  className="cursor-pointer whitespace-nowrap"
+                  onClick={() => {
+                    setPaintMode(false);
+                    setControlsOpen(false);
+                    trackHomeInteraction("paint_exit");
+                  }}
+                >
+                  {t("exit")}
+                </Button>
+              </div>
             </div>,
             document.body,
           )

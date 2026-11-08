@@ -93,7 +93,7 @@ html.dark[data-design-system="fun"],
 
 /* A forced Playground column is a boundary even when Fun is active globally. */
 @scope (:is(html, .ds-scope)[data-design-system="fun"]) to (.ds-scope:not([data-design-system="fun"])) {
-  [data-slot="button"]:is([data-variant="default"], [data-variant="primary"], [data-variant="accent"]) {
+  [data-slot="button"]:is([data-variant="default"], [data-variant="primary"]) {
     --fun-button-fill: var(--fun-yellow);
     --fun-button-text: var(--fun-on-action);
   }
@@ -111,6 +111,11 @@ html.dark[data-design-system="fun"],
   [data-slot="button"][data-variant="destructive"] {
     --fun-button-fill: var(--muted);
     --fun-button-text: var(--destructive);
+  }
+
+  [data-slot="button"][data-variant="accent"] {
+    --fun-button-fill: var(--accent);
+    --fun-button-text: var(--accent-foreground);
   }
 
   [data-slot="button"][data-variant="accent"]::before {
@@ -172,6 +177,10 @@ html.dark[data-design-system="fun"],
   :is([data-slot="button"], [data-slot="input"], [data-slot="select-trigger"], [data-slot="switch"], [data-slot="sidebar-menu-button"], [data-slot="portfolio-card"]):focus-visible {
     outline: var(--fun-control-border) solid var(--ring);
     outline-offset: var(--fun-control-border);
+  }
+
+  .paint-original-theme {
+    --primary: var(--foreground);
   }
 
   :is(input[type="checkbox"], input[type="radio"]) {

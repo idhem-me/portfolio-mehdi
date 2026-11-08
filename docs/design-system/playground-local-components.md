@@ -4,7 +4,7 @@ Chaque ligne peut devenir un ticket indépendant. Une dimension locale peut êtr
 
 | Ticket | Preuve | Traitement à examiner |
 | --- | --- | --- |
-| LOCAL-01 · Pinceau | [PaintTool](../../src/components/creative/paint-tool.tsx#L360) utilise des boutons natifs. Les pastilles font 32 px. | Garder l’aspect de la pastille et agrandir sa zone d’activation. Démo avec palette synthétique. |
+| LOCAL-01 · Pinceau | [PaintTool](../../src/components/creative/paint-tool.tsx) réutilise les boutons du DS. Les pastilles restent des contrôles locaux de sélection de couleur. | Démo PaintColor avec les boutons Accent et Principal et des pastilles à cible mobile de 44 px. |
 | LOCAL-02 · Cadeaux, champs spécialisés | [Forms](../../src/features/gift-lists/ui/forms.tsx#L488) rend deux champs natifs et [Shared](../../src/features/gift-lists/ui/shared.tsx#L309) une zone de texte locale. | Séparer champs spécialisés et textarea réutilisable. Démo avec label, aide, erreur et valeur longue. |
 | LOCAL-03 · Cadeaux, actions | [Creator](../../src/features/gift-lists/ui/creator.tsx#L115) impose 44 px au bouton avatar. [Public](../../src/features/gift-lists/ui/public.tsx#L589) compose un lien d’action local. | Comparer au bouton icône et au lien d’action du DS. Démo avec données fictives. |
 | LOCAL-04 · Backoffice, sessions | [Sessions](../../src/features/backoffice/ui/sessions.tsx#L351) et [lignes mobiles](../../src/features/backoffice/ui/sessions.tsx#L471) utilisent des boutons HTML stylés localement. | Distinguer tri d’en-tête et ligne cliquable. Démo avec données fictives et états de tri. |
