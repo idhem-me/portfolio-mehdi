@@ -2,9 +2,10 @@
 
 ## Typographie Fun
 
+- Les portées de l’accueil et de la navigation héritent maintenant du token global du thème ; les aperçus Sobre forcés gardent Google Sans.
 - Bricolage Grotesque est appliquée au texte latin du thème Fun via `--font-sans`. Sobre conserve Google Sans ; l’arabe, le chinois et la monospace gardent leurs familles dédiées.
 - Le token Tailwind `--font-sans` garde une valeur de base valide. Les menus globaux héritent ainsi la police du thème actif au lieu de retomber sur Times.
-- Vérification corrective : lint, typecheck, 114 tests Node et le test Chromium des deux menus passent. Le build n’a pas pu être relancé : la commande dans le dépôt rencontre un autre build actif, et Turbopack refuse `node_modules` lié depuis la copie isolée.
+- Vérification corrective : lint, typecheck, 114 tests Node et le test Chromium de l’accueil, de la navigation et des deux menus passent. Le build n’a pas pu être relancé : la commande dans le dépôt rencontre un autre build actif, et Turbopack refuse `node_modules` lié depuis la copie isolée.
 - Le Playground présente la typographie dans la composition Fun et expose `--font-sans` dans le comparatif.
 - Lint, typecheck, build isolé, suites Node et test Playwright ciblé passent. La suite Playwright complète a été partiellement bloquée par le panneau d’erreur de l’instance Next déjà active, qui interceptait certains clics.
 

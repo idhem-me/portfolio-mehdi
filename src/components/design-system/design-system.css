@@ -12,6 +12,9 @@
 }
 
 .ds-scope {
-  --font-sans: var(--font-google-sans);
   font-family: var(--font-sans);
+}
+
+:is(html, .ds-scope)[data-design-system]:not([data-design-system="fun"]) {
+  --font-sans: var(--font-google-sans);
 }

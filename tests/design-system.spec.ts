@@ -541,6 +541,12 @@ test("global menus use the active theme font token", async ({ page }) => {
     ["Fun", /Bricolage Grotesque/],
   ] as const) {
     await choose(page, theme);
+    await expect(
+      page.getByRole("heading", { name: /Derrière chaque écran/ }),
+    ).toHaveCSS("font-family", font);
+    await expect(
+      page.locator('[data-slot="sidebar"] [data-slot="sidebar-menu-button"]').first(),
+    ).toHaveCSS("font-family", font);
     for (const label of ["Design system", "Langue"]) {
       const trigger = page.getByRole("button", { name: label, exact: true });
       await trigger.click();
