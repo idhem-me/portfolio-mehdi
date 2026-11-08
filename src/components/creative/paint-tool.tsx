@@ -11,7 +11,7 @@ import {
   type RefObject,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { Undo2, BrushCleaning, X } from "lucide-react";
+import { Brush, BrushCleaning, Undo2, X } from "lucide-react";
 import { createPortal } from "react-dom";
 import Matter from "matter-js";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
@@ -380,10 +380,10 @@ export function PaintTool({
             trackHomeInteraction("paint_grab", { color });
           }}
         >
-          {paintMode ? <X className="size-6" aria-hidden="true" /> : (
-            <span className="flex size-8 items-center justify-center">
-              <PaintBrush size={32} className="size-8" color={token(color)} />
-            </span>
+          {paintMode ? (
+            <X className="size-6" aria-hidden="true" />
+          ) : (
+            <Brush className="size-6" aria-hidden="true" />
           )}
         </button>
       </Button>

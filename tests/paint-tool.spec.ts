@@ -220,8 +220,12 @@ for (const touch of [false, true]) {
     if (touch) await exit.tap();
     else await exit.click();
     await expect(page.locator("[data-paint-mode]")).toHaveCount(0);
+    const brush = page.getByRole("button", { name: "Pinceau", exact: true });
+    await expect(brush.locator("svg.lucide-brush")).toBeVisible();
+    if (touch) await brush.tap();
+    else await brush.click();
     await expect(
-      page.getByRole("button", { name: "Pinceau", exact: true }).locator("[data-paint-bristles]"),
+      page.locator("[data-paint-cursor] [data-paint-bristles]"),
     ).toHaveAttribute("fill", "var(--success)");
     await expect(page.locator("html")).not.toHaveCSS("overflow", "hidden");
     await context.close();

@@ -86,7 +86,7 @@ Le registre de couverture associe chaque module du DS à une démo ou à une exc
 
 ### Couleurs sémantiques du pinceau
 
-Le pinceau utilise le bouton Accent. « Quitter le pinceau » utilise le bouton Principal et reste centré à côté du pinceau dans le sens de lecture. La [démo PaintColor](/playground#paint-color) réunit ces boutons et les pastilles. Dans Fun, le trait Principal utilise la couleur du texte, ce qui le distingue de l’Accent violet.
+Le bouton Accent du pinceau affiche l’icône Brush de Lucide. Le curseur de dessin utilise le SVG du pinceau et reflète la couleur choisie. « Quitter le pinceau » utilise le bouton Principal et reste centré à côté du pinceau dans le sens de lecture. La [démo PaintColor](/playground#paint-color) réunit ces boutons et les pastilles. Dans Fun, le trait Principal utilise la couleur du texte, ce qui le distingue de l’Accent violet.
 
 Le pinceau de l’accueil utilise `primary`, `accent`, `warning`, `success` et
 `destructive` (libellé « Danger »). `warning` et `success` possèdent des variantes

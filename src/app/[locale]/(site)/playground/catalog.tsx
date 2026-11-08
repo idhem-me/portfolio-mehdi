@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Check, Menu } from "lucide-react";
+import { Brush, Check, Menu, X } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -45,7 +45,6 @@ import { Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvid
 import { DesignSystemChoiceMenu } from "@/components/design-system/choice-menu";
 import { NativeButton, NativeInput, NativeTextarea } from "@/components/design-system/native-controls";
 import { DesignSystemSwitcher } from "@/components/design-system/switcher";
-import { PaintBrush } from "@/components/creative/paint-brush";
 import "@/components/creative/paint-tool.css";
 import { PaintColorButton } from "@/components/creative/paint-color-button";
 import { ColorPicker } from "@/features/color-generator/ui/ColorPicker";
@@ -389,11 +388,15 @@ export function PlaygroundCatalog() {
                   variant="accent"
                   size="icon"
                   className="size-[42px] min-h-(--touch-target-size) min-w-(--touch-target-size)"
-                  aria-label={paint("brush")}
+                  aria-label={paint(paintOpen ? "exit" : "brush")}
                   aria-expanded={paintOpen}
                   onClick={() => setPaintOpen(!paintOpen)}
                 >
-                  <PaintBrush size={32} className="size-8" color={`var(--${paintColor})`} />
+                  {paintOpen ? (
+                    <X className="size-6" aria-hidden="true" />
+                  ) : (
+                    <Brush className="size-6" aria-hidden="true" />
+                  )}
                 </Button>
               </div>
               <div className="flex flex-wrap gap-2" role="group" aria-label={paint("palette")}>
