@@ -533,3 +533,23 @@ test("font tokens follow theme while Arabic, Chinese and monospace retain their 
     await expect(fun.locator("code").first()).toHaveCSS("font-family", /Geist Mono/);
   }
 });
+
+test("global menus use the active theme font token", async ({ page }) => {
+  await page.goto("/");
+  for (const [theme, font] of [
+    ["Sobre", /Google Sans/],
+    ["Fun", /Bricolage Grotesque/],
+  ] as const) {
+    await choose(page, theme);
+    for (const label of ["Design system", "Langue"]) {
+      const trigger = page.getByRole("button", { name: label, exact: true });
+      await trigger.click();
+      await expect(page.locator('[data-slot="dropdown-menu-content"]')).toHaveCSS(
+        "font-family",
+        font,
+      );
+      await page.keyboard.press("Escape");
+      await expect(trigger).toBeFocused();
+    }
+  }
+});
