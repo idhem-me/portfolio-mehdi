@@ -19,29 +19,29 @@ import {
 import { useTheme } from "next-themes";
 import { adobeDesignSystemEnabled } from "./flags";
 
-export type DesignSystem = "mehdi" | "github" | "adobe";
+export type DesignSystem = "mehdi" | "fun" | "github" | "adobe";
 
 /** Single source of truth for installed design systems (switcher + compare page). */
 export const DESIGN_SYSTEMS = [
   {
     id: "mehdi" as const,
-    label: "Mehdi",
-    subtitle: "Shadcn / Radix + tokens locaux",
+    label: "Sobre",
+  },
+  {
+    id: "fun" as const,
+    label: "Fun",
   },
   {
     id: "github" as const,
     label: "GitHub",
-    subtitle: "Primer React + tokens Primer",
   },
   {
     id: "adobe" as const,
     label: "Adobe",
-    subtitle: "React Spectrum 1 + tokens Spectrum",
   },
 ] as const satisfies ReadonlyArray<{
   id: DesignSystem;
   label: string;
-  subtitle: string;
 }>;
 
 /** Design systems exposed in the UI (respects feature flags). */

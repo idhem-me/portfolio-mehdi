@@ -77,7 +77,7 @@ export function DesignSystemButton({
   ...props
 }: ComponentProps<typeof Button>) {
   const { designSystem } = useDesignSystem();
-  if (designSystem === "mehdi")
+  if (designSystem === "mehdi" || designSystem === "fun")
     return (
       <Button {...props} {...{ asChild, variant, size, className }}>
         {children}

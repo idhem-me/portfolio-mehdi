@@ -1,5 +1,12 @@
 # Changelog du design system
 
+## Fun et Sobre
+
+- Le sélecteur propose Fun et affiche Sobre pour le style local initial. Fun suit le thème clair ou sombre et conserve le comportement de navigation du sélecteur.
+- Les tokens de Fun donnent du relief aux contrôles et surfaces, avec un état de pression statique en mouvement réduit. Les cartes des réalisations et des outils reprennent le relief des surfaces.
+- Le Playground présente la composition `#fun`. Le comparatif actualise les nuanciers et garde chaque dialogue et menu dans le style de sa colonne.
+- Recette réussie pour le lint, TypeScript, le build, les suites Node et les scénarios Fun et Playground dans Chromium et WebKit. Les 42 paires de couleurs contrôlées respectent les seuils AA applicables. Le build conserve l’avertissement de police de secours Google Sans. Le scénario QR en style GitHub échoue aussi sur la version de référence avec une erreur `React.Children.only`. Le QR fonctionne en style Fun.
+
 ## Catalogue du Playground
 
 - Chaque composant et ses variantes sont réunis dans un bloc de surface `primary-inverse`, avec le nom du composant comme seul titre.

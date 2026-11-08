@@ -45,7 +45,13 @@
     "retry": "Erneut versuchen"
   },
   "designSystem": {
-    "label": "Designsystem"
+    "label": "Designsystem",
+    "descriptions": {
+      "mehdi": "Shadcn / Radix und lokale Design-Tokens",
+      "fun": "Verspieltes Papierdesign mit kräftigen Farben und Relief",
+      "github": "Primer React und Primer-Design-Tokens",
+      "adobe": "React Spectrum 1 und Spectrum-Design-Tokens"
+    }
   },
   "nav": {
     "openMenu": "Menü öffnen",
@@ -70,6 +76,15 @@
     "gameSettingsDescription": "Einstellungen für {game}."
   },
   "playground": {
+    "funDemo": {
+      "title": "Posterwerkstatt",
+      "description": "Probiere die erhabenen Schaltflächen aus und öffne die Vorschau deines Posters.",
+      "field": "Name des Posters",
+      "sample": "Papierfest",
+      "preview": "Vorschau",
+      "reset": "Zurücksetzen",
+      "close": "Schließen"
+    },
     "title": "Playground",
     "compare": "Vergleichen",
     "intro": "Entdecke die Komponenten und ihre Varianten.",

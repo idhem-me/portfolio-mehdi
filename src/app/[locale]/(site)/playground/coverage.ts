@@ -9,6 +9,7 @@ export const demoAnchors = {
   DateRangeSelect: "date-range-select",
   Dialog: "dialog",
   DropdownMenu: "dropdown-menu",
+  Fun: "fun",
   Input: "input",
   NativeControls: "native-controls",
   PaintColor: "paint-color",

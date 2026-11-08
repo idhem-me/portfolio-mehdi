@@ -45,7 +45,13 @@
     "retry": "Retry"
   },
   "designSystem": {
-    "label": "Design system"
+    "label": "Design system",
+    "descriptions": {
+      "mehdi": "Shadcn / Radix and local tokens",
+      "fun": "Playful stationery with bright colors and depth",
+      "github": "Primer React and Primer tokens",
+      "adobe": "React Spectrum 1 and Spectrum tokens"
+    }
   },
   "nav": {
     "openMenu": "Open menu",
@@ -70,6 +76,15 @@
     "gameSettingsDescription": "Settings for {game}."
   },
   "playground": {
+    "funDemo": {
+      "title": "Poster workshop",
+      "description": "Try the raised buttons and open a preview of your poster.",
+      "field": "Poster name",
+      "sample": "Paper party",
+      "preview": "Preview",
+      "reset": "Reset",
+      "close": "Close"
+    },
     "title": "Playground",
     "compare": "Compare",
     "intro": "Explore the components and their variants.",

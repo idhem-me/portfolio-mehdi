@@ -3,7 +3,7 @@ import { adobeDesignSystemEnabled } from "../src/components/design-system/flags"
 
 async function choose(
   page: import("@playwright/test").Page,
-  name: "GitHub" | "Mehdi" | "Adobe",
+  name: "GitHub" | "Sobre" | "Fun" | "Adobe",
 ) {
   const trigger = page.locator(
     '[data-analytics-action="design_system_open"]:visible',
@@ -66,7 +66,7 @@ test("site uses real Primer components, retains navigation choice and resets on 
   await page
     .getByRole("button", { name: "Activer le mode clair", exact: true })
     .click();
-  await choose(page, "Mehdi");
+  await choose(page, "Sobre");
   await expect(cta).not.toHaveAttribute("data-component", "Button");
   expect(
     await cta.evaluate((el) => ({
@@ -78,7 +78,7 @@ test("site uses real Primer components, retains navigation choice and resets on 
   await page.reload();
   await expect(
     page.getByRole("button", { name: "Design system", exact: true }),
-  ).toContainText("Mehdi");
+  ).toContainText("Sobre");
   expect(
     await page.evaluate(() =>
       Object.keys(localStorage).filter((key) =>
@@ -110,7 +110,7 @@ test("Primer language menu retains choice and collapsed sidebar stays usable", a
   await expect(
     page.getByRole("button", { name: "Design system", exact: true }),
   ).toBeVisible();
-  await choose(page, "Mehdi");
+  await choose(page, "Sobre");
 });
 
 test("mobile design system menus work inside the navigation dialog", async ({
@@ -128,7 +128,7 @@ test("mobile design system menus work inside the navigation dialog", async ({
   await page
     .getByRole("menuitemradio", { name: "Français", exact: true })
     .click();
-  await choose(page, "Mehdi");
+  await choose(page, "Sobre");
   await choose(page, "GitHub");
   await page
     .locator("#mobile-navigation")
@@ -140,7 +140,7 @@ test("mobile design system menus work inside the navigation dialog", async ({
   ).toHaveCount(3);
 });
 
-test("contact uses Primer throughout and switching back restores Mehdi", async ({
+test("contact uses Primer throughout and switching back restores Sobre", async ({
   page,
 }) => {
   await page.goto("/contact");
@@ -160,7 +160,7 @@ test("contact uses Primer throughout and switching back restores Mehdi", async (
   expect(
     await heading.evaluate((el) => getComputedStyle(el).fontFamily),
   ).not.toBe(originalFont);
-  await choose(page, "Mehdi");
+  await choose(page, "Sobre");
   await expect(content.locator('[data-component="Button"]')).toHaveCount(0);
   expect(await heading.evaluate((el) => getComputedStyle(el).fontFamily)).toBe(
     originalFont,
@@ -265,7 +265,7 @@ test("Primer QR fields, select, sliders, switch and download remain functional",
   const download = page.waitForEvent("download");
   await page.getByRole("button", { name: /SVG/, exact: false }).first().click();
   expect((await download).suggestedFilename()).toBe("qrcode.svg");
-  await choose(page, "Mehdi");
+  await choose(page, "Sobre");
   await expect(page.locator("#qr-content")).toHaveValue(
     "https://example.com/primer",
   );
@@ -373,7 +373,7 @@ test("site uses real Spectrum components, retains navigation choice and resets o
   await page
     .getByRole("button", { name: "Activer le mode clair", exact: true })
     .click();
-  await choose(page, "Mehdi");
+  await choose(page, "Sobre");
   await expect(page.locator("html")).toHaveAttribute(
     "data-design-system",
     "mehdi",
@@ -382,7 +382,7 @@ test("site uses real Spectrum components, retains navigation choice and resets o
   await page.reload();
   await expect(
     page.getByRole("button", { name: "Design system", exact: true }),
-  ).toContainText("Mehdi");
+  ).toContainText("Sobre");
   expect(errors).toEqual([]);
 });
 
@@ -404,6 +404,9 @@ test("playground navigation opens a separate comparison page with the keyboard",
   const compare = nav.getByRole("link", { name: "Comparer" });
   await expect(catalogue).toHaveAttribute("aria-current", "page");
   await page.keyboard.press("End");
+  await page.waitForFunction(
+    () => document.documentElement.scrollHeight - (window.scrollY + window.innerHeight) <= 1,
+  );
   await expect(page.locator("[data-compare-grid]")).toHaveCount(0);
   await expect(page).toHaveURL(/\/playground$/);
 
@@ -477,7 +480,7 @@ test("playground comparison renders every enabled system", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Comparer", exact: true }),
   ).toBeVisible();
-  for (const id of ["mehdi", "github"]) {
+  for (const id of ["mehdi", "fun", "github"]) {
     const column = page.locator(`[data-compare-column="${id}"]`);
     await expect(column).toBeVisible();
     await expect(column.getByText("Tokens sémantiques")).toBeVisible();
@@ -519,3 +522,73 @@ for (const path of [
     });
   });
 }
+
+test("Fun keeps its palette across routes and languages and follows light and dark mode", async ({ page }) => {
+  await page.goto("/");
+  await choose(page, "Fun");
+  const root = page.locator("html");
+  const cta = page.locator(".home-paper-ctas").getByRole("link").first();
+  await expect(root).toHaveAttribute("data-design-system", "fun");
+  await expect(cta).toHaveCSS("border-top-width", "2px");
+  const light = await cta.evaluate((element) => getComputedStyle(element).backgroundColor);
+
+  await page.getByRole("button", { name: "Activer le mode sombre", exact: true }).click();
+  await expect(root).toHaveClass(/dark/);
+  await expect(cta).not.toHaveCSS("background-color", light);
+
+  await cta.click();
+  await expect(page).toHaveURL(/realisations$/);
+  await page.locator("[data-analytics-action=language_open]").click();
+  await page.getByRole("menuitemradio", { name: "English", exact: true }).click();
+  await expect(root).toHaveAttribute("lang", "en");
+  await expect(root).toHaveAttribute("data-design-system", "fun");
+  await page.reload();
+  await expect(root).toHaveAttribute("data-design-system", "mehdi");
+});
+
+test("Fun compares independently and the Playground demo keeps focus and mobile sizing", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/playground/design-systems");
+  await choose(page, "Fun");
+  const fun = page.locator('[data-compare-column="fun"]');
+  const sobre = page.locator('[data-compare-column="mehdi"]');
+  await expect(fun.getByRole("button", { name: "Primary" })).toHaveCSS("border-top-width", "2px");
+  await expect(sobre.getByRole("button", { name: "Primary" })).toHaveCSS("border-top-width", "1px");
+  const swatch = fun.getByText("--fun-yellow", { exact: true }).locator("..");
+  await expect(swatch).toContainText(/#[a-f0-9]{6}/i);
+  const lightSwatch = await swatch.innerText();
+  await page.getByRole("button", { name: "Activer le mode sombre", exact: true }).click();
+  await expect(swatch).not.toHaveText(lightSwatch);
+  await expect(swatch).toContainText(/#[a-f0-9]{6}/i);
+
+  for (const [column, dialogBorder, menuBorder] of [
+    [fun, "3px", "3px"],
+    [sobre, "1px", "0px"],
+  ] as const) {
+    const scope = column.locator("..");
+    const trigger = column.getByRole("button", { name: "Ouvrir dialog" });
+    await trigger.click();
+    await expect(scope.getByRole("dialog")).toHaveCSS("border-top-width", dialogBorder);
+    await page.keyboard.press("Escape");
+    await expect(trigger).toBeFocused();
+    const menu = column.getByRole("button", { name: "Actions" });
+    await menu.click();
+    await expect(scope.getByRole("menu")).toHaveCSS("border-top-width", menuBorder);
+    await page.keyboard.press("Escape");
+    await expect(menu).toBeFocused();
+  }
+
+  await page.goto("/playground#fun");
+  await page.getByRole("button", { name: "Mobile", exact: true }).click();
+  const demo = page.locator("#fun");
+  const preview = demo.getByRole("button", { name: "Aperçu" });
+  await expect(preview).toHaveCSS("transition-duration", "0s");
+  await expect(preview).toHaveCSS("height", "44px");
+  await demo.getByRole("textbox", { name: "Nom de l’affiche" }).fill("Fête des couleurs");
+  await preview.click();
+  const dialog = demo.getByRole("dialog");
+  await expect(dialog).toContainText("Fête des couleurs");
+  await expect(dialog.getByRole("button", { name: "Fermer" })).toHaveCSS("height", "44px");
+  await page.keyboard.press("Escape");
+  await expect(preview).toBeFocused();
+});

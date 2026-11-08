@@ -23,7 +23,7 @@ export function DesignSystemSidebarButton({
   ...props
 }: ComponentProps<typeof SidebarMenuButton>) {
   const { designSystem } = useDesignSystem();
-  if (designSystem === "mehdi" || designSystem === "adobe")
+  if (designSystem === "mehdi" || designSystem === "fun" || designSystem === "adobe")
     return (
       <SidebarMenuButton
         {...props}
@@ -77,7 +77,7 @@ export function DesignSystemSidebarTrigger({
 }: ComponentProps<typeof SidebarTrigger>) {
   const { designSystem } = useDesignSystem();
   const { state, toggleSidebar } = useSidebar();
-  if (designSystem === "mehdi")
+  if (designSystem === "mehdi" || designSystem === "fun")
     return <SidebarTrigger {...props} onClick={onClick} />;
   return (
     <DesignSystemButton

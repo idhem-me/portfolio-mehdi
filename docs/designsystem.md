@@ -2,15 +2,24 @@
 
 ## Multi design systems
 
-Le site peut basculer entre trois systèmes via le sélecteur sidebar (mémoire seule, reset au reload) :
+Le site peut basculer entre les systèmes activés via le sélecteur sidebar (mémoire seule, reset au reload) :
 
 | Valeur | Implémentation |
 |--------|----------------|
-| `mehdi` | Shadcn / Radix + tokens locaux (`globals.css`) |
+| `mehdi` (Sobre) | Shadcn / Radix et tokens locaux (`globals.css`) |
+| `fun` (Fun) | Mêmes primitives, palettes clair et sombre et tokens de relief (`fun.css`) |
 | `github` | Primer React + remap CSS dans `design-system.css` |
 | `adobe` | React Spectrum 1 (`@adobe/react-spectrum`) + remap CSS — **flag** `NEXT_PUBLIC_ENABLE_ADOBE_DS` (off par défaut) |
 
 État : `DesignSystemProvider` (`src/components/design-system/provider.tsx`). Registre : `DESIGN_SYSTEMS` / UI : `ENABLED_DESIGN_SYSTEMS`. Les adaptateurs UI branchent sur `useDesignSystem()` (Button, Input, Avatar, Badge, Switch, Dialog, Tabs, DropdownMenu, sidebar, choice-menu, etc.). Comparaison visuelle des DS activés : `/playground/design-systems`.
+
+## Fun
+
+Fun suit le thème clair ou sombre du site. Sobre reste le style initial. Les palettes de Fun sont définies dans `src/components/design-system/fun.css` et alimentent les tokens sémantiques des surfaces, textes, liens, bordures, états et focus. Les valeurs de couleur restent dans les définitions de tokens. Les actions principales et secondaires utilisent respectivement `--fun-yellow` et `--fun-orange` avec `--fun-on-action`. Les liens et la sélection utilisent le violet de la palette active.
+
+Les contours des contrôles et surfaces utilisent `--fun-control-border` et `--fun-surface-border`. Les ombres `--fun-control-shadow`, `--fun-surface-shadow` et `--fun-pressed-shadow` distinguent relief et pression. Les tokens de mouvement commandent le soulèvement et l’enfoncement des boutons. En mouvement réduit, la pression reste perceptible par l’ombre. Le focus conserve un contour visible, y compris sur les cartes de navigation.
+
+[La démo Fun](/playground#fun) montre une carte, un formulaire, deux actions et un dialogue. Les états des primitives restent visibles à leurs ancres et les nuanciers du comparatif suivent le réglage clair ou sombre du site.
 
 ## Couleurs (tokens)
 

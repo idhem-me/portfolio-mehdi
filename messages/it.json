@@ -45,7 +45,13 @@
     "retry": "Riprova"
   },
   "designSystem": {
-    "label": "Sistema di design"
+    "label": "Sistema di design",
+    "descriptions": {
+      "mehdi": "Shadcn / Radix e token locali",
+      "fun": "Cartoleria giocosa con colori vivaci e rilievo",
+      "github": "Primer React e token di Primer",
+      "adobe": "React Spectrum 1 e token di Spectrum"
+    }
   },
   "nav": {
     "openMenu": "Apri menu",
@@ -70,6 +76,15 @@
     "gameSettingsDescription": "Impostazioni di {game}."
   },
   "playground": {
+    "funDemo": {
+      "title": "Laboratorio di poster",
+      "description": "Prova i pulsanti in rilievo e apri l’anteprima del tuo poster.",
+      "field": "Nome del poster",
+      "sample": "Festa di carta",
+      "preview": "Anteprima",
+      "reset": "Ripristina",
+      "close": "Chiudi"
+    },
     "title": "Playground",
     "compare": "Confronta",
     "intro": "Esplora i componenti e le loro varianti.",

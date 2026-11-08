@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState, type ReactNode } from "react";
+import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import {
   ENABLED_DESIGN_SYSTEMS,
@@ -53,6 +54,15 @@ const NATIVE_TOKENS: Record<DesignSystem, readonly string[]> = {
     "--mehdi-border",
     "--mehdi-muted",
   ],
+  fun: [
+    "--fun-background",
+    "--fun-surface",
+    "--fun-text",
+    "--fun-yellow",
+    "--fun-orange",
+    "--fun-violet",
+    "--fun-relief-ink",
+  ],
   github: [
     "--bgColor-default",
     "--fgColor-default",
@@ -76,8 +86,8 @@ function TokenSwatch({ name, value }: { name: string; value?: string }) {
   return (
     <div className="flex items-center gap-2 text-xs">
       <span
-        className="size-5 shrink-0 rounded border border-black/10"
-        style={{ background: value || "transparent" }}
+        className="size-5 shrink-0 rounded border border-border"
+        style={{ background: `var(${name}, transparent)` }}
         aria-hidden
       />
       <code className="min-w-0 truncate font-mono text-[11px]">{name}</code>
@@ -108,24 +118,33 @@ function ComponentBlock({
 function DesignSystemColumn({
   id,
   label,
-  subtitle,
 }: (typeof ENABLED_DESIGN_SYSTEMS)[number]) {
-  const [tokens, setTokens] = useState<Record<string, string>>({});
+  const t = useTranslations("designSystem");
+  const { resolvedTheme } = useTheme();
+  const [snapshot, setSnapshot] = useState<{
+    theme: string | undefined;
+    tokens: Record<string, string>;
+  }>();
   const readTokens = useCallback(
     (node: HTMLElement | null) => {
       if (!node) return;
-      const style = getComputedStyle(node);
-      setTokens(
-        Object.fromEntries(
-          [...SEMANTIC_TOKENS, ...NATIVE_TOKENS[id]].map((name) => [
-            name,
-            style.getPropertyValue(name).trim(),
-          ]),
-        ),
-      );
+      const frame = requestAnimationFrame(() => {
+        const style = getComputedStyle(node);
+        setSnapshot({
+          theme: resolvedTheme,
+          tokens: Object.fromEntries(
+            [...SEMANTIC_TOKENS, ...NATIVE_TOKENS[id]].map((name) => [
+              name,
+              style.getPropertyValue(name).trim(),
+            ]),
+          ),
+        });
+      });
+      return () => cancelAnimationFrame(frame);
     },
-    [id],
+    [id, resolvedTheme],
   );
+  const tokens = snapshot?.theme === resolvedTheme ? snapshot?.tokens : undefined;
   const [checked, setChecked] = useState(true);
 
   return (
@@ -137,15 +156,15 @@ function DesignSystemColumn({
             : "contents"
         }
       >
-        <DesignSystemScope className="flex min-w-0 flex-col">
+        <DesignSystemScope portalRoot scopeRadixPortals className="ds-compare-scope flex min-w-0 flex-col">
           <section
             ref={readTokens}
             data-compare-column={id}
-            className="flex min-w-0 flex-col gap-6 rounded-xl border border-border bg-background p-5"
+            className="flex min-w-0 flex-col gap-6 rounded-xl border border-border bg-background p-5 text-foreground"
           >
             <header className="space-y-1 border-b border-border pb-4">
               <h2 className="text-lg font-semibold tracking-tight">{label}</h2>
-              <p className="text-sm text-muted-foreground">{subtitle}</p>
+              <p className="text-sm text-muted-foreground">{t(`descriptions.${id}`)}</p>
             </header>
 
             <ComponentBlock label="Button">
@@ -174,6 +193,7 @@ function DesignSystemColumn({
             <ComponentBlock label="Checkbox">
               <NativeInput
                 type="checkbox"
+                className="min-h-(--touch-target-size) min-w-(--touch-target-size)"
                 defaultChecked
                 aria-label="Accepter"
               />
@@ -253,7 +273,7 @@ function DesignSystemColumn({
                 </p>
                 <div className="space-y-1.5">
                   {SEMANTIC_TOKENS.map((name) => (
-                    <TokenSwatch key={name} name={name} value={tokens[name]} />
+                    <TokenSwatch key={name} name={name} value={tokens?.[name]} />
                   ))}
                 </div>
               </div>
@@ -263,7 +283,7 @@ function DesignSystemColumn({
                 </p>
                 <div className="space-y-1.5">
                   {NATIVE_TOKENS[id].map((name) => (
-                    <TokenSwatch key={name} name={name} value={tokens[name]} />
+                    <TokenSwatch key={name} name={name} value={tokens?.[name]} />
                   ))}
                 </div>
               </div>

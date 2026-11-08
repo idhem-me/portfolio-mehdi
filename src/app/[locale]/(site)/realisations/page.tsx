@@ -89,6 +89,7 @@ export default async function RealisationsPage({ params }: Props) {
               <Link
                 key={study.title}
                 href={`/realisations/${study.slug}`}
+                data-slot="portfolio-card"
                 className={cn(
                   cardClass,
                   "block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -100,7 +101,7 @@ export default async function RealisationsPage({ params }: Props) {
           }
 
           return (
-            <div key={study.title} className={cardClass}>
+            <div key={study.title} data-slot="portfolio-card" className={cardClass}>
               {inner}
             </div>
           );

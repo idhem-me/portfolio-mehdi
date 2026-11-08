@@ -45,7 +45,13 @@
     "retry": "إعادة المحاولة"
   },
   "designSystem": {
-    "label": "نظام التصميم"
+    "label": "نظام التصميم",
+    "descriptions": {
+      "mehdi": "Shadcn / Radix ورموز تصميم محلية",
+      "fun": "قرطاسية مرحة بألوان زاهية وتأثير بارز",
+      "github": "Primer React ورموز تصميم Primer",
+      "adobe": "React Spectrum 1 ورموز تصميم Spectrum"
+    }
   },
   "nav": {
     "openMenu": "فتح القائمة",
@@ -70,6 +76,15 @@
     "gameSettingsDescription": "إعدادات {game}."
   },
   "playground": {
+    "funDemo": {
+      "title": "ورشة الملصقات",
+      "description": "جرّب الأزرار البارزة وافتح معاينة ملصقك.",
+      "field": "اسم الملصق",
+      "sample": "احتفال الورق",
+      "preview": "معاينة",
+      "reset": "إعادة الضبط",
+      "close": "إغلاق"
+    },
     "title": "مساحة التجربة",
     "compare": "مقارنة",
     "intro": "استكشف المكوّنات وأشكالها المختلفة.",

@@ -45,7 +45,13 @@
     "retry": "重试"
   },
   "designSystem": {
-    "label": "设计系统"
+    "label": "设计系统",
+    "descriptions": {
+      "mehdi": "Shadcn / Radix 与本地设计令牌",
+      "fun": "色彩明快、富有立体感的趣味文具",
+      "github": "Primer React 与 Primer 设计令牌",
+      "adobe": "React Spectrum 1 与 Spectrum 设计令牌"
+    }
   },
   "nav": {
     "openMenu": "打开菜单",
@@ -70,6 +76,15 @@
     "gameSettingsDescription": "{game}的设置。"
   },
   "playground": {
+    "funDemo": {
+      "title": "海报工坊",
+      "description": "试试立体按钮，打开你的海报预览。",
+      "field": "海报名称",
+      "sample": "纸艺派对",
+      "preview": "预览",
+      "reset": "重置",
+      "close": "关闭"
+    },
     "title": "组件体验区",
     "compare": "比较",
     "intro": "探索各个组件及其变体。",

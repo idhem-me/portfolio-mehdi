@@ -4,6 +4,10 @@ Relevé statique du 7 novembre 2026, actualisé pour les nouvelles démos. Une l
 
 Une composition absente peut être ajoutée comme scénario si elle définit une interaction ou un état réutilisable. Les pages de contenu restent des contextes d’usage. Les jeux masqués sont inventoriés uniquement dans le dépôt.
 
+## Thème Fun
+
+La composition `#fun` couvre la carte, le champ, les actions jaune et orange, le dialogue et leurs états de focus et de pression. Les démos `#button`, `#card`, `#input`, `#select`, `#switch`, `#sidebar`, `#dropdown-menu`, `#dialog` et `#sheet` montrent les primitives quand Fun est sélectionné. Les cartes des listes de réalisations et d’outils partagent les tokens de relief montrés à `#card`. Le comparatif montre la palette du mode actif et héberge les portails dans chaque colonne.
+
 ## `src/app`
 
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |

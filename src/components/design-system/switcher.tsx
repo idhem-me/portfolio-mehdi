@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { MarkGithubIcon } from "@primer/octicons-react";
-import { Palette } from "lucide-react";
+import { Palette, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DesignSystemChoiceMenu } from "./choice-menu";
 import {
@@ -11,7 +11,7 @@ import {
   type DesignSystem,
 } from "./provider";
 
-function MehdiIcon() {
+function SobreIcon() {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -42,7 +42,8 @@ function AdobeIcon() {
 }
 
 const ICONS: Record<DesignSystem, ReactNode> = {
-  mehdi: <MehdiIcon />,
+  mehdi: <SobreIcon />,
+  fun: <Sparkles className="size-4 shrink-0" aria-hidden />,
   github: <MarkGithubIcon size={16} className="size-4 shrink-0" />,
   adobe: <AdobeIcon />,
 };

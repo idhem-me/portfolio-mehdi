@@ -11,7 +11,7 @@ import { useDesignSystem } from "./provider";
 import { Input } from "@/components/ui/input";
 import { DesignSystemButton } from "./button";
 
-/** Preserve the unstyled Mehdi controls used in bespoke layouts and game artwork. */
+/** Preserve the unstyled local controls used in bespoke layouts and game artwork. */
 export function NativeButton(props: ComponentProps<"button">) {
   const { designSystem } = useDesignSystem();
   return designSystem === "github" || designSystem === "adobe" ? (
@@ -58,7 +58,7 @@ export function NativeTextarea(props: ComponentProps<"textarea">) {
 export function NativeInput({ size, ...props }: ComponentProps<"input">) {
   const { designSystem } = useDesignSystem();
   if (
-    designSystem === "mehdi" ||
+    designSystem === "mehdi" || designSystem === "fun" ||
     props.hidden ||
     props["aria-hidden"] ||
     ["file", "range", "color", "hidden"].includes(props.type ?? "text")

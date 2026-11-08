@@ -45,7 +45,13 @@
     "retry": "Reintentar"
   },
   "designSystem": {
-    "label": "Sistema de diseño"
+    "label": "Sistema de diseño",
+    "descriptions": {
+      "mehdi": "Shadcn / Radix y tokens locales",
+      "fun": "Papelería divertida con colores vivos y relieve",
+      "github": "Primer React y tokens de Primer",
+      "adobe": "React Spectrum 1 y tokens de Spectrum"
+    }
   },
   "nav": {
     "openMenu": "Abrir menú",
@@ -70,6 +76,15 @@
     "gameSettingsDescription": "Ajustes de {game}."
   },
   "playground": {
+    "funDemo": {
+      "title": "Taller de carteles",
+      "description": "Prueba los botones en relieve y abre la vista previa de tu cartel.",
+      "field": "Nombre del cartel",
+      "sample": "Fiesta de papel",
+      "preview": "Vista previa",
+      "reset": "Restablecer",
+      "close": "Cerrar"
+    },
     "title": "Playground",
     "compare": "Comparar",
     "intro": "Explora los componentes y sus variantes.",

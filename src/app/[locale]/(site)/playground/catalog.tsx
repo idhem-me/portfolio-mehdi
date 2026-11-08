@@ -71,7 +71,11 @@ import {
 } from "@/components/ui/tooltip";
 import { BrowserWindow } from "@/components/media/browser-window";
 import { SafeSvg } from "@/components/media/safe-svg";
-import { DesignSystemScope } from "@/components/design-system/provider";
+import {
+  DesignSystemForce,
+  DesignSystemScope,
+  ENABLED_DESIGN_SYSTEMS,
+} from "@/components/design-system/provider";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
@@ -101,6 +105,7 @@ function Section({
 
 export function PlaygroundCatalog() {
   const t = useTranslations("playground");
+  const designSystem = useTranslations("designSystem");
   const [density, setDensity] = useState<Density>("auto");
   const [selectValue, setSelectValue] = useState("mehdi");
   const [chipValue, setChipValue] = useState("all");
@@ -346,6 +351,10 @@ export function PlaygroundCatalog() {
             </div>
           </Section>
 
+          <Section title="Fun">
+            <FunDemo />
+          </Section>
+
           <Section title="Input">
             <div className="max-w-sm space-y-2">
               <Input placeholder="Placeholder…" />
@@ -412,14 +421,13 @@ export function PlaygroundCatalog() {
             <div className="space-y-4">
               <div className="max-w-sm">
                 <Select
-                  label="Design system"
+                  label={designSystem("label")}
                   value={selectValue}
                   onValueChange={setSelectValue}
-                  options={[
-                    { value: "mehdi", label: "Mehdi" },
-                    { value: "github", label: "GitHub" },
-                    { value: "adobe", label: "Adobe" },
-                  ]}
+                  options={ENABLED_DESIGN_SYSTEMS.map(({ id, label }) => ({
+                    value: id,
+                    label,
+                  }))}
                 />
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -619,6 +627,61 @@ export function PlaygroundCatalog() {
         </nav>
       </DesignSystemScope>
     </section>
+  );
+}
+
+function FunDemo() {
+  const t = useTranslations("playground.funDemo");
+  const fieldId = useId();
+  const [preview, setPreview] = useState("");
+
+  return (
+    <DesignSystemForce value="fun">
+      <DesignSystemScope portalRoot scopeRadixPortals>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("title")}</CardTitle>
+            <CardDescription>{t("description")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Dialog>
+              <form
+                className="space-y-4"
+                onSubmit={(event) => event.preventDefault()}
+              >
+                <div className="space-y-2">
+                  <label htmlFor={fieldId} className="text-sm font-medium">
+                    {t("field")}
+                  </label>
+                  <Input id={fieldId} name="workshop" defaultValue={t("sample")} />
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      onClick={(event) => {
+                        const form = event.currentTarget.form;
+                        if (form) setPreview(String(new FormData(form).get("workshop") ?? ""));
+                      }}
+                    >
+                      {t("preview")}
+                    </Button>
+                  </DialogTrigger>
+                  <Button type="reset" variant="secondary">{t("reset")}</Button>
+                </div>
+              </form>
+              <DialogContent>
+                <DialogTitle>{t("preview")}</DialogTitle>
+                <DialogDescription>{preview || t("sample")}</DialogDescription>
+                <DialogClose asChild>
+                  <Button className="mt-4" variant="secondary">{t("close")}</Button>
+                </DialogClose>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+      </DesignSystemScope>
+    </DesignSystemForce>
   );
 }
 

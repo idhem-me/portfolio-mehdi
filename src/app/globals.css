@@ -55,7 +55,8 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
+:root,
+:where(.ds-compare-scope) {
   color-scheme: light;
   --mehdi-background: oklch(1 0 0);
   --background: var(--mehdi-background);
@@ -122,7 +123,8 @@
   --kw-mark-fg: oklch(0.18 0 0);
 }
 
-.dark {
+.dark,
+.dark :where(.ds-compare-scope) {
   color-scheme: dark;
   --mehdi-background: oklch(0.141 0.005 285.823);
   --background: var(--mehdi-background);

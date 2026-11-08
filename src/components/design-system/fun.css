@@ -1,0 +1,190 @@
+:is(html, .ds-scope)[data-design-system="fun"] {
+  --fun-background: #fff8e7;
+  --fun-surface: #fffcf3;
+  --fun-text: #2b174b;
+  --fun-muted: #efe4ff;
+  --fun-muted-text: #5c4677;
+  --fun-violet: #6334c6;
+  --fun-on-violet: #fffaf1;
+  --fun-yellow: #ffd84d;
+  --fun-orange: #ff9b54;
+  --fun-on-action: #2b174b;
+  --fun-edge: #2b174b;
+  --fun-relief-ink: #2b174b;
+  --fun-danger: #a02545;
+  --fun-success: #1d693e;
+  --fun-on-success: #fffaf1;
+  --fun-warning: #84500d;
+  --fun-on-warning: #fffaf1;
+
+  --fun-control-border: 2px;
+  --fun-surface-border: 3px;
+  --fun-control-shadow: 0 3px var(--fun-relief-ink);
+  --fun-surface-shadow: 0 5px var(--fun-relief-ink);
+  --fun-pressed-shadow: 0 1px var(--fun-relief-ink);
+  --fun-hover-lift: -1px;
+  --fun-press-travel: 2px;
+  --fun-motion-duration: 140ms;
+  --fun-hover-mix: 8%;
+  --fun-press-mix: 14%;
+  --fun-input-fill: var(--fun-surface);
+  --fun-switch-track: var(--fun-muted);
+
+  --background: var(--fun-background);
+  --foreground: var(--fun-text);
+  --card: var(--fun-surface);
+  --card-foreground: var(--fun-text);
+  --popover: var(--fun-surface);
+  --popover-foreground: var(--fun-text);
+  --primary: var(--fun-violet);
+  --primary-foreground: var(--fun-on-violet);
+  --primary-inverse: var(--fun-surface);
+  --secondary: var(--fun-muted);
+  --secondary-foreground: var(--fun-text);
+  --muted: var(--fun-muted);
+  --muted-foreground: var(--fun-muted-text);
+  --accent: var(--fun-violet);
+  --accent-foreground: var(--fun-on-violet);
+  --border: var(--fun-edge);
+  --input: var(--fun-edge);
+  --ring: var(--fun-violet);
+  --destructive: var(--fun-danger);
+  --success: var(--fun-success);
+  --success-foreground: var(--fun-on-success);
+  --warning: var(--fun-warning);
+  --warning-foreground: var(--fun-on-warning);
+  --sidebar: var(--fun-surface);
+  --sidebar-foreground: var(--fun-text);
+  --sidebar-primary: var(--fun-violet);
+  --sidebar-primary-foreground: var(--fun-on-violet);
+  --sidebar-accent: var(--fun-muted);
+  --sidebar-accent-foreground: var(--fun-text);
+  --sidebar-border: var(--fun-edge);
+  --sidebar-ring: var(--fun-violet);
+}
+
+html.dark[data-design-system="fun"],
+.dark .ds-scope[data-design-system="fun"] {
+  --fun-background: #201332;
+  --fun-surface: #302043;
+  --fun-text: #fff4db;
+  --fun-muted: #493460;
+  --fun-muted-text: #dfcde9;
+  --fun-violet: #c6a5ff;
+  --fun-on-violet: #201332;
+  --fun-yellow: #ffcb55;
+  --fun-orange: #ffac78;
+  --fun-edge: #c6a5ff;
+  --fun-relief-ink: #a879ed;
+  --fun-danger: #ffadc0;
+  --fun-success: #a3e5b4;
+  --fun-on-success: #201332;
+  --fun-warning: #ffdc93;
+  --fun-on-warning: #201332;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(html, .ds-scope)[data-design-system="fun"] {
+    --fun-hover-lift: 0px;
+    --fun-press-travel: 0px;
+    --fun-motion-duration: 0ms;
+  }
+}
+
+/* A forced Playground column is a boundary even when Fun is active globally. */
+@scope (:is(html, .ds-scope)[data-design-system="fun"]) to (.ds-scope:not([data-design-system="fun"])) {
+  [data-slot="button"]:is([data-variant="default"], [data-variant="primary"], [data-variant="accent"]) {
+    --fun-button-fill: var(--fun-yellow);
+    --fun-button-text: var(--fun-on-action);
+  }
+
+  [data-slot="button"][data-variant="secondary"] {
+    --fun-button-fill: var(--fun-orange);
+    --fun-button-text: var(--fun-on-action);
+  }
+
+  [data-slot="button"][data-variant="outline"] {
+    --fun-button-fill: var(--card);
+    --fun-button-text: var(--card-foreground);
+  }
+
+  [data-slot="button"][data-variant="destructive"] {
+    --fun-button-fill: var(--muted);
+    --fun-button-text: var(--destructive);
+  }
+
+  [data-slot="button"][data-variant="accent"]::before {
+    content: none;
+    animation: none;
+  }
+
+  [data-slot="button"]:not([data-variant="ghost"], [data-variant="link"]) {
+    border: var(--fun-control-border) solid var(--border);
+    background-color: var(--fun-button-fill);
+    color: var(--fun-button-text);
+    box-shadow: var(--fun-control-shadow);
+    translate: none;
+    transition-property: translate, box-shadow, background-color;
+    transition-duration: var(--fun-motion-duration);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    [data-slot="button"]:not([data-variant="ghost"], [data-variant="link"], :disabled, [aria-disabled="true"]):hover {
+      background-color: color-mix(in oklch, var(--fun-button-fill), var(--fun-button-text) var(--fun-hover-mix));
+      translate: 0 var(--fun-hover-lift);
+    }
+  }
+
+  [data-slot="button"]:not([data-variant="ghost"], [data-variant="link"], :disabled, [aria-disabled="true"]):active {
+    background-color: color-mix(in oklch, var(--fun-button-fill), var(--fun-button-text) var(--fun-press-mix));
+    box-shadow: var(--fun-pressed-shadow);
+    translate: 0 var(--fun-press-travel);
+  }
+
+  :is([data-slot="input"], [data-slot="select-trigger"]) {
+    border: var(--fun-control-border) solid var(--input);
+    background-color: var(--fun-input-fill);
+  }
+
+  [data-slot="switch"] > span {
+    border: var(--fun-control-border) solid var(--input);
+    background-color: var(--fun-switch-track);
+  }
+
+  [data-slot="switch"][data-state="checked"] > span {
+    background-color: var(--accent);
+  }
+
+  :is([data-slot="input"], [data-slot="button"])[aria-invalid="true"] {
+    border-color: var(--destructive);
+  }
+
+  :is([data-slot="card"], [data-slot="portfolio-card"], [data-slot="dialog-content"], [data-slot="sheet-content"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="select-content"]) {
+    border: var(--fun-surface-border) solid var(--border);
+    box-shadow: var(--fun-surface-shadow);
+  }
+
+  [data-slot="sidebar-menu-button"][data-active="true"] {
+    background-color: var(--sidebar-primary);
+    color: var(--sidebar-primary-foreground);
+  }
+
+  :is([data-slot="button"], [data-slot="input"], [data-slot="select-trigger"], [data-slot="switch"], [data-slot="sidebar-menu-button"], [data-slot="portfolio-card"]):focus-visible {
+    outline: var(--fun-control-border) solid var(--ring);
+    outline-offset: var(--fun-control-border);
+  }
+
+  :is(input[type="checkbox"], input[type="radio"]) {
+    accent-color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :is([data-slot="sheet-content"], [data-slot="sheet-overlay"], [data-slot="dropdown-menu-content"], [data-slot="dropdown-menu-sub-content"], [data-slot="select-content"]) {
+      animation: none;
+    }
+
+    [data-slot="switch"] > span > span {
+      transition-duration: var(--fun-motion-duration);
+    }
+  }
+}

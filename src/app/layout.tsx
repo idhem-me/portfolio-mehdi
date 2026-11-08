@@ -18,6 +18,7 @@ import "@primer/primitives/dist/css/functional/themes/light.css";
 import "@primer/primitives/dist/css/functional/themes/dark.css";
 import "./globals.css";
 import "@/components/design-system/design-system.css";
+import "@/components/design-system/fun.css";
 
 const googleSans = Google_Sans({
   subsets: ["latin"],

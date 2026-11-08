@@ -123,43 +123,45 @@ html[data-design-system="github"],
 html[data-design-system="github"] body {
   font-family: var(--fontStack-system);
 }
-html[data-design-system="github"] [data-slot="card"] {
-  border: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
-  border-radius: var(--borderRadius-medium);
-  box-shadow: none;
-}
-html[data-design-system="github"] [data-slot="tabs-list"] {
-  background: var(--bgColor-muted);
-  border-radius: var(--borderRadius-medium);
-}
-html[data-design-system="github"]
+@scope (:is(html, .ds-scope)[data-design-system="github"]) to (.ds-scope:not([data-design-system="github"])) {
+  [data-slot="card"] {
+    border: var(--borderWidth-thin, 1px) solid var(--borderColor-default);
+    border-radius: var(--borderRadius-medium);
+    box-shadow: none;
+  }
+  [data-slot="tabs-list"] {
+    background: var(--bgColor-muted);
+    border-radius: var(--borderRadius-medium);
+  }
   [data-slot="tabs-trigger"][data-state="active"] {
-  background: var(--bgColor-default);
-  color: var(--fgColor-default);
-  box-shadow: var(--shadow-resting-small);
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
+    box-shadow: var(--shadow-resting-small);
+  }
+  [data-slot="slider"] {
+    accent-color: var(--fgColor-accent);
+  }
+  [data-slot="slider-range"] {
+    background: var(--bgColor-accent-emphasis);
+  }
+  [data-slot="slider-thumb"] {
+    border-color: var(--borderColor-accent-emphasis);
+    background: var(--bgColor-default);
+  }
+  [data-slot="dropdown-menu-content"],
+  [data-slot="sheet-content"],
+  [data-slot="accordion-item"] {
+    border-color: var(--borderColor-default);
+    border-radius: var(--borderRadius-medium);
+  }
+  .ds-dialog {
+    background: var(--overlay-bgColor);
+    border-color: var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
+    color: var(--fgColor-default);
+  }
 }
-html[data-design-system="github"] [data-slot="slider"] {
-  accent-color: var(--fgColor-accent);
-}
-html[data-design-system="github"] [data-slot="slider-range"] {
-  background: var(--bgColor-accent-emphasis);
-}
-html[data-design-system="github"] [data-slot="slider-thumb"] {
-  border-color: var(--borderColor-accent-emphasis);
-  background: var(--bgColor-default);
-}
-html[data-design-system="github"] [data-slot="dropdown-menu-content"],
-html[data-design-system="github"] [data-slot="sheet-content"],
-html[data-design-system="github"] [data-slot="accordion-item"] {
-  border-color: var(--borderColor-default);
-  border-radius: var(--borderRadius-medium);
-}
-html[data-design-system="github"] .ds-dialog {
-  background: var(--overlay-bgColor);
-  border-color: var(--borderColor-default);
-  border-radius: var(--borderRadius-large);
-  color: var(--fgColor-default);
-}
+
 /* Original layout classes still control responsive sizing, never the fallback button recipe. */
 .ds-button {
   max-width: 100%;
@@ -386,36 +388,37 @@ html[data-design-system="adobe"] .ds-spectrum-mobile-toggle:hover,
   color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800));
 }
 
-html[data-design-system="adobe"] [data-slot="card"] {
-  border: 1px solid var(--spectrum-gray-300, var(--spectrum-global-color-gray-300));
-  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
-  box-shadow: none;
-}
+@scope (:is(html, .ds-scope)[data-design-system="adobe"]) to (.ds-scope:not([data-design-system="adobe"])) {
+  [data-slot="card"] {
+    border: 1px solid var(--spectrum-gray-300, var(--spectrum-global-color-gray-300));
+    border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+    box-shadow: none;
+  }
 
-html[data-design-system="adobe"] [data-slot="tabs-list"] {
-  background: var(--spectrum-gray-100, var(--spectrum-global-color-gray-100));
-  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
-}
+  [data-slot="tabs-list"] {
+    background: var(--spectrum-gray-100, var(--spectrum-global-color-gray-100));
+    border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+  }
 
-html[data-design-system="adobe"]
   [data-slot="tabs-trigger"][data-state="active"] {
-  background: var(--spectrum-gray-50, var(--spectrum-global-color-gray-50));
-  color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800));
-}
+    background: var(--spectrum-gray-50, var(--spectrum-global-color-gray-50));
+    color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800));
+  }
 
-html[data-design-system="adobe"] [data-slot="slider"] {
-  accent-color: var(--spectrum-accent-background-color-default);
-}
+  [data-slot="slider"] {
+    accent-color: var(--spectrum-accent-background-color-default);
+  }
 
-html[data-design-system="adobe"] [data-slot="slider-range"] {
-  background: var(--spectrum-accent-background-color-default);
-}
+  [data-slot="slider-range"] {
+    background: var(--spectrum-accent-background-color-default);
+  }
 
-html[data-design-system="adobe"] .ds-dialog {
-  background: var(--spectrum-gray-50, var(--spectrum-global-color-gray-50));
-  border-color: var(--spectrum-gray-300, var(--spectrum-global-color-gray-300));
-  border-radius: var(--spectrum-alias-border-radius-regular, 4px);
-  color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800));
+  .ds-dialog {
+    background: var(--spectrum-gray-50, var(--spectrum-global-color-gray-50));
+    border-color: var(--spectrum-gray-300, var(--spectrum-global-color-gray-300));
+    border-radius: var(--spectrum-alias-border-radius-regular, 4px);
+    color: var(--spectrum-gray-800, var(--spectrum-global-color-gray-800));
+  }
 }
 
 .ds-spectrum-input {

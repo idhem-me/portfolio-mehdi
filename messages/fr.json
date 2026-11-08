@@ -45,7 +45,13 @@
     "retry": "Réessayer"
   },
   "designSystem": {
-    "label": "Design system"
+    "label": "Design system",
+    "descriptions": {
+      "mehdi": "Shadcn / Radix et tokens locaux",
+      "fun": "Papeterie pop, couleurs vives et relief",
+      "github": "Primer React et tokens Primer",
+      "adobe": "React Spectrum 1 et tokens Spectrum"
+    }
   },
   "nav": {
     "openMenu": "Ouvrir le menu",
@@ -70,6 +76,15 @@
     "gameSettingsDescription": "Réglages de {game}."
   },
   "playground": {
+    "funDemo": {
+      "title": "Atelier d’affiches",
+      "description": "Essayez les boutons en relief et ouvrez l’aperçu de votre affiche.",
+      "field": "Nom de l’affiche",
+      "sample": "La fête du papier",
+      "preview": "Aperçu",
+      "reset": "Réinitialiser",
+      "close": "Fermer"
+    },
     "title": "Playground",
     "compare": "Comparer",
     "intro": "Explore les composants et leurs variantes.",

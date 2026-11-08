@@ -39,6 +39,7 @@ export default async function ToolsPage({ params }: Props) {
       <a
         href={`${locale === "fr" ? "" : `/${locale}`}/outils/listes-cadeaux`}
         lang="fr"
+        data-slot="portfolio-card"
         className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Gift aria-hidden="true" className="size-6 shrink-0 text-accent" />
@@ -52,6 +53,7 @@ export default async function ToolsPage({ params }: Props) {
       </a>
       <Link
         href="/outils/color-generator"
+        data-slot="portfolio-card"
         className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Palette aria-hidden="true" className="size-6 shrink-0 text-accent" />
@@ -62,6 +64,7 @@ export default async function ToolsPage({ params }: Props) {
       </Link>
       <Link
         href="/outils/fusion-pdf"
+        data-slot="portfolio-card"
         className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Files aria-hidden="true" className="size-6 shrink-0 text-accent" />
@@ -74,6 +77,7 @@ export default async function ToolsPage({ params }: Props) {
       </Link>
       <Link
         href="/outils/compression-image"
+        data-slot="portfolio-card"
         className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <ImageDown aria-hidden="true" className="size-6 shrink-0 text-accent" />
@@ -84,6 +88,7 @@ export default async function ToolsPage({ params }: Props) {
       </Link>
       <Link
         href="/outils/conversion-image"
+        data-slot="portfolio-card"
         className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <Images aria-hidden="true" className="size-6 shrink-0 text-accent" />
@@ -94,6 +99,7 @@ export default async function ToolsPage({ params }: Props) {
       </Link>
       <Link
         href="/outils/qrcode"
+        data-slot="portfolio-card"
         className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <QrCode aria-hidden="true" className="size-6 shrink-0 text-accent" />

@@ -6,7 +6,9 @@
 - Densité et espacements interactifs via `--control-height-*`, `--control-text-*`, `--menu-*`, `--sidebar-*` et `--sheet-*`. Les cibles mobiles principales passent à 44 px sous 768 px. Les espacements de composition suivent Tailwind.
 - Familles `--radius-*` et ombres d’élévation via tokens/classes. Les effets de l’accent et des jeux mêlent transitions, keyframes et valeurs locales. Préserver l’identité des effets propres aux jeux lors des migrations.
 - Polices dans `src/app/layout.tsx`, Google Sans, Geist Mono, Noto Sans SC et Noto Sans Arabic local. `globals.css` applique les familles par locale. Le thème système suit l’OS via next-themes.
-- `DesignSystemProvider` et `design-system.css` adaptent Mehdi (Radix/Shadcn), GitHub (Primer), Adobe (Spectrum, flag). Les vitrines `/playground` et `/playground/design-systems` sont la référence visuelle. Le [guide DS existant](../designsystem.md) détaille tokens et variantes.
+- `DesignSystemProvider` et `design-system.css` adaptent Sobre et Fun (Radix/Shadcn), GitHub (Primer), Adobe (Spectrum, flag). Les vitrines `/playground` et `/playground/design-systems` sont la référence visuelle. Le [guide DS existant](../designsystem.md) détaille tokens et variantes.
+
+- `fun.css` définit les palettes clair et sombre, le relief et le mouvement par tokens. Les démos réelles du Playground couvrent les contrôles et surfaces concernés, avec une composition de référence à `#fun`.
 
 ## Composants et conventions d’usage
 
@@ -23,4 +25,4 @@
 | Sidebar, SidebarButton, SidebarTrigger et Switcher | Contexte ouvert/réduit, état actif, mobile et fournisseur DS. | Vérifier navigation et ordre du focus à sept locales. Tester icônes et placement en RTL. |
 | ScopedTheme et NativeControls | Thème local et contrôles HTML spécialisés. | Garder la sémantique et les attributs HTML. Préserver contraste et états si le thème est forcé. |
 
-Les adaptateurs de `src/components/design-system/` comprennent aussi le bouton Mehdi de base et le registre de flags. Les réglages `components/games/game-settings` composent des contrôles de jeu partagés. Préférer une composition de primitives pour le chrome, avec rendu de scène propre à la feature. La parité de chaque prop et de chaque état entre fournisseurs reste à vérifier en navigateur.
+Les adaptateurs de `src/components/design-system/` comprennent aussi le bouton local de base et le registre de flags. Les réglages `components/games/game-settings` composent des contrôles de jeu partagés. Préférer une composition de primitives pour le chrome, avec rendu de scène propre à la feature. La parité de chaque prop et de chaque état entre fournisseurs reste à vérifier en navigateur.
