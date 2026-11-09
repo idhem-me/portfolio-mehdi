@@ -1,5 +1,14 @@
 # Changelog du design system
 
+## Contraste du sélecteur de plage de dates
+
+- Le calendrier utilise les tokens sémantiques du thème actif pour distinguer les bornes et le milieu de plage. Les jours hors mois et désactivés gardent un texte lisible sans opacité arbitraire; le focus reste indiqué par `ring`.
+- La démo du Playground couvre la plage sélectionnée et ses états dans les différents design systems.
+
+- Les cases vides conservent la largeur d’un jour. Les bornes « Du » et « Au » sont activables et l’état sélectionné garde sa paire de couleurs au survol, avec un soulignement.
+
+- Le bouton du sélecteur affiche les dates sans année, séparées par un tiret demi-cadratin, et le libellé sans deux-points.
+
 ## Typographie Fun
 
 - Les portées de l’accueil et de la navigation héritent maintenant du token global du thème ; les aperçus Sobre forcés gardent Google Sans.

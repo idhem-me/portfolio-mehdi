@@ -56,9 +56,13 @@ export function TableSortButton({
   direction,
   children,
   className,
+  iconClassName,
+  revealIconOnHover = false,
   ...props
 }: Omit<ComponentProps<typeof Button>, "asChild" | "size" | "type" | "variant"> & {
   direction?: keyof typeof sortIcons;
+  iconClassName?: string;
+  revealIconOnHover?: boolean;
 }) {
   const Icon = direction ? sortIcons[direction] : ArrowUpDown;
   return (
@@ -69,11 +73,19 @@ export function TableSortButton({
       size="sm"
       className={cn(
         "h-auto min-h-(--control-height-sm) max-w-full justify-start whitespace-normal px-1 text-start text-inherit",
+        revealIconOnHover && "group w-full min-w-0",
         className,
       )}
     >
-      {children}
-      <Icon className="size-3.5 shrink-0" aria-hidden />
+      <span className="min-w-0 flex-1 truncate whitespace-nowrap">{children}</span>
+      <Icon
+        className={cn(
+          "size-3.5 shrink-0",
+          revealIconOnHover && "w-0 overflow-hidden opacity-0 transition-[width,opacity] group-hover:w-3.5 group-hover:opacity-100 group-focus-visible:w-3.5 group-focus-visible:opacity-100",
+          iconClassName,
+        )}
+        aria-hidden
+      />
     </Button>
   );
 }

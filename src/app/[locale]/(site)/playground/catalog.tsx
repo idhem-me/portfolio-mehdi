@@ -155,11 +155,6 @@ export function PlaygroundCatalog() {
   const [dateFrom, setDateFrom] = useState("2026-10-01");
   const [dateTo, setDateTo] = useState("2026-10-30");
 
-  const dateSummary =
-    dateFrom || dateTo
-      ? [dateFrom, dateTo].filter(Boolean).join(" → ")
-      : undefined;
-
   return (
     <section
       aria-labelledby="playground-title"
@@ -328,7 +323,6 @@ export function PlaygroundCatalog() {
               locale="fr"
               from={dateFrom}
               to={dateTo}
-              summary={dateSummary}
               onFromChange={setDateFrom}
               onToChange={setDateTo}
             />

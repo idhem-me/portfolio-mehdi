@@ -36,7 +36,6 @@ export function DateRangeSelect({
   label,
   fromLabel,
   toLabel,
-  summary,
   locale,
   clearLabel,
 }: {
@@ -47,11 +46,9 @@ export function DateRangeSelect({
   label: string;
   fromLabel: string;
   toLabel: string;
-  summary?: string;
   locale: string;
   clearLabel: string;
 }) {
-  const empty = !from && !to;
   const selected = useMemo<DateRange | undefined>(
     () => ({
       from: parseYmd(from),
@@ -59,8 +56,20 @@ export function DateRangeSelect({
     }),
     [from, to],
   );
+  const shortDate = new Intl.DateTimeFormat(locale, {
+    day: "numeric",
+    month: "short",
+  });
+  const summary = [selected?.from, selected?.to]
+    .flatMap((date) => (date ? [shortDate.format(date)] : []))
+    .join(" – ");
+  const empty = !summary;
   const [month, setMonth] = useState<Date>(
     () => selected?.from ?? selected?.to ?? new Date(),
+  );
+
+  const [activeBoundary, setActiveBoundary] = useState<"from" | "to">(
+    from && !to ? "to" : "from",
   );
 
   function formatHeader(date?: Date) {
@@ -75,7 +84,7 @@ export function DateRangeSelect({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label={label}
+        aria-label={summary ? `${label} ${summary}` : label}
         className={selectChipTriggerClassName}
       >
         <span className="min-w-0 flex-1 truncate text-start">
@@ -84,7 +93,7 @@ export function DateRangeSelect({
           ) : (
             <>
               <span className="text-muted-foreground">{label}</span>
-              <span className="text-muted-foreground">: </span>
+              {" "}
               <span>{summary}</span>
             </>
           )}
@@ -105,22 +114,35 @@ export function DateRangeSelect({
         >
           <p className="text-xs font-medium text-muted-foreground">{label}</p>
           <div className="mt-2 grid grid-cols-2 gap-2">
-            <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                {fromLabel}
-              </p>
-              <p className="mt-0.5 text-sm font-medium tabular-nums">
-                {formatHeader(selected?.from)}
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-muted/40 px-3 py-2">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                {toLabel}
-              </p>
-              <p className="mt-0.5 text-sm font-medium tabular-nums">
-                {formatHeader(selected?.to)}
-              </p>
-            </div>
+            {(["from", "to"] as const).map((boundary) => {
+              const active = activeBoundary === boundary;
+              const date = selected?.[boundary];
+
+              return (
+                <button
+                  key={boundary}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    setActiveBoundary(boundary);
+                    if (date) setMonth(date);
+                  }}
+                  className={cn(
+                    "rounded-lg border px-3 py-2 text-start focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-secondary text-secondary-foreground",
+                  )}
+                >
+                  <span className="block text-xs uppercase tracking-wide">
+                    {boundary === "from" ? fromLabel : toLabel}
+                  </span>
+                  <span className="mt-0.5 block text-sm font-medium tabular-nums">
+                    {formatHeader(date)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
         <DayPicker
@@ -128,10 +150,24 @@ export function DateRangeSelect({
           month={month}
           onMonthChange={setMonth}
           selected={selected}
-          onSelect={(range) => {
-            onFromChange(range?.from ? toYmd(range.from) : "");
-            onToChange(range?.to ? toYmd(range.to) : "");
+          onSelect={(_, date) => {
+            const value = toYmd(date);
+
+            if (activeBoundary === "from") {
+              onFromChange(value);
+              if (to && value > to) onToChange("");
+              setActiveBoundary("to");
+            } else {
+              if (from && value < from) {
+                onFromChange(value);
+                onToChange(from);
+              } else {
+                onToChange(value);
+              }
+              setActiveBoundary("from");
+            }
           }}
+          ISOWeek
           numberOfMonths={1}
           locale={locale.startsWith("fr") ? fr : undefined}
           className="p-3"
@@ -152,9 +188,9 @@ export function DateRangeSelect({
             weekday:
               "w-9 text-center text-[11px] font-medium text-muted-foreground",
             week: "mt-1 flex w-full",
-            day: "relative p-0 text-center text-sm",
+            day: "relative w-9 shrink-0 p-0 text-center text-sm",
             day_button: cn(
-              "inline-flex size-9 items-center justify-center rounded-full text-sm outline-none transition-colors",
+              "inline-flex size-9 items-center justify-center rounded-full text-sm text-foreground outline-none transition-colors",
               "hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
             ),
             selected: "bg-transparent",
@@ -162,8 +198,8 @@ export function DateRangeSelect({
             range_end: "rounded-r-full bg-primary/15",
             range_middle: "rounded-none bg-primary/10",
             today: "font-semibold text-accent",
-            outside: "text-muted-foreground/40",
-            disabled: "text-muted-foreground/30",
+            outside: "text-muted-foreground",
+            disabled: "text-muted-foreground",
             hidden: "invisible",
           }}
           components={{
@@ -175,13 +211,17 @@ export function DateRangeSelect({
               ),
           }}
           modifiersClassNames={{
-            selected:
-              "[&>button]:bg-primary [&>button]:text-primary-foreground [&>button]:hover:bg-primary [&>button]:hover:text-primary-foreground",
+            selected: cn(
+              "[&>button]:hover:underline [&>button]:hover:underline-offset-4",
+              !(selected?.from && selected?.to) &&
+                "[&>button]:bg-primary [&>button]:text-primary-foreground [&>button]:hover:bg-primary",
+            ),
             range_start:
-              "[&>button]:bg-primary [&>button]:text-primary-foreground",
+              "[&>button]:bg-primary [&>button]:text-primary-foreground [&>button]:hover:bg-primary",
             range_end:
-              "[&>button]:bg-primary [&>button]:text-primary-foreground",
-            range_middle: "[&>button]:rounded-none [&>button]:bg-transparent",
+              "[&>button]:bg-primary [&>button]:text-primary-foreground [&>button]:hover:bg-primary",
+            range_middle:
+              "[&>button]:rounded-none [&>button]:bg-secondary [&>button]:text-secondary-foreground [&>button]:hover:bg-secondary",
           }}
         />
         <div className="flex justify-end border-t border-border px-3 py-2">
@@ -192,6 +232,7 @@ export function DateRangeSelect({
             onClick={() => {
               onFromChange("");
               onToChange("");
+              setActiveBoundary("from");
             }}
           >
             {clearLabel}

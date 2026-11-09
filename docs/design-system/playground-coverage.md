@@ -148,7 +148,7 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 | badge.tsx | Démo dans le catalogue · états à vérifier | provider |
 | button.tsx | Démo dans le catalogue · états à vérifier | button, mehdi-button |
 | card.tsx | Démo dans le catalogue · états à vérifier | — |
-| date-range-select.tsx | Démo dans le catalogue · états à vérifier | button, dropdown-menu, select |
+| date-range-select.tsx | Démo dans le catalogue · plage, bornes, milieu, aujourd’hui, hors mois, désactivé et focus clavier | button, dropdown-menu, select |
 | dialog.tsx | Démo dans le catalogue · états à vérifier | provider |
 | dropdown-menu.tsx | Démo dans le catalogue · états à vérifier | provider |
 | input.tsx | Démo dans le catalogue · états à vérifier | provider |

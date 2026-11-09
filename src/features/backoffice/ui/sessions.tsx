@@ -146,7 +146,6 @@ function SessionList() {
   const total = data?.total ?? 0;
   const fromValue = query.get("from")?.slice(0, 10) || "";
   const toValue = query.get("to")?.slice(0, 10) || "";
-  const dateSummary = formatDateSummary(fromValue, toValue, locale);
 
   function adjacent(direction: number) {
     const next = index + direction;
@@ -241,7 +240,6 @@ function SessionList() {
           locale={locale}
           from={fromValue}
           to={toValue}
-          summary={dateSummary}
           onFromChange={(value) =>
             update("from", value ? value + "T00:00:00Z" : "")
           }
@@ -325,7 +323,7 @@ function SessionList() {
         </div>
       ) : (
         <>
-          <div className="hidden rounded-xl border @min-[48rem]:block">
+          <div className="hidden overflow-clip rounded-xl border @min-[48rem]:block">
             <Table className="table-fixed [overflow-wrap:anywhere]">
               <TableHeader className="sticky top-0 z-10 bg-muted/80 backdrop-blur">
                 <TableRow>
@@ -346,10 +344,12 @@ function SessionList() {
                         ? search.get("order") === "asc" ? "ascending" : "descending"
                         : undefined;
                     return (
-                      <TableHead key={labelKey} aria-sort={direction} className="first:w-[24%]">
+                      <TableHead key={labelKey} aria-sort={direction} className="group p-0 first:w-[24%]">
                         {sortKey ? (
                           <TableSortButton
                             direction={direction}
+                            revealIconOnHover={!direction}
+                            className="h-full min-h-0 w-full max-w-none justify-start gap-1 rounded-none px-1 py-2 text-sm leading-tight"
                             onClick={() => {
                               const p = new URLSearchParams(search.toString());
                               p.set("sort", sortKey);
@@ -555,16 +555,4 @@ function SessionList() {
       )}
     </div>
   );
-}
-
-function formatDateSummary(from: string, to: string, locale: string) {
-  const format = (value: string) =>
-    new Intl.DateTimeFormat(locale, {
-      day: "numeric",
-      month: "short",
-    }).format(new Date(value + "T00:00:00"));
-  if (from && to) return format(from) + " – " + format(to);
-  if (from) return format(from);
-  if (to) return format(to);
-  return "";
 }
