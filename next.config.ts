@@ -42,6 +42,7 @@ const nextConfig: NextConfig = {
         destination: `${playground}/design-systems`,
         permanent: true,
       }];
+      // Keep old bookmarks working when there is nothing to review or the site is deployed.
       if (!showLocalComponents) {
         redirects.push({
           source: `${prefix}/playground/local-components`,

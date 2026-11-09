@@ -77,7 +77,7 @@ Overrides (**dans `@layer base`**, avec les defaults desktop) — Tailwind v4 fu
 
 Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, le mode Auto suit le viewport. Les modes forcés appliquent `data-density` à la vitrine et à ses portails. La navigation du site conserve sa densité responsive.
 
-Le registre de couverture associe chaque module du DS à une démo ou à une exception d’infrastructure. `npm test` contrôle sa couverture. Les tests navigateur contrôlent les ancres, les cibles et le retour du focus. Les [composants locaux](design-system/playground-local-components.md) sont suivis sur `/playground/local-components` en développement local.
+Le registre de couverture associe chaque module du DS à une démo ou à une exception d’infrastructure. `npm test` contrôle sa couverture. Les tests navigateur contrôlent les ancres, les cibles et le retour du focus. Le [relevé des composants locaux](design-system/playground-local-components.md) conserve l’historique. La page `/playground/local-components` apparaît en développement local quand il reste des tickets à traiter.
 
 ## Button — variante `accent`
 

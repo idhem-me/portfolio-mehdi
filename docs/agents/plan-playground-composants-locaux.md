@@ -34,6 +34,6 @@ Pour chaque ticket, vérifier Desktop et Mobile, la cible de 44 × 44 px CSS pou
 
 En développement local, vérifier l’onglet et l’accès direct dans les sept langues, la mise en page mobile et l’arabe RTL. Sur une compilation de production, vérifier la disparition de l’onglet et la redirection des anciennes adresses vers le bon catalogue. Après chaque lot, lancer lint, typecheck, build et les tests concernés, puis consigner les blocages éventuels.
 
-Une fois les six tickets clos, le relevé Markdown et les démos peuvent servir de référence durable. Réévaluer alors le maintien de la page de suivi locale.
+Après la clôture des six tickets, décision validée de retirer les tickets corrigés de la page et de masquer celle-ci tant que la liste est vide. Le relevé Markdown et les démos conservent les résolutions.
 
 Plan validé. L’implémentation est sur `codex/playground-composants-locaux`. Le [relevé des composants](../design-system/playground-local-components.md) consigne le statut après correction.

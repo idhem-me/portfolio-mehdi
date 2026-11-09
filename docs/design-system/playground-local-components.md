@@ -1,6 +1,6 @@
 # Composants codés localement
 
-La page `/playground/local-components` présente le statut des écarts et les liens vers les démos en développement local. Les anciennes adresses publiques redirigent temporairement vers le catalogue de leur langue.
+La page `/playground/local-components` recense les tickets ouverts en développement local. Les tickets corrigés restent consignés ci-dessous avec leurs démos. La liste est actuellement vide. Lorsque la page est masquée, son adresse redirige temporairement vers le catalogue de la même langue.
 
 | Ticket | Statut | Résolution ou suivi |
 | --- | --- | --- |

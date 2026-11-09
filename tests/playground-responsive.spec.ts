@@ -1,6 +1,7 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { demoAnchors } from "../src/app/[locale]/(site)/playground/coverage";
 import { locales } from "../src/i18n/routing";
+import { pendingLocalComponents } from "../src/lib/playground-access";
 
 async function expectTouchTarget(target: Locator) {
   await expect(target).toBeVisible();
@@ -49,11 +50,13 @@ test("Playground shows all demos and applies density across portal boundaries", 
   await expect(themeTrigger).toBeFocused();
 });
 
-test("local components are available only in development in every locale", async ({ page, request }) => {
-  if (process.env.PLAYGROUND_TEST_MODE === "production") {
-    for (const prefix of ["", ...locales.map((locale) => `/${locale}`)]) {
-      const destination = `${prefix === "/fr" ? "" : prefix}/playground`;
-      const url = `${prefix}/playground/local-components`;
+test("the local inventory is visible only in development with open tickets", async ({ page, request }) => {
+  const showInventory = process.env.PLAYGROUND_TEST_MODE !== "production" && pendingLocalComponents.length > 0;
+  await page.setViewportSize({ width: 320, height: 750 });
+  for (const prefix of ["", ...locales.map((locale) => `/${locale}`)]) {
+    const destination = `${prefix === "/fr" ? "" : prefix}/playground`;
+    const url = `${prefix}/playground/local-components`;
+    if (!showInventory) {
       const response = await request.get(url, { maxRedirects: 0 });
       expect(response.status()).toBe(307);
       expect(response.headers().location).toBe(destination);
@@ -62,26 +65,24 @@ test("local components are available only in development in every locale", async
         maxRedirects: 0,
       });
       expect(prefetch.status()).toBe(307);
-      await page.goto(url);
-      expect(new URL(page.url()).pathname).toBe(destination);
-      await expect(page.locator('a[href$="/playground/local-components"], #LOCAL-01')).toHaveCount(0);
     }
-    return;
-  }
 
-  await page.setViewportSize({ width: 320, height: 750 });
-  for (const locale of locales) {
-    const prefix = locale === "fr" ? "" : `/${locale}`;
-    const url = `${prefix}/playground/local-components`;
     await page.goto(url);
-    await expect(page.locator(`a[href="${url}"][aria-current="page"]`)).toHaveCount(1);
+    const tab = page.locator('a[href$="/playground/local-components"]');
+    if (!showInventory) {
+      expect(new URL(page.url()).pathname).toBe(destination);
+      await expect(tab).toHaveCount(0);
+      continue;
+    }
+
+    expect(new URL(page.url()).pathname).toBe(`${destination}/local-components`);
+    await expect(tab).toHaveAttribute("aria-current", "page");
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
-    await expect(page.locator("#LOCAL-01")).toBeVisible();
-    await expect(page.locator("#LOCAL-09")).toBeVisible();
-    await expect(page.locator("#LOCAL-08, #LOCAL-10")).toHaveCount(0);
+    for (const ticket of pendingLocalComponents) {
+      await expect(page.locator(`#${ticket.id}`)).toBeVisible();
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(321);
-    await expect(page.locator("#LOCAL-01 a")).toHaveAttribute("href", `${prefix}/playground#paint-color`);
-    if (locale === "ar") await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    if (prefix === "/ar") await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   }
 });
 
