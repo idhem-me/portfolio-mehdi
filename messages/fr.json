@@ -68,6 +68,8 @@
     "backoffice": "Backoffice"
   },
   "ui": {
+    "yes": "Oui",
+    "no": "Non",
     "close": "Fermer",
     "rank": "Rang",
     "player": "Joueur",
@@ -75,7 +77,30 @@
     "settingsTitle": "Réglages",
     "gameSettingsDescription": "Réglages de {game}."
   },
+  "caseStudyControls": {
+    "screens": "Écrans produit",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "slide": "Écran {number} · {name}",
+    "zoomOut": "Zoom arrière",
+    "zoomIn": "Zoom avant",
+    "lightboxHelp": "Pincez ou utilisez + et − pour zoomer. Utilisez les flèches pour déplacer l’image et Échap pour fermer.",
+    "enlarge": "Agrandir {name}"
+  },
   "playground": {
+    "swatches": "Cartes du nuancier",
+    "alerts": "Alertes",
+    "volume": "Volume",
+    "appearance": "Apparence",
+    "resetSettings": "Réinitialiser les réglages",
+    "sampleAccount": "Compte de démonstration",
+    "textareaSample": "Ada prépare une liste pour son anniversaire.\nElle ajoute un message pour expliquer ses idées à ses proches.",
+    "textareaHelp": "Ajoutez un message sur plusieurs lignes.",
+    "textareaError": "Saisissez un message.",
+    "caseStudySample": "Le [[design system]] relie ces deux écrans.",
+    "caseStudyTerm": "design system",
+    "caseStudyDefinition": "Un ensemble de composants et de règles partagés.",
+    "sampleScreen": "Écran de démonstration {number}",
     "themeExamples": {
       "frutiger-aero": {
         "title": "Carnet des lagons",

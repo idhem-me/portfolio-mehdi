@@ -584,13 +584,12 @@ function PublicGiftListClient({ slug }: { slug: string }) {
         <ListShareMenu title={data.title} url={`${origin}/l/${data.slug}`} />
       )}
       <footer className="pt-6 text-center">
-        <DocumentLink
-          href="/outils/listes-cadeaux?creer=1"
-          className="inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <Gift className="size-4" aria-hidden="true" />À mon tour de créer une
-          liste
-        </DocumentLink>
+        <Button asChild variant="link" className="h-auto min-h-(--control-height) whitespace-normal text-muted-foreground underline hover:text-foreground">
+          <DocumentLink href="/outils/listes-cadeaux?creer=1">
+            <Gift className="size-4" aria-hidden="true" />À mon tour de créer une
+            liste
+          </DocumentLink>
+        </Button>
       </footer>
       {activeItem && data && (
         <ReserveForm

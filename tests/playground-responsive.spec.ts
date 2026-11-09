@@ -1,5 +1,6 @@
 import { expect, test, type Locator } from "@playwright/test";
 import { demoAnchors } from "../src/app/[locale]/(site)/playground/coverage";
+import { locales } from "../src/i18n/routing";
 
 async function expectTouchTarget(target: Locator) {
   await expect(target).toBeVisible();
@@ -48,11 +49,33 @@ test("Playground shows all demos and applies density across portal boundaries", 
   await expect(themeTrigger).toBeFocused();
 });
 
-test("the local components page works in every locale", async ({ page }) => {
+test("local components are available only in development in every locale", async ({ page, request }) => {
+  if (process.env.PLAYGROUND_TEST_MODE === "production") {
+    for (const prefix of ["", ...locales.map((locale) => `/${locale}`)]) {
+      const destination = `${prefix === "/fr" ? "" : prefix}/playground`;
+      const url = `${prefix}/playground/local-components`;
+      const response = await request.get(url, { maxRedirects: 0 });
+      expect(response.status()).toBe(307);
+      expect(response.headers().location).toBe(destination);
+      const prefetch = await request.get(url, {
+        headers: { RSC: "1", "Next-Router-Prefetch": "1" },
+        maxRedirects: 0,
+      });
+      expect(prefetch.status()).toBe(307);
+      await page.goto(url);
+      expect(new URL(page.url()).pathname).toBe(destination);
+      await expect(page.locator('a[href$="/playground/local-components"], #LOCAL-01')).toHaveCount(0);
+    }
+    return;
+  }
+
   await page.setViewportSize({ width: 320, height: 750 });
-  for (const locale of ["fr", "de", "en", "es", "it", "ar", "zh"]) {
+  for (const locale of locales) {
     const prefix = locale === "fr" ? "" : `/${locale}`;
-    await page.goto(`${prefix}/playground/local-components`);
+    const url = `${prefix}/playground/local-components`;
+    await page.goto(url);
+    await expect(page.locator(`a[href="${url}"][aria-current="page"]`)).toHaveCount(1);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(page.locator("#LOCAL-01")).toBeVisible();
     await expect(page.locator("#LOCAL-09")).toBeVisible();
     await expect(page.locator("#LOCAL-08, #LOCAL-10")).toHaveCount(0);
@@ -150,6 +173,9 @@ test("the settings modal and sortable table follow the active density", async ({
   await expect(modal).toHaveCSS("width", "390px");
   await expect(modal).toHaveCSS("height", "844px");
   await expectTouchTarget(modal.getByRole("button", { name: "Fermer" }));
+  await expectTouchTarget(toggle);
+  await expectTouchTarget(modal.getByRole("slider"));
+  await expect(modal.getByRole("switch", { name: "Alertes" })).toBeDisabled();
   await expect(toggle).toHaveAttribute("aria-checked", "false");
   await modal.getByRole("button", { name: "Fermer" }).click();
   await expect(trigger).toBeFocused();
@@ -180,6 +206,71 @@ test("the settings modal and sortable table follow the active density", async ({
   await page.keyboard.press("Enter");
   await expect(table.getByRole("columnheader", { name: "Score" })).toHaveAttribute("aria-sort", "ascending");
   await expect(table.getByRole("row").nth(1)).toContainText("Sam");
+
+  const mobileRow = page.locator("#table").getByRole("button", { name: "Ada 1200" });
+  await expectTouchTarget(mobileRow);
+  await mobileRow.press("Enter");
+  await expect(page.getByRole("dialog", { name: "Ada" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(mobileRow).toBeFocused();
+});
+
+test("local component demos retain touch targets, keyboard controls and feedback", async ({ page }) => {
+  await page.addInitScript(() => {
+    let copies = 0;
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: async () => { if (++copies === 2) throw new Error("Clipboard unavailable"); } },
+    });
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/playground");
+  await page.getByRole("button", { name: "Mobile", exact: true }).click();
+
+  const fields = page.locator("#textarea");
+  const checkbox = fields.getByRole("checkbox");
+  await expectTouchTarget(fields.locator('label:has(input[type="checkbox"])'));
+  await checkbox.press("Space");
+  await expect(checkbox).not.toBeChecked();
+  await expect(fields.getByRole("textbox").first()).toHaveAccessibleDescription("Ajoutez un message sur plusieurs lignes.");
+  await expect(fields.getByRole("textbox").last()).toHaveAttribute("aria-invalid", "true");
+
+  const actions = page.locator("#gift-actions");
+  const avatar = actions.getByRole("button", { name: "Compte de démonstration" });
+  await expectTouchTarget(avatar);
+  await expectTouchTarget(actions.getByRole("link"));
+  await avatar.press("Enter");
+  await expect(page.getByRole("menuitem", { name: "Réglages" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(avatar).toBeFocused();
+
+  const swatches = page.locator("#swatches");
+  const swatch = swatches.getByRole("button", { name: /^Copier [\d]+/ }).first();
+  await expectTouchTarget(swatch);
+  await swatch.press("Enter");
+  const copied = swatches.getByRole("button", { name: /^Copié ! [\d]+/ });
+  await expect(copied).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(swatches.getByRole("button", { name: /^Copie impossible/ })).toBeFocused();
+
+  const study = page.locator("#case-study");
+  await study.getByRole("button", { name: "design system" }).focus();
+  await expect(page.getByRole("tooltip")).toHaveText("Un ensemble de composants et de règles partagés.");
+  await page.keyboard.press("Escape");
+  const secondSlide = study.getByRole("button", { name: /^Écran 2 ·/ });
+  await expectTouchTarget(secondSlide);
+  await secondSlide.press("Enter");
+  await expect(secondSlide).toHaveAttribute("aria-current", "true");
+  const enlarge = study.getByRole("button", { name: "Agrandir Écran de démonstration 2" });
+  await enlarge.press("Enter");
+  const lightbox = page.getByRole("dialog", { name: "Écran de démonstration 2" });
+  const close = lightbox.getByRole("button", { name: "Fermer" });
+  await expectTouchTarget(close);
+  await expect(close).toBeFocused();
+  await page.keyboard.press("+");
+  await page.keyboard.press("ArrowRight");
+  await expect(lightbox.getByRole("img")).toHaveAttribute("style", /32px.*scale\(1\.25\)/);
+  await page.keyboard.press("Escape");
+  await expect(enlarge).toBeFocused();
 });
 
 test("shared settings return focus to the game's original trigger", async ({ page }) => {

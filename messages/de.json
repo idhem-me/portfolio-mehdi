@@ -68,6 +68,8 @@
     "backoffice": "Backoffice"
   },
   "ui": {
+    "yes": "Yes",
+    "no": "No",
     "close": "Schließen",
     "rank": "Rang",
     "player": "Spieler",
@@ -75,7 +77,30 @@
     "settingsTitle": "Einstellungen",
     "gameSettingsDescription": "Einstellungen für {game}."
   },
+  "caseStudyControls": {
+    "screens": "Produktansichten",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "slide": "Ansicht {number} · {name}",
+    "zoomOut": "Verkleinern",
+    "zoomIn": "Vergrößern",
+    "lightboxHelp": "Zoomen Sie mit zwei Fingern oder mit + und −. Verschieben Sie das Bild mit den Pfeiltasten und schließen Sie es mit Esc.",
+    "enlarge": "{name} vergrößern"
+  },
   "playground": {
+    "swatches": "Farbfelder der Palette",
+    "alerts": "Hinweise",
+    "volume": "Lautstärke",
+    "appearance": "Darstellung",
+    "resetSettings": "Einstellungen zurücksetzen",
+    "sampleAccount": "Demokonto",
+    "textareaSample": "Ada erstellt eine Geburtstagsliste.\nSie ergänzt eine Nachricht, um ihre Ideen mit Freunden und Familie zu teilen.",
+    "textareaHelp": "Geben Sie eine mehrzeilige Nachricht ein.",
+    "textareaError": "Geben Sie eine Nachricht ein.",
+    "caseStudySample": "Ein [[Designsystem]] verbindet diese beiden Ansichten.",
+    "caseStudyTerm": "Designsystem",
+    "caseStudyDefinition": "Eine Sammlung gemeinsamer Komponenten und Richtlinien.",
+    "sampleScreen": "Demoansicht {number}",
     "themeExamples": {
       "frutiger-aero": {
         "title": "Lagunen-Notizbuch",

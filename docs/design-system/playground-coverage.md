@@ -47,7 +47,7 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 | \[locale\]/(site)/playground/catalog.tsx | Support du Playground | accordion, avatar, badge, button, card, date-range-select, dialog, dropdown-menu, input, provider, select, separator, sheet, skeleton, slider, switch, tabs, toast, tooltip |
 | \[locale\]/(site)/playground/design-systems/page.tsx | Support du Playground | avatar, badge, button, dialog, dropdown-menu, input, native-controls, provider, skeleton, switch, tabs |
 | \[locale\]/(site)/playground/layout.tsx | Support du Playground | — |
-| \[locale\]/(site)/playground/local-components/page.tsx | Inventaire local public | badge, card |
+| \[locale\]/(site)/playground/local-components/page.tsx | Inventaire en développement local | badge, card |
 | \[locale\]/(site)/playground/navigation.tsx | Support du Playground | — |
 | \[locale\]/(site)/playground/page.tsx | Support du Playground | — |
 | \[locale\]/(site)/product-designer/onewallet/page.tsx | Absente · route ou structure de page | — |
@@ -91,7 +91,7 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 | button.tsx | Montré via Button · adaptateur interne | — |
 | choice-menu.tsx | Démo dans Sidebar et usage dans le shell | dropdown-menu, sidebar |
 | mehdi-button.tsx | Montré via Button sous Mehdi · implémentation interne | — |
-| native-controls.tsx | Démo dans NativeControls · NativeInput dans le comparateur | input |
+| native-controls.tsx | Démo dans NativeControls, case native dans Textarea, NativeInput dans le comparateur | input |
 | provider.tsx | Utilisé par la vitrine et le comparateur · infrastructure | — |
 | sidebar-button.tsx | Démo indirecte dans Sidebar | sidebar |
 | switcher.tsx | Démo dans Sidebar et usage dans le shell | — |
@@ -104,12 +104,12 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 | game-appearance-settings.tsx | Absente · contrôles partagés de jeu sans scénario | button |
 | game-feel-settings.tsx | Absente · contrôles partagés de jeu sans scénario | badge, button, native-controls |
 | game-settings/GameSettingsPanel.tsx | Démo générique du conteneur dans SettingsModal | settings-modal |
-| game-settings/primitives/SettingsButton.tsx | Absente · contrôles partagés de jeu sans scénario | button |
+| game-settings/primitives/SettingsButton.tsx | Démo fictive dans SettingsModal | button |
 | game-settings/primitives/SettingsCard.tsx | Absente · contrôles partagés de jeu sans scénario | — |
 | game-settings/primitives/SettingsSection.tsx | Absente · contrôles partagés de jeu sans scénario | — |
-| game-settings/primitives/SettingsSegmented.tsx | Absente · contrôles partagés de jeu sans scénario | button |
-| game-settings/primitives/SettingsSlider.tsx | Absente · contrôles partagés de jeu sans scénario | native-controls |
-| game-settings/primitives/SettingsToggleRow.tsx | Absente · contrôles partagés de jeu sans scénario | badge |
+| game-settings/primitives/SettingsSegmented.tsx | Démo fictive dans SettingsModal | button |
+| game-settings/primitives/SettingsSlider.tsx | Démo fictive dans SettingsModal | native-controls |
+| game-settings/primitives/SettingsToggleRow.tsx | Démo fictive dans SettingsModal | badge |
 | game-settings/sections/AboutSection.tsx | Absente · contrôles partagés de jeu sans scénario | — |
 | game-settings/sections/AccountSection.tsx | Absente · contrôles partagés de jeu sans scénario | — |
 | game-settings/sections/AppearanceSection.tsx | Absente · contrôles partagés de jeu sans scénario | — |
@@ -163,6 +163,7 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 | switch.tsx | Démo dans le catalogue · états à vérifier | provider |
 | table.tsx | Démo dans Table | button |
 | tabs.tsx | Démo dans le catalogue · états à vérifier | provider |
+| textarea.tsx | Label, aide, erreur et valeur multiligne dans Textarea | — |
 | toast.tsx | Démo dans le catalogue · états à vérifier | native-controls |
 | tooltip.tsx | Démo dans le catalogue · états à vérifier | — |
 
@@ -181,7 +182,7 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
 | --- | --- | --- |
 | ui/dashboard.tsx | Absente · composition de fonctionnalité | card, select |
-| ui/sessions.tsx | Absente · composition de fonctionnalité | button, date-range-select, select, sheet |
+| ui/sessions.tsx | Tri et ligne interactive dans Table | button, date-range-select, select, sheet, table |
 | ui/shell.tsx | Absente · composition de fonctionnalité | — |
 
 ## `src/features/cards`
@@ -216,12 +217,12 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
 | --- | --- | --- |
-| ui/case-study-body.tsx | Absente · composition de fonctionnalité | native-controls, tooltip |
-| ui/case-study-slider.tsx | Absente · composition de fonctionnalité | button, native-controls |
+| ui/case-study-body.tsx | Glossaire dans CaseStudy · exception pour les termes en ligne | native-controls, tooltip |
+| ui/case-study-slider.tsx | Navigation tactile et clavier dans CaseStudy | button, native-controls |
 | ui/case-study-story.tsx | Absente · composition de fonctionnalité | button, separator |
-| ui/image-lightbox.tsx | Absente · composition de fonctionnalité | button, native-controls |
+| ui/image-lightbox.tsx | Zoom, déplacement et focus dans CaseStudy | button, dialog, native-controls |
 | ui/scroll-reveal.tsx | Absente · composition de fonctionnalité | — |
-| ui/theme-image.tsx | Absente · composition de fonctionnalité | button |
+| ui/theme-image.tsx | Paire de visuels fictifs dans CaseStudy | button |
 
 ## `src/features/clicker-burger`
 
@@ -240,7 +241,7 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 | ui/ColorGenerator.tsx | Absente · composition de fonctionnalité | button |
 | ui/ColorPicker.tsx | Démo dans ColorPicker | button, native-controls |
 | ui/ControlPanel.tsx | Absente · composition de fonctionnalité | button, card, input, select, slider |
-| ui/SwatchesGrid.tsx | Absente · composition de fonctionnalité | button, input, native-controls |
+| ui/SwatchesGrid.tsx | Couleurs, copie et focus dans Swatches | button, input, native-controls |
 
 ## `src/features/cv`
 
@@ -256,10 +257,10 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
 | --- | --- | --- |
-| ui/creator.tsx | Absente · composition de fonctionnalité | avatar, badge, button, dropdown-menu |
-| ui/forms.tsx | Absente · composition de fonctionnalité | button, dialog, input, select, switch |
-| ui/public.tsx | Absente · composition de fonctionnalité | accordion, badge, button, dialog, input, toast |
-| ui/shared.tsx | Absente · composition de fonctionnalité | badge, button, dialog, dropdown-menu, input |
+| ui/creator.tsx | Bouton avatar et menu fictifs dans GiftActions | avatar, badge, button, dropdown-menu |
+| ui/forms.tsx | Cases et texte multiligne dans Textarea | button, dialog, input, native-controls, select, switch |
+| ui/public.tsx | Lien d’action fictif dans GiftActions | accordion, badge, button, dialog, input, toast |
+| ui/shared.tsx | Zone multiligne dans Textarea | badge, button, dialog, dropdown-menu, input, textarea |
 
 ## `src/features/image-compression`
 

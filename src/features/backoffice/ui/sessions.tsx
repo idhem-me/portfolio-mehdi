@@ -11,7 +11,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSortButton,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableRowButton, TableSortButton,
 } from "@/components/ui/table";
 import { Select } from "@/components/ui/select";
 import {
@@ -450,10 +450,9 @@ function SessionList() {
             {rows.map((r) => {
               const isOnline = online(r);
               return (
-                <button
+                <TableRowButton
                   key={r.id}
                   onClick={() => setSelected(r)}
-                  className="block w-full min-w-0 rounded-xl border p-4 text-left [overflow-wrap:anywhere]"
                 >
                   <span className="flex items-start justify-between gap-3">
                     <span>
@@ -483,11 +482,11 @@ function SessionList() {
                       />
                     </span>
                   </span>
-                  <p className="mt-3 text-sm">
+                  <span className="mt-3 block text-sm">
                     {metric(r, "active_ms")} · {metric(r, "clicks")}{" "}
                     {t("clicks")} · {metric(r, "mouse_px")}
-                  </p>
-                </button>
+                  </span>
+                </TableRowButton>
               );
             })}
           </div>

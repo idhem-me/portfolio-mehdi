@@ -68,6 +68,8 @@
     "backoffice": "Backoffice"
   },
   "ui": {
+    "yes": "Yes",
+    "no": "No",
     "close": "关闭",
     "rank": "名次",
     "player": "玩家",
@@ -75,7 +77,30 @@
     "settingsTitle": "设置",
     "gameSettingsDescription": "{game}的设置。"
   },
+  "caseStudyControls": {
+    "screens": "产品界面",
+    "previous": "上一张",
+    "next": "下一张",
+    "slide": "界面 {number} · {name}",
+    "zoomOut": "缩小",
+    "zoomIn": "放大",
+    "lightboxHelp": "双指捏合或使用 + 和 − 缩放。使用方向键移动图片，按 Esc 关闭。",
+    "enlarge": "放大{name}"
+  },
   "playground": {
+    "swatches": "调色板色卡",
+    "alerts": "提醒",
+    "volume": "音量",
+    "appearance": "外观",
+    "resetSettings": "重置设置",
+    "sampleAccount": "演示账号",
+    "textareaSample": "艾达正在准备生日愿望清单。\n她加了一条留言，想和亲友分享自己的想法。",
+    "textareaHelp": "可输入多行留言。",
+    "textareaError": "请输入留言。",
+    "caseStudySample": "这两个界面使用同一套[[设计系统]]。",
+    "caseStudyTerm": "设计系统",
+    "caseStudyDefinition": "一套共享的组件和设计规范。",
+    "sampleScreen": "演示界面 {number}",
     "themeExamples": {
       "frutiger-aero": {
         "title": "潟湖笔记",

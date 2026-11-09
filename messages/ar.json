@@ -68,6 +68,8 @@
     "backoffice": "Backoffice"
   },
   "ui": {
+    "yes": "Yes",
+    "no": "No",
     "close": "إغلاق",
     "rank": "الترتيب",
     "player": "اللاعب",
@@ -75,7 +77,30 @@
     "settingsTitle": "الإعدادات",
     "gameSettingsDescription": "إعدادات {game}."
   },
+  "caseStudyControls": {
+    "screens": "شاشات المنتج",
+    "previous": "السابق",
+    "next": "التالي",
+    "slide": "الشاشة {number} · {name}",
+    "zoomOut": "تصغير",
+    "zoomIn": "تكبير",
+    "lightboxHelp": "استخدم إصبعين أو المفتاحين + و− لضبط التكبير. استخدم مفاتيح الأسهم لتحريك الصورة ومفتاح Esc للإغلاق.",
+    "enlarge": "تكبير {name}"
+  },
   "playground": {
+    "swatches": "عينات لوحة الألوان",
+    "alerts": "التنبيهات",
+    "volume": "مستوى الصوت",
+    "appearance": "المظهر",
+    "resetSettings": "إعادة ضبط الإعدادات",
+    "sampleAccount": "حساب تجريبي",
+    "textareaSample": "تعد آدا قائمة لعيد ميلادها.\nتضيف رسالة لمشاركة أفكارها مع الأصدقاء والعائلة.",
+    "textareaHelp": "أضف رسالة من عدة أسطر.",
+    "textareaError": "أدخل رسالة.",
+    "caseStudySample": "يربط [[نظام التصميم]] بين هاتين الشاشتين.",
+    "caseStudyTerm": "نظام التصميم",
+    "caseStudyDefinition": "مجموعة مشتركة من المكونات والإرشادات.",
+    "sampleScreen": "الشاشة التجريبية {number}",
     "themeExamples": {
       "frutiger-aero": {
         "title": "دفتر البحيرات الساحلية",

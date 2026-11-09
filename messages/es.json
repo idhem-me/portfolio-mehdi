@@ -68,6 +68,8 @@
     "backoffice": "Backoffice"
   },
   "ui": {
+    "yes": "Yes",
+    "no": "No",
     "close": "Cerrar",
     "rank": "Puesto",
     "player": "Jugador",
@@ -75,7 +77,30 @@
     "settingsTitle": "Ajustes",
     "gameSettingsDescription": "Ajustes de {game}."
   },
+  "caseStudyControls": {
+    "screens": "Pantallas del producto",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "slide": "Pantalla {number} · {name}",
+    "zoomOut": "Alejar",
+    "zoomIn": "Acercar",
+    "lightboxHelp": "Pellizca o usa + y − para ajustar el zoom. Usa las flechas para mover la imagen y Esc para cerrar.",
+    "enlarge": "Ampliar {name}"
+  },
   "playground": {
+    "swatches": "Muestras de la paleta",
+    "alerts": "Alertas",
+    "volume": "Volumen",
+    "appearance": "Apariencia",
+    "resetSettings": "Restablecer ajustes",
+    "sampleAccount": "Cuenta de demostración",
+    "textareaSample": "Ada prepara una lista para su cumpleaños.\nAñade una nota para compartir sus ideas con familiares y amistades.",
+    "textareaHelp": "Añade un mensaje de varias líneas.",
+    "textareaError": "Escribe un mensaje.",
+    "caseStudySample": "Un [[sistema de diseño]] conecta estas dos pantallas.",
+    "caseStudyTerm": "sistema de diseño",
+    "caseStudyDefinition": "Un conjunto compartido de componentes y pautas.",
+    "sampleScreen": "Pantalla de demostración {number}",
     "themeExamples": {
       "frutiger-aero": {
         "title": "Cuaderno de lagunas",

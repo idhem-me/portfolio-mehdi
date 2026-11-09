@@ -48,6 +48,7 @@ Suivre le [déroulé des phases 0 à 6](docs/agents/workflow.md).
 - Tout changement visuel du design system doit apparaître dans le Playground dans le même lot. Mettre à jour la démo réelle et son ancre pour toute primitive, variante, état ou modification de token. Présenter les compositions réutilisables avec des données fictives.
 - Pour chaque contrôle autonome concerné, présenter les densités Desktop et Mobile. Le mode Auto choisit Mobile sous 768 px de viewport. Vérifier la zone d’activation mobile de 44 × 44 px CSS, y compris dans les menus et dialogues. Documenter les exceptions et vérifier le focus clavier.
 - Consigner les primitives locales dans [le relevé dédié](docs/design-system/playground-local-components.md). Mettre à jour [la couverture](docs/design-system/playground-coverage.md) quand une démo ou une exception change. Garder les références aux jeux masqués dans la documentation interne.
+- Réserver `/playground/local-components` et son onglet au serveur de développement local. Sur le site déployé, les anciennes adresses redirigent vers le catalogue de la même langue.
 
 ## Synchronisation i18n
 

@@ -88,6 +88,17 @@
   padding-top: calc(var(--spacing) * 4);
 }
 
+.game-settings-toggle:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+.game-settings-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .game-settings-toggle-copy {
   display: grid;
   gap: calc(var(--spacing) * 1);

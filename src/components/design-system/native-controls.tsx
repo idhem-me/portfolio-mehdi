@@ -12,3 +12,14 @@ export function NativeTextarea(props: ComponentProps<"textarea">) {
 export function NativeInput(props: ComponentProps<"input">) {
   return <input {...props} />;
 }
+
+export function NativeCheckbox({ children, ...props }: Omit<ComponentProps<"input">, "type" | "className" | "children"> & {
+  children: ComponentProps<"label">["children"];
+}) {
+  return (
+    <label className="flex min-h-(--control-height-lg) min-w-(--touch-target-size) cursor-pointer items-center gap-3 text-[length:var(--control-text)] has-focus-visible:outline-2 has-focus-visible:outline-ring has-disabled:cursor-not-allowed">
+      <NativeInput {...props} type="checkbox" className="size-5 shrink-0 accent-primary" />
+      {children}
+    </label>
+  );
+}

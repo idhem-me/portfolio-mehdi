@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useMemo, useReducer, useState } from "react";
 import { converter } from "culori";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
@@ -9,7 +9,6 @@ import {
   exportCode,
   generatePalette,
   generateSvg,
-  slugify,
   type Settings,
   type InputFormat,
   type ExportFormat,
@@ -18,6 +17,7 @@ import {
 import { ControlPanel } from "./ControlPanel";
 import { SwatchesGrid } from "./SwatchesGrid";
 import { CodeExport } from "./CodeExport";
+import { usePaletteActions } from "./use-palette-actions";
 const initial: Settings = {
   hex: "#8f6dea",
   algorithm: "Tailwind CSS",
@@ -36,56 +36,12 @@ export function ColorGenerator() {
   const [format, setFormat] = useState<ExportFormat>("CSS");
   const [space, setSpace] = useState<ColorSpace>("HEX");
   const [customName, setCustomName] = useState("Violet");
-  const [feedback, setFeedback] = useState<Record<string, "copied" | "error">>(
-    {},
-  );
-  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
-  useEffect(() => {
-    const pending = timers.current;
-    return () => {
-      pending.forEach(clearTimeout);
-    };
-  }, []);
   const palette = useMemo(() => generatePalette(settings), [settings]);
   const automaticName = useMemo(() => colorName(settings.hex), [settings.hex]);
   const name = customName || automaticName;
   const code = exportCode(palette, name, format, space);
   const svg = generateSvg(palette, name);
-  async function copy(value: string, id: string) {
-    let result: "copied" | "error";
-    try {
-      await navigator.clipboard.writeText(value);
-      result = "copied";
-    } catch {
-      result = "error";
-    }
-    clearTimeout(timers.current.get(id));
-    setFeedback((previous) => ({ ...previous, [id]: result }));
-    timers.current.set(
-      id,
-      setTimeout(
-        () => {
-          setFeedback((previous) => {
-            const next = { ...previous };
-            delete next[id];
-            return next;
-          });
-          timers.current.delete(id);
-        },
-        result === "copied" ? 2000 : 5000,
-      ),
-    );
-  }
-  function download() {
-    const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${slugify(name)}.svg`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
+  const { copy, feedback, download } = usePaletteActions(svg, name);
   return (
     <div className="space-y-12">
       <section aria-labelledby="generate-palette" className="space-y-5">

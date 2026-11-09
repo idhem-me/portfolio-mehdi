@@ -68,6 +68,8 @@
     "backoffice": "Backoffice"
   },
   "ui": {
+    "yes": "Yes",
+    "no": "No",
     "close": "Chiudi",
     "rank": "Posizione",
     "player": "Giocatore",
@@ -75,7 +77,30 @@
     "settingsTitle": "Impostazioni",
     "gameSettingsDescription": "Impostazioni di {game}."
   },
+  "caseStudyControls": {
+    "screens": "Schermate del prodotto",
+    "previous": "Precedente",
+    "next": "Successiva",
+    "slide": "Schermata {number} · {name}",
+    "zoomOut": "Riduci zoom",
+    "zoomIn": "Aumenta zoom",
+    "lightboxHelp": "Pizzica o usa + e − per regolare lo zoom. Usa le frecce per spostare l’immagine e Esc per chiudere.",
+    "enlarge": "Ingrandisci {name}"
+  },
   "playground": {
+    "swatches": "Campioni della palette",
+    "alerts": "Avvisi",
+    "volume": "Volume",
+    "appearance": "Aspetto",
+    "resetSettings": "Ripristina impostazioni",
+    "sampleAccount": "Account dimostrativo",
+    "textareaSample": "Ada prepara una lista per il suo compleanno.\nAggiunge un messaggio per condividere le sue idee con amici e familiari.",
+    "textareaHelp": "Aggiungi un messaggio su più righe.",
+    "textareaError": "Inserisci un messaggio.",
+    "caseStudySample": "Un [[sistema di design]] collega queste due schermate.",
+    "caseStudyTerm": "sistema di design",
+    "caseStudyDefinition": "Un insieme condiviso di componenti e linee guida.",
+    "sampleScreen": "Schermata dimostrativa {number}",
     "themeExamples": {
       "frutiger-aero": {
         "title": "Taccuino delle lagune",

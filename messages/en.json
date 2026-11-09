@@ -68,6 +68,8 @@
     "backoffice": "Backoffice"
   },
   "ui": {
+    "yes": "Yes",
+    "no": "No",
     "close": "Close",
     "rank": "Rank",
     "player": "Player",
@@ -75,7 +77,30 @@
     "settingsTitle": "Settings",
     "gameSettingsDescription": "Settings for {game}."
   },
+  "caseStudyControls": {
+    "screens": "Product screens",
+    "previous": "Previous",
+    "next": "Next",
+    "slide": "Screen {number} · {name}",
+    "zoomOut": "Zoom out",
+    "zoomIn": "Zoom in",
+    "lightboxHelp": "Pinch or use + and − to zoom. Use the arrow keys to move the image and Esc to close.",
+    "enlarge": "Enlarge {name}"
+  },
   "playground": {
+    "swatches": "Palette swatches",
+    "alerts": "Alerts",
+    "volume": "Volume",
+    "appearance": "Appearance",
+    "resetSettings": "Reset settings",
+    "sampleAccount": "Demo account",
+    "textareaSample": "Ada is making a birthday list.\nShe adds a note to share her ideas with friends and family.",
+    "textareaHelp": "Add a message across several lines.",
+    "textareaError": "Enter a message.",
+    "caseStudySample": "A [[design system]] connects these two screens.",
+    "caseStudyTerm": "design system",
+    "caseStudyDefinition": "A shared set of components and guidelines.",
+    "sampleScreen": "Demo screen {number}",
     "themeExamples": {
       "frutiger-aero": {
         "title": "Lagoon notebook",

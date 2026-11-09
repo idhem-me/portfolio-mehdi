@@ -1,0 +1,15 @@
+import type { ComponentProps } from "react";
+import { cn } from "@/lib/utils";
+
+export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
+  return (
+    <textarea
+      data-slot="textarea"
+      className={cn(
+        "min-h-24 w-full min-w-0 rounded-lg border border-input bg-background p-3 text-[length:var(--control-text)] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20",
+        className,
+      )}
+      {...props}
+    />
+  );
+}

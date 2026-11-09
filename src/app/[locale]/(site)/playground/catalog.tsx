@@ -1,7 +1,8 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Brush, Check, Menu, X } from "lucide-react";
+import { Brush, Check, Gift, Menu, X } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import {
   Accordion,
   AccordionContent,
@@ -43,15 +44,27 @@ import { Select } from "@/components/ui/select";
 import { ScopedTheme, useScopedTheme } from "@/components/ui/scoped-theme";
 import { Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarProvider } from "@/components/ui/sidebar";
 import { DesignSystemChoiceMenu } from "@/components/design-system/choice-menu";
-import { NativeButton, NativeInput, NativeTextarea } from "@/components/design-system/native-controls";
+import { NativeButton, NativeCheckbox, NativeInput, NativeTextarea } from "@/components/design-system/native-controls";
 import { DesignSystemSwitcher } from "@/components/design-system/switcher";
 import "@/components/creative/paint-tool.css";
 import { PaintColorButton } from "@/components/creative/paint-color-button";
 import { ColorPicker } from "@/features/color-generator/ui/ColorPicker";
+import { SwatchesGrid } from "@/features/color-generator/ui/SwatchesGrid";
+import { usePaletteActions } from "@/features/color-generator/ui/use-palette-actions";
+import { generatePalette, generateSvg } from "@/features/color-generator/engine/color-generator";
+import { CaseStudyBody } from "@/features/case-study/ui/case-study-body";
+import { CaseStudySlider } from "@/features/case-study/ui/case-study-slider";
+import { ImageLightboxProvider } from "@/features/case-study/ui/image-lightbox";
+import { SettingsButton } from "@/components/games/game-settings/primitives/SettingsButton";
+import { SettingsSegmented } from "@/components/games/game-settings/primitives/SettingsSegmented";
+import { SettingsSlider } from "@/components/games/game-settings/primitives/SettingsSlider";
+import { SettingsToggleRow } from "@/components/games/game-settings/primitives/SettingsToggleRow";
+import "@/components/games/game-settings/game-settings.css";
 import { demoAnchors } from "./coverage";
 import { EXPERIMENTAL_THEMES_ENABLED } from "@/components/design-system/registry";
 import { SettingsModal, type SettingsModalVariant } from "@/components/ui/settings-modal";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableSortButton } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableRowButton, TableSortButton } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -84,6 +97,18 @@ import { cn } from "@/lib/utils";
 const densities = ["auto", "desktop", "mobile"] as const;
 type Density = (typeof densities)[number];
 
+const demoLabels = {
+  CaseStudy: "caseStudies",
+  GiftActions: "giftActions",
+  Swatches: "swatches",
+  Textarea: "exampleText",
+} as const;
+
+function demoLabel(title: string, t: ReturnType<typeof useTranslations<"playground">>) {
+  const key = demoLabels[title as keyof typeof demoLabels];
+  return key ? t(key) : title;
+}
+
 const visibleDemoAnchors = Object.entries(demoAnchors).filter(
   ([, anchor]) =>
     EXPERIMENTAL_THEMES_ENABLED ||
@@ -101,9 +126,10 @@ function Section({
   title: keyof typeof demoAnchors;
   children: React.ReactNode;
 }) {
+  const t = useTranslations("playground");
   return (
     <section id={demoAnchors[title]} className="scroll-mt-40 space-y-3">
-      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
+      <h2 className="text-base font-semibold tracking-tight">{demoLabel(title, t)}</h2>
       <div className="min-w-0 space-y-4 rounded-xl border border-border bg-primary-inverse p-4 text-foreground sm:p-6">
         {children}
       </div>
@@ -285,6 +311,10 @@ export function PlaygroundCatalog() {
             </div>
           </Section>
 
+          <Section title="CaseStudy">
+            <CaseStudyDemo />
+          </Section>
+
           <Section title="ColorPicker">
             <ColorPicker color={demoColor} onChange={setDemoColor} />
           </Section>
@@ -368,6 +398,10 @@ export function PlaygroundCatalog() {
 
           <Section title="Fun">
             <ThemeDemo theme="fun" />
+          </Section>
+
+          <Section title="GiftActions">
+            <GiftActionsDemo />
           </Section>
 
           <Section title="Input">
@@ -588,6 +622,10 @@ export function PlaygroundCatalog() {
             </div>
           </Section>
 
+          <Section title="Swatches">
+            <SwatchesDemo />
+          </Section>
+
           <Section title="Switch">
             <div className="flex items-center gap-3">
               <Switch
@@ -628,6 +666,10 @@ export function PlaygroundCatalog() {
             </div>
           </Section>
 
+          <Section title="Textarea">
+            <TextareaDemo />
+          </Section>
+
           <Section title="Toast">
             <Button
               variant="outline"
@@ -663,7 +705,7 @@ export function PlaygroundCatalog() {
                   className="flex min-h-(--control-height) items-center rounded-md px-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
                   href={`#${anchor}`}
                 >
-                  {title}
+                  {demoLabel(title, t)}
                 </a>
               </li>
             ))}
@@ -761,8 +803,12 @@ function ScopedThemeDemo() {
 function SettingsModalDemo() {
   const t = useTranslations("playground");
   const ui = useTranslations("ui");
+  const theme = useTranslations("theme");
+  const volumeId = useId();
   const [open, setOpen] = useState<SettingsModalVariant | null>(null);
   const [notifications, setNotifications] = useState(true);
+  const [volume, setVolume] = useState(40);
+  const [appearance, setAppearance] = useState("auto");
   return (
     <div className="flex flex-wrap gap-3">
       {(["center", "right"] as const).map((variant) => (
@@ -779,13 +825,30 @@ function SettingsModalDemo() {
           title={ui("settingsTitle")}
           description={t("settingsDemoHint")}
         >
-          <div className="flex items-center justify-between gap-4">
-            <span>{t("notifications")}</span>
-            <Switch
-              aria-label={t("notifications")}
+          <div className="game-settings-scroll">
+            <SettingsToggleRow
+              id="demo-notifications"
+              label={t("notifications")}
               checked={notifications}
-              onCheckedChange={setNotifications}
+              onChange={setNotifications}
             />
+            <SettingsToggleRow id="demo-alerts" label={t("alerts")} checked={false} disabled onChange={setNotifications} />
+            <SettingsSlider id={volumeId} label={t("volume")} value={volume} onChange={setVolume} />
+            <SettingsSegmented
+              label={t("appearance")}
+              options={[
+                { value: "auto", label: t("auto") },
+                { value: "light", label: theme("light") },
+                { value: "dark", label: theme("dark") },
+              ]}
+              value={appearance}
+              onChange={setAppearance}
+            />
+            <SettingsButton onClick={() => {
+              setNotifications(true);
+              setVolume(40);
+              setAppearance("auto");
+            }}>{t("resetSettings")}</SettingsButton>
           </div>
         </SettingsModal>
       ))}
@@ -805,29 +868,112 @@ function TableDemo() {
   const [direction, setDirection] = useState<"ascending" | "descending">("descending");
   const rows = direction === "descending" ? demoScores : [...demoScores].reverse();
   return (
-    <div className="overflow-x-auto rounded-lg border border-border">
-      <Table aria-label={t("tableDemo")}>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{ui("rank")}</TableHead>
-            <TableHead>{ui("player")}</TableHead>
-            <TableHead aria-sort={direction} className="text-end">
-              <TableSortButton direction={direction} onClick={() => setDirection(direction === "descending" ? "ascending" : "descending")}>
-                {ui("score")}
-              </TableSortButton>
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.rank}>
-              <TableCell className="tabular-nums">{row.rank}</TableCell>
-              <TableCell>{row.player}</TableCell>
-              <TableCell className="text-end tabular-nums">{row.score}</TableCell>
+    <div className="space-y-4">
+      <div className="overflow-x-auto rounded-lg border border-border">
+        <Table aria-label={t("tableDemo")}>
+          <TableHeader>
+            <TableRow>
+              <TableHead>{ui("rank")}</TableHead>
+              <TableHead>{ui("player")}</TableHead>
+              <TableHead aria-sort={direction} className="text-end">
+                <TableSortButton direction={direction} onClick={() => setDirection(direction === "descending" ? "ascending" : "descending")}>
+                  {ui("score")}
+                </TableSortButton>
+              </TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.rank}>
+                <TableCell className="tabular-nums">{row.rank}</TableCell>
+                <TableCell>{row.player}</TableCell>
+                <TableCell className="text-end tabular-nums">{row.score}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <Dialog>
+        <DialogTrigger asChild>
+          <TableRowButton>
+            <span className="flex justify-between gap-3">
+              <span className="font-medium">Ada</span>
+              <span className="tabular-nums">1200</span>
+            </span>
+          </TableRowButton>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogTitle>Ada</DialogTitle>
+          <DialogDescription>{ui("score")} · 1200</DialogDescription>
+          <DialogClose asChild><Button variant="outline">{ui("close")}</Button></DialogClose>
+        </DialogContent>
+      </Dialog>
     </div>
+  );
+}
+
+function TextareaDemo() {
+  const t = useTranslations("playground");
+  const id = useId();
+  return (
+    <div className="space-y-3">
+      <label className="block font-medium" htmlFor={id}>{t("exampleText")}</label>
+      <Textarea id={id} defaultValue={t("textareaSample")} aria-describedby={`${id}-help`} />
+      <p id={`${id}-help`} className="text-sm text-muted-foreground">{t("textareaHelp")}</p>
+      <label className="block font-medium" htmlFor={`${id}-invalid`}>{t("exampleText")}</label>
+      <Textarea id={`${id}-invalid`} aria-invalid aria-describedby={`${id}-error`} />
+      <p id={`${id}-error`} className="text-sm text-destructive">{t("textareaError")}</p>
+      <NativeCheckbox defaultChecked>{t("exampleChoice")}</NativeCheckbox>
+    </div>
+  );
+}
+
+function GiftActionsDemo() {
+  const t = useTranslations("playground");
+  const ui = useTranslations("ui");
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon-lg" className="rounded-full p-0" aria-label={t("sampleAccount")}>
+            <Avatar className="size-[calc(var(--control-height-icon-lg)-var(--spacing)*2)]"><AvatarFallback>AL</AvatarFallback></Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem asChild><Link href="/playground#settings-modal">{ui("settingsTitle")}</Link></DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Button asChild variant="link" className="h-auto min-h-(--control-height) whitespace-normal text-muted-foreground underline hover:text-foreground">
+        <Link href="/playground#textarea"><Gift aria-hidden />{t("giftFields")}</Link>
+      </Button>
+    </div>
+  );
+}
+
+const demoPalette = generatePalette({ hex: "#8f6dea", algorithm: "Tailwind CSS", contrast: 0, count: 5, naming: "tailwind" });
+
+function SwatchesDemo() {
+  const [name, setName] = useState("Ada");
+  const svg = generateSvg(demoPalette, name);
+  const actions = usePaletteActions(svg, name);
+  return <SwatchesGrid palette={demoPalette} name={name} onName={setName} svg={svg} {...actions} />;
+}
+
+function CaseStudyDemo() {
+  const t = useTranslations("playground");
+  const theme = useTranslations("theme");
+  return (
+    <ImageLightboxProvider>
+      <CaseStudyBody text={t("caseStudySample")} glossary={{ [t("caseStudyTerm")]: t("caseStudyDefinition") }} />
+      <CaseStudySlider
+        images={[
+          { src: "/window.svg", theme: "light", alt: t("sampleScreen", { number: 1 }) },
+          { src: "/file.svg", theme: "dark", alt: t("sampleScreen", { number: 1 }) },
+          { src: "/globe.svg", theme: "light", alt: t("sampleScreen", { number: 2 }) },
+          { src: "/window.svg", theme: "dark", alt: t("sampleScreen", { number: 2 }) },
+        ]}
+        pairLabels={{ light: theme("light"), dark: theme("dark") }}
+      />
+    </ImageLightboxProvider>
   );
 }

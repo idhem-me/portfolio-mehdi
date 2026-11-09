@@ -304,15 +304,7 @@ export function Field({
     </div>
   );
 }
-export function TextArea({ id, ...props }: React.ComponentProps<"textarea">) {
-  return (
-    <textarea
-      id={id}
-      {...props}
-      className="min-h-24 w-full rounded-lg border border-input bg-background p-3 text-[length:var(--control-text)] outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    />
-  );
-}
+export { Textarea as TextArea } from "@/components/ui/textarea";
 export function GiftImage({ item }: { item: GiftItem }) {
   const [failed, setFailed] = useState(false);
   const url = item.image_url?.startsWith("data:image/webp;base64,")

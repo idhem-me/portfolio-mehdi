@@ -75,7 +75,7 @@ export function SwatchesGrid({
             onClick={() => void copy(svg, `svg:${svg}`)}
           >
             {feedback[`svg:${svg}`] === "copied" ? (
-              <Check className="size-4 text-emerald-600" aria-hidden />
+              <Check className="size-4 text-success" aria-hidden />
             ) : feedback[`svg:${svg}`] === "error" ? (
               <AlertCircle aria-hidden />
             ) : (
@@ -104,7 +104,7 @@ export function SwatchesGrid({
               key={i}
               type="button"
               style={{ backgroundColor: s.hex, color: s.text }}
-              className="relative flex min-h-28 flex-col justify-between rounded-xl border border-black/5 p-3 text-start transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="relative flex min-h-28 flex-col justify-between rounded-xl border border-border p-3 text-start motion-safe:transition-transform motion-safe:hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               aria-live="polite"
               aria-label={`${state ? t(state === "copied" ? "copied" : "copyError") : t("copy")} ${s.label} ${s.hex}${s.isBase ? `, ${t("base")}` : ""}`}
               onClick={() => void copy(s.hex, `swatch:${s.label}:${s.hex}`)}

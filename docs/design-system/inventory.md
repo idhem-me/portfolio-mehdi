@@ -16,6 +16,7 @@
 | --- | --- | --- |
 | Button | `variant` default/primary, outline, secondary, ghost, destructive, accent, link. `size` default, xs/sm/lg et quatre formats icon. `asChild`, disabled, focus, hover, active et invalid selon variante. | Une action principale par bloc. Nom accessible pour icône seule. Pour attente, désactiver l’action et communiquer la progression. |
 | Input et Select | Attributs natifs ou primitives Radix, value/defaultValue selon surface, disabled et invalid. Le bouton de Select déclenche une liste d’options. | Label explicite, aide et erreur associées. Réserver NativeInput au fichier et aux entrées HTML spécialisées. |
+| Textarea et NativeCheckbox | Zone multiligne avec valeur native, erreur et aide. Case native avec toute la ligne du label activable. | Associer label et description au champ. Voir la composition `#textarea`. |
 | Dialog et Sheet | Root contrôlé ou non, trigger, content, title et description. Overlay, focus, fermeture clavier. Sheet ajoute le placement. | Conserver titre accessible et retour du focus. Éviter un overlay local pour un dialogue ordinaire. |
 | DropdownMenu, ChoiceMenu et DateRangeSelect | Ouverture, valeur, items et état actif. Adaptations de fournisseur selon le composant. | Séparer menu d’actions et choix de valeur, vérifier sélection et clavier. |
 | Tabs et Accordion | Valeur et item, navigation clavier, état sélectionné ou ouvert. | Associer déclencheur et panneau. Ne pas cacher des actions urgentes derrière un onglet. |

@@ -1,6 +1,7 @@
 import type { ComponentProps } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeButton } from "@/components/design-system/native-controls";
 import { cn } from "@/lib/utils";
 
 export function Table({ className, ...props }: ComponentProps<"table">) {
@@ -34,6 +35,16 @@ export function TableHead({ className, ...props }: ComponentProps<"th">) {
 
 export function TableCell({ className, ...props }: ComponentProps<"td">) {
   return <td className={cn("p-3 text-start", className)} {...props} />;
+}
+
+export function TableRowButton({ className, ...props }: ComponentProps<"button">) {
+  return (
+    <NativeButton
+      type="button"
+      className={cn("block min-h-(--control-height-lg) w-full min-w-0 rounded-xl border border-border p-4 text-start text-[length:var(--control-text)] [overflow-wrap:anywhere] hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring", className)}
+      {...props}
+    />
+  );
 }
 
 const sortIcons = {

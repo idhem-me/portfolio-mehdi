@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 import { hostname, networkInterfaces } from "node:os";
 import createNextIntlPlugin from "next-intl/plugin";
 import { locales } from "./src/i18n/routing";
+import { showLocalComponents } from "./src/lib/playground-access";
 
 /** Aligné avec `SVG_CONTENT_SECURITY_POLICY` dans `src/lib/sanitize-svg.ts`. */
 const SVG_CSP =
@@ -34,11 +35,22 @@ const nextConfig: NextConfig = {
     contentDispositionType: "attachment",
   },
   async redirects() {
-    return ["", ...locales.map((locale) => `/${locale}`)].map((prefix) => ({
-      source: `${prefix}/playground/github-vs-adobe`,
-      destination: `${prefix === "/fr" ? "" : prefix}/playground/design-systems`,
-      permanent: true,
-    }));
+    return ["", ...locales.map((locale) => `/${locale}`)].flatMap((prefix) => {
+      const playground = `${prefix === "/fr" ? "" : prefix}/playground`;
+      const redirects = [{
+        source: `${prefix}/playground/github-vs-adobe`,
+        destination: `${playground}/design-systems`,
+        permanent: true,
+      }];
+      if (!showLocalComponents) {
+        redirects.push({
+          source: `${prefix}/playground/local-components`,
+          destination: playground,
+          permanent: false,
+        });
+      }
+      return redirects;
+    });
   },
   async headers() {
     return [

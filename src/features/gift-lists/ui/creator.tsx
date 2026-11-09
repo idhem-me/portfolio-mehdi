@@ -112,11 +112,12 @@ function AccountMenu({ refresh }: { refresh: () => void }) {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="size-11 rounded-full p-0"
+            size="icon-lg"
+            className="rounded-full p-0"
             disabled={!!identity.busy}
             aria-label={`Compte ${provider === "apple" ? "Apple" : "Google"} de ${profile.name}`}
           >
-            <Avatar className="size-9">
+            <Avatar className="size-[calc(var(--control-height-icon-lg)-var(--spacing)*2)]">
               {profile.avatar && (
                 <AvatarImage
                   src={profile.avatar}

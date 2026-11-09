@@ -8,7 +8,7 @@ import {
   SectionNavigationItem,
 } from "@/components/layout/section-navigation";
 
-export function PlaygroundNavigation() {
+export function PlaygroundNavigation({ showLocalComponents }: { showLocalComponents: boolean }) {
   const t = useTranslations("playground");
   const pathname = usePathname();
   const catalog = pathname === "/playground";
@@ -32,12 +32,14 @@ export function PlaygroundNavigation() {
           <span>{t("compare")}</span>
         </Link>
       </SectionNavigationItem>
-      <SectionNavigationItem active={local}>
-        <Link href="/playground/local-components" aria-current={local ? "page" : undefined}>
-          <ListChecks aria-hidden />
-          <span>{t("localTitle")}</span>
-        </Link>
-      </SectionNavigationItem>
+      {showLocalComponents && (
+        <SectionNavigationItem active={local}>
+          <Link href="/playground/local-components" aria-current={local ? "page" : undefined}>
+            <ListChecks aria-hidden />
+            <span>{t("localTitle")}</span>
+          </Link>
+        </SectionNavigationItem>
+      )}
     </SectionNavigation>
   );
 }

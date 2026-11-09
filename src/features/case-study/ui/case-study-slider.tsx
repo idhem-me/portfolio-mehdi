@@ -10,6 +10,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import type { CaseStudyImage } from "@/lib/content";
 import { ThemePairImage } from "@/features/case-study/ui/theme-image";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,8 @@ export function CaseStudySlider({
   pairLabels,
   className,
 }: CaseStudySliderProps) {
+  const t = useTranslations("caseStudyControls");
+  const direction = useLocale() === "ar" ? -1 : 1;
   const pairs = groupPairs(images);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
@@ -58,9 +61,9 @@ export function CaseStudySlider({
   const syncIndex = useCallback(() => {
     const el = scrollerRef.current;
     if (!el || el.clientWidth === 0) return;
-    const next = Math.round(el.scrollLeft / el.clientWidth);
+    const next = Math.round(direction * el.scrollLeft / el.clientWidth);
     setIndex(Math.max(0, Math.min(pairs.length - 1, next)));
-  }, [pairs.length]);
+  }, [direction, pairs.length]);
 
   useEffect(() => {
     const el = scrollerRef.current;
@@ -81,12 +84,12 @@ export function CaseStudySlider({
       if (!el) return;
       const clamped = Math.max(0, Math.min(pairs.length - 1, next));
       el.scrollTo({
-        left: clamped * el.clientWidth,
+        left: direction * clamped * el.clientWidth,
         behavior: reduced ? "auto" : "smooth",
       });
       setIndex(clamped);
     },
-    [pairs.length, reduced],
+    [direction, pairs.length, reduced],
   );
 
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -125,7 +128,7 @@ export function CaseStudySlider({
     }
     if (!drag.moved) return;
     const width = el.clientWidth || 1;
-    const target = Math.round(el.scrollLeft / width);
+    const target = Math.round(direction * el.scrollLeft / width);
     goTo(target);
   };
 
@@ -147,7 +150,7 @@ export function CaseStudySlider({
           onPointerCancel={endDrag}
           role="region"
           aria-roledescription="carousel"
-          aria-label="Écrans produit"
+          aria-label={t("screens")}
         >
           {pairs.map(({ light, dark }) => (
             <div
@@ -171,7 +174,7 @@ export function CaseStudySlider({
               variant="secondary"
               size="icon-sm"
               className="absolute start-2 top-1/2 z-10 -translate-y-1/2 shadow-sm ring-1 ring-foreground/10 disabled:opacity-40"
-              aria-label="Précédent"
+              aria-label={t("previous")}
               disabled={index <= 0}
               onClick={() => goTo(index - 1)}
             >
@@ -182,7 +185,7 @@ export function CaseStudySlider({
               variant="secondary"
               size="icon-sm"
               className="absolute end-2 top-1/2 z-10 -translate-y-1/2 shadow-sm ring-1 ring-foreground/10 disabled:opacity-40"
-              aria-label="Suivant"
+              aria-label={t("next")}
               disabled={index >= pairs.length - 1}
               onClick={() => goTo(index + 1)}
             >
@@ -194,24 +197,24 @@ export function CaseStudySlider({
 
       {pairs.length > 1 ? (
         <div
-          className="flex items-center justify-center gap-1.5"
-          role="tablist"
+          className="flex flex-wrap items-center justify-center gap-1"
+          role="group"
+          aria-label={t("screens")}
         >
           {pairs.map((pair, i) => (
             <NativeButton
               key={pair.light.src ?? pair.light.alt}
               type="button"
-              role="tab"
-              aria-selected={i === index}
-              aria-label={pair.light.caption ?? `Slide ${i + 1}`}
-              className={cn(
-                "h-1.5 rounded-full transition-[width,background-color] duration-300 ease-out",
-                i === index
-                  ? "w-5 bg-foreground"
-                  : "w-1.5 bg-foreground/25 hover:bg-foreground/45",
-              )}
+              aria-current={i === index ? "true" : undefined}
+              aria-label={t("slide", { number: i + 1, name: pair.light.caption ?? pair.light.alt })}
+              className="group grid size-(--control-height-icon-xs) place-items-center rounded-lg focus-visible:outline-2 focus-visible:outline-ring"
               onClick={() => goTo(i)}
-            />
+            >
+              <span aria-hidden className={cn(
+                "h-1.5 rounded-full transition-[width,background-color] duration-300 ease-out motion-reduce:transition-none",
+                i === index ? "w-5 bg-foreground" : "w-1.5 bg-foreground/35 group-hover:bg-foreground/60",
+              )} />
+            </NativeButton>
           ))}
         </div>
       ) : null}

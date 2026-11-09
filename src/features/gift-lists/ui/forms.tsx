@@ -2,6 +2,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NativeCheckbox } from "@/components/design-system/native-controls";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/ui/select";
@@ -484,32 +485,21 @@ export function ItemForm({
               </div>
             )}
             {preparingItemImage && <p role="status" className="text-sm text-muted-foreground">Préparation de la photo…</p>}
-            <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
-              <input
-                type="checkbox"
-                className="size-5 accent-primary"
-                checked={group}
-                onChange={(e) => setGroup(e.target.checked)}
-              />
+            <NativeCheckbox checked={group} onChange={(e) => setGroup(e.target.checked)}>
               Autoriser la participation à plusieurs
-            </label>
+            </NativeCheckbox>
             {group && (
               <p className="text-sm text-muted-foreground">
                 Prix cible requis. Ajoute les modalités de participation aux
                 réglages de la liste.
               </p>
             )}
-            <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
-              <input
-                type="checkbox"
-                className="size-5 accent-primary"
-                checked={priority === "high"}
-                onChange={(e) =>
-                  setPriority(e.target.checked ? "high" : "normal")
-                }
-              />
+            <NativeCheckbox
+              checked={priority === "high"}
+              onChange={(e) => setPriority(e.target.checked ? "high" : "normal")}
+            >
               C’est un coup de cœur
-            </label>
+            </NativeCheckbox>
           </fieldset>
           {message && !manualEntry && <Notice>{message}</Notice>}
           {error && <Notice error>{error}</Notice>}
