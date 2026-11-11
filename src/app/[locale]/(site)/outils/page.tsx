@@ -38,7 +38,7 @@ export default async function ToolsPage({ params }: Props) {
       </header>
       <div className="grid gap-4 sm:grid-cols-2">
       <a
-        href={`${locale === "fr" ? "" : `/${locale}`}/outils/listes-cadeaux`}
+        href={`https://list.mtmd.fr/${locale === "fr" ? "" : locale}`}
         lang="fr"
         data-slot="portfolio-card"
         className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6 transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
