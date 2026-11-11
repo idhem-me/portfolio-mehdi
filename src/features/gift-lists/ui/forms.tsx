@@ -21,12 +21,10 @@ import {
 } from "./shared";
 
 function PhotoField({
-  label,
   onPreparing,
   onPhoto,
   saveFailed,
 }: {
-  label: string;
   onPreparing: (preparing: boolean) => void;
   onPhoto: (image: string) => void;
   saveFailed: boolean;
@@ -36,46 +34,46 @@ function PhotoField({
   const [preparing, setPreparing] = useState(false);
   const feedback = useId();
   const input = useRef<HTMLInputElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (saveFailed) input.current?.focus();
+    if (saveFailed) button.current?.focus();
   }, [saveFailed]);
   const error = selectionError || (saveFailed ? t("photoInvalid") : "");
   return (
     <div className="space-y-2">
-      <Field label={label}>
-        {(id) => (
-          <Input
-            id={id}
-            ref={input}
-            type="file"
-            accept={giftPhotoAccept}
-            aria-describedby={preparing || error ? feedback : undefined}
-            aria-invalid={!!error}
-            onChange={async (event) => {
-              const file = event.currentTarget.files?.[0];
-              if (!file) return;
-              event.currentTarget.value = "";
-              setSelectionError("");
-              setPreparing(true);
-              onPreparing(true);
-              try {
-                onPhoto(await prepareGiftPhoto(file));
-              } catch (cause) {
-                setSelectionError(
-                  t(
-                    cause instanceof GiftPhotoError
-                      ? cause.code
-                      : "photoInvalid",
-                  ),
-                );
-              } finally {
-                setPreparing(false);
-                onPreparing(false);
-              }
-            }}
-          />
-        )}
-      </Field>
+      <Button
+        ref={button}
+        type="button"
+        variant="secondary"
+        aria-describedby={preparing || error ? feedback : undefined}
+        onClick={() => input.current?.click()}
+      >
+        {t("chooseImage")}
+      </Button>
+      <input
+        ref={input}
+        type="file"
+        hidden
+        accept={giftPhotoAccept}
+        onChange={async (event) => {
+          const file = event.currentTarget.files?.[0];
+          if (!file) return;
+          event.currentTarget.value = "";
+          setSelectionError("");
+          setPreparing(true);
+          onPreparing(true);
+          try {
+            onPhoto(await prepareGiftPhoto(file));
+          } catch (cause) {
+            setSelectionError(
+              t(cause instanceof GiftPhotoError ? cause.code : "photoInvalid"),
+            );
+          } finally {
+            setPreparing(false);
+            onPreparing(false);
+          }
+        }}
+      />
       {preparing && (
         <p
           id={feedback}
@@ -253,18 +251,6 @@ export function ListForm({
       }
     >
       <fieldset disabled={busy || preparingImage} className="space-y-5">
-        <Field label="Titre de la liste">
-          {(id) => (
-            <Input
-              id={id}
-              required
-              maxLength={160}
-              value={value.title}
-              onChange={(e) => setValue({ ...value, title: e.target.value })}
-              placeholder="Les cadeaux de Fanny"
-            />
-          )}
-        </Field>
         <Field label="Type de liste">
           {(id) => (
             <Select
@@ -293,9 +279,20 @@ export function ListForm({
             )}
           </Field>
         )}
+        <Field label={t("listName")}>
+          {(id) => (
+            <Input
+              id={id}
+              required
+              maxLength={160}
+              value={value.title}
+              onChange={(e) => setValue({ ...value, title: e.target.value })}
+              placeholder="Les cadeaux de Fanny"
+            />
+          )}
+        </Field>
 
         <PhotoField
-          label="Image de la liste (facultatif)"
           saveFailed={error === "invalid_gift_photo"}
           onPreparing={(preparing) => {
             setPreparingImage(preparing);
@@ -569,7 +566,6 @@ export function ItemForm({
           )}
         </Field>
         <PhotoField
-          label="Ou ajouter une photo depuis cet appareil"
           saveFailed={error === "invalid_gift_photo"}
           onPreparing={(preparing) => {
             setPreparingItemImage(preparing);

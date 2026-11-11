@@ -1,5 +1,7 @@
 {
   "giftForms": {
+    "listName": "清单名称",
+    "chooseImage": "选择图片",
     "addPaymentInstructions": "添加参与说明",
     "addDescription": "添加描述",
     "description": "描述（可选）",

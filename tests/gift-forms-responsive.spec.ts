@@ -5,7 +5,6 @@ import { identityEnvironment, profiles } from "./helpers/identity";
 
 const listId = "11111111-1111-4111-8111-111111111111";
 const jpegMime = "image/jpeg";
-const fileLabel = "Ou ajouter une photo depuis cet appareil";
 const listPath = "/outils/listes-cadeaux";
 
 async function owner(page: Page) {
@@ -83,7 +82,7 @@ test("all four forms keep their actions visible and optional list fields can be 
   await owner(page);
   await page.goto(listPath);
   const dialog = page.getByRole("dialog");
-  const title = dialog.getByLabel("Titre de la liste");
+  const title = dialog.getByLabel("Nom de la liste");
   const description = dialog.getByLabel("Description (facultatif)");
   await page.getByRole("button", { name: "Créer ma première liste" }).click();
   await expect(dialog.getByRole("heading")).toBeFocused();
@@ -162,10 +161,12 @@ test("HEIC and JPEG preview, invalid file retry and JPEG fallback", async ({
   await page.goto(listPath);
   await page.getByRole("button", { name: "Créer ma première liste" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Titre de la liste").fill("Liste photo");
-  await dialog
-    .getByLabel("Image de la liste (facultatif)")
-    .setInputFiles("tests/fixtures/gift-photo.heic");
+  await dialog.getByLabel("Nom de la liste").fill("Liste photo");
+  const chooseImage = dialog.getByRole("button", { name: "Choisir une image" });
+  await expect(chooseImage).toHaveAttribute("data-variant", "secondary");
+  const chooser = page.waitForEvent("filechooser");
+  await chooseImage.click();
+  await (await chooser).setFiles("tests/fixtures/gift-photo.heic");
   await expect(dialog.getByAltText("Image de Liste photo")).toBeVisible();
   await dialog.getByRole("button", { name: "Créer ma liste" }).click();
   await expect(page).toHaveURL(`${listPath}/${listId}`);
@@ -173,7 +174,7 @@ test("HEIC and JPEG preview, invalid file retry and JPEG fallback", async ({
     .getByRole("button", { name: "Ajouter un cadeau", exact: true })
     .click();
   await dialog.getByLabel("Nom du cadeau").fill("Un cadeau avec photo");
-  const photo = dialog.getByLabel(fileLabel);
+  const photo = dialog.locator('input[type="file"]');
   const preview = dialog.getByAltText("Aperçu de la photo du cadeau");
   const buffer = await sharp({
     create: { width: 120, height: 80, channels: 3, background: "#c4b7a8" },

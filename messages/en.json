@@ -1,5 +1,7 @@
 {
   "giftForms": {
+    "listName": "List name",
+    "chooseImage": "Choose an image",
     "addPaymentInstructions": "Add contribution instructions",
     "addDescription": "Add a description",
     "description": "Description (optional)",

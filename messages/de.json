@@ -1,5 +1,7 @@
 {
   "giftForms": {
+    "listName": "Listenname",
+    "chooseImage": "Bild auswählen",
     "addPaymentInstructions": "Hinweise zur Beteiligung hinzufügen",
     "addDescription": "Beschreibung hinzufügen",
     "description": "Beschreibung (optional)",

@@ -1,5 +1,7 @@
 {
   "giftForms": {
+    "listName": "اسم القائمة",
+    "chooseImage": "اختيار صورة",
     "addPaymentInstructions": "إضافة تعليمات المساهمة",
     "addDescription": "إضافة وصف",
     "description": "الوصف (اختياري)",

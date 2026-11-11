@@ -1,5 +1,7 @@
 {
   "giftForms": {
+    "listName": "Nome della lista",
+    "chooseImage": "Scegli un’immagine",
     "addPaymentInstructions": "Aggiungi istruzioni per contribuire",
     "addDescription": "Aggiungi una descrizione",
     "description": "Descrizione (facoltativa)",

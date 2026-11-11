@@ -73,13 +73,13 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
       .getByRole("button", { name: "Créer ma première liste", exact: true })
       .click();
     await page
-      .getByLabel("Titre de la liste", { exact: true })
+      .getByLabel("Nom de la liste", { exact: true })
       .fill("L’anniversaire de Camille");
     await expect(
       page.getByLabel("Description (facultatif)", { exact: true }),
     ).toHaveCount(0);
     await expect(
-      page.getByLabel("Titre de la liste", { exact: true }),
+      page.getByLabel("Nom de la liste", { exact: true }),
     ).toHaveAttribute("placeholder", "Les cadeaux de Fanny");
     await page.getByRole("button", { name: "Ajouter des instructions de participation" }).click();
     await page
@@ -135,7 +135,8 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
       .png()
       .toBuffer();
     await page
-      .getByLabel("Image de la liste (facultatif)", { exact: true })
+      .getByRole("dialog")
+      .locator('input[type="file"]')
       .setInputFiles({
         name: "image-liste.png",
         mimeType: "image/png",
