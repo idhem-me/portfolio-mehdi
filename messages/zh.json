@@ -1,4 +1,13 @@
 {
+  "giftForms": {
+    "addDescription": "添加描述",
+    "description": "描述（可选）",
+    "photoPreparing": "正在处理照片…",
+    "photoFormat": "请选择 HEIC、HEIF、JPEG、PNG 或 WebP 格式的照片。",
+    "photoSize": "请选择小于 20 MB 且不超过 5000 万像素的照片。",
+    "photoInvalid": "无法处理这张照片。请重试或选择其他照片。",
+    "demo": "试用清单表单"
+  },
   "pokemon": {
     "pokedex": "宝可梦图鉴",
     "fullPage": "全屏",

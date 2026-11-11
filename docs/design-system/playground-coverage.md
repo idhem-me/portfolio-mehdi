@@ -12,6 +12,10 @@ La composition `#fun` couvre la carte, le champ, les actions jaune et orange, le
 
 Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème, les surfaces opaques, un formulaire et son dialogue d’aperçu. Les actions exposent les reflets et la pression. Les dialogues montrent la matière superposée dans leur thème local. Ces démos suivent les densités Auto, Desktop et Mobile et le réglage clair ou sombre du site.
 
+## Formulaire des listes de cadeaux
+
+La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions toujours visibles et un champ de description révélé à la demande. Le scénario suit les densités Auto, Desktop et Mobile du catalogue.
+
 ## `src/app`
 
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
@@ -258,7 +262,8 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
 | --- | --- | --- |
 | ui/creator.tsx | Bouton avatar et menu fictifs dans GiftActions | avatar, badge, button, dropdown-menu |
-| ui/forms.tsx | Cases et texte multiligne dans Textarea | button, dialog, input, native-controls, select, switch |
+| ui/form-dialog.tsx | Corps défilant et actions visibles dans Dialog | dialog |
+| ui/forms.tsx | Formulaire de liste dans Dialog, cases et texte multiligne dans Textarea | button, input, native-controls, select, switch |
 | ui/public.tsx | Lien d’action fictif dans GiftActions | accordion, badge, button, dialog, input, toast |
 | ui/shared.tsx | Zone multiligne dans Textarea | badge, button, dialog, dropdown-menu, input, textarea |
 

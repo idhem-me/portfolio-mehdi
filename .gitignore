@@ -49,3 +49,7 @@ next-env.d.ts
 
 # Supabase CLI local cache
 /supabase/.temp/
+
+# Generated HEIC worker from the installed heic2any package
+/public/vendor/gift-heic-worker.js
+/public/vendor/gift-heic-worker.LICENSE

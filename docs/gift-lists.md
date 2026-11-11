@@ -311,3 +311,24 @@ L'application Messages elle-même et l'envoi iMessage ne sont pas automatisés.
 Le bloc de partage ne présente plus de séparateur. « Partager » apparaît en
 premier en Primary : il ouvre le partage natif, ou copie le lien si celui-ci est
 indisponible. WhatsApp et iMessage suivent en Secondary.
+
+### Formulaires et photos
+
+Le navigateur accepte JPEG, PNG, WebP et HEIC/HEIF. Le sélecteur limite les
+fichiers à 20 Mo. Le décodeur refuse les images de plus de 50 mégapixels,
+puis le navigateur réduit la photo avant l'envoi. Si le navigateur ne produit
+pas de WebP, le serveur convertit le JPEG compressé en WebP avant stockage.
+
+`npm run dev` et `npm run build` génèrent le script du worker HEIC à partir
+de la dépendance installée. Le worker a sa propre politique de sécurité,
+qui permet l'exécution du code généré par libheif sans la permettre dans la page
+en production.
+
+Avec le serveur Turbopack démarré, lancer
+`npx playwright test tests/gift-forms-responsive.spec.ts --project=chromium --project=webkit-iphone`.
+Ces tests utilisent l'interface réelle avec des réponses API simulées. Les
+tests unitaires vérifient séparément la validation et la conversion serveur.
+La suite HTTP avec Supabase réel reste conditionnée à la configuration d'un
+compte de test temporaire. Sur un iPhone physique, vérifier Photos et Appareil
+photo dans le sélecteur, puis garder le clavier ouvert pour contrôler que les
+actions restent accessibles.

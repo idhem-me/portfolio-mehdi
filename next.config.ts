@@ -117,7 +117,11 @@ const nextConfig: NextConfig = {
                   ? " 'unsafe-eval'"
                   : ""),
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' https: http: data:",
+              "img-src 'self' https: http: data:" +
+                (source.includes("/outils/listes-cadeaux/") ? " blob:" : ""),
+              ...(source.includes("/outils/listes-cadeaux/")
+                ? ["worker-src 'self'"]
+                : []),
               "font-src 'self' data:",
               "connect-src 'self'" +
                 (process.env.NODE_ENV === "development" ? " ws: wss:" : ""),
@@ -129,6 +133,16 @@ const nextConfig: NextConfig = {
           },
         ],
       })),
+      {
+        source: "/vendor/gift-heic-worker.js",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            // libheif generates its bindings inside this worker.
+            value: "default-src 'none'; script-src 'unsafe-eval'",
+          },
+        ],
+      },
       {
         source: "/:path*.svg",
         headers: [

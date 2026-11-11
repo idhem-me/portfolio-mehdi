@@ -53,6 +53,22 @@ test("gift API validation and privacy paths reject unsafe data", () => {
     data: item,
   };
   assert.equal(creatorInput.safeParse(action).success, true);
+  const jpeg = "data:image/jpeg;base64,/9j/AA==";
+  for (const uploadAction of ["add_item", "update_item"]) {
+    assert.equal(
+      creatorInput.safeParse({
+        ...action,
+        action: uploadAction,
+        item_id: action.list_id,
+        data: { ...item, image_url: jpeg },
+      }).success,
+      true,
+    );
+  }
+  assert.equal(
+    creatorInput.safeParse({ ...action, data: { ...item, url: jpeg } }).success,
+    false,
+  );
   for (const price of [null, 0, -1, NaN, Infinity, 10.111])
     assert.equal(
       creatorInput.safeParse({ ...action, data: { ...item, price } }).success,

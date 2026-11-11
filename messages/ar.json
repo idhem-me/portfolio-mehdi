@@ -1,4 +1,13 @@
 {
+  "giftForms": {
+    "addDescription": "إضافة وصف",
+    "description": "الوصف (اختياري)",
+    "photoPreparing": "جارٍ تجهيز الصورة…",
+    "photoFormat": "اختر صورة بتنسيق HEIC أو HEIF أو JPEG أو PNG أو WebP.",
+    "photoSize": "اختر صورة يقل حجمها عن 20 ميغابايت ولا تتجاوز دقتها 50 ميغابكسل.",
+    "photoInvalid": "تعذّر تجهيز الصورة. أعد المحاولة أو اختر صورة أخرى.",
+    "demo": "جرّب نموذج القائمة"
+  },
   "pokemon": {
     "pokedex": "بوكيديكس",
     "fullPage": "ملء الشاشة",

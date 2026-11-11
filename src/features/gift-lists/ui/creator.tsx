@@ -258,7 +258,13 @@ export function CreatorDashboard() {
           </p>
         </div>
         {data && data.lists.length > 0 && (
-          <Button variant="accent" onClick={() => setCreate(true)}>
+          <Button
+            variant="accent"
+            onClick={(event) => {
+              event.currentTarget.focus({ preventScroll: true });
+              setCreate(true);
+            }}
+          >
             <Plus aria-hidden="true" className="size-4" />
             Créer une liste
           </Button>
@@ -287,7 +293,13 @@ export function CreatorDashboard() {
           <p className="text-muted-foreground">
             Ajoute tes envies, quelle que soit la boutique.
           </p>
-          <Button variant="accent" onClick={() => setCreate(true)}>
+          <Button
+            variant="accent"
+            onClick={(event) => {
+              event.currentTarget.focus({ preventScroll: true });
+              setCreate(true);
+            }}
+          >
             Créer ma première liste
           </Button>
         </section>
@@ -421,7 +433,13 @@ export function CreatorList({ id }: { id: string }) {
                 </p>
               )}
             </div>
-            <Button variant="outline" onClick={() => setEditingList(true)}>
+            <Button
+              variant="outline"
+              onClick={(event) => {
+                event.currentTarget.focus({ preventScroll: true });
+                setEditingList(true);
+              }}
+            >
               <Settings aria-hidden="true" className="size-4" />
               Réglages de la liste
             </Button>
@@ -491,7 +509,13 @@ export function CreatorList({ id }: { id: string }) {
                 ({data.items.length})
               </span>
             </h2>
-            <Button variant="accent" onClick={() => setItemForm("new")}>
+            <Button
+              variant="accent"
+              onClick={(event) => {
+                event.currentTarget.focus({ preventScroll: true });
+                setItemForm("new");
+              }}
+            >
               <Plus className="size-4" aria-hidden="true" />
               Ajouter un cadeau
             </Button>
@@ -574,7 +598,10 @@ export function CreatorList({ id }: { id: string }) {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setItemForm(item)}
+                      onClick={(event) => {
+                        event.currentTarget.focus({ preventScroll: true });
+                        setItemForm(item);
+                      }}
                     >
                       Modifier<span className="sr-only"> {item.title}</span>
                     </Button>

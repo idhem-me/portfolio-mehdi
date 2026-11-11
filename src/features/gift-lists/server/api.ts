@@ -26,6 +26,13 @@ const webUrl = optionalText(250000).refine(
     /^data:image\/webp;base64,[A-Za-z0-9+/]+={0,2}$/.test(value),
   "Lien HTTP ou HTTPS requis.",
 );
+const itemImage = optionalText(250000).refine(
+  (value) =>
+    value === null ||
+    safeWebUrl(value) !== null ||
+    /^data:image\/(?:webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(value),
+  "Lien ou image valide requis.",
+);
 const money = z
   .number()
   .finite()
@@ -64,7 +71,7 @@ const itemInput = z
   .object({
     title: z.string().trim().min(1).max(200),
     url: webUrl,
-    image_url: webUrl,
+    image_url: itemImage,
     price: money,
     is_group_gift: z.boolean(),
     priority: z.enum(["normal", "high"]),
@@ -290,6 +297,18 @@ export async function creatorGet(request: NextRequest) {
     return auth.apply(failure(error));
   }
 }
+async function normalizeGiftPhoto(value: string | null) {
+  if (!value) return null;
+  const release = await imageLease();
+  try {
+    return await normalizeListImage(value);
+  } catch {
+    throw new ApiError("invalid_gift_photo");
+  } finally {
+    await release();
+  }
+}
+
 export async function creatorPost(request: NextRequest) {
   const auth = await verifiedAccountUser(request);
   try {
@@ -309,18 +328,13 @@ export async function creatorPost(request: NextRequest) {
     if (input.action !== "create_list")
       await ownedList(db, auth.user.id, input.list_id);
     if (input.action === "create_list" || input.action === "update_list") {
-      const release = await imageLease();
-      try {
-        input.data.cover_image = await normalizeListImage(
-          input.data.cover_image,
-        );
-      } catch {
-        throw new ApiError(
-          "Choisis une image JPEG, PNG ou WebP valide. Réduis sa taille avant de réessayer.",
-        );
-      } finally {
-        await release();
-      }
+      input.data.cover_image = await normalizeGiftPhoto(input.data.cover_image);
+    }
+    if (
+      (input.action === "add_item" || input.action === "update_item") &&
+      input.data.image_url?.startsWith("data:image/jpeg;base64,")
+    ) {
+      input.data.image_url = await normalizeGiftPhoto(input.data.image_url);
     }
     if (input.action === "create_list") {
       const result = await db

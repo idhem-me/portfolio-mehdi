@@ -1,4 +1,13 @@
 {
+  "giftForms": {
+    "addDescription": "Ajouter une description",
+    "description": "Description (facultatif)",
+    "photoPreparing": "Préparation de la photo…",
+    "photoFormat": "Choisis une photo HEIC, HEIF, JPEG, PNG ou WebP.",
+    "photoSize": "Choisis une photo de moins de 20 Mo et de 50 mégapixels maximum.",
+    "photoInvalid": "Impossible de préparer cette photo. Réessaie ou choisis une autre photo.",
+    "demo": "Essayer le formulaire de liste"
+  },
   "pokemon": {
     "pokedex": "Pokédex",
     "fullPage": "Plein écran",

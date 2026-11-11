@@ -15,5 +15,6 @@ La page `/playground/local-components` recense les tickets ouverts en développe
 | LOCAL-09 · Primitives interactives | Corrigé | Le [Switch](../../src/components/ui/switch.tsx) et le [Slider](../../src/components/ui/slider.tsx) séparent dimensions visuelles et dimensions d’activation. Démos `#switch` et `#slider`. |
 | LOCAL-10 · Jeux masqués, suivi interne | Suivi interne | Les contrôles et gestes spécifiques sont recensés par module dans l’[inventaire interne](playground-coverage.md). |
 | LOCAL-11 · Pokémon | Suivi dans la fonctionnalité | Le [catalogue](../../src/features/pokemon/catalogue.tsx) réutilise le tableau. La [scène](../../src/features/pokemon/playground.tsx) garde ses interactions propres. |
+| LOCAL-12 · Cadeaux, formulaires | Corrigé | La [composition](../../src/features/gift-lists/ui/form-dialog.tsx) garde les actions visibles. La démo `#dialog` montre le formulaire de liste dans les deux densités. |
 
 Les termes du glossaire restent dans le flux du texte. Ils dérogent à la taille des contrôles autonomes. Les boutons du carrousel, du dialogue et les autres contrôles autonomes reprennent les cibles du DS. Les compositions métier, logos et effets de scène restent inventoriés dans la [couverture générale](playground-coverage.md).

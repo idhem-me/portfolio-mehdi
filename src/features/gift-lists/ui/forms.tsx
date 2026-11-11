@@ -1,20 +1,15 @@
 "use client";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import { flushSync } from "react-dom";
+import { useTranslations } from "next-intl";
 import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NativeCheckbox } from "@/components/design-system/native-controls";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/ui/select";
-import { encodePhoto } from "@/features/account/profile/photo";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { GiftFormDialog } from "./form-dialog";
+import { GiftPhotoError, giftPhotoAccept, prepareGiftPhoto } from "./photo";
 import { occasions, type GiftItem, type GiftList } from "../types";
 import {
   errorText,
@@ -24,6 +19,80 @@ import {
   Notice,
   TextArea,
 } from "./shared";
+
+function PhotoField({
+  label,
+  onPreparing,
+  onPhoto,
+  saveFailed,
+}: {
+  label: string;
+  onPreparing: (preparing: boolean) => void;
+  onPhoto: (image: string) => void;
+  saveFailed: boolean;
+}) {
+  const t = useTranslations("giftForms");
+  const [selectionError, setSelectionError] = useState("");
+  const [preparing, setPreparing] = useState(false);
+  const feedback = useId();
+  const input = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (saveFailed) input.current?.focus();
+  }, [saveFailed]);
+  const error = selectionError || (saveFailed ? t("photoInvalid") : "");
+  return (
+    <div className="space-y-2">
+      <Field label={label}>
+        {(id) => (
+          <Input
+            id={id}
+            ref={input}
+            type="file"
+            accept={giftPhotoAccept}
+            aria-describedby={preparing || error ? feedback : undefined}
+            aria-invalid={!!error}
+            onChange={async (event) => {
+              const file = event.currentTarget.files?.[0];
+              if (!file) return;
+              event.currentTarget.value = "";
+              setSelectionError("");
+              setPreparing(true);
+              onPreparing(true);
+              try {
+                onPhoto(await prepareGiftPhoto(file));
+              } catch (cause) {
+                setSelectionError(
+                  t(
+                    cause instanceof GiftPhotoError
+                      ? cause.code
+                      : "photoInvalid",
+                  ),
+                );
+              } finally {
+                setPreparing(false);
+                onPreparing(false);
+              }
+            }}
+          />
+        )}
+      </Field>
+      {preparing && (
+        <p
+          id={feedback}
+          role="status"
+          className="text-sm text-muted-foreground"
+        >
+          {t("photoPreparing")}
+        </p>
+      )}
+      {error && (
+        <div id={feedback}>
+          <Notice error>{error}</Notice>
+        </div>
+      )}
+    </div>
+  );
+}
 
 type ListData = Pick<
   GiftList,
@@ -46,6 +115,12 @@ export function ListForm({
   onClose: () => void;
   onDelete?: () => void;
 }) {
+  const t = useTranslations("giftForms");
+  const [descriptionOpen, setDescriptionOpen] = useState(
+    !!initial?.description?.trim(),
+  );
+  const descriptionId = useId();
+  const focusDescription = useRef(false);
   const [value, setValue] = useState<ListData>(
     initial ?? {
       title: "",
@@ -78,205 +153,200 @@ export function ListForm({
     }
   }
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open && !busy && !preparingImage) onClose();
-      }}
-    >
-      <DialogContent className="max-h-[90svh] max-w-lg overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            {initial ? "Modifier la liste" : "Créer une liste"}
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Titre, occasion et préférences de partage.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="space-y-5">
-          <fieldset disabled={busy || preparingImage} className="space-y-5">
-            <Field label="Titre de la liste">
-              {(id) => (
-                <Input
-                  id={id}
-                  autoFocus
-                  required
-                  maxLength={160}
-                  value={value.title}
-                  onChange={(e) =>
-                    setValue({ ...value, title: e.target.value })
-                  }
-                  placeholder="Les cadeaux de Fanny"
-                />
-              )}
-            </Field>
-            <Field label="Type de liste">
-              {(id) => (
-                <Select
-                  id={id}
-                  label="Type de liste"
-                  value={value.occasion_type}
-                  options={occasions}
-                  onValueChange={(occasion_type) =>
-                    setValue({ ...value, occasion_type })
-                  }
-                />
-              )}
-            </Field>
-            {value.occasion_type === "other" && (
-              <Field label="Précise l’occasion (facultatif)">
-                {(id) => (
-                  <Input
-                    id={id}
-                    maxLength={80}
-                    placeholder="Crémaillère, départ en retraite…"
-                    value={value.occasion_label ?? ""}
-                    onChange={(event) =>
-                      setValue({ ...value, occasion_label: event.target.value })
-                    }
-                  />
-                )}
-              </Field>
-            )}
-
-            <Field label="Image de la liste (facultatif)">
-              {(id) => (
-                <Input
-                  id={id}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={async (event) => {
-                    const file = event.target.files?.[0];
-                    if (!file) return;
-                    setPreparingImage(true);
-                    setError("");
-                    try {
-                      const cover_image = await encodePhoto(file, {
-                        maxDimension: 960,
-                      });
-                      setValue((current) => ({ ...current, cover_image }));
-                    } catch (error) {
-                      setError(
-                        error instanceof Error
-                          ? error.message
-                          : "Impossible de préparer cette image.",
-                      );
-                    } finally {
-                      setPreparingImage(false);
-                    }
-                  }}
-                />
-              )}
-            </Field>
-            {value.cover_image && (
-              <div className="space-y-2">
-                <ListImage
-                  src={value.cover_image}
-                  title={value.title || "la liste"}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setValue({ ...value, cover_image: null })}
-                >
-                  Retirer l’image
-                </Button>
-              </div>
-            )}
-            {preparingImage && (
-              <p role="status" className="text-sm text-muted-foreground">
-                Préparation de l’image…
-              </p>
-            )}
-            {initial && (
-              <Field label="Description (facultatif)">
-                {(id) => (
-                  <TextArea
-                    id={id}
-                    maxLength={5000}
-                    value={value.description ?? ""}
-                    onChange={(e) =>
-                      setValue({ ...value, description: e.target.value })
-                    }
-                  />
-                )}
-              </Field>
-            )}
-            <Field
-              label="Instructions de participation (facultatif)"
-              hint="Lien ou IBAN, visible par les personnes ayant la liste."
+    <GiftFormDialog
+      title={initial ? "Modifier la liste" : "Créer une liste"}
+      description="Titre, occasion et préférences de partage."
+      locked={busy || preparingImage}
+      onClose={onClose}
+      onSubmit={submit}
+      error={
+        error &&
+        error !== "invalid_gift_photo" && <Notice error>{error}</Notice>
+      }
+      actions={
+        <>
+          {onDelete && (
+            <Button
+              className="me-auto"
+              type="button"
+              variant="destructive"
+              disabled={busy || preparingImage}
+              onClick={onDelete}
             >
-              {(id) => (
-                <TextArea
-                  id={id}
-                  maxLength={2000}
-                  value={value.payment_info ?? ""}
-                  onChange={(e) =>
-                    setValue({ ...value, payment_info: e.target.value })
-                  }
-                  placeholder="Pour participer, voici mon lien…"
-                />
-              )}
-            </Field>
-            <div className="space-y-2 rounded-xl border border-border bg-muted p-4">
-              <div className="flex items-center justify-between gap-4">
-                <span className="font-medium">Mode Surprise</span>
-                <Switch
-                  aria-label="Mode Surprise"
-                  checked={value.is_surprise_mode}
-                  onCheckedChange={(is_surprise_mode) =>
-                    setValue({ ...value, is_surprise_mode })
-                  }
-                />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {value.is_surprise_mode
-                  ? "Réservations et messages masqués dans ton espace."
-                  : "Réservations et messages visibles dans ton espace."}
-              </p>
-              {initial?.reservations_revealed_at && (
-                <p className="text-sm text-muted-foreground">
-                  Réservations déjà révélées.
-                </p>
-              )}
-            </div>
-          </fieldset>
-          {error && <Notice error>{error}</Notice>}
-          <DialogFooter>
-            {onDelete && (
-              <Button
-                className="me-auto"
-                type="button"
-                variant="destructive"
-                disabled={busy || preparingImage}
-                onClick={onDelete}
-              >
-                Supprimer la liste
-              </Button>
+              Supprimer la liste
+            </Button>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy || preparingImage}
+            onClick={onClose}
+          >
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={busy || preparingImage}
+          >
+            {busy
+              ? "Enregistrement…"
+              : initial
+                ? "Enregistrer"
+                : "Créer ma liste"}
+          </Button>
+        </>
+      }
+    >
+      <fieldset disabled={busy || preparingImage} className="space-y-5">
+        <Field label="Titre de la liste">
+          {(id) => (
+            <Input
+              id={id}
+              required
+              maxLength={160}
+              value={value.title}
+              onChange={(e) => setValue({ ...value, title: e.target.value })}
+              placeholder="Les cadeaux de Fanny"
+            />
+          )}
+        </Field>
+        <Field label="Type de liste">
+          {(id) => (
+            <Select
+              id={id}
+              label="Type de liste"
+              value={value.occasion_type}
+              options={occasions}
+              onValueChange={(occasion_type) =>
+                setValue({ ...value, occasion_type })
+              }
+            />
+          )}
+        </Field>
+        {value.occasion_type === "other" && (
+          <Field label="Précise l’occasion (facultatif)">
+            {(id) => (
+              <Input
+                id={id}
+                maxLength={80}
+                placeholder="Crémaillère, départ en retraite…"
+                value={value.occasion_label ?? ""}
+                onChange={(event) =>
+                  setValue({ ...value, occasion_label: event.target.value })
+                }
+              />
             )}
+          </Field>
+        )}
+
+        <PhotoField
+          label="Image de la liste (facultatif)"
+          saveFailed={error === "invalid_gift_photo"}
+          onPreparing={(preparing) => {
+            setPreparingImage(preparing);
+            if (preparing) setError("");
+          }}
+          onPhoto={(cover_image) =>
+            setValue((current) => ({ ...current, cover_image }))
+          }
+        />
+        {value.cover_image && (
+          <div className="space-y-2">
+            <ListImage
+              src={value.cover_image}
+              title={value.title || "la liste"}
+            />
             <Button
               type="button"
               variant="outline"
-              disabled={busy || preparingImage}
-              onClick={onClose}
+              onClick={() => {
+                setError("");
+                setValue({ ...value, cover_image: null });
+              }}
             >
-              Annuler
+              Retirer l’image
             </Button>
+          </div>
+        )}
+        {descriptionOpen ? (
+          <Field label={t("description")}>
+            {(id) => (
+              <div id={descriptionId}>
+                <TextArea
+                  id={id}
+                  ref={(element) => {
+                    if (element && focusDescription.current) {
+                      focusDescription.current = false;
+                      element.focus();
+                    }
+                  }}
+                  maxLength={5000}
+                  value={value.description ?? ""}
+                  onChange={(e) =>
+                    setValue({ ...value, description: e.target.value })
+                  }
+                />
+              </div>
+            )}
+          </Field>
+        ) : (
+          <>
             <Button
-              type="submit"
-              variant="primary"
-              disabled={busy || preparingImage}
+              type="button"
+              variant="outline"
+              aria-expanded={false}
+              aria-controls={descriptionId}
+              onClick={() => {
+                focusDescription.current = true;
+                flushSync(() => setDescriptionOpen(true));
+              }}
             >
-              {busy
-                ? "Enregistrement…"
-                : initial
-                  ? "Enregistrer"
-                  : "Créer ma liste"}
+              {t("addDescription")}
             </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <div id={descriptionId} hidden />
+          </>
+        )}
+        <Field
+          label="Instructions de participation (facultatif)"
+          hint="Lien ou IBAN, visible par les personnes ayant la liste."
+        >
+          {(id) => (
+            <TextArea
+              id={id}
+              maxLength={2000}
+              value={value.payment_info ?? ""}
+              onChange={(e) =>
+                setValue({ ...value, payment_info: e.target.value })
+              }
+              placeholder="Pour participer, voici mon lien…"
+            />
+          )}
+        </Field>
+        <div className="space-y-2 rounded-xl border border-border bg-muted p-4">
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-medium">Mode Surprise</span>
+            <Switch
+              aria-label="Mode Surprise"
+              checked={value.is_surprise_mode}
+              onCheckedChange={(is_surprise_mode) =>
+                setValue({ ...value, is_surprise_mode })
+              }
+            />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {value.is_surprise_mode
+              ? "Réservations et messages masqués dans ton espace."
+              : "Réservations et messages visibles dans ton espace."}
+          </p>
+          {initial?.reservations_revealed_at && (
+            <p className="text-sm text-muted-foreground">
+              Réservations déjà révélées.
+            </p>
+          )}
+        </div>
+      </fieldset>
+    </GiftFormDialog>
   );
 }
 
@@ -328,7 +398,9 @@ export function ItemForm({
         result.message ||
           "Informations récupérées. Vérifie-les avant d’ajouter le cadeau.",
       );
-      setManualEntry(result.manual_entry === true || result.status === "manual");
+      setManualEntry(
+        result.manual_entry === true || result.status === "manual",
+      );
     } catch (e) {
       setMessage(`${errorText(e)} Tu peux remplir le cadeau manuellement.`);
       setManualEntry(true);
@@ -347,7 +419,9 @@ export function ItemForm({
           parsedPrice > 999999999.99)) ||
       (group && (parsedPrice === null || parsedPrice <= 0))
     ) {
-      setError("Indique un prix valide, supérieur à zéro pour un cadeau commun.");
+      setError(
+        "Indique un prix valide, supérieur à zéro pour un cadeau commun.",
+      );
       return;
     }
     lock.current = true;
@@ -371,161 +445,162 @@ export function ItemForm({
     }
   }
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open && !busy && !extracting && !preparingItemImage) onClose();
-      }}
+    <GiftFormDialog
+      title={initial ? "Modifier le cadeau" : "Ajouter un cadeau"}
+      description="Ajout par lien ou saisie manuelle."
+      locked={busy || extracting || preparingItemImage}
+      onClose={onClose}
+      onSubmit={submit}
+      error={
+        error &&
+        error !== "invalid_gift_photo" && <Notice error>{error}</Notice>
+      }
+      actions={
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={busy || extracting || preparingItemImage}
+            onClick={onClose}
+          >
+            Annuler
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={busy || extracting || preparingItemImage}
+          >
+            {busy
+              ? "Enregistrement…"
+              : initial
+                ? "Enregistrer"
+                : "Ajouter le cadeau"}
+          </Button>
+        </>
+      }
     >
-      <DialogContent className="max-h-[90svh] max-w-lg overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            {initial ? "Modifier le cadeau" : "Ajouter un cadeau"}
-          </DialogTitle>
-          <DialogDescription className="sr-only">
-            Ajout par lien ou saisie manuelle.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={submit} className="space-y-5">
-          <fieldset disabled={busy || extracting || preparingItemImage} className="space-y-5">
-            <Field label="Lien du produit (facultatif)">
-              {(id) => (
-                <Input
-                  id={id}
-                  autoFocus
-                  type="url"
-                  maxLength={4096}
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://boutique.fr/produit"
-                />
-              )}
-            </Field>
-            <Button
-              type="button"
-              variant="primary"
-              disabled={!url || busy || extracting}
-              onClick={() => void extract()}
-            >
-              {extracting
-                ? "Lecture de la boutique…"
-                : "Remplir automatiquement"}
-            </Button>
-            {manualEntry && message && (
-              <p role="status" className="flex items-start gap-2 text-sm text-warning">
-                <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                {message}
-              </p>
-            )}
-            <Field label="Nom du cadeau">
-              {(id) => (
-                <Input
-                  id={id}
-                  required
-                  maxLength={200}
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              )}
-            </Field>
-            <Field label="Prix estimé (€)">
-              {(id) => (
-                <Input
-                  id={id}
-                  type="text"
-                  inputMode="decimal"
-                  pattern="[0-9]+([.,][0-9]{1,2})?"
-                  title="Un prix avec au maximum deux décimales (ex. : 19,99)."
-                  required={group}
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                />
-              )}
-            </Field>
-            <Field label="Lien de l’image (facultatif)">
-              {(id) => (
-                <Input
-                  id={id}
-                  type="text"
-                  inputMode="url"
-                  maxLength={250000}
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                />
-              )}
-            </Field>
-            <Field label="Ou ajouter une photo depuis cet appareil">
-              {(id) => (
-                <Input
-                  id={id}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={async (event) => {
-                    const file = event.target.files?.[0];
-                    if (!file) return;
-                    setPreparingItemImage(true);
-                    setError("");
-                    try {
-                      setImage(await encodePhoto(file, { maxDimension: 960 }));
-                    } catch (error) {
-                      setError(errorText(error));
-                    } finally {
-                      setPreparingItemImage(false);
-                      event.target.value = "";
-                    }
-                  }}
-                />
-              )}
-            </Field>
-            {image.startsWith("data:image/") && (
-              <div className="space-y-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={image} alt="Aperçu de la photo du cadeau" className="max-h-48 rounded-lg object-contain" />
-                <Button type="button" variant="outline" onClick={() => setImage("")}>Retirer la photo</Button>
-              </div>
-            )}
-            {preparingItemImage && <p role="status" className="text-sm text-muted-foreground">Préparation de la photo…</p>}
-            <NativeCheckbox checked={group} onChange={(e) => setGroup(e.target.checked)}>
-              Autoriser la participation à plusieurs
-            </NativeCheckbox>
-            {group && (
-              <p className="text-sm text-muted-foreground">
-                Prix cible requis. Ajoute les modalités de participation aux
-                réglages de la liste.
-              </p>
-            )}
-            <NativeCheckbox
-              checked={priority === "high"}
-              onChange={(e) => setPriority(e.target.checked ? "high" : "normal")}
-            >
-              C’est un coup de cœur
-            </NativeCheckbox>
-          </fieldset>
-          {message && !manualEntry && <Notice>{message}</Notice>}
-          {error && <Notice error>{error}</Notice>}
-          <DialogFooter>
+      <fieldset
+        disabled={busy || extracting || preparingItemImage}
+        className="space-y-5"
+      >
+        <Field label="Lien du produit (facultatif)">
+          {(id) => (
+            <Input
+              id={id}
+              type="url"
+              maxLength={4096}
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://boutique.fr/produit"
+            />
+          )}
+        </Field>
+        <Button
+          type="button"
+          variant="primary"
+          disabled={!url || busy || extracting}
+          onClick={() => void extract()}
+        >
+          {extracting ? "Lecture de la boutique…" : "Remplir automatiquement"}
+        </Button>
+        {manualEntry && message && (
+          <p
+            role="status"
+            className="flex items-start gap-2 text-sm text-warning"
+          >
+            <TriangleAlert
+              className="mt-0.5 size-4 shrink-0"
+              aria-hidden="true"
+            />
+            {message}
+          </p>
+        )}
+        <Field label="Nom du cadeau">
+          {(id) => (
+            <Input
+              id={id}
+              required
+              maxLength={200}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label="Prix estimé (€)">
+          {(id) => (
+            <Input
+              id={id}
+              type="text"
+              inputMode="decimal"
+              pattern="[0-9]+([.,][0-9]{1,2})?"
+              title="Un prix avec au maximum deux décimales (ex. : 19,99)."
+              required={group}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+          )}
+        </Field>
+        <Field label="Lien de l’image (facultatif)">
+          {(id) => (
+            <Input
+              id={id}
+              type="text"
+              inputMode="url"
+              maxLength={250000}
+              value={image.startsWith("data:image/") ? "" : image}
+              onChange={(e) => setImage(e.target.value)}
+            />
+          )}
+        </Field>
+        <PhotoField
+          label="Ou ajouter une photo depuis cet appareil"
+          saveFailed={error === "invalid_gift_photo"}
+          onPreparing={(preparing) => {
+            setPreparingItemImage(preparing);
+            if (preparing) setError("");
+          }}
+          onPhoto={setImage}
+        />
+        {image.startsWith("data:image/") && (
+          <div className="space-y-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={image}
+              alt="Aperçu de la photo du cadeau"
+              className="max-h-48 rounded-lg object-contain"
+            />
             <Button
               type="button"
               variant="outline"
-              disabled={busy || extracting}
-              onClick={onClose}
+              onClick={() => {
+                setError("");
+                setImage("");
+              }}
             >
-              Annuler
+              Retirer la photo
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={busy || extracting}
-            >
-              {busy
-                ? "Enregistrement…"
-                : initial
-                  ? "Enregistrer"
-                  : "Ajouter le cadeau"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </div>
+        )}
+        <NativeCheckbox
+          checked={group}
+          onChange={(e) => setGroup(e.target.checked)}
+        >
+          Autoriser la participation à plusieurs
+        </NativeCheckbox>
+        {group && (
+          <p className="text-sm text-muted-foreground">
+            Prix cible requis. Ajoute les modalités de participation aux
+            réglages de la liste.
+          </p>
+        )}
+        <NativeCheckbox
+          checked={priority === "high"}
+          onChange={(e) => setPriority(e.target.checked ? "high" : "normal")}
+        >
+          C’est un coup de cœur
+        </NativeCheckbox>
+      </fieldset>
+      {message && !manualEntry && <Notice>{message}</Notice>}
+    </GiftFormDialog>
   );
 }

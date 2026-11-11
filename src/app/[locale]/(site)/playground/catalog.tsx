@@ -92,6 +92,7 @@ import {
   DESIGN_SYSTEMS,
 } from "@/components/design-system/provider";
 import { useTranslations } from "next-intl";
+import { ListForm } from "@/features/gift-lists/ui/forms";
 import { cn } from "@/lib/utils";
 
 const densities = ["auto", "desktop", "mobile"] as const;
@@ -103,6 +104,27 @@ const demoLabels = {
   Swatches: "swatches",
   Textarea: "exampleText",
 } as const;
+
+function GiftListDialogDemo() {
+  const t = useTranslations("giftForms");
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-3">
+      <Button
+        variant="outline"
+        onClick={(event) => {
+          event.currentTarget.focus({ preventScroll: true });
+          setOpen(true);
+        }}
+      >
+        {t("demo")}
+      </Button>
+      {open && (
+        <ListForm onClose={() => setOpen(false)} onSave={async () => {}} />
+      )}
+    </div>
+  );
+}
 
 function demoLabel(title: string, t: ReturnType<typeof useTranslations<"playground">>) {
   const key = demoLabels[title as keyof typeof demoLabels];
@@ -343,6 +365,7 @@ export function PlaygroundCatalog() {
                 </p>
               </DialogContent>
             </Dialog>
+            <GiftListDialogDemo />
           </Section>
 
           <Section title="DropdownMenu">

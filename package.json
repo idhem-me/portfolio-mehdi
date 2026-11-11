@@ -13,8 +13,8 @@
     "test:burger": "node --import tsx --import ./tests/helpers/server-only.ts --test tests/clicker-burger/*.test.ts",
     "test:cards": "node --import tsx --import ./tests/helpers/server-only.ts --test src/features/cards/engine/*.test.ts",
     "balance:burger": "tsx scripts/clicker-burger/balance.ts",
-    "predev": "node scripts/sync-image-compression.mjs",
-    "prebuild": "node scripts/sync-image-compression.mjs",
+    "predev": "node scripts/sync-image-compression.mjs && node scripts/sync-gift-heic.mjs",
+    "prebuild": "node scripts/sync-image-compression.mjs && node scripts/sync-gift-heic.mjs",
     "test:tools": "playwright test tests/local-image-tools.spec.ts --project=chromium",
     "test:security": "node --import tsx --import ./tests/helpers/server-only.ts --test tests/security*.test.ts"
   },
