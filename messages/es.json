@@ -1,5 +1,15 @@
 {
   "giftForms": {
+    "addComment": "Añadir un comentario",
+    "comment": "Comentario",
+    "productLink": "Enlace del producto",
+    "imageLink": "Enlace de la imagen",
+    "fill": "Rellenar",
+    "extractionFailed": "No se ha podido recuperar la información de este enlace. Puedes rellenar los campos manualmente.",
+    "groupGift": "Regalo colectivo",
+    "groupGiftHint": "Varias personas pueden contribuir.",
+    "groupGiftPriceRequired": "Indica un precio objetivo para las aportaciones.",
+    "itemDemo": "Probar el formulario de regalo",
     "listName": "Nombre de la lista",
     "chooseImage": "Elegir una imagen",
     "addPaymentInstructions": "Añadir instrucciones para contribuir",

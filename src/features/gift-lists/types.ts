@@ -21,6 +21,7 @@ export type GiftList = {
 export type GiftItem = {
   id: string;
   title: string;
+  comment: string | null;
   url: string | null;
   image_url: string | null;
   price: number | null;

@@ -1,5 +1,15 @@
 {
   "giftForms": {
+    "addComment": "添加备注",
+    "comment": "备注",
+    "productLink": "商品链接",
+    "imageLink": "图片链接",
+    "fill": "填充",
+    "extractionFailed": "无法从此链接获取信息。你可以手动填写字段。",
+    "groupGift": "合送礼物",
+    "groupGiftHint": "多人可以出资。",
+    "groupGiftPriceRequired": "请输入出资目标金额。",
+    "itemDemo": "试用礼物表单",
     "listName": "清单名称",
     "chooseImage": "选择图片",
     "addPaymentInstructions": "添加参与说明",

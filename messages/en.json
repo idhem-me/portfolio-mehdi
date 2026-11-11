@@ -1,5 +1,15 @@
 {
   "giftForms": {
+    "addComment": "Add a comment",
+    "comment": "Comment",
+    "productLink": "Product link",
+    "imageLink": "Image link",
+    "fill": "Fill in",
+    "extractionFailed": "Could not retrieve information from this link. You can fill in the fields manually.",
+    "groupGift": "Group gift",
+    "groupGiftHint": "Several people can contribute.",
+    "groupGiftPriceRequired": "Enter a target price for contributions.",
+    "itemDemo": "Try the gift form",
     "listName": "List name",
     "chooseImage": "Choose an image",
     "addPaymentInstructions": "Add contribution instructions",

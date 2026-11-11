@@ -14,7 +14,7 @@ Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème
 
 ## Formulaire des listes de cadeaux
 
-La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions toujours visibles et deux boutons Ghost de taille Small qui révèlent la description et les instructions de participation, ainsi qu’un bouton Secondary pour choisir une image. Le scénario suit les densités Auto, Desktop et Mobile du catalogue.
+La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions toujours visibles et deux boutons Ghost de taille Small qui révèlent la description et les instructions de participation, ainsi qu’un bouton Secondary pour choisir une image. Le formulaire de cadeau présente les deux interrupteurs, le commentaire sur une ligne et le message affiché si le remplissage automatique échoue. Ces scénarios suivent les densités Auto, Desktop et Mobile du catalogue.
 
 ## `src/app`
 

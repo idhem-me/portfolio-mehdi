@@ -4,7 +4,6 @@ import { flushSync } from "react-dom";
 import { useTranslations } from "next-intl";
 import { TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { NativeCheckbox } from "@/components/design-system/native-controls";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/ui/select";
@@ -92,12 +91,13 @@ function PhotoField({
   );
 }
 
-function OptionalTextArea({
+function OptionalTextField({
   action,
   label,
   hint,
   placeholder,
   maxLength,
+  singleLine = false,
   value,
   onChange,
 }: {
@@ -106,12 +106,14 @@ function OptionalTextArea({
   hint?: string;
   placeholder?: string;
   maxLength: number;
+  singleLine?: boolean;
   value: string;
   onChange: (value: string) => void;
 }) {
   const [open, setOpen] = useState(() => !!value.trim());
   const id = useId();
-  const input = useRef<HTMLTextAreaElement>(null);
+  const field = useRef<HTMLDivElement>(null);
+  const Control = singleLine ? Input : TextArea;
 
   return (
     <div>
@@ -125,19 +127,22 @@ function OptionalTextArea({
           aria-controls={id}
           onClick={() => {
             flushSync(() => setOpen(true));
-            input.current?.focus();
+            field.current
+              ?.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+                "input, textarea",
+              )
+              ?.focus();
           }}
         >
           {action}
         </Button>
       )}
-      <div id={id} hidden={!open}>
+      <div id={id} ref={field} hidden={!open}>
         {open && (
           <Field label={label} hint={hint}>
             {(fieldId) => (
-              <TextArea
+              <Control
                 id={fieldId}
-                ref={input}
                 maxLength={maxLength}
                 value={value}
                 onChange={(event) => onChange(event.target.value)}
@@ -320,14 +325,14 @@ export function ListForm({
             </Button>
           </div>
         )}
-        <OptionalTextArea
+        <OptionalTextField
           action={t("addDescription")}
           label={t("description")}
           maxLength={5000}
           value={value.description ?? ""}
           onChange={(description) => setValue({ ...value, description })}
         />
-        <OptionalTextArea
+        <OptionalTextField
           action={t("addPaymentInstructions")}
           label="Instructions de participation (facultatif)"
           hint="Lien ou IBAN, visible par les personnes ayant la liste."
@@ -368,11 +373,18 @@ export function ItemForm({
   initial,
   onSave,
   onClose,
+  demo = false,
 }: {
   initial?: GiftItem;
   onSave: (data: ItemData) => Promise<void>;
   onClose: () => void;
+  demo?: boolean;
 }) {
+  const t = useTranslations("giftForms");
+  const priorityId = useId();
+  const groupId = useId();
+  const groupHintId = useId();
+  const [comment, setComment] = useState(initial?.comment ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
   const [url, setUrl] = useState(initial?.url ?? "");
   const [image, setImage] = useState(initial?.image_url ?? "");
@@ -388,34 +400,40 @@ export function ItemForm({
   const lock = useRef(false);
   async function extract() {
     if (extracting) return;
+    if (demo) {
+      setMessage(t("extractionFailed"));
+      setManualEntry(true);
+      return;
+    }
     setExtracting(true);
     setError("");
     setMessage("");
     setManualEntry(false);
-    setTitle("");
-    setPrice("");
-    setImage("");
     try {
       const result = await giftRequest<{
         title: string | null;
         image_url: string | null;
         price: number | null;
         message?: string;
-        manual_entry?: boolean;
         status?: string;
       }>("/api/tetris/gifts/extract", { url });
+      const failed =
+        result.status === "manual" ||
+        (!result.title && !result.image_url && result.price == null);
+      if (failed) {
+        setMessage(t("extractionFailed"));
+        setManualEntry(true);
+        return;
+      }
       if (result.title) setTitle(result.title);
       if (result.image_url) setImage(result.image_url);
-      if (result.price !== null) setPrice(String(result.price));
+      if (result.price != null) setPrice(String(result.price));
       setMessage(
         result.message ||
           "Informations récupérées. Vérifie-les avant d’ajouter le cadeau.",
       );
-      setManualEntry(
-        result.manual_entry === true || result.status === "manual",
-      );
-    } catch (e) {
-      setMessage(`${errorText(e)} Tu peux remplir le cadeau manuellement.`);
+    } catch {
+      setMessage(t("extractionFailed"));
       setManualEntry(true);
     } finally {
       setExtracting(false);
@@ -443,6 +461,7 @@ export function ItemForm({
     try {
       await onSave({
         title,
+        comment: comment.trim() || null,
         url: url || null,
         image_url: image || null,
         price: parsedPrice,
@@ -496,26 +515,28 @@ export function ItemForm({
         disabled={busy || extracting || preparingItemImage}
         className="space-y-5"
       >
-        <Field label="Lien du produit (facultatif)">
+        <Field label={t("productLink")}>
           {(id) => (
-            <Input
-              id={id}
-              type="url"
-              maxLength={4096}
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://boutique.fr/produit"
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                id={id}
+                type="url"
+                maxLength={4096}
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://boutique.fr/produit"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={!url.trim() || extracting}
+                onClick={() => void extract()}
+              >
+                {extracting ? "Lecture de la boutique…" : t("fill")}
+              </Button>
+            </div>
           )}
         </Field>
-        <Button
-          type="button"
-          variant="primary"
-          disabled={!url || busy || extracting}
-          onClick={() => void extract()}
-        >
-          {extracting ? "Lecture de la boutique…" : "Remplir automatiquement"}
-        </Button>
         {manualEntry && message && (
           <p
             role="status"
@@ -553,7 +574,7 @@ export function ItemForm({
             />
           )}
         </Field>
-        <Field label="Lien de l’image (facultatif)">
+        <Field label={t("imageLink")}>
           {(id) => (
             <Input
               id={id}
@@ -593,24 +614,44 @@ export function ItemForm({
             </Button>
           </div>
         )}
-        <NativeCheckbox
-          checked={group}
-          onChange={(e) => setGroup(e.target.checked)}
-        >
-          Autoriser la participation à plusieurs
-        </NativeCheckbox>
-        {group && (
-          <p className="text-sm text-muted-foreground">
-            Prix cible requis. Ajoute les modalités de participation aux
-            réglages de la liste.
-          </p>
-        )}
-        <NativeCheckbox
-          checked={priority === "high"}
-          onChange={(e) => setPriority(e.target.checked ? "high" : "normal")}
-        >
-          C’est un coup de cœur
-        </NativeCheckbox>
+        <div className="space-y-3 border-t border-border pt-4">
+          <div className="flex items-center justify-between gap-4">
+            <label htmlFor={priorityId} className="font-medium">
+              C’est un coup de cœur
+            </label>
+            <Switch
+              id={priorityId}
+              checked={priority === "high"}
+              onCheckedChange={(checked) =>
+                setPriority(checked ? "high" : "normal")
+              }
+            />
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <label htmlFor={groupId} className="font-medium">
+                {t("groupGift")}
+              </label>
+              <p id={groupHintId} className="text-sm text-muted-foreground">
+                {group ? t("groupGiftPriceRequired") : t("groupGiftHint")}
+              </p>
+            </div>
+            <Switch
+              id={groupId}
+              aria-describedby={groupHintId}
+              checked={group}
+              onCheckedChange={setGroup}
+            />
+          </div>
+        </div>
+        <OptionalTextField
+          action={t("addComment")}
+          label={t("comment")}
+          singleLine
+          maxLength={200}
+          value={comment}
+          onChange={setComment}
+        />
       </fieldset>
       {message && !manualEntry && <Notice>{message}</Notice>}
     </GiftFormDialog>

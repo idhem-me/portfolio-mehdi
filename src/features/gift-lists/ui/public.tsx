@@ -513,6 +513,11 @@ function PublicGiftListClient({ slug }: { slug: string }) {
                     <h2 className="break-words text-lg font-semibold">
                       {item.title}
                     </h2>
+                    {item.comment && (
+                      <p className="wrap-anywhere text-sm text-muted-foreground">
+                        {item.comment}
+                      </p>
+                    )}
                     <div className="flex flex-wrap items-center gap-2">
                       <span>{euro(item.price)}</span>
                       {item.priority === "high" && (

@@ -1,5 +1,15 @@
 {
   "giftForms": {
+    "addComment": "إضافة تعليق",
+    "comment": "التعليق",
+    "productLink": "رابط المنتج",
+    "imageLink": "رابط الصورة",
+    "fill": "ملء",
+    "extractionFailed": "تعذّر جلب المعلومات من هذا الرابط. يمكنك ملء الحقول يدويًا.",
+    "groupGift": "هدية مشتركة",
+    "groupGiftHint": "يمكن لعدة أشخاص المساهمة.",
+    "groupGiftPriceRequired": "أدخل السعر المستهدف للمساهمات.",
+    "itemDemo": "جرّب نموذج الهدية",
     "listName": "اسم القائمة",
     "chooseImage": "اختيار صورة",
     "addPaymentInstructions": "إضافة تعليمات المساهمة",

@@ -135,10 +135,62 @@ test("all four forms keep their actions visible and optional list fields can be 
     .getByRole("button", { name: "Ajouter un cadeau", exact: true })
     .click();
   await expectFixedActions(dialog, "Ajouter le cadeau");
-  await dialog.getByLabel("Nom du cadeau").fill("Un livre");
+  const name = dialog.getByLabel("Nom du cadeau");
+  await name.fill("Un livre");
+  await page.route("**/api/tetris/gifts/extract", (route) =>
+    route.fulfill({
+      json: {
+        status: "manual",
+        title: "Nom déduit du lien",
+        image_url: null,
+        price: null,
+      },
+    }),
+  );
+  await dialog.getByLabel("Lien du produit").fill("https://example.com/livre");
+  await dialog.getByRole("button", { name: "Remplir", exact: true }).click();
+  await expect(dialog.getByRole("status")).toHaveText(
+    "Impossible de récupérer les informations depuis ce lien. Tu peux remplir les champs manuellement.",
+  );
+  await expect(name).toHaveValue("Un livre");
+
+  const favorite = dialog.getByRole("switch", {
+    name: "C’est un coup de cœur",
+  });
+  const group = dialog.getByRole("switch", { name: "Cadeau participatif" });
+  await favorite.click();
+  await expect(favorite).toBeChecked();
+  await group.click();
+  await expect(group).toBeChecked();
+  await group.click();
+  await expect(group).not.toBeChecked();
+
+  const addComment = dialog.getByRole("button", {
+    name: "Ajouter un commentaire",
+  });
+  const comment = dialog.getByRole("textbox", {
+    name: "Commentaire",
+    exact: true,
+  });
+  await expect(comment).toHaveCount(0);
+  await expect(addComment).toHaveAttribute("data-variant", "ghost");
+  await addComment.click();
+  await expect(comment).toBeFocused();
+  await comment.fill("En édition de poche");
   await dialog.getByRole("button", { name: "Ajouter le cadeau" }).click();
+  await expect(
+    page.getByText("En édition de poche", { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Modifier Un livre" }).click();
   await expectFixedActions(dialog, "Enregistrer");
+  await expect(comment).toHaveValue("En édition de poche");
+  await comment.fill("");
+  await dialog.getByRole("button", { name: "Enregistrer" }).click();
+  await expect(
+    page.getByText("En édition de poche", { exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Modifier Un livre" }).click();
+  await expect(addComment).toBeVisible();
   await expect(description).toHaveCount(0);
   await dialog.getByRole("button", { name: "Annuler" }).click();
 });

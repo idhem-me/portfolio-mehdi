@@ -1,5 +1,15 @@
 {
   "giftForms": {
+    "addComment": "Kommentar hinzufügen",
+    "comment": "Kommentar",
+    "productLink": "Produktlink",
+    "imageLink": "Bildlink",
+    "fill": "Ausfüllen",
+    "extractionFailed": "Die Informationen konnten nicht von diesem Link abgerufen werden. Du kannst die Felder manuell ausfüllen.",
+    "groupGift": "Gemeinschaftsgeschenk",
+    "groupGiftHint": "Mehrere Personen können beitragen.",
+    "groupGiftPriceRequired": "Gib einen Zielpreis für die Beiträge an.",
+    "itemDemo": "Geschenkformular ausprobieren",
     "listName": "Listenname",
     "chooseImage": "Bild auswählen",
     "addPaymentInstructions": "Hinweise zur Beteiligung hinzufügen",

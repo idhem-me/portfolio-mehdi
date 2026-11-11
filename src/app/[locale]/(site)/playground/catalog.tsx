@@ -92,7 +92,7 @@ import {
   DESIGN_SYSTEMS,
 } from "@/components/design-system/provider";
 import { useTranslations } from "next-intl";
-import { ListForm } from "@/features/gift-lists/ui/forms";
+import { ItemForm, ListForm } from "@/features/gift-lists/ui/forms";
 import { cn } from "@/lib/utils";
 
 const densities = ["auto", "desktop", "mobile"] as const;
@@ -105,22 +105,28 @@ const demoLabels = {
   Textarea: "exampleText",
 } as const;
 
-function GiftListDialogDemo() {
+function GiftDialogsDemo() {
   const t = useTranslations("giftForms");
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState<"list" | "item" | null>(null);
   return (
-    <div className="mt-3">
-      <Button
-        variant="outline"
-        onClick={(event) => {
-          event.currentTarget.focus({ preventScroll: true });
-          setOpen(true);
-        }}
-      >
-        {t("demo")}
-      </Button>
-      {open && (
-        <ListForm onClose={() => setOpen(false)} onSave={async () => {}} />
+    <div className="mt-3 flex flex-wrap gap-2">
+      {(["list", "item"] as const).map((kind) => (
+        <Button
+          key={kind}
+          variant="outline"
+          onClick={(event) => {
+            event.currentTarget.focus({ preventScroll: true });
+            setOpen(kind);
+          }}
+        >
+          {t(kind === "list" ? "demo" : "itemDemo")}
+        </Button>
+      ))}
+      {open === "list" && (
+        <ListForm onClose={() => setOpen(null)} onSave={async () => {}} />
+      )}
+      {open === "item" && (
+        <ItemForm onClose={() => setOpen(null)} onSave={async () => {}} demo />
       )}
     </div>
   );
@@ -365,7 +371,7 @@ export function PlaygroundCatalog() {
                 </p>
               </DialogContent>
             </Dialog>
-            <GiftListDialogDemo />
+            <GiftDialogsDemo />
           </Section>
 
           <Section title="DropdownMenu">

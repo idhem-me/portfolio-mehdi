@@ -173,13 +173,13 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
       }),
     );
     await page
-      .getByLabel("Lien du produit (facultatif)", { exact: true })
+      .getByLabel("Lien du produit", { exact: true })
       .fill("https://boutique.example.com/livre");
-    await page.getByRole("button", { name: "Remplir automatiquement" }).click();
+    await page.getByRole("button", { name: "Remplir" }).click();
     await expect(page.getByLabel("Nom du cadeau", { exact: true })).toHaveValue(
       "Un beau livre",
     );
-    await page.getByLabel("C’est un coup de cœur", { exact: true }).check();
+    await page.getByRole("switch", { name: "C’est un coup de cœur" }).click();
     await page
       .getByRole("dialog")
       .getByRole("button", { name: "Ajouter le cadeau", exact: true })
@@ -195,8 +195,8 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
       .fill("Un vélo à plusieurs");
     await page.getByLabel("Prix estimé (€)", { exact: true }).fill("100");
     await page
-      .getByLabel("Autoriser la participation à plusieurs", { exact: true })
-      .check();
+      .getByRole("switch", { name: "Cadeau participatif" })
+      .click();
     await page
       .getByRole("dialog")
       .getByRole("button", { name: "Ajouter le cadeau", exact: true })

@@ -24,6 +24,12 @@ async function setup() {
   await db.exec(readFileSync("docs/sql/gift-lists.sql", "utf8"));
   await db.exec(readFileSync("docs/sql/gift-list-occasions.sql", "utf8"));
   await db.exec(readFileSync("docs/sql/gift-list-cover.sql", "utf8"));
+  await db.exec(
+    readFileSync(
+      "supabase/migrations/202611110001_gift_item_comment.sql",
+      "utf8",
+    ),
+  );
   await db.exec("set role service_role");
   const list = (
     await db.query<{ id: string; slug: string }>(
@@ -58,6 +64,39 @@ async function setup() {
     ).rows[0].id;
   return { db, list, item, group, reserve };
 }
+
+test("gift comments are optional, editable and shared through the public list", async () => {
+  const { db, list, item } = await setup();
+  try {
+    async function publicComment() {
+      return (
+        await db.query<{ comment: string | null }>(
+          `select gift->>'comment' as comment
+           from jsonb_array_elements(gift_read_public($1)->'items') as gift
+           where gift->>'id' = $2`,
+          [list.slug, item.id],
+        )
+      ).rows[0].comment;
+    }
+    assert.equal(await publicComment(), null);
+    for (const comment of ["En bleu", "En vert", null]) {
+      await db.query("update gift_items set comment = $1 where id = $2", [
+        comment,
+        item.id,
+      ]);
+      assert.equal(await publicComment(), comment);
+    }
+    await assert.rejects(
+      db.query("update gift_items set comment = $1 where id = $2", [
+        "Deux\nlignes",
+        item.id,
+      ]),
+      /gift_items_comment_check/,
+    );
+  } finally {
+    await db.close();
+  }
+});
 
 test("short random links, idempotent reservations, private data and surprise mode", async () => {
   const { db, list, reserve } = await setup();

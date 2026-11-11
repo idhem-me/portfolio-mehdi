@@ -70,6 +70,14 @@ const listInput = z
 const itemInput = z
   .object({
     title: z.string().trim().min(1).max(200),
+    comment: z
+      .string()
+      .trim()
+      .max(200)
+      .regex(/^[^\r\n]*$/)
+      .transform((value) => value || null)
+      .nullable()
+      .optional(),
     url: webUrl,
     image_url: itemImage,
     price: money,
@@ -112,7 +120,8 @@ export const reservationInput = z.object({
 });
 const listColumns =
   "id,title,description,slug,occasion_type,occasion_label,cover_image,is_surprise_mode,reservations_revealed_at,payment_info";
-const itemColumns = "id,title,url,image_url,price,is_group_gift,priority";
+const itemColumns =
+  "id,title,comment,url,image_url,price,is_group_gift,priority";
 
 class ApiError extends Error {
   constructor(

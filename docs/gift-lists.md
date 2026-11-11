@@ -332,3 +332,9 @@ La suite HTTP avec Supabase réel reste conditionnée à la configuration d'un
 compte de test temporaire. Sur un iPhone physique, vérifier Photos et Appareil
 photo dans le sélecteur, puis garder le clavier ouvert pour contrôler que les
 actions restent accessibles.
+
+Le bouton « Ajouter un commentaire » révèle un champ d’une ligne sur le
+formulaire de cadeau. Le commentaire peut être modifié ou effacé. Il apparaît
+sous le nom du cadeau dans l’espace de gestion et sur la liste partagée.
+Appliquer la [migration du commentaire](../supabase/migrations/202611110001_gift_item_comment.sql)
+avant de déployer la version qui l’utilise.

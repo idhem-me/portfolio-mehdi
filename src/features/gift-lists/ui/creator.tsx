@@ -539,6 +539,11 @@ export function CreatorList({ id }: { id: string }) {
                   <GiftImage key={item.image_url} item={item} />
                   <div className="space-y-2">
                     <h3 className="break-words font-semibold">{item.title}</h3>
+                    {item.comment && (
+                      <p className="wrap-anywhere text-sm text-muted-foreground">
+                        {item.comment}
+                      </p>
+                    )}
                     <div className="flex flex-wrap items-center gap-2">
                       <span>{euro(item.price)}</span>
                       {item.is_group_gift && (
