@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ProductDesignerContent } from "@/features/cv/ui/product-designer-content";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,7 +9,6 @@ import {
   ExperienceListItem,
 } from "@/features/cv/ui/experience-card";
 import { getAbout, getExperiences, getProfile } from "@/lib/content";
-import { routing } from "@/i18n/routing";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -19,18 +19,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "metadata" });
   const profile = getProfile(locale);
 
-  return {
+  return portfolioMetadata("/a-propos", locale, {
     title: t("about"),
     description: profile.bio,
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((l) => [
-          l,
-          l === routing.defaultLocale ? "/a-propos" : `/${l}/a-propos`,
-        ]),
-      ),
-    },
-  };
+  });
 }
 
 export default async function AProposPage({ params }: Props) {

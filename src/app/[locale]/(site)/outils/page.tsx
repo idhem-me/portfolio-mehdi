@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   Files,
@@ -17,7 +18,7 @@ type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "tools" });
-  return { title: t("title"), description: t("intro") };
+  return portfolioMetadata("/outils", locale, { title: t("title"), description: t("intro") });
 }
 export default async function ToolsPage({ params }: Props) {
   const { locale } = await params;

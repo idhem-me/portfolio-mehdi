@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { getRealisations } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -15,18 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "metadata" });
   const page = getRealisations(locale);
 
-  return {
+  return portfolioMetadata("/realisations", locale, {
     title: t("realisations"),
     description: page.title,
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((l) => [
-          l,
-          l === routing.defaultLocale ? "/realisations" : `/${l}/realisations`,
-        ])
-      ),
-    },
-  };
+  });
 }
 
 export default async function RealisationsPage({ params }: Props) {

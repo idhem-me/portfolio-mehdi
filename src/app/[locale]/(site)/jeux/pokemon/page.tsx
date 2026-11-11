@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
+import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PokemonCatalogue } from "@/features/pokemon/catalogue";
@@ -17,18 +17,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "pokemon" });
 
-  return {
+  return portfolioMetadata("/jeux/pokemon", locale, {
     title: t("pokedex"),
     description: t("catalogueIntro"),
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((language) => [
-          language,
-          `${language === routing.defaultLocale ? "" : `/${language}`}/jeux/pokemon`,
-        ]),
-      ),
-    },
-  };
+  });
 }
 
 export default async function PokemonPage({ params }: Props) {

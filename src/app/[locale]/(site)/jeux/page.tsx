@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Blocks, Gamepad2, Hamburger, PlayingCardsFan } from "lucide-react";
 import { getGames } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
-import { routing } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { PlayerIdentityProvider } from "@/features/tetris/ui/player-identity";
 import { PlayerProfileButton } from "@/features/tetris/ui/player-profile";
@@ -18,18 +18,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "metadata" });
   const page = getGames(locale);
 
-  return {
+  return portfolioMetadata("/jeux", locale, {
     title: t("games"),
     description: page.title,
-    alternates: {
-      languages: Object.fromEntries(
-        routing.locales.map((l) => [
-          l,
-          l === routing.defaultLocale ? "/jeux" : `/${l}/jeux`,
-        ]),
-      ),
-    },
-  };
+  });
 }
 
 export default async function GamesPage({ params }: Props) {

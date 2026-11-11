@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "tools" });
-  return { title: t("mergeTitle"), description: t("mergeDescription") };
+  return portfolioMetadata("/outils/fusion-pdf", locale, { title: t("mergeTitle"), description: t("mergeDescription") });
 }
 export default async function MergePdfPage({ params }: Props) {
   const { locale } = await params;

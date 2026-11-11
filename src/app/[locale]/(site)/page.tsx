@@ -5,11 +5,21 @@ import { setRequestLocale } from "next-intl/server";
 import { HomeCtas, HomeStatus } from "@/components/analytics/home-ctas";
 import { GazeAvatar } from "@/components/creative/gaze-avatar";
 import { GravityPlayground } from "@/components/creative/gravity-playground";
+import { profileMeta } from "@/data/profile-meta";
 import { getHome } from "@/lib/content";
+import { portfolioMetadata } from "@/lib/portfolio-seo";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({ params }: Props) {
+  const { locale } = await params;
+  return portfolioMetadata("/", locale, {
+    title: profileMeta.siteTitle,
+    description: getHome(locale).intro,
+  });
+}
 
 function IntroWords({ text }: { text: string }) {
   const parts = text.split(/(\s+)/);
