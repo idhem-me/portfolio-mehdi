@@ -233,6 +233,19 @@ test("HEIC and JPEG preview, invalid file retry and JPEG fallback", async ({
   })
     .jpeg()
     .toBuffer();
+  const imageLink = dialog.getByRole("textbox", { name: "Lien de l’image" });
+  const linkedImage = "https://example.com/gift-photo.jpg";
+  await page.route(linkedImage, (route) =>
+    route.fulfill({ contentType: jpegMime, body: buffer }),
+  );
+  await imageLink.fill(linkedImage);
+  await expect(preview).toHaveAttribute("src", linkedImage);
+  await expect(preview).toBeVisible();
+  const row = await Promise.all(
+    [imageLink, chooseImage, preview].map((control) => control.boundingBox()),
+  );
+  expect(row.every((box) => box && Math.abs(box.y - row[0]!.y) < 2)).toBe(true);
+
   const validFile = { name: "photo.jpg", mimeType: jpegMime, buffer };
   await photo.setInputFiles(validFile);
   await expect(preview).toHaveAttribute("src", /^data:image\/jpeg;base64,/);

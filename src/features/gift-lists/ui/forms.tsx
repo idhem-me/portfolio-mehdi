@@ -1,5 +1,12 @@
 "use client";
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { flushSync } from "react-dom";
 import { useTranslations } from "next-intl";
 import { TriangleAlert } from "lucide-react";
@@ -9,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select } from "@/components/ui/select";
 import { GiftFormDialog } from "./form-dialog";
 import { GiftPhotoError, giftPhotoAccept, prepareGiftPhoto } from "./photo";
-import { occasions, type GiftItem, type GiftList } from "../types";
+import { occasions, safeWebUrl, type GiftItem, type GiftList } from "../types";
 import {
   errorText,
   Field,
@@ -20,10 +27,14 @@ import {
 } from "./shared";
 
 function PhotoField({
+  linkInput,
+  preview,
   onPreparing,
   onPhoto,
   saveFailed,
 }: {
+  linkInput?: ReactNode;
+  preview?: string | null;
   onPreparing: (preparing: boolean) => void;
   onPhoto: (image: string) => void;
   saveFailed: boolean;
@@ -40,15 +51,31 @@ function PhotoField({
   const error = selectionError || (saveFailed ? t("photoInvalid") : "");
   return (
     <div className="space-y-2">
-      <Button
-        ref={button}
-        type="button"
-        variant="secondary"
-        aria-describedby={preparing || error ? feedback : undefined}
-        onClick={() => input.current?.click()}
-      >
-        {t("chooseImage")}
-      </Button>
+      <div className="flex items-center gap-2">
+        {linkInput}
+        <Button
+          ref={button}
+          type="button"
+          variant="secondary"
+          aria-describedby={preparing || error ? feedback : undefined}
+          onClick={() => input.current?.click()}
+        >
+          {t("chooseImage")}
+        </Button>
+        {preview && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={preview}
+            src={preview}
+            alt="Aperçu de la photo du cadeau"
+            referrerPolicy="no-referrer"
+            className="size-(--control-height) shrink-0 rounded-lg bg-muted object-contain"
+            onError={(event) => {
+              event.currentTarget.hidden = true;
+            }}
+          />
+        )}
+      </div>
       <input
         ref={input}
         type="file"
@@ -549,70 +576,69 @@ export function ItemForm({
             {message}
           </p>
         )}
-        <Field label="Nom du cadeau">
-          {(id) => (
-            <Input
-              id={id}
-              required
-              maxLength={200}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          )}
-        </Field>
-        <Field label="Prix estimé (€)">
-          {(id) => (
-            <Input
-              id={id}
-              type="text"
-              inputMode="decimal"
-              pattern="[0-9]+([.,][0-9]{1,2})?"
-              title="Un prix avec au maximum deux décimales (ex. : 19,99)."
-              required={group}
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-            />
-          )}
-        </Field>
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(7rem,0.55fr)] items-end gap-2">
+          <Field label="Nom du cadeau">
+            {(id) => (
+              <Input
+                id={id}
+                required
+                maxLength={200}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            )}
+          </Field>
+          <Field label="Prix estimé (€)">
+            {(id) => (
+              <Input
+                id={id}
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]+([.,][0-9]{1,2})?"
+                title="Un prix avec au maximum deux décimales (ex. : 19,99)."
+                required={group}
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
         <Field label={t("imageLink")}>
           {(id) => (
-            <Input
-              id={id}
-              type="text"
-              inputMode="url"
-              maxLength={250000}
-              value={image.startsWith("data:image/") ? "" : image}
-              onChange={(e) => setImage(e.target.value)}
+            <PhotoField
+              linkInput={
+                <Input
+                  id={id}
+                  type="text"
+                  inputMode="url"
+                  maxLength={250000}
+                  value={image.startsWith("data:image/") ? "" : image}
+                  onChange={(e) => setImage(e.target.value)}
+                />
+              }
+              preview={
+                image.startsWith("data:image/") ? image : safeWebUrl(image)
+              }
+              saveFailed={error === "invalid_gift_photo"}
+              onPreparing={(preparing) => {
+                setPreparingItemImage(preparing);
+                if (preparing) setError("");
+              }}
+              onPhoto={setImage}
             />
           )}
         </Field>
-        <PhotoField
-          saveFailed={error === "invalid_gift_photo"}
-          onPreparing={(preparing) => {
-            setPreparingItemImage(preparing);
-            if (preparing) setError("");
-          }}
-          onPhoto={setImage}
-        />
         {image.startsWith("data:image/") && (
-          <div className="space-y-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={image}
-              alt="Aperçu de la photo du cadeau"
-              className="max-h-48 rounded-lg object-contain"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setError("");
-                setImage("");
-              }}
-            >
-              Retirer la photo
-            </Button>
-          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setError("");
+              setImage("");
+            }}
+          >
+            Retirer la photo
+          </Button>
         )}
         <div className="space-y-3 border-t border-border pt-4">
           <div className="flex items-center justify-between gap-4">
