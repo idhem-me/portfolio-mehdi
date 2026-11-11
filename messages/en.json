@@ -1,5 +1,6 @@
 {
   "giftForms": {
+    "addPaymentInstructions": "Add contribution instructions",
     "addDescription": "Add a description",
     "description": "Description (optional)",
     "photoPreparing": "Preparing the photo…",

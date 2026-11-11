@@ -94,6 +94,65 @@ function PhotoField({
   );
 }
 
+function OptionalTextArea({
+  action,
+  label,
+  hint,
+  placeholder,
+  maxLength,
+  value,
+  onChange,
+}: {
+  action: string;
+  label: string;
+  hint?: string;
+  placeholder?: string;
+  maxLength: number;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(() => !!value.trim());
+  const id = useId();
+  const input = useRef<HTMLTextAreaElement>(null);
+
+  return (
+    <div>
+      {!open && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="max-w-full whitespace-normal text-start"
+          aria-expanded={false}
+          aria-controls={id}
+          onClick={() => {
+            flushSync(() => setOpen(true));
+            input.current?.focus();
+          }}
+        >
+          {action}
+        </Button>
+      )}
+      <div id={id} hidden={!open}>
+        {open && (
+          <Field label={label} hint={hint}>
+            {(fieldId) => (
+              <TextArea
+                id={fieldId}
+                ref={input}
+                maxLength={maxLength}
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                placeholder={placeholder}
+              />
+            )}
+          </Field>
+        )}
+      </div>
+    </div>
+  );
+}
+
 type ListData = Pick<
   GiftList,
   | "title"
@@ -116,11 +175,6 @@ export function ListForm({
   onDelete?: () => void;
 }) {
   const t = useTranslations("giftForms");
-  const [descriptionOpen, setDescriptionOpen] = useState(
-    !!initial?.description?.trim(),
-  );
-  const descriptionId = useId();
-  const focusDescription = useRef(false);
   const [value, setValue] = useState<ListData>(
     initial ?? {
       title: "",
@@ -269,60 +323,22 @@ export function ListForm({
             </Button>
           </div>
         )}
-        {descriptionOpen ? (
-          <Field label={t("description")}>
-            {(id) => (
-              <div id={descriptionId}>
-                <TextArea
-                  id={id}
-                  ref={(element) => {
-                    if (element && focusDescription.current) {
-                      focusDescription.current = false;
-                      element.focus();
-                    }
-                  }}
-                  maxLength={5000}
-                  value={value.description ?? ""}
-                  onChange={(e) =>
-                    setValue({ ...value, description: e.target.value })
-                  }
-                />
-              </div>
-            )}
-          </Field>
-        ) : (
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              aria-expanded={false}
-              aria-controls={descriptionId}
-              onClick={() => {
-                focusDescription.current = true;
-                flushSync(() => setDescriptionOpen(true));
-              }}
-            >
-              {t("addDescription")}
-            </Button>
-            <div id={descriptionId} hidden />
-          </>
-        )}
-        <Field
+        <OptionalTextArea
+          action={t("addDescription")}
+          label={t("description")}
+          maxLength={5000}
+          value={value.description ?? ""}
+          onChange={(description) => setValue({ ...value, description })}
+        />
+        <OptionalTextArea
+          action={t("addPaymentInstructions")}
           label="Instructions de participation (facultatif)"
           hint="Lien ou IBAN, visible par les personnes ayant la liste."
-        >
-          {(id) => (
-            <TextArea
-              id={id}
-              maxLength={2000}
-              value={value.payment_info ?? ""}
-              onChange={(e) =>
-                setValue({ ...value, payment_info: e.target.value })
-              }
-              placeholder="Pour participer, voici mon lien…"
-            />
-          )}
-        </Field>
+          placeholder="Pour participer, voici mon lien…"
+          maxLength={2000}
+          value={value.payment_info ?? ""}
+          onChange={(payment_info) => setValue({ ...value, payment_info })}
+        />
         <div className="space-y-2 rounded-xl border border-border bg-muted p-4">
           <div className="flex items-center justify-between gap-4">
             <span className="font-medium">Mode Surprise</span>

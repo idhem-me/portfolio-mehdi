@@ -76,10 +76,10 @@ async function expectFixedActions(dialog: Locator, action: string) {
   }
 }
 
-test("all four forms keep their actions visible and list descriptions can be added and cleared", async ({
+test("all four forms keep their actions visible and optional list fields can be added and cleared", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 390, height: 540 });
+  await page.setViewportSize({ width: 390, height: 460 });
   await owner(page);
   await page.goto(listPath);
   const dialog = page.getByRole("dialog");
@@ -96,6 +96,20 @@ test("all four forms keep their actions visible and list descriptions can be add
   const reveal = dialog.getByRole("button", {
     name: "Ajouter une description",
   });
+  const instructions = dialog.getByLabel(
+    "Instructions de participation (facultatif)",
+  );
+  const revealInstructions = dialog.getByRole("button", {
+    name: "Ajouter des instructions de participation",
+  });
+  await expect(instructions).toHaveCount(0);
+  for (const action of [reveal, revealInstructions]) {
+    await expect(action).toHaveAttribute("data-variant", "ghost");
+    expect((await action.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  }
+  await revealInstructions.click();
+  await expect(instructions).toBeFocused();
+  await instructions.fill("Lien de participation");
   await reveal.focus();
   await page.keyboard.press("Enter");
   await expect(description).toBeFocused();
@@ -107,11 +121,14 @@ test("all four forms keep their actions visible and list descriptions can be add
   await settings.click();
   await expectFixedActions(dialog, "Enregistrer");
   await expect(description).toHaveValue("Une description facultative");
+  await expect(instructions).toHaveValue("Lien de participation");
+  await instructions.fill("");
   await description.fill("");
   await dialog.getByRole("button", { name: "Enregistrer" }).click();
   await expect(dialog).toHaveCount(0);
   await settings.click();
   await expect(reveal).toBeVisible();
+  await expect(revealInstructions).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(settings).toBeFocused();
 

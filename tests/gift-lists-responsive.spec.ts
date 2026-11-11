@@ -81,6 +81,7 @@ test("creator and guest: create, extract, reserve, reveal, contribute, cancel an
     await expect(
       page.getByLabel("Titre de la liste", { exact: true }),
     ).toHaveAttribute("placeholder", "Les cadeaux de Fanny");
+    await page.getByRole("button", { name: "Ajouter des instructions de participation" }).click();
     await page
       .getByLabel("Instructions de participation (facultatif)", { exact: true })
       .fill("Contactez-moi pour mon IBAN.");

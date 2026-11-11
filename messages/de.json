@@ -1,5 +1,6 @@
 {
   "giftForms": {
+    "addPaymentInstructions": "Hinweise zur Beteiligung hinzufügen",
     "addDescription": "Beschreibung hinzufügen",
     "description": "Beschreibung (optional)",
     "photoPreparing": "Foto wird vorbereitet…",
