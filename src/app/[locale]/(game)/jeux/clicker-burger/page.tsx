@@ -7,13 +7,16 @@ import {
   clickerBurgerPublic,
 } from "@/features/clicker-burger/flags";
 import { routing } from "@/i18n/routing";
+import { portfolioMetadata } from "@/lib/portfolio-seo";
 export const instant = false;
 type Props = { params: Promise<{ locale: string }> };
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
   return {
-    title: "Clicker Burger",
-    description:
-      "Un jeu de gestion incrémental, d’une table à un empire de burgers.",
+    ...portfolioMetadata("/jeux/clicker-burger", locale, {
+      title: "Clicker Burger",
+      description: "Un jeu de gestion incrémental, d’une table à un empire de burgers.",
+    }),
     robots: { index: clickerBurgerPublic, follow: clickerBurgerPublic },
   };
 }

@@ -2,8 +2,16 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { PokemonPlayground } from "@/features/pokemon/playground";
 import { getPokemon } from "@/features/pokemon/data";
+import { portfolioMetadata } from "@/lib/portfolio-seo";
 
 export const instant = false;
+
+export async function generateMetadata({ params }: PageProps<"/[locale]/jeux/pokemon/[id]">) {
+  const { locale, id } = await params;
+  const pokemon = getPokemon(id, locale);
+  if (!pokemon) notFound();
+  return portfolioMetadata(`/jeux/pokemon/${pokemon.id}`, locale, { title: pokemon.name });
+}
 
 export default async function PokemonStagePage({
   params,
