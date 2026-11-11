@@ -1,5 +1,8 @@
 # Listes de cadeaux — intégration
 
+> Documentation historique du Portfolio. Le code, les routes et les tests de production de Liste sont dans [mtmd-list](https://github.com/idhem-me/mtmd-list).
+
+
 ## Installation
 
 Ouvrir le SQL Editor du **projet Supabase existant**, créer une requête et exécuter

@@ -28,9 +28,6 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 | \[locale\]/(game)/jeux/cards/page.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(game)/jeux/clicker-burger/page.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(game)/jeux/tetris/page.tsx | Hors vitrine publique · jeu masqué | — |
-| \[locale\]/(gifts)/l/\[slug\]/page.tsx | Absente · route ou structure de page | — |
-| \[locale\]/(gifts)/listes/\[slug\]/page.tsx | Absente · route ou structure de page | — |
-| \[locale\]/(gifts)/listes/annuler/page.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(site)/a-propos/page.tsx | Absente · route ou structure de page | badge, tabs |
 | \[locale\]/(site)/backoffice/layout.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(site)/backoffice/page.tsx | Absente · route ou structure de page | — |
@@ -43,8 +40,6 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 | \[locale\]/(site)/outils/compression-image/page.tsx | Absente · route ou structure de page | skeleton |
 | \[locale\]/(site)/outils/conversion-image/page.tsx | Absente · route ou structure de page | skeleton |
 | \[locale\]/(site)/outils/fusion-pdf/page.tsx | Absente · route ou structure de page | — |
-| \[locale\]/(site)/outils/listes-cadeaux/\[id\]/page.tsx | Absente · route ou structure de page | — |
-| \[locale\]/(site)/outils/listes-cadeaux/page.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(site)/outils/page.tsx | Absente · route ou structure de page | — |
 | \[locale\]/(site)/outils/qrcode/page.tsx | Absente · route ou structure de page | skeleton |
 | \[locale\]/(site)/page.tsx | Absente · route ou structure de page | provider |
@@ -261,11 +256,9 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
 | --- | --- | --- |
-| ui/creator.tsx | Bouton avatar et menu fictifs dans GiftActions | avatar, badge, button, dropdown-menu |
 | ui/form-dialog.tsx | Corps défilant et actions visibles dans Dialog | dialog |
 | ui/forms.tsx | Formulaire de liste dans Dialog, cases et texte multiligne dans Textarea | button, input, native-controls, select, switch |
 | ui/gift-views.tsx | Sélecteur Grille / Tableau, tableau desktop, cartes mobiles et menu d’actions fictifs dans [GiftActions](/playground#gift-actions) | badge, button, dropdown-menu, table |
-| ui/public.tsx | Lien d’action fictif dans GiftActions | accordion, badge, button, dialog, input, toast |
 | ui/shared.tsx | Zone multiligne dans Textarea | badge, button, dialog, dropdown-menu, input, textarea |
 
 ## `src/features/image-compression`

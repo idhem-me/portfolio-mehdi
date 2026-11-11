@@ -243,26 +243,6 @@ export class GiftApiError extends Error {
     super(message);
   }
 }
-export async function giftRequest<T>(url: string, data?: unknown): Promise<T> {
-  const response = await fetch(url, {
-    method: data === undefined ? "GET" : "POST",
-    cache: "no-store",
-    ...(data === undefined
-      ? {}
-      : {
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }),
-    signal: AbortSignal.timeout(15000),
-  });
-  const result = await response.json();
-  if (!response.ok)
-    throw new GiftApiError(
-      result.error ?? "Une erreur est survenue. Réessaie.",
-      response.status,
-    );
-  return result as T;
-}
 export function errorText(error: unknown) {
   return error instanceof GiftApiError
     ? error.message

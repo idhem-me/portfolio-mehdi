@@ -127,7 +127,7 @@ function GiftDialogsDemo() {
         <ListForm onClose={() => setOpen(null)} onSave={async () => {}} />
       )}
       {open === "item" && (
-        <ItemForm onClose={() => setOpen(null)} onSave={async () => {}} demo />
+        <ItemForm onClose={() => setOpen(null)} onSave={async () => {}} />
       )}
     </div>
   );

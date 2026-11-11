@@ -20,7 +20,6 @@ import { occasions, safeWebUrl, type GiftItem, type GiftList } from "../types";
 import {
   errorText,
   Field,
-  giftRequest,
   ListImage,
   Notice,
   TextArea,
@@ -401,13 +400,11 @@ export function ItemForm({
   onSave,
   onClose,
   onCloseAutoFocus,
-  demo = false,
 }: {
   initial?: GiftItem;
   onSave: (data: ItemData) => Promise<void>;
   onClose: () => void;
   onCloseAutoFocus?: (event: Event) => void;
-  demo?: boolean;
 }) {
   const t = useTranslations("giftForms");
   const priorityId = useId();
@@ -421,56 +418,18 @@ export function ItemForm({
   const [group, setGroup] = useState(initial?.is_group_gift ?? false);
   const [priority, setPriority] = useState(initial?.priority ?? "normal");
   const [busy, setBusy] = useState(false);
-  const [extracting, setExtracting] = useState(false);
   const [preparingItemImage, setPreparingItemImage] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [manualEntry, setManualEntry] = useState(false);
   const lock = useRef(false);
-  async function extract() {
-    if (extracting) return;
-    if (demo) {
-      setMessage(t("extractionFailed"));
-      setManualEntry(true);
-      return;
-    }
-    setExtracting(true);
-    setError("");
-    setMessage("");
-    setManualEntry(false);
-    try {
-      const result = await giftRequest<{
-        title: string | null;
-        image_url: string | null;
-        price: number | null;
-        message?: string;
-        status?: string;
-      }>("/api/tetris/gifts/extract", { url });
-      const failed =
-        result.status === "manual" ||
-        (!result.title && !result.image_url && result.price == null);
-      if (failed) {
-        setMessage(t("extractionFailed"));
-        setManualEntry(true);
-        return;
-      }
-      if (result.title) setTitle(result.title);
-      if (result.image_url) setImage(result.image_url);
-      if (result.price != null) setPrice(String(result.price));
-      setMessage(
-        result.message ||
-          "Informations récupérées. Vérifie-les avant d’ajouter le cadeau.",
-      );
-    } catch {
-      setMessage(t("extractionFailed"));
-      setManualEntry(true);
-    } finally {
-      setExtracting(false);
-    }
+  function extract() {
+    setMessage(t("extractionFailed"));
+    setManualEntry(true);
   }
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (lock.current || extracting || preparingItemImage) return;
+    if (lock.current || preparingItemImage) return;
     const parsedPrice = price === "" ? null : Number(price.replace(",", "."));
     if (
       (parsedPrice !== null &&
@@ -509,7 +468,7 @@ export function ItemForm({
     <GiftFormDialog
       title={initial ? "Modifier le cadeau" : "Ajouter un cadeau"}
       description="Ajout par lien ou saisie manuelle."
-      locked={busy || extracting || preparingItemImage}
+      locked={busy || preparingItemImage}
       onClose={onClose}
       onCloseAutoFocus={onCloseAutoFocus}
       onSubmit={submit}
@@ -522,7 +481,7 @@ export function ItemForm({
           <Button
             type="button"
             variant="outline"
-            disabled={busy || extracting || preparingItemImage}
+            disabled={busy || preparingItemImage}
             onClick={onClose}
           >
             Annuler
@@ -530,7 +489,7 @@ export function ItemForm({
           <Button
             type="submit"
             variant="primary"
-            disabled={busy || extracting || preparingItemImage}
+            disabled={busy || preparingItemImage}
           >
             {busy
               ? "Enregistrement…"
@@ -542,7 +501,7 @@ export function ItemForm({
       }
     >
       <fieldset
-        disabled={busy || extracting || preparingItemImage}
+        disabled={busy || preparingItemImage}
         className="space-y-5"
       >
         <Field label={t("productLink")}>
@@ -559,10 +518,10 @@ export function ItemForm({
               <Button
                 type="button"
                 variant="secondary"
-                disabled={!url.trim() || extracting}
-                onClick={() => void extract()}
+                disabled={!url.trim()}
+                onClick={extract}
               >
-                {extracting ? "Lecture de la boutique…" : t("fill")}
+                {t("fill")}
               </Button>
             </div>
           )}

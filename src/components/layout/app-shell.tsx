@@ -11,15 +11,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  const giftTool = pathname.startsWith("/outils/listes-cadeaux");
-
   return (
     <TooltipProvider>
-      <SidebarProvider
-        key={giftTool ? "gift-tool" : "site"}
-        defaultOpen={!giftTool}
-        resizable={false}
-      >
+      <SidebarProvider defaultOpen resizable={false}>
         <AppSidebar />
         <SidebarInset
           className={
