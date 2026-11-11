@@ -16,11 +16,10 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "metadata" });
   const profile = getProfile(locale);
 
   return portfolioMetadata("/a-propos", locale, {
-    title: t("about"),
+    title: `${profile.name}, ${profile.role}`,
     description: profile.bio,
   });
 }
