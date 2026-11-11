@@ -37,11 +37,39 @@ const nextConfig: NextConfig = {
   async redirects() {
     return ["", ...locales.map((locale) => `/${locale}`)].flatMap((prefix) => {
       const playground = `${prefix === "/fr" ? "" : prefix}/playground`;
-      const redirects = [{
-        source: `${prefix}/playground/github-vs-adobe`,
-        destination: `${playground}/design-systems`,
-        permanent: true,
-      }];
+      const listOrigin = `https://list.mtmd.fr${prefix === "/fr" ? "" : prefix}`;
+      const redirects = [
+        {
+          source: `${prefix}/playground/github-vs-adobe`,
+          destination: `${playground}/design-systems`,
+          permanent: true,
+        },
+        {
+          source: `${prefix}/outils/listes-cadeaux`,
+          destination: `${listOrigin}/`,
+          permanent: false,
+        },
+        {
+          source: `${prefix}/outils/listes-cadeaux/:id`,
+          destination: `${listOrigin}/outils/listes-cadeaux/:id`,
+          permanent: false,
+        },
+        {
+          source: `${prefix}/l/:slug`,
+          destination: `${listOrigin}/l/:slug`,
+          permanent: false,
+        },
+        {
+          source: `${prefix}/listes/annuler`,
+          destination: `${listOrigin}/listes/annuler`,
+          permanent: false,
+        },
+        {
+          source: `${prefix}/listes/:slug`,
+          destination: `${listOrigin}/l/:slug`,
+          permanent: false,
+        },
+      ];
       // Keep old bookmarks working when there is nothing to review or the site is deployed.
       if (!showLocalComponents) {
         redirects.push({
