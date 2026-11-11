@@ -7,6 +7,7 @@ import {
   type FormEvent,
 } from "react";
 import useSWR from "swr";
+import { useLocale, useTranslations } from "next-intl";
 import { Gift, Heart, BookmarkCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { euro, safeWebUrl, type PublicList, type PublicItem } from "../types";
+import {
+  GiftTable,
+  GiftViewSwitch,
+  restoreGiftFocus,
+  useGiftView,
+} from "./gift-views";
 import {
   CopyLink,
   OccasionTag,
@@ -116,6 +123,68 @@ function PaymentInfo({ value }: { value: string | null }) {
   );
 }
 
+const visitorSwitchId = "visitor-gift-view";
+
+function giftIsComplete(item: PublicItem) {
+  return item.is_group_gift
+    ? Number(item.amount_contributed) >= Number(item.price)
+    : item.reserved;
+}
+
+function PublicGiftStatus({ item }: { item: PublicItem }) {
+  const t = useTranslations("giftViews");
+  const locale = useLocale();
+  const currency = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "EUR",
+  });
+  const guests = new Intl.ListFormat(locale).format(item.guest_names);
+  const progress = item.price
+    ? Math.min(
+        100,
+        (Number(item.amount_contributed) / Number(item.price)) * 100,
+      )
+    : 0;
+  if (!item.is_group_gift) {
+    return (
+      <p lang={locale} className="text-sm text-muted-foreground wrap-anywhere">
+        {item.reserved
+          ? guests
+            ? t("reservedBy", { guests })
+            : t("reserved")
+          : t("available")}
+      </p>
+    );
+  }
+  return (
+    <div lang={locale} className="min-w-0 space-y-2 text-sm wrap-anywhere">
+      <p className="font-medium">
+        {t("declared", {
+          amount: currency.format(Number(item.amount_contributed)),
+          target:
+            item.price == null ? t("freePrice") : currency.format(item.price),
+        })}
+      </p>
+      <div
+        role="progressbar"
+        aria-label={t("progress", { title: item.title })}
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        className="h-2 w-full overflow-hidden rounded-full bg-muted"
+      >
+        <div
+          className="h-full rounded-full bg-primary"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      {guests && (
+        <p className="text-muted-foreground">{t("withGuests", { guests })}</p>
+      )}
+    </div>
+  );
+}
+
 function ReserveForm({
   item,
   list,
@@ -123,6 +192,7 @@ function ReserveForm({
   onPending,
   onClose,
   onSuccess,
+  onCloseAutoFocus,
 }: {
   item: PublicItem;
   list: PublicList;
@@ -130,6 +200,7 @@ function ReserveForm({
   onPending: (value: Pending | null) => void;
   onClose: () => void;
   onSuccess: (receipt: Receipt) => Promise<void>;
+  onCloseAutoFocus: (event: Event) => void;
 }) {
   const [name, setName] = useState(pending?.guest_name ?? "");
   const [email, setEmail] = useState(pending?.guest_email ?? "");
@@ -192,7 +263,10 @@ function ReserveForm({
         if (!open && !busy) onClose();
       }}
     >
-      <DialogContent className="max-h-[90svh] max-w-lg overflow-y-auto">
+      <DialogContent
+        className="max-h-[90svh] max-w-lg overflow-y-auto"
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             {item.is_group_gift
@@ -308,6 +382,12 @@ export function PublicGiftList(props: { slug: string }) {
 }
 
 function PublicGiftListClient({ slug }: { slug: string }) {
+  const [view, setView] = useGiftView("visitor");
+  const actionTrigger = useRef<HTMLButtonElement | null>(null);
+  function restoreActionFocus(event: Event) {
+    restoreGiftFocus(event, actionTrigger.current, visitorSwitchId);
+    actionTrigger.current = null;
+  }
   const { data, error, isLoading, mutate } = useSWR<PublicList, GiftApiError>(
     `/api/gifts/${slug}`,
     giftRequest,
@@ -491,98 +571,89 @@ function PublicGiftListClient({ slug }: { slug: string }) {
           {data.items.length === 0 && (
             <Notice>Cette liste ne contient pas encore de cadeau.</Notice>
           )}
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {data.items.map((item) => {
-              const complete = item.is_group_gift
-                ? Number(item.amount_contributed) >= Number(item.price)
-                : item.reserved;
-              const progress = item.price
-                ? Math.min(
-                    100,
-                    (Number(item.amount_contributed) / Number(item.price)) *
-                      100,
-                  )
-                : 0;
-              return (
-                <article
-                  key={item.id}
-                  className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-card p-4"
-                >
-                  <GiftImage key={item.image_url} item={item} />
-                  <div className="space-y-2">
-                    <h2 className="break-words text-lg font-semibold">
-                      {item.title}
-                    </h2>
-                    {item.comment && (
-                      <p className="wrap-anywhere text-sm text-muted-foreground">
-                        {item.comment}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span>{euro(item.price)}</span>
-                      {item.priority === "high" && (
-                        <Badge variant="secondary">
-                          <Heart className="size-3" aria-hidden="true" />
-                          Coup de cœur
-                        </Badge>
-                      )}
-                    </div>
-                    <MerchantLink url={item.url} />
-                  </div>
-                  <div className="mt-auto space-y-3 border-t border-border pt-4">
-                    {item.is_group_gift ? (
-                      <>
-                        <p className="text-sm font-medium">
-                          {euro(Number(item.amount_contributed))} /{" "}
-                          {euro(item.price)} déclarés
-                        </p>
-                        <div
-                          role="progressbar"
-                          aria-label={`Participation pour ${item.title}`}
-                          aria-valuenow={progress}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          className="h-2 w-full overflow-hidden rounded-full bg-muted"
-                        >
-                          <div
-                            className="h-full rounded-full bg-primary"
-                            style={{ width: `${progress}%` }}
-                          />
-                        </div>
-                        {item.guest_names.length > 0 && (
-                          <p className="break-words text-sm text-muted-foreground">
-                            Avec {item.guest_names.join(", ")}
+          {data.items.length > 0 && (
+            <GiftViewSwitch
+              id={visitorSwitchId}
+              view={view}
+              onChange={setView}
+            />
+          )}
+          {data.items.length > 0 &&
+            (view === "table" ? (
+              <GiftTable
+                rows={data.items.map((item) => ({
+                  item,
+                  status: <PublicGiftStatus item={item} />,
+                  actions:
+                    giftIsComplete(item) ||
+                    (pending && pending.item_id !== item.id)
+                      ? []
+                      : [
+                          {
+                            kind: item.is_group_gift ? "contribute" : "reserve",
+                            run: (trigger) => {
+                              actionTrigger.current = trigger;
+                              setSelected(item.id);
+                            },
+                          },
+                        ],
+                }))}
+              />
+            ) : (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {data.items.map((item) => {
+                  const complete = giftIsComplete(item);
+                  return (
+                    <article
+                      key={item.id}
+                      className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border bg-card p-4"
+                    >
+                      <GiftImage key={item.image_url} item={item} />
+                      <div className="space-y-2">
+                        <h2 className="break-words text-lg font-semibold">
+                          {item.title}
+                        </h2>
+                        {item.comment && (
+                          <p className="wrap-anywhere text-sm text-muted-foreground">
+                            {item.comment}
                           </p>
                         )}
-                      </>
-                    ) : (
-                      <p className="break-words text-sm text-muted-foreground">
-                        {item.reserved
-                          ? `Déjà réservé par ${item.guest_names.join(", ")}`
-                          : "Encore disponible"}
-                      </p>
-                    )}
-                    <Button
-                      className="w-full"
-                      variant={complete ? "outline" : "primary"}
-                      disabled={
-                        complete || (!!pending && pending.item_id !== item.id)
-                      }
-                      onClick={() => setSelected(item.id)}
-                    >
-                      {complete
-                        ? item.is_group_gift
-                          ? "Objectif atteint"
-                          : "Déjà réservé"
-                        : item.is_group_gift
-                          ? "Participer"
-                          : "Je réserve ce cadeau"}
-                    </Button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span>{euro(item.price)}</span>
+                          {item.priority === "high" && (
+                            <Badge variant="secondary">
+                              <Heart className="size-3" aria-hidden="true" />
+                              Coup de cœur
+                            </Badge>
+                          )}
+                        </div>
+                        <MerchantLink url={item.url} />
+                      </div>
+                      <div className="mt-auto space-y-3 border-t border-border pt-4">
+                        <PublicGiftStatus item={item} />
+                        <Button
+                          className="w-full"
+                          variant={complete ? "outline" : "primary"}
+                          disabled={
+                            complete ||
+                            (!!pending && pending.item_id !== item.id)
+                          }
+                          onClick={() => setSelected(item.id)}
+                        >
+                          {complete
+                            ? item.is_group_gift
+                              ? "Objectif atteint"
+                              : "Déjà réservé"
+                            : item.is_group_gift
+                              ? "Participer"
+                              : "Je réserve ce cadeau"}
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ))}
         </>
       )}
       {data && (
@@ -605,6 +676,7 @@ function PublicGiftListClient({ slug }: { slug: string }) {
           onPending={setPending}
           onClose={() => setSelected(null)}
           onSuccess={success}
+          onCloseAutoFocus={restoreActionFocus}
         />
       )}
     </main>

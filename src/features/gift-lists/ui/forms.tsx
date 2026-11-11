@@ -400,11 +400,13 @@ export function ItemForm({
   initial,
   onSave,
   onClose,
+  onCloseAutoFocus,
   demo = false,
 }: {
   initial?: GiftItem;
   onSave: (data: ItemData) => Promise<void>;
   onClose: () => void;
+  onCloseAutoFocus?: (event: Event) => void;
   demo?: boolean;
 }) {
   const t = useTranslations("giftForms");
@@ -509,6 +511,7 @@ export function ItemForm({
       description="Ajout par lien ou saisie manuelle."
       locked={busy || extracting || preparingItemImage}
       onClose={onClose}
+      onCloseAutoFocus={onCloseAutoFocus}
       onSubmit={submit}
       error={
         error &&

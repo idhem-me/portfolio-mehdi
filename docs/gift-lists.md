@@ -43,6 +43,21 @@ Supabase plutôt que de réappliquer les créations de tables.
 - Prix et type de cadeau ne sont plus modifiables tant qu'il existe une réservation
   active. Les autres champs descriptifs restent modifiables.
 
+## Affichage des cadeaux
+
+La grille est la vue initiale. Le sélecteur Grille / Tableau mémorise le choix
+dans le navigateur, séparément pour les listes créateur et publiques. Sous
+768 px, le tableau se présente sous forme de cartes compactes. Le bouton
+« ⋮ » ouvre les actions disponibles pour le cadeau. La composition est
+présentée dans le [Playground](/playground#gift-actions).
+
+Vérification du lot Grille / Tableau (11 novembre 2026) : lint, typecheck, suites
+unitaires et six tests Playwright ciblés sur Chromium et WebKit iPhone réussis.
+Le test HTTP avec Supabase réel est désactivé par défaut. Le build standard
+était bloqué par un autre processus détenant le verrou `.next/lock`.
+La copie isolée est restée à la compilation Turbopack. Son build de secours
+avec Webpack a échoué dans le chargeur Next.js de la police Google Sans.
+
 ## Compte et accès serveur
 
 Le client Supabase et le compte Google existants sont réutilisés. Le cookie

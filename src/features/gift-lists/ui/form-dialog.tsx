@@ -20,6 +20,7 @@ export function GiftFormDialog({
   description,
   locked,
   onClose,
+  onCloseAutoFocus,
   onSubmit,
   children,
   actions,
@@ -29,6 +30,7 @@ export function GiftFormDialog({
   description: string;
   locked: boolean;
   onClose: () => void;
+  onCloseAutoFocus?: (event: Event) => void;
   onSubmit: FormEventHandler<HTMLFormElement>;
   children: ReactNode;
   actions: ReactNode;
@@ -72,7 +74,8 @@ export function GiftFormDialog({
           heading.current?.focus({ preventScroll: true });
         }}
         onCloseAutoFocus={(event) => {
-          if (!opener.current?.isConnected) return;
+          onCloseAutoFocus?.(event);
+          if (event.defaultPrevented || !opener.current?.isConnected) return;
           event.preventDefault();
           opener.current.focus({ preventScroll: true });
         }}

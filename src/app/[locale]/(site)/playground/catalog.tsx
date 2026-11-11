@@ -92,6 +92,7 @@ import {
   DESIGN_SYSTEMS,
 } from "@/components/design-system/provider";
 import { useTranslations } from "next-intl";
+import { GiftTable, GiftViewSwitch } from "@/features/gift-lists/ui/gift-views";
 import { ItemForm, ListForm } from "@/features/gift-lists/ui/forms";
 import { cn } from "@/lib/utils";
 
@@ -424,7 +425,7 @@ export function PlaygroundCatalog() {
           </Section>
 
           <Section title="GiftActions">
-            <GiftActionsDemo />
+            <GiftActionsDemo density={density} />
           </Section>
 
           <Section title="Input">
@@ -951,24 +952,81 @@ function TextareaDemo() {
   );
 }
 
-function GiftActionsDemo() {
+function GiftActionsDemo({ density }: { density: Density }) {
   const t = useTranslations("playground");
   const ui = useTranslations("ui");
+  const gift = useTranslations("giftViews");
+  const [view, setView] = useState<"grid" | "table">("table");
+  const [action, setAction] = useState<"edit" | "delete">();
+  const item = {
+    id: "sample-gift",
+    title: gift("sampleGift"),
+    comment: gift("sampleComment"),
+    url: null,
+    image_url: null,
+    price: 25,
+    is_group_gift: false,
+    priority: "high" as const,
+  };
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon-lg" className="rounded-full p-0" aria-label={t("sampleAccount")}>
-            <Avatar className="size-[calc(var(--control-height-icon-lg)-var(--spacing)*2)]"><AvatarFallback>AL</AvatarFallback></Avatar>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuItem asChild><Link href="/playground#settings-modal">{ui("settingsTitle")}</Link></DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <Button asChild variant="link" className="h-auto min-h-(--control-height) whitespace-normal text-muted-foreground underline hover:text-foreground">
-        <Link href="/playground#textarea"><Gift aria-hidden />{t("giftFields")}</Link>
-      </Button>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-lg"
+              className="rounded-full p-0"
+              aria-label={t("sampleAccount")}
+            >
+              <Avatar className="size-[calc(var(--control-height-icon-lg)-var(--spacing)*2)]">
+                <AvatarFallback>AL</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem asChild>
+              <Link href="/playground#settings-modal">
+                {ui("settingsTitle")}
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button
+          asChild
+          variant="link"
+          className="h-auto min-h-(--control-height) whitespace-normal text-muted-foreground underline hover:text-foreground"
+        >
+          <Link href="/playground#textarea">
+            <Gift aria-hidden />
+            {t("giftFields")}
+          </Link>
+        </Button>
+      </div>
+      <GiftViewSwitch view={view} onChange={setView} />
+      {view === "table" ? (
+        <GiftTable
+          density={density}
+          rows={[
+            {
+              item,
+              status: gift("notReserved"),
+              actions: [
+                { kind: "edit", run: () => setAction("edit") },
+                { kind: "delete", run: () => setAction("delete") },
+              ],
+            },
+          ]}
+        />
+      ) : (
+        <article className="max-w-xs space-y-2 rounded-xl border border-border bg-card p-4">
+          <p className="font-semibold">{item.title}</p>
+          <p className="text-sm text-muted-foreground">{item.comment}</p>
+        </article>
+      )}
+      <p role="status" className="text-sm">
+        {action && gift(action)}
+      </p>
     </div>
   );
 }

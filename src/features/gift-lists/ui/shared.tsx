@@ -305,26 +305,49 @@ export function Field({
   );
 }
 export { Textarea as TextArea } from "@/components/ui/textarea";
-export function GiftImage({ item }: { item: GiftItem }) {
+export function GiftImage({
+  item,
+  thumbnail = false,
+}: {
+  item: GiftItem;
+  thumbnail?: boolean;
+}) {
   const [failed, setFailed] = useState(false);
   const url = item.image_url?.startsWith("data:image/webp;base64,")
     ? item.image_url
     : safeWebUrl(item.image_url);
   return (
-    <div className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl bg-muted/50">
+    <div
+      className={
+        thumbnail
+          ? "flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted/50"
+          : "flex aspect-[4/3] items-center justify-center overflow-hidden rounded-xl bg-muted/50"
+      }
+    >
       {url && !failed ? (
         // Remote merchant images are never passed through the server image optimizer.
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={url}
-          alt={item.title}
-          className="h-full w-full object-contain p-4"
+          alt={thumbnail ? "" : item.title}
+          className={
+            thumbnail
+              ? "h-full w-full object-contain"
+              : "h-full w-full object-contain p-4"
+          }
           loading="lazy"
           referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
         />
       ) : (
-        <Gift className="size-12 text-muted-foreground" aria-hidden="true" />
+        <Gift
+          className={
+            thumbnail
+              ? "size-5 text-muted-foreground"
+              : "size-12 text-muted-foreground"
+          }
+          aria-hidden="true"
+        />
       )}
     </div>
   );
@@ -352,6 +375,7 @@ export function Confirm({
   onConfirm,
   onClose,
   destructive = false,
+  onCloseAutoFocus,
 }: {
   title: string;
   description: string;
@@ -359,6 +383,7 @@ export function Confirm({
   onConfirm: () => Promise<void>;
   onClose: () => void;
   destructive?: boolean;
+  onCloseAutoFocus?: (event: Event) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -369,7 +394,7 @@ export function Confirm({
         if (!open && !busy) onClose();
       }}
     >
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" onCloseAutoFocus={onCloseAutoFocus}>
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
           <DialogDescription className="text-sm text-muted-foreground">

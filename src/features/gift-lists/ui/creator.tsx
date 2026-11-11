@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import useSWR from "swr";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -29,7 +29,13 @@ import {
   logout,
   useIdentityState,
 } from "@/features/account/client-store";
-import { euro, type GiftList, type GiftItem, type OwnerDetail } from "../types";
+import {
+  euro,
+  type GiftList,
+  type GiftItem,
+  type OwnerDetail,
+  type Reservation,
+} from "../types";
 import { ListForm, ItemForm } from "./forms";
 import {
   Confirm,
@@ -45,6 +51,74 @@ import {
   Notice,
   giftRequest,
 } from "./shared";
+
+import {
+  GiftTable,
+  GiftViewSwitch,
+  restoreGiftFocus,
+  useGiftView,
+} from "./gift-views";
+
+const creatorSwitchId = "creator-gift-view";
+
+function OwnerGiftStatus({
+  item,
+  hidden,
+  reservations,
+}: {
+  item: GiftItem;
+  hidden: boolean;
+  reservations: Reservation[];
+}) {
+  const t = useTranslations("giftViews");
+  const locale = useLocale();
+  const currency = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "EUR",
+  });
+  if (hidden)
+    return (
+      <p lang={locale} className="text-sm text-muted-foreground">
+        {t("hidden")}
+      </p>
+    );
+  return (
+    <div lang={locale} className="space-y-3 text-sm wrap-anywhere">
+      {item.is_group_gift && (
+        <p className="font-medium">
+          {t("declared", {
+            amount: currency.format(
+              reservations.reduce(
+                (sum, reservation) =>
+                  sum + Number(reservation.amount_contributed ?? 0),
+                0,
+              ),
+            ),
+            target:
+              item.price == null ? t("freePrice") : currency.format(item.price),
+          })}
+        </p>
+      )}
+      {reservations.length === 0 && (
+        <p className="text-muted-foreground">{t("notReserved")}</p>
+      )}
+      {reservations.map((reservation) => (
+        <div key={reservation.id} className="space-y-1">
+          <p className="font-medium">
+            {reservation.amount_contributed != null
+              ? `${reservation.guest_name} · ${currency.format(reservation.amount_contributed)}`
+              : t("reservedByOwner", { name: reservation.guest_name })}
+          </p>
+          {reservation.message && (
+            <p className="whitespace-pre-wrap text-muted-foreground">
+              « {reservation.message} »
+            </p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 const api = "/api/tetris/gifts";
 function SignIn({ retry }: { retry: () => void }) {
@@ -349,6 +423,12 @@ export function CreatorDashboard() {
 }
 
 export function CreatorList({ id }: { id: string }) {
+  const [view, setView] = useGiftView("creator");
+  const actionTrigger = useRef<HTMLButtonElement | null>(null);
+  function restoreActionFocus(event: Event) {
+    restoreGiftFocus(event, actionTrigger.current, creatorSwitchId, "add-gift");
+    actionTrigger.current = null;
+  }
   const identity = useIdentityState();
   const locale = useLocale();
   const router = useRouter();
@@ -383,6 +463,32 @@ export function CreatorList({ id }: { id: string }) {
     await giftRequest(api, value);
     await mutate();
   };
+  function deleteGift(item: GiftItem) {
+    setConfirm({
+      title: "Supprimer ce cadeau ?",
+      destructive: true,
+      description:
+        "Ce cadeau et ses réservations seront définitivement supprimés.",
+      label: "Supprimer le cadeau",
+      action: () =>
+        post({ action: "delete_item", list_id: id, item_id: item.id }),
+    });
+  }
+  const reservationsByItem = new Map<string, Reservation[]>();
+  if (data && !data.activity.hidden) {
+    for (const reservation of data.activity.reservations ?? []) {
+      const existing = reservationsByItem.get(reservation.item_id);
+      if (existing) existing.push(reservation);
+      else reservationsByItem.set(reservation.item_id, [reservation]);
+    }
+  }
+  const giftStatus = (item: GiftItem, hidden: boolean) => (
+    <OwnerGiftStatus
+      item={item}
+      hidden={hidden}
+      reservations={reservationsByItem.get(item.id) ?? []}
+    />
+  );
   const share = data && origin ? `${origin}/l/${data.list.slug}` : "";
   const prefix = locale === "fr" ? "" : `/${locale}`;
   return (
@@ -510,6 +616,7 @@ export function CreatorList({ id }: { id: string }) {
               </span>
             </h2>
             <Button
+              id="add-gift"
               variant="accent"
               onClick={(event) => {
                 event.currentTarget.focus({ preventScroll: true });
@@ -525,117 +632,101 @@ export function CreatorList({ id }: { id: string }) {
               Ajoute ton premier cadeau, avec ou sans lien de boutique.
             </Notice>
           )}
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {data.items.map((item) => {
-              const reservations =
-                data.activity.reservations?.filter(
-                  (reservation) => reservation.item_id === item.id,
-                ) ?? [];
-              return (
-                <article
-                  key={item.id}
-                  className="min-w-0 space-y-4 rounded-2xl border border-border bg-card p-4"
-                >
-                  <GiftImage key={item.image_url} item={item} />
-                  <div className="space-y-2">
-                    <h3 className="break-words font-semibold">{item.title}</h3>
-                    {item.comment && (
-                      <p className="wrap-anywhere text-sm text-muted-foreground">
-                        {item.comment}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span>{euro(item.price)}</span>
-                      {item.is_group_gift && (
-                        <Badge variant="outline">À plusieurs</Badge>
-                      )}
-                      {item.priority === "high" && (
-                        <Badge variant="secondary">
-                          <Heart className="size-3" aria-hidden="true" />
-                          Coup de cœur
-                        </Badge>
-                      )}
-                    </div>
-                    <MerchantLink url={item.url} />
-                  </div>
-                  {data.activity.hidden ? (
-                    <p className="text-sm text-muted-foreground">
-                      Réservations masquées
-                    </p>
-                  ) : (
-                    <div className="space-y-3 border-t border-border pt-3">
-                      {item.is_group_gift && (
-                        <p className="text-sm font-medium">
-                          {euro(
-                            reservations.reduce(
-                              (sum, r) =>
-                                sum + Number(r.amount_contributed ?? 0),
-                              0,
-                            ),
-                          )}{" "}
-                          / {euro(item.price)} déclarés
-                        </p>
-                      )}
-                      {reservations.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                          Pas encore réservé
-                        </p>
-                      ) : (
-                        reservations.map((r) => (
-                          <div key={r.id} className="space-y-1 text-sm">
-                            <p className="break-words font-medium">
-                              {r.guest_name}
-                              {r.amount_contributed != null
-                                ? ` · ${euro(r.amount_contributed)}`
-                                : " a réservé ce cadeau"}
-                            </p>
-                            {r.message && (
-                              <p className="whitespace-pre-wrap break-words text-muted-foreground">
-                                « {r.message} »
-                              </p>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={(event) => {
-                        event.currentTarget.focus({ preventScroll: true });
+          {data.items.length > 0 && (
+            <GiftViewSwitch
+              id={creatorSwitchId}
+              view={view}
+              onChange={setView}
+            />
+          )}
+          {data.items.length > 0 &&
+            (view === "table" ? (
+              <GiftTable
+                rows={data.items.map((item) => ({
+                  item,
+                  status: giftStatus(item, data.activity.hidden),
+                  actions: [
+                    {
+                      kind: "edit",
+                      run: (trigger) => {
+                        actionTrigger.current = trigger;
                         setItemForm(item);
-                      }}
+                      },
+                    },
+                    {
+                      kind: "delete",
+                      run: (trigger) => {
+                        actionTrigger.current = trigger;
+                        deleteGift(item);
+                      },
+                    },
+                  ],
+                }))}
+              />
+            ) : (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {data.items.map((item) => {
+                  return (
+                    <article
+                      key={item.id}
+                      className="min-w-0 space-y-4 rounded-2xl border border-border bg-card p-4"
                     >
-                      Modifier<span className="sr-only"> {item.title}</span>
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setConfirm({
-                          title: "Supprimer ce cadeau ?",
-                          destructive: true,
-                          description:
-                            "Ce cadeau et ses réservations seront définitivement supprimés.",
-                          label: "Supprimer le cadeau",
-                          action: () =>
-                            post({
-                              action: "delete_item",
-                              list_id: id,
-                              item_id: item.id,
-                            }),
-                        })
-                      }
-                    >
-                      Supprimer<span className="sr-only"> {item.title}</span>
-                    </Button>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                      <GiftImage key={item.image_url} item={item} />
+                      <div className="space-y-2">
+                        <h3 className="break-words font-semibold">
+                          {item.title}
+                        </h3>
+                        {item.comment && (
+                          <p className="wrap-anywhere text-sm text-muted-foreground">
+                            {item.comment}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span>{euro(item.price)}</span>
+                          {item.is_group_gift && (
+                            <Badge variant="outline">À plusieurs</Badge>
+                          )}
+                          {item.priority === "high" && (
+                            <Badge variant="secondary">
+                              <Heart className="size-3" aria-hidden="true" />
+                              Coup de cœur
+                            </Badge>
+                          )}
+                        </div>
+                        <MerchantLink url={item.url} />
+                      </div>
+                      {data.activity.hidden ? (
+                        giftStatus(item, true)
+                      ) : (
+                        <div className="border-t border-border pt-3">
+                          {giftStatus(item, false)}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(event) => {
+                            event.currentTarget.focus({ preventScroll: true });
+                            setItemForm(item);
+                          }}
+                        >
+                          Modifier<span className="sr-only"> {item.title}</span>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteGift(item)}
+                        >
+                          Supprimer
+                          <span className="sr-only"> {item.title}</span>
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            ))}
           {editingList && (
             <ListForm
               initial={data.list}
@@ -666,6 +757,7 @@ export function CreatorList({ id }: { id: string }) {
             <ItemForm
               initial={itemForm === "new" ? undefined : itemForm}
               onClose={() => setItemForm(null)}
+              onCloseAutoFocus={restoreActionFocus}
               onSave={(value) =>
                 post({
                   action: itemForm === "new" ? "add_item" : "update_item",
@@ -683,6 +775,7 @@ export function CreatorList({ id }: { id: string }) {
           {...confirm}
           onConfirm={confirm.action}
           onClose={() => setConfirm(null)}
+          onCloseAutoFocus={restoreActionFocus}
         />
       )}
     </main>
