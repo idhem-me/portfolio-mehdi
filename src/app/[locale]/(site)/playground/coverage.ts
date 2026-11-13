@@ -7,6 +7,7 @@ export const demoAnchors = {
   Button: "button",
   Card: "card",
   CaseStudy: "case-study",
+  CategoricalPalette: "categorical-palette",
   ColorPicker: "color-picker",
   DateRangeSelect: "date-range-select",
   Dialog: "dialog",

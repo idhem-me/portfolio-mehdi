@@ -58,6 +58,7 @@ import { CaseStudyBody } from "@/features/case-study/ui/case-study-body";
 import { CaseStudySlider } from "@/features/case-study/ui/case-study-slider";
 import { ImageLightboxProvider } from "@/features/case-study/ui/image-lightbox";
 import { SettingsButton } from "@/components/games/game-settings/primitives/SettingsButton";
+import { SettingsCard } from "@/components/games/game-settings/primitives/SettingsCard";
 import { SettingsSegmented } from "@/components/games/game-settings/primitives/SettingsSegmented";
 import { SettingsSlider } from "@/components/games/game-settings/primitives/SettingsSlider";
 import { SettingsToggleRow } from "@/components/games/game-settings/primitives/SettingsToggleRow";
@@ -102,6 +103,7 @@ const densities = ["auto", "desktop", "mobile"] as const;
 type Density = (typeof densities)[number];
 
 const demoLabels = {
+  CategoricalPalette: "categoricalPalette",
   CaseStudy: "caseStudies",
   GiftActions: "giftActions",
   Swatches: "swatches",
@@ -308,6 +310,7 @@ export function PlaygroundCatalog() {
                   <Button variant="accent">Accent</Button>
                   <Button variant="secondary">Secondary</Button>
                   <Button variant="outline">Outline</Button>
+                  <Button variant="outline">Outline <kbd className="button-key-hint">Z</kbd></Button>
                   <Button variant="ghost">Ghost</Button>
                   <Button variant="destructive">Destructive</Button>
                   <Button variant="link">Link</Button>
@@ -465,6 +468,18 @@ export function PlaygroundCatalog() {
               </div>
               <label htmlFor={nativeLabelId} className="block text-sm">{t("exampleText")}</label>
               <NativeTextarea id={nativeLabelId} aria-label={t("exampleText")} className="min-h-24 w-full rounded-md border p-3" />
+            </Section>
+
+            <Section title="CategoricalPalette">
+              <div className="flex flex-wrap gap-2 rounded-md border p-3" style={{ background: "var(--tetris-board-surface)" }}>
+                {["i", "j", "l", "o", "s", "t", "z"].map((role) => (
+                  <span key={role} aria-hidden className="size-10 rounded-md border" style={{
+                    background: `color-mix(in srgb, var(--tetris-piece-${role}), var(--tetris-piece-highlight) calc(var(--tetris-material-intensity) * 20%))`,
+                    borderColor: "var(--tetris-piece-outline)",
+                  }} />
+                ))}
+                <span aria-hidden className="size-10 rounded-md border" style={{ background: "var(--tetris-ghost-fill)", borderColor: "var(--tetris-ghost-outline)" }} />
+              </div>
             </Section>
 
             <Section title="PaintColor">
@@ -915,24 +930,30 @@ function SettingsModalDemo() {
           description={t("settingsDemoHint")}
         >
           <div className="game-settings-scroll">
-            <SettingsToggleRow
-              id="demo-notifications"
-              label={t("notifications")}
-              checked={notifications}
-              onChange={setNotifications}
-            />
-            <SettingsToggleRow id="demo-alerts" label={t("alerts")} checked={false} disabled onChange={setNotifications} />
-            <SettingsSlider id={volumeId} label={t("volume")} value={volume} onChange={setVolume} />
-            <SettingsSegmented
-              label={t("appearance")}
-              options={[
-                { value: "auto", label: t("auto") },
-                { value: "light", label: theme("light") },
-                { value: "dark", label: theme("dark") },
-              ]}
-              value={appearance}
-              onChange={setAppearance}
-            />
+            <SettingsCard>
+              <SettingsToggleRow
+                id="demo-notifications"
+                label={t("notifications")}
+                checked={notifications}
+                onChange={setNotifications}
+              />
+              <SettingsToggleRow id="demo-alerts" label={t("alerts")} checked={false} disabled onChange={setNotifications} />
+            </SettingsCard>
+            <SettingsCard>
+              <SettingsSlider id={volumeId} label={t("volume")} value={volume} onChange={setVolume} />
+            </SettingsCard>
+            <SettingsCard>
+              <SettingsSegmented
+                label={t("appearance")}
+                options={[
+                  { value: "auto", label: t("auto") },
+                  { value: "light", label: theme("light") },
+                  { value: "dark", label: theme("dark") },
+                ]}
+                value={appearance}
+                onChange={setAppearance}
+              />
+            </SettingsCard>
             <SettingsButton onClick={() => {
               setNotifications(true);
               setVolume(40);

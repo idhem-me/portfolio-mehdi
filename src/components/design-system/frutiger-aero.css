@@ -1,5 +1,14 @@
 /* Frutiger Aero: all material, colour and geometry values live in theme tokens. */
 :is(html, .ds-scope)[data-design-system="frutiger-aero"] {
+  --tetris-piece-i: #00869e;
+  --tetris-piece-j: #1465c0;
+  --tetris-piece-l: #bd6a13;
+  --tetris-piece-o: #9b8411;
+  --tetris-piece-s: #23834c;
+  --tetris-piece-t: #8056be;
+  --tetris-piece-z: #bc4678;
+  --tetris-material-intensity: 0.65;
+  --tetris-piece-outline: var(--aero-ink);
   --font-sans: var(--font-nunito-sans), var(--font-nunito-sans-ext), "Nunito Sans", sans-serif;
   --aero-font-regular: 400;
   --aero-font-semibold: 600;
@@ -49,6 +58,13 @@
   --aero-neutral-upper: #e7f5fa;
   --aero-neutral-lower: #c8e2ef;
   --aero-neutral-bounce: #f0fcff;
+  --aero-outline-top: var(--aero-neutral-top);
+  --aero-outline-upper: var(--aero-neutral-upper);
+  --aero-outline-lower: var(--aero-neutral-lower);
+  --aero-outline-bounce: var(--aero-neutral-bounce);
+  --aero-outline-edge: var(--aero-gel-cut);
+  --aero-outline-ink: var(--aero-gel-ink);
+  --aero-outline-text-shadow: var(--aero-text-shadow-dark);
   --aero-primary-button-top: var(--aero-gel-top);
   --aero-primary-button-upper: var(--aero-gel-upper);
   --aero-primary-button-lower: var(--aero-gel-lower);
@@ -174,6 +190,13 @@
 
 html.dark[data-design-system="frutiger-aero"],
 .dark .ds-scope[data-design-system="frutiger-aero"] {
+  --tetris-piece-i: #5ed8ed;
+  --tetris-piece-j: #7aafff;
+  --tetris-piece-l: #f4b067;
+  --tetris-piece-o: #dece5e;
+  --tetris-piece-s: #6cdb9b;
+  --tetris-piece-t: #ba9aee;
+  --tetris-piece-z: #ed8fb5;
   --aero-canvas: #09283e;
   --aero-surface: #163d56;
   --aero-ink: #edfaff;
@@ -188,6 +211,13 @@ html.dark[data-design-system="frutiger-aero"],
   --aero-danger: #ffb9d0;
   --aero-success: #b1ef8a;
   --aero-warning: #ffe0a6;
+  --aero-outline-top: #28536d;
+  --aero-outline-upper: var(--aero-surface);
+  --aero-outline-lower: #103047;
+  --aero-outline-bounce: var(--aero-muted);
+  --aero-outline-edge: var(--aero-control-edge);
+  --aero-outline-ink: var(--aero-ink);
+  --aero-outline-text-shadow: var(--aero-text-shadow-light);
   --aero-primary-button-top: var(--aero-neutral-top);
   --aero-primary-button-upper: var(--aero-neutral-upper);
   --aero-primary-button-lower: var(--aero-neutral-lower);
@@ -369,6 +399,16 @@ html[data-design-system="frutiger-aero"] body {
     transition-property: filter, translate, box-shadow, background-color, color;
     transition-duration: var(--aero-motion-duration);
     transition-timing-function: var(--aero-motion-easing);
+  }
+
+  [data-slot="button"][data-variant="outline"] {
+    --aero-button-top: var(--aero-outline-top);
+    --aero-button-upper: var(--aero-outline-upper);
+    --aero-button-lower: var(--aero-outline-lower);
+    --aero-button-bounce: var(--aero-outline-bounce);
+    --aero-button-edge: var(--aero-outline-edge);
+    --aero-button-ink: var(--aero-outline-ink);
+    text-shadow: var(--aero-outline-text-shadow);
   }
 
   [data-slot="button"]:is([data-variant="default"], [data-variant="primary"]) {

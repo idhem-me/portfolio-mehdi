@@ -114,9 +114,9 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 | game-account-settings.tsx | Absente · contrôles partagés de jeu sans scénario | button |
 | game-appearance-settings.tsx | Absente · contrôles partagés de jeu sans scénario | button |
 | game-feel-settings.tsx | Absente · contrôles partagés de jeu sans scénario | badge, button, native-controls |
-| game-settings/GameSettingsPanel.tsx | Démo générique du conteneur dans SettingsModal | settings-modal |
+| game-settings/GameSettingsPanel.tsx | Démo générique du conteneur et des cards dans SettingsModal | settings-modal, card |
 | game-settings/primitives/SettingsButton.tsx | Démo fictive dans SettingsModal | button |
-| game-settings/primitives/SettingsCard.tsx | Absente · contrôles partagés de jeu sans scénario | — |
+| game-settings/primitives/SettingsCard.tsx | Démo fictive dans SettingsModal avec la primitive Card | card |
 | game-settings/primitives/SettingsSection.tsx | Absente · contrôles partagés de jeu sans scénario | — |
 | game-settings/primitives/SettingsSegmented.tsx | Démo fictive dans SettingsModal | button |
 | game-settings/primitives/SettingsSlider.tsx | Démo fictive dans SettingsModal | native-controls |
@@ -314,3 +314,9 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 | ui/player-profile.tsx | Hors vitrine publique · jeu masqué | — |
 | ui/tetris-cover.tsx | Hors vitrine publique · jeu masqué | — |
 | ui/tetris.tsx | Hors vitrine publique · jeu masqué | badge, button, card, native-controls, provider, separator, sheet |
+
+La [palette catégorielle](/playground#categorical-palette) montre les sept couleurs de pièces, la surface, le contour de projection et le reflet de la matière dans la portée du thème. Les contrôles du résultat et de la pause réutilisent les démos Button, Card et Dialog et leurs densités. La validation du canvas et de son repli reste dans les tests internes.
+
+La démo [Button](/playground#button) inclut une touche de raccourci dans la variante Outline. Elle hérite de l’encre du bouton dans les densités Desktop et Mobile.
+
+Pour la variante Outline de [Button](/playground#button), vérifier en Aero sombre les quatre stops du gel, le contour et l’encre du raccourci. La même variante est disponible en densités Desktop et Mobile.

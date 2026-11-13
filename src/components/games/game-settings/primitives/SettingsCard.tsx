@@ -1,4 +1,6 @@
 import type { HTMLAttributes, ReactNode } from "react";
+import { Card } from "@/components/ui/card";
+import { cn } from "cn";
 
 export function SettingsCard({
   children,
@@ -9,8 +11,8 @@ export function SettingsCard({
   className?: string;
 }) {
   return (
-    <div {...props} className={`game-settings-card${className ? ` ${className}` : ""}`}>
+    <Card {...props} className={cn("game-settings-card", className)}>
       {children}
-    </div>
+    </Card>
   );
 }

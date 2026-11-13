@@ -143,6 +143,7 @@
     "enlarge": "Ingrandisci {name}"
   },
   "playground": {
+    "categoricalPalette": "Tavolozza categoriale",
     "swatches": "Campioni della palette",
     "alerts": "Avvisi",
     "volume": "Volume",
@@ -526,5 +527,44 @@
     "cookies": "Cookies",
     "demoNotice": "Dimostrazione: tutti i valori seguenti sono fittizi.",
     "demoSession": "Sessione di esempio"
+  },
+  "Tetris": {
+    "result": {
+      "title": "Partita terminata",
+      "score": "Punteggio",
+      "best": "Record: {score}",
+      "lines": "Righe",
+      "level": "Livello",
+      "duration": "Durata",
+      "anonymous": "Anonimo",
+      "localSaving": "Salvataggio su questo dispositivo…",
+      "localSaved": "Punteggio salvato su questo dispositivo",
+      "localError": "Impossibile salvare su questo dispositivo.",
+      "retry": "Riprova",
+      "guided": "Partita guidata · fuori classifica",
+      "offline": "Partita locale · fuori classifica",
+      "published": "Punteggio inviato",
+      "publishing": "Invio…",
+      "publish": "Salva online",
+      "preparing": "Preparazione…",
+      "replay": "Gioca ancora",
+      "home": "Torna al menu del gioco",
+      "leaderboard": "Classifica",
+      "review": "Rivedi il risultato di {score} punti",
+      "paused": "Partita in pausa",
+      "abandon": "Abbandona la partita",
+      "abandonHint": "La partita in corso andrà persa.",
+      "pauseHint": "Riprendi quando vuoi.",
+      "cancel": "Annulla",
+      "resume": "Riprendi",
+      "settings": "Impostazioni",
+      "online": {
+        "sending": "Invio del punteggio…",
+        "sent": "Punteggio salvato online.",
+        "error": "L’invio è ancora in sospeso. Riprova.",
+        "identity": "Accedi all’account originale per inviare il punteggio.",
+        "storage": "Impossibile conservare questo invio sul dispositivo."
+      }
+    }
   }
 }

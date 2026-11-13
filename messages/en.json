@@ -143,6 +143,7 @@
     "enlarge": "Enlarge {name}"
   },
   "playground": {
+    "categoricalPalette": "Categorical palette",
     "swatches": "Palette swatches",
     "alerts": "Alerts",
     "volume": "Volume",
@@ -526,5 +527,44 @@
     "cookies": "Cookies",
     "demoNotice": "Demo: every figure below is fictional.",
     "demoSession": "Example session"
+  },
+  "Tetris": {
+    "result": {
+      "title": "Game over",
+      "score": "Score",
+      "best": "Best: {score}",
+      "lines": "Lines",
+      "level": "Level",
+      "duration": "Time",
+      "anonymous": "Anonymous",
+      "localSaving": "Saving on this device…",
+      "localSaved": "Score saved on this device",
+      "localError": "Could not save on this device.",
+      "retry": "Retry",
+      "guided": "Guided game · unranked",
+      "offline": "Local game · unranked",
+      "published": "Score sent",
+      "publishing": "Sending…",
+      "publish": "Save online",
+      "preparing": "Preparing…",
+      "replay": "Play again",
+      "home": "Back to game menu",
+      "leaderboard": "Leaderboard",
+      "review": "Review score of {score} points",
+      "paused": "Game paused",
+      "abandon": "Abandon game",
+      "abandonHint": "Your current game will be lost.",
+      "pauseHint": "Resume when you’re ready.",
+      "cancel": "Cancel",
+      "resume": "Resume",
+      "settings": "Settings",
+      "online": {
+        "sending": "Sending score…",
+        "sent": "Score saved online.",
+        "error": "The score is still pending. Try again.",
+        "identity": "Sign in to the original account to send this score.",
+        "storage": "Could not keep this submission on this device."
+      }
+    }
   }
 }

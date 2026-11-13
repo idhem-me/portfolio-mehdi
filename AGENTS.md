@@ -28,6 +28,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Suivre le [déroulé des phases 0 à 6](docs/agents/workflow.md).
 
+Pour la refonte Tetris (audit du 13 novembre 2026), reprendre le [plan et ses audits spécialisés](docs/tetris/REFONTE_PLAN_2026-11-13.md). Le périmètre TET-01 à TET-05 est validé ; préserver le moteur classique, les replays et le masquage pendant la refonte DS/parcours.
+
 - [Architecte](docs/agents/architecte.md) · [Back-end](docs/agents/backend.md) · [Sécurité](docs/agents/securite.md) · [Designer](docs/agents/designer.md)
 - [Jeu](docs/agents/jeu.md) · [Product Manager](docs/agents/pm.md) · [Product Owner](docs/agents/po.md) · [Disruptif](docs/agents/disruptif.md)
 

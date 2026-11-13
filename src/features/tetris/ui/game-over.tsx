@@ -1,5 +1,7 @@
 "use client";
+
 import { useEffect, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,11 +11,11 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import {
-  saveDraft,
   clearDraft,
+  savePendingScore,
+  removePendingScore,
   type GameSummary,
   type RankedRun,
-  type ScoreDraft,
 } from "../auth/draft";
 import {
   loadProfile,
@@ -21,8 +23,7 @@ import {
   submitLocalScore,
   useIdentityState,
 } from "../profile/client-store";
-import { IdentityError } from "./identity-selector";
-import { Link } from "@/i18n/navigation";
+
 export function GameOver({
   summary,
   localRun,
@@ -44,7 +45,12 @@ export function GameOver({
   leaderboardAvailable: boolean;
   preparing: boolean;
 }) {
+  const t = useTranslations("Tetris.result");
+  const locale = useLocale();
   const identity = useIdentityState();
+  const heading = useRef<HTMLHeadingElement>(null);
+  const sending = useRef(false);
+  const recipient = useRef(expectedRecipient);
   const [offlineRun] = useState(() => ({
     id: Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) =>
       b.toString(16).padStart(2, "0"),
@@ -54,81 +60,34 @@ export function GameOver({
     opening: false,
     localOnly: true,
   }));
-  const scoreRun = localRun ?? offlineRun;
-  const [sent, setSent] = useState(false),
-    [message, setMessage] = useState(""),
-    [needsReconnect, setNeedsReconnect] = useState(false),
-    [retry, setRetry] = useState(0),
-    [busy, setBusy] = useState(false);
-  const [shareRequested, setShareRequested] = useState(false);
-  const [deviceSaved, setDeviceSaved] = useState(false);
-  const [deviceError, setDeviceError] = useState("");
-  const saving = useRef(false),
-    recipient = useRef(expectedRecipient),
-    summaryRef = useRef(summary),
-    attemptKey = useRef<string | null>(null),
-    sawLogin = useRef(false);
+  const [run] = useState(() => localRun ?? offlineRun);
+  const [localState, setLocalState] = useState<"saving" | "saved" | "error">(
+    "saving",
+  );
+  const [onlineState, setOnlineState] = useState<
+    "idle" | "sending" | "sent" | "error" | "identity" | "storage"
+  >("idle");
+  const [retry, setRetry] = useState(0);
   useEffect(() => {
-    summaryRef.current = summary;
-  }, [summary]);
+    heading.current?.focus({ preventScroll: true });
+    void loadProfile();
+  }, []);
   useEffect(() => {
-    if (identity.busy === "login") {
-      sawLogin.current = true;
-      return;
-    }
-    if (!sawLogin.current) return;
-    sawLogin.current = false;
-    if (!needsReconnect) return;
-    attemptKey.current = null;
-    const timer = window.setTimeout(() => {
-      setNeedsReconnect(false);
-      setRetry((value) => value + 1);
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [identity.busy, needsReconnect]);
-  const draft: ScoreDraft | undefined = scoreRun
-    ? {
-        run: scoreRun,
-        summary,
-        name: initialName ?? "",
-        recipient: expectedRecipient,
-      }
-    : undefined;
-  const currentDraft = useRef(draft);
-  useEffect(() => {
-    currentDraft.current = draft;
-  });
-  useEffect(() => {
-    if (currentDraft.current && !sent) saveDraft(currentDraft.current);
-  }, [scoreRun.id, sent]);
-  useEffect(() => {
-    if (
-      !identity.loaded ||
-      identity.loading ||
-      identity.kind === "google" ||
-      identity.kind === "apple"
-    )
-      return;
+    if (!identity.loaded || identity.loading) return;
     let active = true;
+    recipient.current ??= identity.profile?.key;
     void saveDeviceScore({
-      ...scoreRun,
-      summary: summaryRef.current,
-      name: identity.profile?.name ?? (initialName || "Anonyme"),
+      ...run,
+      summary,
+      name: initialName || identity.profile?.name || t("anonymous"),
       recipient: recipient.current ?? identity.profile?.key,
     })
       .then(() => {
-        if (active) {
-          setDeviceSaved(true);
-          setDeviceError("");
-        }
+        if (active) setLocalState("saved");
+        clearDraft(undefined, run.id);
       })
-      .catch((error) => {
-        if (active)
-          setDeviceError(
-            error instanceof Error
-              ? error.message
-              : "Le score n’a pas pu être enregistré sur cet appareil.",
-          );
+      .catch(() => {
+        if (active) setLocalState("error");
       });
     return () => {
       active = false;
@@ -136,138 +95,156 @@ export function GameOver({
   }, [
     identity.loaded,
     identity.loading,
-    identity.kind,
     identity.profile?.key,
     identity.profile?.name,
     initialName,
-    scoreRun,
-    scoreRun.id,
+    run,
+    summary,
     retry,
+    t,
   ]);
-  useEffect(() => {
+
+  const publish = async () => {
     const profile = identity.profile;
     if (
-      !identity.loaded ||
-      identity.loading ||
+      sending.current ||
+      !leaderboardAvailable ||
       !profile ||
-      !shareRequested ||
-      sent ||
-      saving.current
+      run.localOnly ||
+      run.opening
     )
       return;
     if (recipient.current && recipient.current !== profile.key) {
-      setNeedsReconnect(true);
-      setMessage(
-        "Cette partie attend son identité d’origine. Reconnecte-toi pour la sauvegarder.",
-      );
+      setOnlineState("identity");
       return;
     }
-    const key = `${scoreRun.id}:${profile.key}:${retry}`;
-    if (attemptKey.current === key) return;
-    attemptKey.current = key;
     recipient.current = profile.key;
-    if (currentDraft.current)
-      saveDraft({ ...currentDraft.current, recipient: profile.key });
-    saving.current = true;
-    setBusy(true);
-    setNeedsReconnect(false);
-    setMessage("");
-    void submitLocalScore({
-      id: scoreRun.id,
-      steps: scoreRun.steps,
-      opening: scoreRun.opening,
-      localOnly: scoreRun.localOnly,
-      recipient: profile.key,
-      summary: summaryRef.current,
-      ...(profile.kind === "google" || profile.kind === "apple"
-        ? { identity: profile.kind, name: profile.name }
-        : {}),
-    })
-      .then((result) => {
-        if (result.ok) {
-          setSent(true);
-          clearDraft(undefined, scoreRun.id);
-          setMessage(
-            profile.kind === "local" || scoreRun.localOnly
-              ? "Score enregistré sur cet appareil"
-              : scoreRun.opening
-                ? "Partie guidée enregistrée sur cet appareil"
-                : "Score enregistré",
-          );
-        } else if (result.reason === "auth") {
-          setNeedsReconnect(true);
-          setMessage(
-            "Reconnecte-toi à ton compte pour enregistrer ce score. Il est conservé ici en attendant.",
-          );
-          void loadProfile(true);
-        } else
-          setMessage(
-            "Le score n’a pas pu être envoyé. Il est conservé ici ; vérifie ta connexion et réessaie.",
-          );
+    // Preserve explicit intent before any network request, independently of this screen.
+    if (
+      !savePendingScore({
+        run,
+        summary,
+        name: profile.name,
+        recipient: profile.key,
       })
-      .finally(() => {
-        saving.current = false;
-        setBusy(false);
+    ) {
+      setOnlineState("storage");
+      return;
+    }
+    sending.current = true;
+    setOnlineState("sending");
+    try {
+      const result = await submitLocalScore({
+        ...run,
+        summary,
+        recipient: profile.key,
+        name: profile.name,
+        ...(profile.kind !== "local" ? { identity: profile.kind } : {}),
       });
-  }, [
-    identity.profile,
-    identity.loaded,
-    identity.loading,
-    scoreRun.id,
-    scoreRun.steps,
-    scoreRun.opening,
-    scoreRun.localOnly,
-    sent,
-    shareRequested,
-    retry,
-  ]);
+      if (result.ok) {
+        removePendingScore(run.id);
+        clearDraft(undefined, run.id);
+        setOnlineState("sent");
+      } else {
+        setOnlineState(
+          result.reason === "auth" || result.reason === "identity"
+            ? "identity"
+            : "error",
+        );
+        if (result.reason === "auth") void loadProfile(true);
+      }
+    } catch {
+      setOnlineState("error");
+    } finally {
+      sending.current = false;
+    }
+  };
+  const onlineAccount = identity.kind === "google" || identity.kind === "apple";
+  const seconds = Math.floor(summary.elapsed / 1000);
+  const duration = `${Math.floor(seconds / 60).toLocaleString(locale)}:${(seconds % 60).toLocaleString(locale, { minimumIntegerDigits: 2, useGrouping: false })}`;
   return (
-    <div
+    <section
       className="lava-cover lava-gameover"
-      role="region"
       aria-labelledby="lava-gameover-title"
     >
       <Card className="lava-end-panel">
         <CardHeader>
           <CardTitle>
-            <h2 id="lava-gameover-title" tabIndex={-1}>
-              Game over
+            <h2 ref={heading} id="lava-gameover-title" tabIndex={-1}>
+              {t("title")}
             </h2>
           </CardTitle>
         </CardHeader>
         <CardContent className="lava-end-content">
           <div>
-            <p className="text-sm text-muted-foreground">Score</p>
+            <p>{t("score")}</p>
             <p className="lava-end-score lava-end-number">
-              {summary.score.toLocaleString("fr")}
+              {summary.score.toLocaleString(locale)}
             </p>
-            {identity.kind !== "google" &&
-              identity.kind !== "apple" &&
-              deviceSaved && (
-              <p className="mt-2 text-sm" role="status">
-                Score enregistré sur cet appareil
-              </p>
-            )}
+            <p>{t("best", { score: summary.best.toLocaleString(locale) })}</p>
           </div>
-          {identity.profile && <p className="text-sm">Connecté avec {identity.profile.name}</p>}
-          {busy && (
-            <p className="text-sm" role="status">
-              Enregistrement du score…
+          <dl className="lava-end-stats">
+            <div>
+              <dt>{t("lines")}</dt>
+              <dd>{summary.lines.toLocaleString(locale)}</dd>
+            </div>
+            <div>
+              <dt>{t("level")}</dt>
+              <dd>{summary.level.toLocaleString(locale)}</dd>
+            </div>
+            <div>
+              <dt>{t("duration")}</dt>
+              <dd>{duration}</dd>
+            </div>
+          </dl>
+          <div
+            className="lava-result-storage"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <p>
+              {t(
+                localState === "saved"
+                  ? "localSaved"
+                  : localState === "error"
+                    ? "localError"
+                    : "localSaving",
+              )}
             </p>
-          )}
-          {message && !sent && (
-            <IdentityError retry={() => setRetry((v) => v + 1)}>
-              {message}
-            </IdentityError>
-          )}
-          {deviceError && (
-            <IdentityError retry={() => setRetry((v) => v + 1)}>
-              {deviceError}
-            </IdentityError>
-          )}
-          <p className="text-sm text-muted-foreground">
-            Record : {summary.best.toLocaleString("fr")}
-          </p>
+            {localState === "error" && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setLocalState("saving");
+                  setRetry((v) => v + 1);
+                }}
+              >
+                {t("retry")}
+              </Button>
+            )}
+            {run.opening || run.localOnly ? (
+              <p>{t(run.opening ? "guided" : "offline")}</p>
+            ) : null}
+            {onlineState !== "idle" && <p>{t(`online.${onlineState}`)}</p>}
+            {leaderboardAvailable &&
+              onlineAccount &&
+              !run.localOnly &&
+              !run.opening && (
+                <Button
+                  variant="outline"
+                  disabled={onlineState === "sending" || onlineState === "sent"}
+                  onClick={() => void publish()}
+                >
+                  {t(
+                    onlineState === "sent"
+                      ? "published"
+                      : onlineState === "sending"
+                        ? "publishing"
+                        : "publish",
+                  )}
+                </Button>
+              )}
+          </div>
         </CardContent>
         <CardFooter className="lava-end-actions">
           <Button
@@ -276,26 +253,18 @@ export function GameOver({
             disabled={preparing}
             onClick={onReplay}
           >
-            {preparing ? "Préparation…" : "Rejouer"}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={onLeaderboard}
-            disabled={!leaderboardAvailable}
-          >
-            Classement
+            {t(preparing ? "preparing" : "replay")}
           </Button>
           <Button variant="outline" onClick={onMenu}>
-            Menu
+            {t("home")}
           </Button>
-          <Button variant="outline" asChild>
-            <Link href="/jeux">Quitter le jeu</Link>
-          </Button>
-          {identity.profile?.kind === "google" || identity.profile?.kind === "apple" ? (
-            <Button variant="secondary" disabled={busy || sent || !!scoreRun.localOnly} onClick={() => setShareRequested(true)}>Enregistrer en ligne</Button>
-          ) : null}
+          {leaderboardAvailable && (
+            <Button variant="ghost" onClick={onLeaderboard}>
+              {t("leaderboard")}
+            </Button>
+          )}
         </CardFooter>
       </Card>
-    </div>
+    </section>
   );
 }

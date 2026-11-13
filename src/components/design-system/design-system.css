@@ -22,3 +22,14 @@
 :is(html, .ds-scope)[data-design-system="liquid-glass"] {
   --font-sans: var(--font-open-sans), var(--font-open-sans-ext), "Open Sans", sans-serif;
 }
+
+/* A shortcut printed on a button uses the button material's own ink. */
+.button-key-hint {
+  color: inherit;
+  border: 1px solid currentColor;
+  border-radius: calc(var(--radius) * 0.4);
+  padding-inline: var(--spacing);
+  font-family: var(--font-sans);
+  font-size: 0.85em;
+  line-height: 1.25;
+}

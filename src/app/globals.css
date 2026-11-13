@@ -61,6 +61,22 @@
 :root,
 :where(.ds-compare-scope) {
   color-scheme: light;
+  /* Categorical scene colours: stable roles shared by all renderers. */
+  --tetris-piece-i: #087f96;
+  --tetris-piece-j: #4265ba;
+  --tetris-piece-l: #b65d23;
+  --tetris-piece-o: #997516;
+  --tetris-piece-s: #34825a;
+  --tetris-piece-t: #8452b1;
+  --tetris-piece-z: #b34668;
+  --tetris-piece-highlight: #ffffff;
+  --tetris-piece-shade: #18202c;
+  --tetris-piece-outline: #344054;
+  --tetris-material-intensity: 0.18;
+  --tetris-board-surface: var(--background);
+  --tetris-ghost-fill: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --tetris-ghost-outline: var(--muted-foreground);
+
   --mehdi-background: oklch(1 0 0);
   --background: var(--mehdi-background);
   --mehdi-foreground: oklch(0.141 0.005 285.823);
@@ -129,6 +145,15 @@
 .dark,
 .dark :where(.ds-compare-scope) {
   color-scheme: dark;
+  --tetris-piece-i: #69c8d8;
+  --tetris-piece-j: #91aafa;
+  --tetris-piece-l: #e8a16b;
+  --tetris-piece-o: #dcc576;
+  --tetris-piece-s: #84cba0;
+  --tetris-piece-t: #c29be7;
+  --tetris-piece-z: #e596ae;
+  --tetris-piece-outline: #e3e8ef;
+
   --mehdi-background: oklch(0.141 0.005 285.823);
   --background: var(--mehdi-background);
   --mehdi-foreground: oklch(0.985 0 0);

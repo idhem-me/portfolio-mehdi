@@ -1,6 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
-import { saveDraft, type ScoreDraft, type GameSummary } from "../auth/draft";
+import { saveDraft, removePendingScore, pendingScoreLimit, type ScoreDraft, type GameSummary } from "../auth/draft";
 import type { OAuthProvider } from "../auth/identity";
 import { validateNickname } from "./fields";
 export type PlayerProfile = {
@@ -400,7 +400,7 @@ function rememberScore(run: QueuedScore) {
     kind: run.identity === "guest" ? "anonymous" : state.kind,
   };
   if (existing && JSON.stringify(existing) === JSON.stringify(score)) return;
-  const scores = [...state.scores.filter((s) => s.id !== run.id), score];
+  const scores = [...state.scores.filter((s) => s.id !== run.id), score].slice(-100);
   write(scoresKey, scores);
   emit({ scores });
 }
@@ -412,13 +412,17 @@ export async function saveDeviceScore(run: QueuedScore) {
   rememberScore(run);
 }
 function queue(run: QueuedScore) {
-  write(queueKey, [
-    ...read<QueuedScore[]>(queueKey, []).filter((item) => item.id !== run.id),
-    run,
-  ]);
+  const previous = read<QueuedScore[]>(queueKey, []);
+  const existing = previous.find((item) => item.id === run.id);
+  if (existing?.recipient && existing.recipient !== run.recipient)
+    throw Error("Identity changed");
+  const next = [...previous.filter((item) => item.id !== run.id), run];
+  if (next.length > pendingScoreLimit || JSON.stringify(next).length > 4_000_000)
+    throw Error("Pending score storage is full");
+  write(queueKey, next);
 }
 export type SubmitScoreResult =
-  { ok: true } | { ok: false; reason?: "auth" | "network" | "identity" };
+  { ok: true } | { ok: false; reason?: "auth" | "network" | "identity" | "storage" };
 
 export async function submitLocalScore(
   run: QueuedScore,
@@ -439,16 +443,20 @@ export async function submitLocalScore(
         throw Object.assign(Error(), { auth });
       }
       onSaved?.(await r.json());
-      write(
-        queueKey,
-        read<QueuedScore[]>(queueKey, []).filter((item) => item.id !== run.id),
-      );
+      // A successful server receipt remains successful even if local cleanup fails.
+      try {
+        write(
+          queueKey,
+          read<QueuedScore[]>(queueKey, []).filter((item) => item.id !== run.id),
+        );
+      } catch {}
+      removePendingScore(run.id);
       return { ok: true };
     } catch (error) {
-      queue(run);
-      if (!run.identity) {
-        onSaved?.({});
-        return { ok: true };
+      try {
+        queue(run);
+      } catch {
+        return { ok: false, reason: "storage" };
       }
       return {
         ok: false,
@@ -461,7 +469,7 @@ export async function submitLocalScore(
       };
     }
   } catch {
-    return { ok: false, reason: "network" };
+    return { ok: false, reason: "storage" };
   }
 }
 export async function syncLocalScores() {
@@ -475,13 +483,15 @@ export async function syncLocalScores() {
     if (!run.recipient && run.identity !== "guest") continue;
     try {
       const r = await sendScore(run);
-      if (r.ok)
+      if (r.ok) {
         write(
           queueKey,
           read<QueuedScore[]>(queueKey, []).filter(
             (item) => item.id !== run.id,
           ),
         );
+        removePendingScore(run.id);
+      }
     } catch {
       return;
     }

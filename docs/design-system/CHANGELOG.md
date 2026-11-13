@@ -141,3 +141,8 @@ Pour chaque évolution, consigner le composant, les états, les thèmes et la re
 - Les démos `#textarea`, `#gift-actions`, `#table`, `#swatches`, `#case-study` et `#settings-modal` couvrent les six tickets restants avec des données fictives.
 - La visionneuse reprend le dialogue du DS. Le clavier permet de zoomer, de déplacer l’image et de fermer le dialogue avec retour du focus à l’image d’origine.
 - Lint, typecheck et les quatre suites Node passent. Les 12 scénarios ciblés passent dans Chromium, Chrome Android et WebKit iPhone. Le build a été validé dans une copie isolée, le dossier de build habituel étant verrouillé par un autre processus. Next signale un avertissement sur les métriques de secours de Google Sans. La recette de production confirme les redirections et la disparition de l’onglet dans les sept langues.
+
+- Les couleurs catégorielles, contours et reflets de jeu suivent le thème effectif. Démonstration générique sous `#categorical-palette`.
+
+- Les raccourcis intégrés aux boutons héritent de leur encre, y compris sur les boutons clairs de Frutiger Aero sombre. Démo sous `#button`.
+- Frutiger Aero sombre donne à la variante Outline une surface bleu nuit, une encre claire et un contour bleu. La démo Button montre aussi le raccourci hérité.

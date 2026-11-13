@@ -5,6 +5,7 @@ import { PIECE_NAMES } from "../engine/pieces";
 import { lavaMaterial } from "./material";
 import { silhouette } from "./silhouette";
 import { createLava } from "./lava";
+import { observePalette } from "./palette";
 export function LavaBoard({
   game,
   active,
@@ -37,6 +38,10 @@ export function LavaBoard({
     };
     if (active) raf = requestAnimationFrame(loop);
     else renderer.draw(game.current, 0, true);
+    const stopPalette = observePalette(c, () => {
+      renderer.refreshPalette();
+      if (!active) renderer.draw(game.current, 0, true);
+    });
     const lost = (e: Event) => {
       e.preventDefault();
       setFallback(true);
@@ -44,6 +49,7 @@ export function LavaBoard({
     c.addEventListener("webglcontextlost", lost);
     return () => {
       off();
+      stopPalette();
       cancelAnimationFrame(raf);
       renderer.dispose();
       c.removeEventListener("webglcontextlost", lost);
@@ -76,17 +82,17 @@ export function LavaBoard({
       <svg className="lava-vector" viewBox="0 0 10 20" aria-hidden="true">
         <defs>
           <radialGradient id={id + "core"} cx="48%" cy="52%" r="68%">
-            <stop stopColor="white" stopOpacity=".55" />
-            <stop offset=".5" stopColor="white" stopOpacity=".12" />
-            <stop offset="1" stopColor="white" stopOpacity="0" />
+            <stop stopColor="var(--tetris-piece-highlight)" stopOpacity=".55" />
+            <stop offset=".5" stopColor="var(--tetris-piece-highlight)" stopOpacity=".12" />
+            <stop offset="1" stopColor="var(--tetris-piece-highlight)" stopOpacity="0" />
           </radialGradient>
           <linearGradient id={id + "oil"} x2="1" y2="1">
-            <stop stopColor="white" stopOpacity=".8" />
-            <stop offset=".2" stopColor="white" stopOpacity="0" />
-            <stop offset=".56" stopColor="white" stopOpacity="0" />
-            <stop offset=".64" stopColor="white" stopOpacity=".26" />
-            <stop offset=".73" stopColor="white" stopOpacity="0" />
-            <stop offset="1" stopColor="black" stopOpacity=".22" />
+            <stop stopColor="var(--tetris-piece-highlight)" stopOpacity=".8" />
+            <stop offset=".2" stopColor="var(--tetris-piece-highlight)" stopOpacity="0" />
+            <stop offset=".56" stopColor="var(--tetris-piece-highlight)" stopOpacity="0" />
+            <stop offset=".64" stopColor="var(--tetris-piece-highlight)" stopOpacity=".26" />
+            <stop offset=".73" stopColor="var(--tetris-piece-highlight)" stopOpacity="0" />
+            <stop offset="1" stopColor="var(--tetris-piece-shade)" stopOpacity=".22" />
           </linearGradient>
         </defs>
         {!g.over && (
@@ -107,12 +113,12 @@ export function LavaBoard({
                   d={settledPath}
                   fill={`var(--tetris-piece-${color.toLowerCase()})`}
                 />
-                <path d={settledPath} fill={`url(#${id}core)`} />
-                <path d={settledPath} fill={`url(#${id}oil)`} />
+                <path d={settledPath} fill={`url(#${id}core)`} opacity="var(--tetris-material-intensity)" />
+                <path d={settledPath} fill={`url(#${id}oil)`} opacity="var(--tetris-material-intensity)" />
                 <path
                   d={settledPath}
                   fill="none"
-                  stroke="white"
+                  stroke="var(--tetris-piece-outline)"
                   strokeOpacity={lavaMaterial.glassRimOpacity}
                   strokeWidth={lavaMaterial.glassRimWidth}
                 />
@@ -124,12 +130,12 @@ export function LavaBoard({
                   d={activePath}
                   fill={`var(--tetris-piece-${g.current.piece.toLowerCase()})`}
                 />
-                <path d={activePath} fill={`url(#${id}core)`} />
-                <path d={activePath} fill={`url(#${id}oil)`} />
+                <path d={activePath} fill={`url(#${id}core)`} opacity="var(--tetris-material-intensity)" />
+                <path d={activePath} fill={`url(#${id}oil)`} opacity="var(--tetris-material-intensity)" />
                 <path
                   d={activePath}
                   fill="none"
-                  stroke="white"
+                  stroke="var(--tetris-piece-outline)"
                   strokeOpacity={lavaMaterial.glassRimOpacity}
                   strokeWidth={lavaMaterial.glassRimWidth}
                 />
