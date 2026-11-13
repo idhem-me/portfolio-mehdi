@@ -942,7 +942,7 @@ function SettingsModalDemo() {
             <SettingsCard>
               <SettingsSlider id={volumeId} label={t("volume")} value={volume} onChange={setVolume} />
             </SettingsCard>
-            <SettingsCard>
+            <SettingsCard className="is-borderless">
               <SettingsSegmented
                 label={t("appearance")}
                 options={[
