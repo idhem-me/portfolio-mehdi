@@ -261,7 +261,6 @@
     "email": "邮箱",
     "message": "消息",
     "openMail": "打开邮件应用",
-    "viewProfile": "查看个人资料",
     "copied": "已复制！",
     "emailCopied": "邮箱已复制",
     "copyEmail": "复制 {email}"

@@ -261,7 +261,6 @@
     "email": "Email",
     "message": "Mensaje",
     "openMail": "Abrir la app de correo",
-    "viewProfile": "Ver el perfil",
     "copied": "¡Copiado!",
     "emailCopied": "Email copiado",
     "copyEmail": "Copiar {email}"

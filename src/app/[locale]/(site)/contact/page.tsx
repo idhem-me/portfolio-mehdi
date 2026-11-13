@@ -102,9 +102,14 @@ async function ContactContent({ params }: Props) {
                 <CardTitle className="truncate tracking-tight">
                   {profileMeta.name}
                 </CardTitle>
-                <CardDescription className="truncate">
+                <CardDescription>
                   {profileMeta.role} · {profileMeta.locations.join(" · ")}
                 </CardDescription>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <ContactLinkedInButton />
+                  <ContactFiverrButton />
+                  <ContactMaltButton />
+                </div>
               </CardHeader>
             </Card>
 
@@ -130,12 +135,6 @@ async function ContactContent({ params }: Props) {
                 </p>
                 <ContactPhoneLink />
               </section>
-            </div>
-
-            <div className="grid gap-2 sm:grid-cols-3">
-              <ContactLinkedInButton />
-              <ContactFiverrButton />
-              <ContactMaltButton />
             </div>
           </div>
         </BrowserWindow>

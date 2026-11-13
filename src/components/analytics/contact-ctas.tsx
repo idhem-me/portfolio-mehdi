@@ -126,14 +126,12 @@ export function ContactPhoneLink() {
 }
 
 export function ContactLinkedInButton() {
-  const t = useTranslations("contact");
-
   return (
     <Button
       asChild
       variant="outline"
       size="sm"
-      className="w-full justify-start gap-2 font-normal"
+      className="gap-2 font-normal"
     >
       <TrackedAnchor
         href={profileMeta.linkedin}
@@ -144,21 +142,19 @@ export function ContactLinkedInButton() {
         {...winkOn}
       >
         <PlatformIcon platform="linkedin" />
-        LinkedIn · {t("viewProfile")}
+        LinkedIn
       </TrackedAnchor>
     </Button>
   );
 }
 
 export function ContactFiverrButton() {
-  const t = useTranslations("contact");
-
   return (
     <Button
       asChild
       variant="outline"
       size="sm"
-      className="w-full justify-start gap-2 font-normal"
+      className="gap-2 font-normal"
     >
       <TrackedAnchor
         href={profileMeta.fiverr}
@@ -169,21 +165,19 @@ export function ContactFiverrButton() {
         {...winkOn}
       >
         <PlatformIcon platform="fiverr" />
-        Fiverr · {t("viewProfile")}
+        Fiverr
       </TrackedAnchor>
     </Button>
   );
 }
 
 export function ContactMaltButton() {
-  const t = useTranslations("contact");
-
   return (
     <Button
       asChild
       variant="outline"
       size="sm"
-      className="w-full justify-start gap-2 font-normal"
+      className="gap-2 font-normal"
     >
       <TrackedAnchor
         href={profileMeta.malt}
@@ -194,7 +188,7 @@ export function ContactMaltButton() {
         {...winkOn}
       >
         <PlatformIcon platform="malt" />
-        Malt · {t("viewProfile")}
+        Malt
       </TrackedAnchor>
     </Button>
   );
