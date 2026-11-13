@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { track, type AnalyticsEventName } from "@/lib/analytics/events";
 
 type TrackedLinkProps = ComponentProps<typeof Link> & {
-  event: AnalyticsEventName | (string & {});
+  event: AnalyticsEventName;
   eventProps?: Record<string, unknown>;
 };
 
@@ -13,11 +13,13 @@ export function TrackedLink({
   event,
   eventProps,
   onClick,
+  prefetch = false,
   ...props
 }: TrackedLinkProps) {
   return (
     <Link
       {...props}
+      prefetch={prefetch}
       data-analytics-action={event}
       data-analytics-value={
         typeof eventProps?.label === "string" ? eventProps.label : undefined
@@ -31,7 +33,7 @@ export function TrackedLink({
 }
 
 type TrackedAnchorProps = ComponentProps<"a"> & {
-  event: AnalyticsEventName | (string & {});
+  event: AnalyticsEventName;
   eventProps?: Record<string, unknown>;
 };
 

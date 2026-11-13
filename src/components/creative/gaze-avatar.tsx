@@ -18,30 +18,7 @@ type Gaze = AgGaze | AdGaze;
 
 type Wink = "AG-clin" | "AD-clin";
 
-const AG_GAZES: AgGaze[] = [
-  "centre",
-  "haut",
-  "haut-gauche",
-  "gauche",
-  "bas",
-  "bas-gauche",
-];
-const AD_GAZES: AdGaze[] = [
-  "centre",
-  "haut",
-  "haut-droite",
-  "droite",
-  "bas",
-  "bas-droite",
-];
-
 const AVATAR_VERSION = "?v=original-colors-1";
-const AVATAR_SRCS = [
-  ...AG_GAZES.map((g) => `/img/avatar/AG-${g}.svg`),
-  ...AD_GAZES.map((g) => `/img/avatar/AD-${g}.svg`),
-  "/img/avatar/AG-clin.svg",
-  "/img/avatar/AD-clin.svg",
-].map((src) => src + AVATAR_VERSION);
 
 /**
  * Angles via Math.atan2(dy, dx) en degrés :
@@ -142,6 +119,31 @@ export function GazeAvatar() {
   const applyRef = useRef<(dx: number, dy: number) => void>(() => {});
   const pointerRef = useRef<(x: number, y: number) => void>(() => {});
 
+  const requestedSrc = useRef(avatarSrc("AG", "centre"));
+  const decodedSources = useRef(new Set([avatarSrc("AG", "centre")]));
+  const pendingImages = useRef(new Map<string, Promise<void>>());
+
+  const requestPose = (src: string) => {
+    requestedSrc.current = src;
+    if (decodedSources.current.has(src)) {
+      commitSrc(src);
+      return;
+    }
+    let pending = pendingImages.current.get(src);
+    if (!pending) {
+      const image = new Image();
+      image.src = src;
+      pending = image.decode().then(() => { decodedSources.current.add(src); })
+        .finally(() => pendingImages.current.delete(src));
+      pendingImages.current.set(src, pending);
+    }
+    void pending.then(() => {
+      if (requestedSrc.current === src) commitSrc(src);
+    }).catch(() => {
+      if (requestedSrc.current === src) requestedSrc.current = displayedSrcRef.current;
+    });
+  };
+
   const commitSrc = (nextSrc: string) => {
     if (nextSrc === displayedSrcRef.current && !fadingRef.current) return;
 
@@ -207,9 +209,7 @@ export function GazeAvatar() {
     gazeRef.current = nextGaze;
 
     const nextSrc = avatarSrc(nextHead, nextGaze);
-    if (nextSrc !== displayedSrcRef.current) {
-      commitSrc(nextSrc);
-    }
+    if (nextSrc !== requestedSrc.current) requestPose(nextSrc);
   };
 
   // Existing imperative DOM bridge; refs do not determine React state.
@@ -226,16 +226,9 @@ export function GazeAvatar() {
     applyRef.current(nx, ny);
   };
 
-  useEffect(() => {
-    for (const src of AVATAR_SRCS) {
-      const img = new Image();
-      img.src = src;
-    }
-  }, []);
-
   const onWink = useEffectEvent((event: Event) => {
     winkRef.current = (event as CustomEvent<Wink | null>).detail ?? null;
-    commitSrc(poseSrc());
+    requestPose(poseSrc());
   });
 
   useEffect(() => {
@@ -246,6 +239,7 @@ export function GazeAvatar() {
 
   useEffect(() => {
     return () => {
+      requestedSrc.current = "";
       if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current);
     };
   }, []);

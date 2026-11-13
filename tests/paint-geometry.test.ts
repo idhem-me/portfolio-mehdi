@@ -1,10 +1,13 @@
-import test from "node:test";
+import test, { before } from "node:test";
 import assert from "node:assert/strict";
 import Matter from "matter-js";
 import {
   createPaintBody,
   samplePaintPoint,
 } from "../src/components/creative/paint-geometry";
+import { loadPhysics } from "../src/components/creative/physics-runtime";
+before(loadPhysics);
+
 const hit = (body: Matter.Body, x: number, y: number) =>
   Matter.Query.point([body], { x, y }).length > 0;
 test("point and straight stroke have a six pixel radius", () => {

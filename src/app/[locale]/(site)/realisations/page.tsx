@@ -1,3 +1,4 @@
+import { ActiveThemeImage } from "@/components/media/active-theme-image";
 import type { Metadata } from "next";
 import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -35,7 +36,7 @@ export default async function RealisationsPage({ params }: Props) {
       </header>
 
       <div className="flex flex-col gap-4">
-        {page.caseStudies.map((study) => {
+        {page.caseStudies.map((study, index) => {
           const cardClass = cn(
             "w-full overflow-hidden rounded-xl bg-muted/40 ring-1 ring-foreground/5 transition-colors",
             study.slug && "hover:bg-muted/70 hover:ring-foreground/10"
@@ -43,18 +44,16 @@ export default async function RealisationsPage({ params }: Props) {
           const inner = (
             <>
               {study.cover ? (
-                <div className="overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={study.cover.light}
+                <div className="relative aspect-video overflow-hidden">
+                  <ActiveThemeImage
+                    light={study.cover.light}
+                    dark={study.cover.dark}
                     alt={study.cover.alt}
-                    className="aspect-[16/9] w-full object-cover object-top dark:hidden"
-                  />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={study.cover.dark}
-                    alt={study.cover.alt}
-                    className="hidden aspect-[16/9] w-full object-cover object-top dark:block"
+                    fill
+                    sizes="(max-width: 767px) calc(100vw - 3rem), 720px"
+                    loading={index === 0 ? "eager" : "lazy"}
+                    fetchPriority={index === 0 ? "high" : "auto"}
+                    className="object-cover object-top"
                   />
                 </div>
               ) : (
@@ -81,6 +80,7 @@ export default async function RealisationsPage({ params }: Props) {
               <Link
                 key={study.title}
                 href={`/realisations/${study.slug}`}
+                prefetch={false}
                 data-slot="portfolio-card"
                 className={cn(
                   cardClass,

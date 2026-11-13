@@ -1,5 +1,16 @@
 # Changelog du design system
 
+## Chargement à la demande — 13 novembre 2026
+
+- Les feuilles de style des variantes se chargent à la sélection ou à l’ouverture d’un aperçu qui les utilise. Une préférence enregistrée déclenche le chargement à l’ouverture de la page.
+- Les polices locales sont demandées par le navigateur quand le texte utilise leur famille. Les images thémées chargent une seule variante et le fond Aero est servi en WebP, y compris dans la démo CaseStudy.
+
+## Correction du build sans accès à Google Fonts — 13 novembre 2026
+
+- Sobre utilise Google Sans, Fun utilise Bricolage Grotesque et Aero utilise Nunito Sans. Les trois familles sont locales et couvrent les jeux Latin et Latin étendu.
+- Le lint interdit `next/font/google` afin de prévenir la réintroduction d’un téléchargement de police pendant la compilation.
+- Build Webpack, typecheck, lint et quatre suites Node réussis. Le premier build compilait déjà sans Google Fonts ; un ancien cache `.next/dev` référençant des routes supprimées a dû être écarté pour terminer la vérification TypeScript.
+
 ## Typographie Sobre et Frutiger Aero — 13 novembre 2026
 
 - Sobre utilise Google Sans et Frutiger Aero Nunito Sans, chacune chargée via `next/font/google` et auto-hébergée dans les ressources de build. Fun garde Bricolage Grotesque.

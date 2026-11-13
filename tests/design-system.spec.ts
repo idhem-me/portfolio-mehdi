@@ -10,7 +10,11 @@ async function choose(
   if ((await trigger.count()) === 0)
     await page.locator('[data-analytics-action="menu_open"]').click();
   await trigger.click();
-  await page.getByRole("menuitemradio", { name, exact: true }).click();
+  const item = page.getByRole("menuitemradio", { name, exact: true });
+  await item.click();
+  const id = { Sobre: "mehdi", Fun: "fun", "Frutiger Aero": "frutiger-aero", "Liquid Glass": "liquid-glass" }[name];
+  await expect(page.locator("html")).toHaveAttribute("data-design-system", id);
+  if (await item.isVisible()) await page.keyboard.press("Escape");
 }
 
 test.beforeEach(async ({ page }) => {
@@ -106,7 +110,8 @@ test("Frutiger Aero language menu retains choice and collapsed sidebar stays usa
   ).toContainText("Frutiger Aero");
   await page
     .getByRole("button", {
-      name: /Close.*panel|Collapse.*sidebar|Fermer le panel/i,
+      name: "Close menu",
+      exact: true,
     })
     .click();
   await expect(
@@ -119,7 +124,8 @@ test("Frutiger Aero keeps avatar and gravity controls working", async ({ page })
   await page.goto("/");
   await choose(page, "Frutiger Aero");
   const play = page.locator('[data-analytics-action="gravity_play"]');
-  const appearance = await play.evaluate((element) => {
+  const appearance = await play.evaluate(async (element) => {
+    await Promise.allSettled(element.getAnimations().map((animation) => animation.finished));
     const style = getComputedStyle(element);
     return {
       backgroundImage: style.backgroundImage,
@@ -469,7 +475,6 @@ test("Fun keeps its palette across routes and languages and follows light and da
 test("Fun compares independently and the Playground demo keeps focus and mobile sizing", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/playground/design-systems");
-  await choose(page, "Fun");
   const fun = page.locator('[data-compare-column="fun"]');
   const sobre = page.locator('[data-compare-column="mehdi"]');
   await expect(fun.getByRole("button", { name: "Primary" })).toHaveCSS("border-top-width", "2px");

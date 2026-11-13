@@ -16,7 +16,7 @@
 }
 
 :is(html, .ds-scope)[data-design-system="mehdi"] {
-  --font-sans: var(--font-google-sans), "Google Sans", sans-serif;
+  --font-sans: var(--font-google-sans), var(--font-google-sans-ext), "Google Sans", sans-serif;
 }
 
 :is(html, .ds-scope)[data-design-system="liquid-glass"] {

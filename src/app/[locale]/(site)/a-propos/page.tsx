@@ -1,3 +1,4 @@
+import { ActiveThemeImage } from "@/components/media/active-theme-image";
 import type { Metadata } from "next";
 import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -41,22 +42,15 @@ export default async function AProposPage({ params }: Props) {
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {about.title}
         </h1>
-        <div className="w-fit overflow-hidden rounded-xl ring-1 ring-foreground/5">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/img/photos/moi/mehdi-light.png?v=20261023-2"
+        <div className="aspect-[13/20] w-[260px] overflow-hidden rounded-xl ring-1 ring-foreground/5">
+          <ActiveThemeImage
+            light="/img/photos/moi/mehdi-light.png?v=20261023-2"
+            dark="/img/photos/moi/mehdi-dark.png?v=20261023-2"
             alt={photoAlt}
             width={260}
             height={400}
-            className="block h-auto w-[260px] dark:hidden"
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/img/photos/moi/mehdi-dark.png?v=20261023-2"
-            alt={photoAlt}
-            width={260}
-            height={400}
-            className="hidden h-auto w-[260px] dark:block"
+            sizes="260px"
+            className="block h-auto w-full"
           />
         </div>
         <p className="max-w-prose text-base leading-relaxed text-muted-foreground">

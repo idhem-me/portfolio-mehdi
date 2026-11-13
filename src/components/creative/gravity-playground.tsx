@@ -10,7 +10,8 @@ import {
   useRef,
   useState,
 } from "react";
-import Matter from "matter-js";
+import type Matter from "matter-js";
+import { getPhysics, loadPhysics } from "./physics-runtime";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
 import { setAvatarWink } from "@/components/creative/gaze-avatar";
@@ -18,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 
 import { PaintTool, type PaintBridge } from "./paint-tool";
-import { tearPage } from "./page-tear";
 
 const GravityActiveContext = createContext(false);
 
@@ -506,7 +506,7 @@ function avatarParts(
     }
     if (right >= left)
       parts.push(
-        Matter.Bodies.rectangle(
+        getPhysics().Bodies.rectangle(
           cx - width / 2 + (left + right + 1) / 2,
           cy - height / 2 + y + 1,
           right - left + 1,
@@ -580,28 +580,28 @@ function createWalls(vw: number, vh: number): Walls {
   const t = WALL_THICKNESS;
   const bounds = playBounds();
   return {
-    ground: Matter.Bodies.rectangle(
+    ground: getPhysics().Bodies.rectangle(
       vw / 2,
       bounds.bottom + t / 2,
       vw + t * 2,
       t,
       wallOpts,
     ),
-    ceiling: Matter.Bodies.rectangle(
+    ceiling: getPhysics().Bodies.rectangle(
       vw / 2,
       bounds.top - t / 2,
       vw + t * 2,
       t,
       wallOpts,
     ),
-    left: Matter.Bodies.rectangle(
+    left: getPhysics().Bodies.rectangle(
       bounds.left - t / 2,
       vh / 2,
       t,
       vh * 2,
       wallOpts,
     ),
-    right: Matter.Bodies.rectangle(
+    right: getPhysics().Bodies.rectangle(
       bounds.right + t / 2,
       vh / 2,
       t,
@@ -612,14 +612,14 @@ function createWalls(vw: number, vh: number): Walls {
 }
 
 function replaceWalls(session: Session, vw: number, vh: number) {
-  Matter.World.remove(session.engine.world, [
+  getPhysics().World.remove(session.engine.world, [
     session.walls.ground,
     session.walls.ceiling,
     session.walls.left,
     session.walls.right,
   ]);
   session.walls = createWalls(vw, vh);
-  Matter.World.add(session.engine.world, [
+  getPhysics().World.add(session.engine.world, [
     session.walls.ground,
     session.walls.ceiling,
     session.walls.left,
@@ -639,7 +639,7 @@ function clampBodiesToViewport(pairs: PhysicsPair[]) {
     const diagonal = Math.hypot(pair.width, pair.height);
     if (diagonal > available && !pair.drawing) {
       const scale = available / diagonal;
-      Matter.Body.scale(body, scale, scale);
+      getPhysics().Body.scale(body, scale, scale);
       pair.width *= scale;
       pair.height *= scale;
       if (pair.offset) {
@@ -662,8 +662,8 @@ function clampBodiesToViewport(pairs: PhysicsPair[]) {
           ? bounds.bottom - max.y
           : 0;
     if (dx || dy) {
-      Matter.Body.translate(body, { x: dx, y: dy });
-      Matter.Body.setVelocity(body, {
+      getPhysics().Body.translate(body, { x: dx, y: dy });
+      getPhysics().Body.setVelocity(body, {
         x: dx ? 0 : body.velocity.x,
         y: dy ? 0 : body.velocity.y,
       });
@@ -716,7 +716,7 @@ function applyTuningToSession(session: Session, tuning: PhysicsTuning) {
   session.engine.gravity.x = x;
   session.engine.gravity.y = y;
   for (const { body } of session.pairs) {
-    Matter.Sleeping.set(body, false);
+    getPhysics().Sleeping.set(body, false);
     body.restitution = tuning.restitution;
     body.friction = tuning.friction;
     body.frictionAir = tuning.frictionAir;
@@ -784,6 +784,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   const sessionRef = useRef<Session | null>(null);
   const paintBridge = useRef<PaintBridge | null>(null);
   const tearRef = useRef<(() => void) | null>(null);
+  const actionRef = useRef(0);
   const startTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tuningRef = useRef<PhysicsTuning>(DEFAULT_TUNING);
   const [active, setActive] = useState(false);
@@ -795,6 +796,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
   }, [tuning]);
 
   const teardown = useCallback(() => {
+    actionRef.current++;
     if (startTimerRef.current !== null) {
       clearTimeout(startTimerRef.current);
       startTimerRef.current = null;
@@ -810,12 +812,12 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     }
 
     cancelAnimationFrame(session.raf);
-    Matter.Events.off(session.engine, "collisionStart", session.onCollision);
-    Matter.Events.off(session.engine, "afterUpdate", session.onAfterUpdate);
-    Matter.Runner.stop(session.runner);
-    Matter.World.remove(session.engine.world, session.mouseConstraint);
-    Matter.World.clear(session.engine.world, false);
-    Matter.Engine.clear(session.engine);
+    getPhysics().Events.off(session.engine, "collisionStart", session.onCollision);
+    getPhysics().Events.off(session.engine, "afterUpdate", session.onAfterUpdate);
+    getPhysics().Runner.stop(session.runner);
+    getPhysics().World.remove(session.engine.world, session.mouseConstraint);
+    getPhysics().World.clear(session.engine.world, false);
+    getPhysics().Engine.clear(session.engine);
     session.mouseEl.remove();
     session.layerEl.remove();
     session.sources.forEach((el) => {
@@ -828,60 +830,30 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     setActive(false);
   }, []);
 
-  const resetWithTear = useCallback(() => {
+  const resetWithTear = useCallback(async () => {
     if (tearRef.current) return;
-    // Set the guard before snapshot/teardown; cleanup remains synchronous on unmount.
-    tearRef.current = () => {};
+    const action = ++actionRef.current;
+    const waiting = () => {};
+    tearRef.current = waiting;
     try {
+      const { tearPage } = await import("./page-tear");
+      if (action !== actionRef.current || tearRef.current !== waiting) return;
       const cancel = tearPage(teardown, () => {
         tearRef.current = null;
         playButtonRef.current?.focus({ preventScroll: true });
       });
       if (tearRef.current) tearRef.current = cancel;
     } catch {
+      if (tearRef.current !== waiting) return;
       tearRef.current = null;
       teardown();
     }
   }, [teardown]);
 
-  const runPhysics = useCallback((drawingsOnly = false) => {
+  const runPhysics = useCallback(() => {
     const root = rootRef.current;
+    if (!root || sessionRef.current) return;
     const playSnapshot = playSnapshotRef.current;
-    if (!root) return;
-    const existing = sessionRef.current;
-    if (existing) {
-      if (!drawingsOnly && existing.sources.length === 0) {
-        const sources = Array.from(
-          root.querySelectorAll<HTMLElement>("[data-physics-item]"),
-        );
-        for (const target of collectSpawnTargets(sources)) {
-          addFallingBody(
-            Matter.Bodies,
-            Matter.Body,
-            Matter.World,
-            existing.engine,
-            existing.pairs,
-            spawnChipElement(target, existing.layerEl),
-            tuningRef.current,
-          );
-          target.source.style.visibility = "hidden";
-          if (!existing.sources.includes(target.source))
-            existing.sources.push(target.source);
-        }
-        if (playSnapshot)
-          addFallingBody(
-            Matter.Bodies,
-            Matter.Body,
-            Matter.World,
-            existing.engine,
-            existing.pairs,
-            spawnPlaySnapshot(playSnapshot, existing.layerEl),
-            tuningRef.current,
-          );
-        existing.mouseEl.style.pointerEvents = "auto";
-      }
-      return;
-    }
 
     const sources = Array.from(
       root.querySelectorAll<HTMLElement>("[data-physics-item]"),
@@ -891,7 +863,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     });
     if (sources.length === 0 && !playSnapshot) return;
 
-    const targets = drawingsOnly ? [] : collectSpawnTargets(sources);
+    const targets = collectSpawnTargets(sources);
     const {
       Engine,
       Bodies,
@@ -901,7 +873,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       MouseConstraint,
       Body,
       Events,
-    } = Matter;
+    } = getPhysics();
     const tuningNow = tuningRef.current;
 
     const g0 = gravityVector(tuningNow);
@@ -934,14 +906,13 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     mouseEl.className = "fixed inset-0 z-[5]";
     // Prevent scroll/zoom from stealing touches while dragging chips
     mouseEl.style.touchAction = "none";
-    if (drawingsOnly) mouseEl.style.pointerEvents = "none";
     mouseEl.style.userSelect = "none";
     document.body.appendChild(mouseEl);
 
     const pairs: PhysicsPair[] = [];
     const hiddenSources = new Set<HTMLElement>();
 
-    if (playSnapshot && !drawingsOnly) {
+    if (playSnapshot) {
       addFallingBody(
         Bodies,
         Body,
@@ -1027,9 +998,9 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
         const frames = quiet ? (quietFrames.get(body) ?? 0) + 1 : 0;
         quietFrames.set(body, frames);
         if (frames >= 20) {
-          Matter.Body.setVelocity(body, { x: 0, y: 0 });
-          Matter.Body.setAngularVelocity(body, 0);
-          Matter.Sleeping.set(body, true);
+          getPhysics().Body.setVelocity(body, { x: 0, y: 0 });
+          getPhysics().Body.setAngularVelocity(body, 0);
+          getPhysics().Sleeping.set(body, true);
         }
       }
     };
@@ -1103,8 +1074,16 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
       setOpen(false);
     }
 
-    const launch = () => {
+    const action = ++actionRef.current;
+    const physics = loadPhysics().then(() => true, () => false);
+    const launch = async () => {
+      const loaded = await physics;
+      if (action !== actionRef.current) return;
       startTimerRef.current = null;
+      if (!loaded) {
+        teardown();
+        return;
+      }
       runPhysics();
       paintBridge.current?.resume();
     };
@@ -1116,7 +1095,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
 
     // Let Reset paint, then spawn physics
     startTimerRef.current = setTimeout(launch, 0);
-  }, [active, isMobile, open, openMobile, runPhysics, setOpen, setOpenMobile]);
+  }, [active, isMobile, open, openMobile, runPhysics, setOpen, setOpenMobile, teardown]);
 
   useEffect(() => {
     return () => {
@@ -1263,10 +1242,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
             onClear={resetWithTear}
             isPlaying={active}
             bounds={playBounds}
-            getSession={() => {
-              runPhysics(true);
-              return sessionRef.current!;
-            }}
+            getSession={() => sessionRef.current}
             options={() => bodyOptions(tuningRef.current)}
           />
         </div>

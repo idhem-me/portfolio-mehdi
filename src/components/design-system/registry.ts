@@ -18,13 +18,3 @@ export const DESIGN_SYSTEM_STORAGE_KEY = "portfolio-design-system";
 export function isDesignSystem(value: unknown): value is DesignSystem {
   return DESIGN_SYSTEMS.some(({ id }) => id === value);
 }
-
-export const initialDesignSystemScript = `
-  (() => {
-    try {
-      const saved = localStorage.getItem(${JSON.stringify(DESIGN_SYSTEM_STORAGE_KEY)});
-      const supported = ${JSON.stringify(DESIGN_SYSTEMS.map(({ id }) => id))};
-      if (supported.includes(saved)) document.documentElement.dataset.designSystem = saved;
-    } catch {}
-  })();
-`;

@@ -285,6 +285,13 @@ export function PlaygroundCatalog() {
               </div>
             </Section>
 
+            <Section title="Breadcrumb">
+              <PageBreadcrumb
+                current="Breadcrumb"
+                parents={[{ href: "/playground", label: t("title") }]}
+              />
+            </Section>
+
             <Section title="BrowserWindow">
               <BrowserWindow>
                 <p className="text-sm text-muted-foreground">
@@ -1107,10 +1114,10 @@ function CaseStudyDemo() {
       <CaseStudySlider
         className="[&_img]:aspect-video [&_img]:object-cover"
         images={[
-          { src: "/img/backgrounds/bg-aero-frutiger-light.png", theme: "light", alt: t("sampleScreen", { number: 1 }) },
-          { src: "/img/backgrounds/bg-aero-frutiger-dark.png", theme: "dark", alt: t("sampleScreen", { number: 1 }) },
-          { src: "/img/backgrounds/bg-aero-frutiger-light.png", theme: "light", alt: t("sampleScreen", { number: 2 }) },
-          { src: "/img/backgrounds/bg-aero-frutiger-dark.png", theme: "dark", alt: t("sampleScreen", { number: 2 }) },
+          { src: "/img/backgrounds/bg-aero-frutiger-light.webp", theme: "light", alt: t("sampleScreen", { number: 1 }) },
+          { src: "/img/backgrounds/bg-aero-frutiger-dark.webp", theme: "dark", alt: t("sampleScreen", { number: 1 }) },
+          { src: "/img/backgrounds/bg-aero-frutiger-light.webp", theme: "light", alt: t("sampleScreen", { number: 2 }) },
+          { src: "/img/backgrounds/bg-aero-frutiger-dark.webp", theme: "dark", alt: t("sampleScreen", { number: 2 }) },
         ]}
         pairLabels={{ light: theme("light"), dark: theme("dark") }}
       />

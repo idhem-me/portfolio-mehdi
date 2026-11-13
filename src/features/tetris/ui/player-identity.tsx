@@ -1,4 +1,5 @@
 "use client";
+import { SiteAccountProvider } from "@/features/account/provider";
 import {
   loadProfile,
   useIdentityState,
@@ -10,7 +11,7 @@ export function PlayerIdentityProvider({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <SiteAccountProvider>{children}</SiteAccountProvider>;
 }
 export function usePlayerIdentity() {
   const state = useIdentityState();
