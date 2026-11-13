@@ -15,6 +15,9 @@
   font-family: var(--font-sans);
 }
 
-:is(html, .ds-scope)[data-design-system]:not([data-design-system="fun"]) {
+:is(html, .ds-scope)[data-design-system]:not(
+    [data-design-system="fun"],
+    [data-design-system="frutiger-aero"]
+  ) {
   --font-sans: var(--font-google-sans);
 }

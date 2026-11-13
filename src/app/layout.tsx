@@ -5,6 +5,7 @@ import {
   Geist_Mono,
   Google_Sans,
   Noto_Sans_SC,
+  Open_Sans,
 } from "next/font/google";
 import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
@@ -33,6 +34,14 @@ const googleSans = Google_Sans({
 const bricolageGrotesque = Bricolage_Grotesque({
   subsets: ["latin", "latin-ext"],
   variable: "--font-bricolage",
+  display: "swap",
+});
+
+const openSans = Open_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-open-sans",
   display: "swap",
 });
 
@@ -76,7 +85,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       dir="ltr"
       data-design-system={DEFAULT_DESIGN_SYSTEM}
       suppressHydrationWarning
-      className={`${googleSans.variable} ${bricolageGrotesque.variable} ${geistMono.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
+      className={`${googleSans.variable} ${bricolageGrotesque.variable} ${openSans.variable} ${geistMono.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <head>
         <script

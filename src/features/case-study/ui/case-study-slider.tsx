@@ -152,9 +152,9 @@ export function CaseStudySlider({
           aria-roledescription="carousel"
           aria-label={t("screens")}
         >
-          {pairs.map(({ light, dark }) => (
+          {pairs.map(({ light, dark }, pairIndex) => (
             <div
-              key={light.src ?? light.alt}
+              key={`${light.src ?? light.alt}-${pairIndex}`}
               className="min-w-full shrink-0 basis-full snap-start snap-always"
             >
               <ThemePairImage
@@ -203,7 +203,7 @@ export function CaseStudySlider({
         >
           {pairs.map((pair, i) => (
             <NativeButton
-              key={pair.light.src ?? pair.light.alt}
+              key={`${pair.light.src ?? pair.light.alt}-${i}`}
               type="button"
               aria-current={i === index ? "true" : undefined}
               aria-label={t("slide", { number: i + 1, name: pair.light.caption ?? pair.light.alt })}
