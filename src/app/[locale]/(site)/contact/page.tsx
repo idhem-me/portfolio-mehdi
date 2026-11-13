@@ -83,7 +83,7 @@ async function ContactContent({ params }: Props) {
               <div className="relative w-14 shrink-0 self-stretch overflow-hidden rounded-lg ring-1 ring-foreground/5 sm:w-16">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/img/photos/moi/mehdi-light.png?v=20261023-2"
+                  src="/img/photos/moi/mehdi-light.png"
                   alt={photoAlt}
                   width={64}
                   height={96}
@@ -91,7 +91,7 @@ async function ContactContent({ params }: Props) {
                 />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/img/photos/moi/mehdi-dark.png?v=20261023-2"
+                  src="/img/photos/moi/mehdi-dark.png"
                   alt={photoAlt}
                   width={64}
                   height={96}

@@ -44,12 +44,13 @@ export default async function AProposPage({ params }: Props) {
         </h1>
         <div className="aspect-[13/20] w-[260px] overflow-hidden rounded-xl ring-1 ring-foreground/5">
           <ActiveThemeImage
-            light="/img/photos/moi/mehdi-light.png?v=20261023-2"
-            dark="/img/photos/moi/mehdi-dark.png?v=20261023-2"
+            light="/img/photos/moi/mehdi-light.png"
+            dark="/img/photos/moi/mehdi-dark.png"
             alt={photoAlt}
             width={260}
             height={400}
             sizes="260px"
+            unoptimized
             className="block h-auto w-full"
           />
         </div>
