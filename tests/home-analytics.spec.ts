@@ -47,9 +47,9 @@ test("homepage sends named interactions to PostHog once per action", async ({
     localStorage.setItem("analytics_consent", "granted"),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Succès", exact: true }).click();
   const brush = page.getByRole("button", { name: "Pinceau", exact: true });
   await brush.click();
+  await page.getByRole("button", { name: "Succès", exact: true }).click();
   await page.mouse.move(700, 340);
   await page.mouse.down({ button: "left" });
   await page.mouse.move(850, 370, { steps: 10 });
@@ -144,8 +144,10 @@ test("owner traffic marker is persistent and attached to pageviews", async ({ pa
 test("no PostHog events are sent without consent", async ({ page }) => {
   const events = await interceptAnalytics(page);
   await page.goto("/");
-  await page.getByRole("button", { name: "Succès", exact: true }).click();
   await page.getByRole("button", { name: "Refuser", exact: true }).click();
+  await page.getByRole("button", { name: "Pinceau", exact: true }).click();
+  await page.getByRole("button", { name: "Succès", exact: true }).click();
+  await page.getByRole("button", { name: "Quitter le pinceau", exact: true }).first().click();
   await page.getByRole("button", { name: "Touche-moi", exact: true }).click();
   await page.waitForTimeout(1000);
   expect(events).toEqual([]);
