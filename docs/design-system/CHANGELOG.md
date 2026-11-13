@@ -1,5 +1,19 @@
 # Changelog du design system
 
+## Polices locales et build hors ligne — 13 novembre 2026
+
+- Les polices Open Sans, Bricolage Grotesque, Geist Mono et le sous-ensemble latin Noto Sans SC sont chargés depuis `src/app/fonts/` avec `next/font/local`. Le build ne contacte plus `fonts.googleapis.com`.
+- Sobre utilise maintenant Open Sans à la place de Google Sans, qui n’est pas distribuée avec le dépôt. Les thèmes Fun et Aero gardent leurs familles distinctives. Les sous-ensembles Latin étendu couvrent les caractères européens ; arabe et chinois disposent d’un repli système pour les glyphes absents.
+- Les notices SIL Open Font License accompagnent les fontes auto-hébergées.
+- Le script de build utilise Webpack : Turbopack ne résolvait pas le package Next.js dans cette copie du workspace.
+
+## Navigation latérale — 13 novembre 2026
+
+- Le thème Sobre utilise l’icône `Contrast` dans le sélecteur de design system.
+- L’en-tête de la navigation place la commande « Menu » au-dessus du lien « Accueil ». En mode réduit, chaque action conserve sa propre icône et son infobulle ; l’avatar ne chevauche plus le déclencheur.
+- L’arrivée dans un sous-menu réduit la sidebar principale. Le panneau secondaire partage un en-tête avec retour à l’accueil et nom de section, au-dessus des liens.
+- Le libellé Menu est synchronisé dans les sept langues.
+
 ## Publication de Frutiger Aero — 13 novembre 2026
 
 - Frutiger Aero est autorisé dans le registre de production : sélecteur, restauration du choix enregistré, catalogue et comparatif. Sobre reste le choix initial ; Liquid Glass reste réservé au développement.

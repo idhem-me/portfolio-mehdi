@@ -1,5 +1,5 @@
 :is(html, .ds-scope)[data-design-system="fun"] {
-  --font-sans: var(--font-bricolage), sans-serif;
+  --font-sans: var(--font-bricolage), var(--font-bricolage-ext), sans-serif;
   font-family: var(--font-sans);
 
   --fun-background: #fff8e7;

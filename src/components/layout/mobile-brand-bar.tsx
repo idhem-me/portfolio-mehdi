@@ -1,10 +1,14 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
+import { Menu } from "lucide-react";
+import {
+  SidebarMenu,
+  SidebarMenuItem,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import {
   DesignSystemSidebarButton as SidebarMenuButton,
-  DesignSystemSidebarTrigger as SidebarTrigger,
 } from "@/components/design-system/sidebar-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TrackedLink } from "@/components/analytics/tracked-link";
@@ -31,15 +35,29 @@ export function HomeAvatar({ className }: { className?: string }) {
 export function MobileBrandBar({ className }: { className?: string }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const { toggleSidebar } = useSidebar();
 
   return (
-    <div className={cn("flex h-12 items-center gap-1 px-2", className)}>
-      <SidebarMenu className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
+    <div className={cn("flex flex-col gap-1 p-2", className)}>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <SidebarMenuButton
+            type="button"
+            tooltip={t("menu")}
+            aria-label={t("menu")}
+            className="h-9 group-data-[collapsible=icon]:[&>span]:sr-only"
+            onClick={toggleSidebar}
+          >
+            <Menu aria-hidden="true" />
+            <span>{t("menu")}</span>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
         <SidebarMenuItem>
           <SidebarMenuButton
             asChild
             isActive={pathname === "/"}
-            className="h-9"
+            tooltip={t("home")}
+            className="h-9 group-data-[collapsible=icon]:[&>span]:sr-only"
           >
             <TrackedLink
               href="/"
@@ -53,12 +71,6 @@ export function MobileBrandBar({ className }: { className?: string }) {
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
-      <div className="group/home-control relative shrink-0">
-        <SidebarTrigger className="size-8 group-data-[collapsible=icon]:[&>svg]:opacity-0 group-data-[collapsible=icon]:hover:[&>svg]:opacity-100 group-data-[collapsible=icon]:focus:[&>svg]:opacity-100 group-data-[collapsible=icon]:[@media(hover:none)]:[&>svg]:opacity-100" />
-        <span className="pointer-events-none absolute inset-0 hidden items-center justify-center group-data-[collapsible=icon]:flex group-hover/home-control:opacity-0 group-focus-within/home-control:opacity-0 [@media(hover:none)]:opacity-0">
-          <HomeAvatar />
-        </span>
-      </div>
     </div>
   );
 }

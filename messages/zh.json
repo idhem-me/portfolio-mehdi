@@ -109,7 +109,8 @@
   "nav": {
     "openMenu": "打开菜单",
     "closeMenu": "关闭菜单",
-    "menu": "导航",
+    "menu": "菜单",
+    "backToPortfolio": "返回作品集",
     "home": "首页",
     "productDesigner": "产品设计师",
     "about": "关于我",

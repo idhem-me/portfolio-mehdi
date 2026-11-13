@@ -19,5 +19,5 @@
     [data-design-system="fun"],
     [data-design-system="frutiger-aero"]
   ) {
-  --font-sans: var(--font-google-sans);
+  --font-sans: var(--font-open-sans), var(--font-open-sans-ext), "Open Sans", sans-serif;
 }
