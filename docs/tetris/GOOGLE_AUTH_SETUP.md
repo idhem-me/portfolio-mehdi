@@ -74,3 +74,9 @@ Les paragraphes historiques concernant la confirmation manuelle après connexion
 `google.accounts.id.renderButton` dessine le bouton officiel. `/api/tetris/auth/credential` prépare le nonce puis échange le jeton Google via le client Supabase SSR existant. La session conserve ses cookies HttpOnly ; aucun nouveau système d’authentification n’est créé. Le profil applicatif utilise le nom et l’avatar Google comme valeurs initiales et garde ses personnalisations en base, sans modifier le compte externe.
 
 Une fermeture de fenêtre n’efface ni le score ni le pseudo ; aucune obligation d’identification pour jouer. Le brouillon n’est supprimé qu’après confirmation de sauvegarde (ou exclusion de la partie guidée Google), avec une validité de 24 h alignée sur la session serveur.
+
+## Recette en production — 13 novembre 2026
+
+Le classement appelle `tetris_leaderboard_v3` et la publication appelle `tetris_score_receipt` et `tetris_commit_score_v3`. Le projet Supabase de production possédait déjà les fonctions des migrations 001 et 002. Les migrations 003 et 004 du dépôt ont été appliquées. La lecture renvoie les deux records existants. Une transaction de recette sous `service_role` a confirmé l’écriture et sa répétition sans doublon, puis a été annulée.
+
+Le bouton de connexion actuel utilise le flux OAuth avec PKCE. La route de départ répond et suit les redirections du fournisseur. L’endpoint séparé du bouton GIS déclare ce bouton indisponible en production ; il ne sert pas au parcours OAuth actuel. Vérification restante : connecter un compte Google réel, terminer une partie classique, choisir « Enregistrer en ligne », puis vérifier le record depuis un autre navigateur.
