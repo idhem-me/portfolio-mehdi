@@ -13,10 +13,12 @@ import { SidebarMenu, SidebarMenuItem, useSidebar } from "@/components/ui/sideba
 export function SectionNavigation({
   label,
   backHref = "/",
+  showBackLink = true,
   children,
 }: {
   label: string;
   backHref?: string;
+  showBackLink?: boolean;
   children: ReactNode;
 }) {
   const t = useTranslations("nav");
@@ -37,11 +39,13 @@ export function SectionNavigation({
         className="fixed left-1/2 bottom-[calc(2rem+env(safe-area-inset-bottom))] z-30 w-max max-w-[calc(100%-2rem)] -translate-x-1/2 rounded-xl border border-sidebar-border bg-sidebar p-1 text-sidebar-foreground shadow-lg md:sticky md:left-auto md:z-0 md:top-0 md:bottom-auto md:h-dvh md:w-44 md:max-w-none md:translate-x-0 md:shrink-0 md:self-start md:overflow-y-auto md:rounded-none md:border-0 md:border-e md:p-2 md:shadow-none"
       >
         <div className="hidden items-center gap-2 px-2 py-2 md:flex">
-          <Button asChild variant="ghost" size="icon" className="size-8 shrink-0">
-            <Link href={backHref} aria-label={t("backToPortfolio")}>
-              <ArrowLeft aria-hidden="true" />
-            </Link>
-          </Button>
+          {showBackLink ? (
+            <Button asChild variant="ghost" size="icon" className="size-8 shrink-0">
+              <Link href={backHref} aria-label={t("backToPortfolio")}>
+                <ArrowLeft aria-hidden="true" />
+              </Link>
+            </Button>
+          ) : null}
           <span className="min-w-0 truncate font-medium">{label}</span>
         </div>
         <SidebarMenu className="w-auto flex-row flex-wrap justify-center gap-1 md:w-full md:flex-col md:justify-start">

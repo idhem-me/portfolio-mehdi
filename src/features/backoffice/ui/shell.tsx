@@ -16,7 +16,7 @@ export function BackofficeShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   return (
     <div className="flex min-h-svh min-w-0">
-      <SectionNavigation label={nav("backoffice")}>
+      <SectionNavigation label={nav("backoffice")} showBackLink={false}>
         {navigation.map((n) => (
           <SectionNavigationItem key={n.href} active={path === n.href}>
             <Link

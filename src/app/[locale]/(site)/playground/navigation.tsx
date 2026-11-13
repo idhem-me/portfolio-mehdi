@@ -16,7 +16,7 @@ export function PlaygroundNavigation({ showLocalComponents }: { showLocalCompone
   const local = pathname === "/playground/local-components";
 
   return (
-    <SectionNavigation label={t("title")}>
+    <SectionNavigation label={t("title")} showBackLink={false}>
       <SectionNavigationItem active={catalog}>
         <Link href="/playground" aria-current={catalog ? "page" : undefined}>
           <PanelsTopLeft aria-hidden />
