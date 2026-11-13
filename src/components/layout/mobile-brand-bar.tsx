@@ -10,11 +10,9 @@ import {
 import {
   DesignSystemSidebarButton as SidebarMenuButton,
 } from "@/components/design-system/sidebar-button";
+import { DesignSystemButton } from "@/components/design-system/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { TrackedLink } from "@/components/analytics/tracked-link";
 import { profileMeta } from "@/data/profile-meta";
-import { AnalyticsEvents } from "@/lib/analytics/events";
-import { usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 export function HomeAvatar({ className }: { className?: string }) {
@@ -31,46 +29,57 @@ export function HomeAvatar({ className }: { className?: string }) {
   );
 }
 
-/** Accueil et commande indépendante du panel, alignés avec la navigation. */
-export function MobileBrandBar({ className }: { className?: string }) {
+/** Commande indépendante qui ouvre ou réduit le panneau de navigation. */
+export function SidebarMenuToggle({ className }: { className?: string }) {
   const t = useTranslations("nav");
-  const pathname = usePathname();
-  const { toggleSidebar } = useSidebar();
+  const { state, setOpen, toggleSidebar } = useSidebar();
+  const isExpanded = state === "expanded";
 
   return (
-    <div className={cn("flex flex-col gap-1 p-2", className)}>
-      <SidebarMenu>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            type="button"
-            tooltip={t("menu")}
-            aria-label={t("menu")}
-            className="h-9 group-data-[collapsible=icon]:[&>span]:sr-only"
-            onClick={toggleSidebar}
-          >
-            <Menu aria-hidden="true" />
-            <span>{t("menu")}</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            asChild
-            isActive={pathname === "/"}
-            tooltip={t("home")}
-            className="h-9 group-data-[collapsible=icon]:[&>span]:sr-only"
-          >
-            <TrackedLink
-              href="/"
-              aria-current={pathname === "/" ? "page" : undefined}
-              event={AnalyticsEvents.nav_click}
-              eventProps={{ href: "/", label: t("home") }}
+    <div className={cn("flex min-w-0 items-center justify-between gap-0 p-2", className)}>
+      {isExpanded ? (
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="pointer-events-none hover:bg-transparent hover:text-sidebar-foreground"
             >
-              <HomeAvatar />
-              <span>{t("home")}</span>
-            </TrackedLink>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+              <div>
+                <Menu aria-hidden="true" />
+                <span>{t("menu")}</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      ) : (
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              type="button"
+              tooltip={t("openMenu")}
+              aria-label={t("openMenu")}
+              className="w-8 justify-center"
+              onClick={toggleSidebar}
+            >
+              <Menu aria-hidden="true" />
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      )}
+      {isExpanded ? (
+        <DesignSystemButton
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t("closeMenu")}
+          title={t("closeMenu")}
+          onClick={() => setOpen(false)}
+        >
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M5,21q-0.83,0-1.41-0.59T3,19V5Q3,4.17 3.59,3.59T5,3H19q0.83,0 1.41,0.59T21,5V19q0,0.82-0.59,1.41T19,21H5Zm3-2V5H5V19H8Zm2,0h9V5H10V19ZM8,19H5H8Z" />
+          </svg>
+        </DesignSystemButton>
+      ) : null}
     </div>
   );
 }

@@ -1,5 +1,9 @@
 # Changelog du design system
 
+## Boutons Frutiger Aero en mode sombre — 13 novembre 2026
+
+- Les variantes Primary et Secondary échangent leurs dégradés en mode sombre : Primary reçoit la surface neutre claire et Secondary le gel bleu. Le mode clair reste inchangé.
+
 ## Polices locales et build hors ligne — 13 novembre 2026
 
 - Les polices Open Sans, Bricolage Grotesque, Geist Mono et le sous-ensemble latin Noto Sans SC sont chargés depuis `src/app/fonts/` avec `next/font/local`. Le build ne contacte plus `fonts.googleapis.com`.
@@ -10,7 +14,7 @@
 ## Navigation latérale — 13 novembre 2026
 
 - Le thème Sobre utilise l’icône `Contrast` dans le sélecteur de design system.
-- L’en-tête de la navigation place la commande « Menu » au-dessus du lien « Accueil ». En mode réduit, chaque action conserve sa propre icône et son infobulle ; l’avatar ne chevauche plus le déclencheur.
+- L’en-tête ouvert affiche l’icône hamburger et « Menu » dans le style des entrées, puis un bouton Ghost icon-only avec l’icône de panneau et l’infobulle « Fermer le menu ». En mode réduit, le hamburger seul permet de rouvrir la sidebar. « Accueil » est la première entrée de la liste de navigation avec un avatar de 16 px.
 - L’arrivée dans un sous-menu réduit la sidebar principale. Le panneau secondaire partage un en-tête avec retour à l’accueil et nom de section, au-dessus des liens.
 - Le libellé Menu est synchronisé dans les sept langues.
 

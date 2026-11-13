@@ -49,6 +49,14 @@
   --aero-neutral-upper: #e7f5fa;
   --aero-neutral-lower: #c8e2ef;
   --aero-neutral-bounce: #f0fcff;
+  --aero-primary-button-top: var(--aero-gel-top);
+  --aero-primary-button-upper: var(--aero-gel-upper);
+  --aero-primary-button-lower: var(--aero-gel-lower);
+  --aero-primary-button-bounce: var(--aero-gel-bounce);
+  --aero-secondary-button-top: var(--aero-neutral-top);
+  --aero-secondary-button-upper: var(--aero-neutral-upper);
+  --aero-secondary-button-lower: var(--aero-neutral-lower);
+  --aero-secondary-button-bounce: var(--aero-neutral-bounce);
   --aero-danger-top: #fff3f6;
   --aero-danger-upper: #ffd4e0;
   --aero-danger-lower: #f4b4ca;
@@ -180,6 +188,14 @@ html.dark[data-design-system="frutiger-aero"],
   --aero-danger: #ffb9d0;
   --aero-success: #b1ef8a;
   --aero-warning: #ffe0a6;
+  --aero-primary-button-top: var(--aero-neutral-top);
+  --aero-primary-button-upper: var(--aero-neutral-upper);
+  --aero-primary-button-lower: var(--aero-neutral-lower);
+  --aero-primary-button-bounce: var(--aero-neutral-bounce);
+  --aero-secondary-button-top: var(--aero-gel-top);
+  --aero-secondary-button-upper: var(--aero-gel-upper);
+  --aero-secondary-button-lower: var(--aero-gel-lower);
+  --aero-secondary-button-bounce: var(--aero-gel-bounce);
   --aero-glint: rgb(236 253 255 / 80%);
   --aero-bubble: rgb(164 239 255 / 17%);
   --aero-depth: rgb(0 18 46 / 52%);
@@ -356,10 +372,17 @@ html[data-design-system="frutiger-aero"] body {
   }
 
   [data-slot="button"]:is([data-variant="default"], [data-variant="primary"]) {
-    --aero-button-top: var(--aero-gel-top);
-    --aero-button-upper: var(--aero-gel-upper);
-    --aero-button-lower: var(--aero-gel-lower);
-    --aero-button-bounce: var(--aero-gel-bounce);
+    --aero-button-top: var(--aero-primary-button-top);
+    --aero-button-upper: var(--aero-primary-button-upper);
+    --aero-button-lower: var(--aero-primary-button-lower);
+    --aero-button-bounce: var(--aero-primary-button-bounce);
+  }
+
+  [data-slot="button"][data-variant="secondary"] {
+    --aero-button-top: var(--aero-secondary-button-top);
+    --aero-button-upper: var(--aero-secondary-button-upper);
+    --aero-button-lower: var(--aero-secondary-button-lower);
+    --aero-button-bounce: var(--aero-secondary-button-bounce);
   }
 
   [data-slot="button"][data-variant="accent"] {

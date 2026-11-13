@@ -8,12 +8,17 @@ Complément demandé le 13 novembre 2026 : lorsqu’un panneau de navigation sec
 
 Complément demandé le 13 novembre 2026 : corriger l’échec de build causé par les téléchargements `next/font/google` vers `fonts.googleapis.com`, en auto-hébergeant les familles ouvertes utilisées par le portfolio et en supprimant la dépendance à Google Sans propriétaire.
 
+Complément demandé le 13 novembre 2026 : laisser le bouton hamburger seul dans l’en-tête et déplacer « Accueil » comme première entrée de la liste de navigation, avec un avatar de la même taille que les autres icônes.
+
+Complément demandé le 13 novembre 2026 : lorsque la sidebar est ouverte, afficher l’icône hamburger suivie de « Menu » dans le style des entrées de navigation, sans rendre ce libellé cliquable. Placer à droite un bouton Ghost avec une icône de panneau et l’infobulle « Fermer le menu ». À l’état réduit, le hamburger seul ouvre la sidebar.
+
 Le serveur de développement rencontrait une erreur de résolution Next.js avec Turbopack dans cette copie du workspace. Webpack est conservé, avec le plugin PostCSS officiel de Tailwind pour garder les utilitaires du site.
 
 ## Proposition
 
-- Réorganiser l’en-tête desktop en deux entrées verticales : commande Menu (ouverture/fermeture) puis lien Accueil avec avatar.
-- En état réduit, garder les deux commandes accessibles : icône Menu avec infobulle pour développer le panneau, puis avatar seul pour Accueil. Retirer le chevauchement actuel entre l’avatar et le déclencheur.
+- À l’état développé, afficher l’icône hamburger et le libellé Menu dans le style des entrées, avec à droite un bouton Ghost icon-only et l’infobulle Fermer le menu ; à l’état réduit, garder uniquement le bouton hamburger avec une infobulle pour ouvrir.
+- Placer le lien Accueil en première position dans la liste de navigation, avec le même gabarit que les autres liens et un avatar de 16 px.
+- En état réduit, garder le bouton Menu accessible avec son infobulle ; Accueil reste dans la liste et utilise l’avatar comme icône.
 - Garder le comportement mobile du panneau, avec son libellé Menu traduit et l’entrée Accueil avec avatar.
 - Employer `Contrast` pour le thème Sobre dans le sélecteur de design system.
 - Synchroniser le libellé « Menu » dans les sept fichiers `messages/{ar,de,en,es,fr,it,zh}.json` afin de respecter la règle i18n du dépôt.
