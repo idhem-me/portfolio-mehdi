@@ -1,6 +1,6 @@
 /* Frutiger Aero: all material, colour and geometry values live in theme tokens. */
 :is(html, .ds-scope)[data-design-system="frutiger-aero"] {
-  --font-sans: var(--font-open-sans), "Open Sans", sans-serif;
+  --font-sans: var(--font-nunito-sans), "Nunito Sans", sans-serif;
   --aero-font-regular: 400;
   --aero-font-semibold: 600;
   --aero-canvas: #e8f9ff;

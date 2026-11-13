@@ -23,7 +23,7 @@ Les contours des contrôles et surfaces utilisent `--fun-control-border` et `--f
 
 ## Frutiger Aero et Liquid Glass
 
-[Frutiger Aero](/playground#frutiger-aero) utilise Open Sans (400/600, italique pour les descriptions), une encre bleu nuit et des surfaces en verre liquide. Les boutons bleu eau et émeraude utilisent quatre stops à 0/49/50/100 %, un biseau, une lueur au survol et une pression de 200 ms. Les champs et zones de texte sont creusés ; cartes, navigation et dialogues partagent les tokens de réfraction et de verre saturé. Les variantes invalides et désactivées restent visibles dans la composition. Les polices arabe, chinoise et monospace restent dédiées.
+[Frutiger Aero](/playground#frutiger-aero) utilise Nunito Sans (400/600, italique pour les descriptions), une encre bleu nuit et des surfaces en verre liquide. Les boutons bleu eau et émeraude utilisent quatre stops à 0/49/50/100 %, un biseau, une lueur au survol et une pression de 200 ms. Les champs et zones de texte sont creusés ; cartes, navigation et dialogues partagent les tokens de réfraction et de verre saturé. Les variantes invalides et désactivées restent visibles dans la composition. Les polices arabe, chinoise et monospace restent dédiées.
 
 Les tokens `--aero-button-sheen`, `--aero-panel-sheen`, `--aero-panel-shadow` et `--aero-input-shadow` sont montrés dans le comparatif. Les valeurs de matière, contours, rayons, typographie et mouvement sont définies dans `frutiger-aero.css`. Les portées locales et les portails conservent leur thème. Une surface opaque remplace le verre lorsque le flou est indisponible ou la transparence réduite est demandée.
 
