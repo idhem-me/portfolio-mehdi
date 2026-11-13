@@ -1,5 +1,7 @@
 # Couverture des composants du Playground
 
+Les six variantes de [Badge](/playground#badge) partagent une police de 14 px, une hauteur de 24 px et un padding horizontal de 6 px par côté dans les deux densités. Le badge de conversion d’image conserve une hauteur automatique pour les messages sur plusieurs lignes.
+
 Relevé statique du 7 novembre 2026, actualisé pour les nouvelles démos. Une ligne par module TSX sous `src/app`, `src/components` et `src/features`. Les modules peuvent contenir plusieurs composants. Les imports de primitives indiquent une adoption directe, sans préjuger des composants utilisés indirectement. Les feuilles CSS et modules TypeScript auxiliaires sont traités dans la revue et la liste des écarts.
 
 Une composition absente peut être ajoutée comme scénario si elle définit une interaction ou un état réutilisable. Les pages de contenu restent des contextes d’usage. Les jeux masqués sont inventoriés uniquement dans le dépôt.

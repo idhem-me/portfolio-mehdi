@@ -518,7 +518,6 @@
   font-weight: 500;
   letter-spacing: normal;
   text-transform: none;
-  font-size: clamp(0.55rem, 1.5vw, 0.75rem);
   padding-inline: calc(var(--spacing) * 1.5);
 }
 .lava-hud-bottom {
