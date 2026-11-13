@@ -24,7 +24,7 @@ test("reject unfinished, unknown, infinite and post-game replay operations", () 
     assert.throws(() => verifyReplay(42, steps));
   assert.throws(() => verifyReplay(42, [...finished(42).steps, "hard"]));
 });
-test("SQLite stores server-derived scores, rejects ownership/reuse and retains one personal best", () => {
+test("SQLite keeps one guest best and permits multiple verified account scores", () => {
   const db = new LeaderboardStore(":memory:");
   try {
     const session = db.session("alice");
@@ -45,6 +45,27 @@ test("SQLite stores server-derived scores, rejects ownership/reuse and retains o
     const second = db.session("alice");
     db.submit("alice", second.id, "Alice", finished(second.seed).steps);
     assert.equal(db.list().length, 1);
+    const third = db.session("browser-one");
+    db.submit(
+      "browser-one",
+      third.id,
+      "Joueur",
+      finished(third.seed).steps,
+      "google:account",
+    );
+    const fourth = db.session("browser-two");
+    db.submit(
+      "browser-two",
+      fourth.id,
+      "Joueur",
+      finished(fourth.seed).steps,
+      "google:account",
+    );
+    assert.equal(db.list().length, 3);
+    assert.equal(
+      db.list().filter((row) => row.name === "Joueur").length,
+      2,
+    );
   } finally {
     db.db.close();
   }
@@ -61,14 +82,14 @@ test("session expiration, ranked ties, and per-player start rate limits", () => 
     assert.throws(() => db.session("bob"));
     db.db
       .prepare(
-        "INSERT INTO scores(owner,name,score,lines,created) VALUES (?,?,?,?,?)",
+        "INSERT INTO score_history(id,owner,name,score,lines,created,avatar) VALUES (?,?,?,?,?,?,?)",
       )
-      .run("a", "Alice", 100, 1, Date.now());
+      .run("legacy:a", "a", "Alice", 100, 1, Date.now(), null);
     db.db
       .prepare(
-        "INSERT INTO scores(owner,name,score,lines,created) VALUES (?,?,?,?,?)",
+        "INSERT INTO score_history(id,owner,name,score,lines,created,avatar) VALUES (?,?,?,?,?,?,?)",
       )
-      .run("b", "Bob", 100, 1, Date.now());
+      .run("legacy:b", "b", "Bob", 100, 1, Date.now(), null);
     assert.deepEqual(
       db.list().map((r) => r.rank),
       [1, 1],

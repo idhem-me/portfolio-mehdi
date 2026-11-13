@@ -47,6 +47,23 @@ test("libSQL adapter derives scores, validates ownership and persists across ind
     const next = await b.session("alice");
     await b.submit("alice", next.id, "Alice", finished(next.seed).steps);
     assert.equal((await b.list()).length, 1);
+    const accountRunA = await b.session("browser-one"),
+      accountRunB = await b.session("browser-two");
+    await b.submit(
+      "browser-one",
+      accountRunA.id,
+      "Joueur",
+      finished(accountRunA.seed).steps,
+      "google:account",
+    );
+    await b.submit(
+      "browser-two",
+      accountRunB.id,
+      "Joueur",
+      finished(accountRunB.seed).steps,
+      "google:account",
+    );
+    assert.equal((await b.list()).length, 3);
   } finally {
     first.close();
     second.close();

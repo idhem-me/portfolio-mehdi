@@ -8,7 +8,7 @@ Dans votre projet Supabase existant, ouvrir **SQL Editor → New query**, coller
 
 [`supabase/migrations/202610250001_tetris_leaderboard.sql`](../../supabase/migrations/202610250001_tetris_leaderboard.sql)
 
-Puis cliquer **Run**. Pour conserver Google déjà configuré, appliquer ensuite `202610250002_tetris_google_records.sql`, puis `202610250003_tetris_local_profiles.sql` afin d’activer les profils, les historiques privés et les avatars Google. Ces migrations ne suppriment aucun record existant. Elles peuvent être exécutées dans l’ordre depuis SQL Editor.
+Puis cliquer **Run**. Appliquer ensuite, dans l’ordre, `202610250002_tetris_google_records.sql`, `202610250003_tetris_local_profiles.sql`, `202610250004_tetris_identity_receipts.sql`, puis `202611130001_tetris_multiple_account_scores.sql`. Ces migrations activent Google, les profils, les historiques privés, les confirmations d’envoi et l’historique de plusieurs scores par compte. La dernière copie le meilleur score existant dans l’historique et conserve les tables précédentes pour compatibilité. Aucune ne supprime de record existant. Elles peuvent être exécutées dans l’ordre depuis SQL Editor.
 
 Les tables ont RLS activé. Les rôles navigateur `anon` et `authenticated` ne peuvent ni les lire ni appeler les fonctions. Seul le serveur Next.js, avec la clé secrète du projet, y accède. Le serveur rejoue une partie avant de soumettre un résultat ; PostgreSQL assure l’enregistrement atomique et empêche un double envoi. Les scores Google restent dans le classement public existant. Les nouveaux profils locaux et leurs parties restent dans des tables privées distinctes, hors du classement Google. La première partie guidée est conservée uniquement dans l’historique local.
 
@@ -44,7 +44,7 @@ Vérifier ensuite :
 2. Terminer une partie classique après la première partie guidée, puis envoyer un score avec un pseudonyme.
 3. Vérifier depuis un autre téléphone que le score apparaît, puis qu’il reste présent après redéploiement.
 
-Le classement affiche les 20 premiers records de moins de 90 jours, avec un seul record par identité Google ou navigateur invité historique. Les profils locaux sont liés au cookie HttpOnly et leurs scores ne sont pas publics. Les pauses sont permises. Aucun compte Google requis pour le profil local ; le cookie distingue les navigateurs, pas les personnes.
+Le classement affiche les 20 meilleurs résultats de moins de 90 jours. Un compte Google ou Apple peut occuper plusieurs rangs ; un navigateur invité conserve son meilleur résultat. Les profils locaux sont liés au cookie HttpOnly et leurs scores ne sont pas publics. Les pauses sont permises. Aucun compte Google requis pour le profil local ; le cookie distingue les navigateurs, pas les personnes.
 
 ## Dépannage
 
@@ -66,4 +66,4 @@ Le pseudo sans compte reste le parcours de base. L’option Google, la migration
 
 ## Confirmation des sauvegardes et profils Google
 
-Appliquer aussi `supabase/migrations/202610250004_tetris_identity_receipts.sql` après 003 avant d’utiliser cette version. Cette migration conserve les données existantes, ajoute des confirmations privées par session/identité et permet une nouvelle tentative après une réponse réseau perdue. Les rôles navigateur n’ont aucun accès aux confirmations. Les profils Google personnalisés et les profils locaux restent séparés ; aucune fusion par pseudonyme.
+La migration `supabase/migrations/202610250004_tetris_identity_receipts.sql` conserve les données existantes, ajoute des confirmations privées par session/identité et permet une nouvelle tentative après une réponse réseau perdue. Les rôles navigateur n’ont aucun accès aux confirmations. Les profils Google personnalisés et les profils locaux restent séparés ; aucune fusion par pseudonyme.

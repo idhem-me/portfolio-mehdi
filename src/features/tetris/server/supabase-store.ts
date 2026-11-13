@@ -112,7 +112,7 @@ export class SupabaseLeaderboardStore {
     if (game.elapsed > Date.now() - Number(session.created) + 2000)
       throw Error("Durée de partie invalide.");
     await this.rpc(
-      recordOwner === owner ? "tetris_commit_score" : "tetris_commit_score_v3",
+      recordOwner === owner ? "tetris_commit_score" : "tetris_commit_account_score_v1",
       {
         ...(recordOwner === owner
           ? {}
@@ -184,37 +184,17 @@ export class SupabaseLeaderboardStore {
     });
     return { score: game.score, lines: game.lines };
   }
-  /** Private owner lookup: hashes never leave the server; no new SQL migration. */
-  async rank(owner: string) {
-    const url = new URL("../tetris_scores", this.base);
-    url.searchParams.set("select", "owner,score,lines");
-    url.searchParams.set("created", "gt." + (Date.now() - 90 * 86400000));
-    url.searchParams.set("order", "score.desc,lines.desc,created.asc");
-    url.searchParams.set("limit", "20");
-    const response = await this.request(url.toString(), {
-      method: "GET",
-      headers: this.headers,
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
+  /** Rank lookup is private; owner hashes never leave the server. */
+  async rank(owner: string, runId: string) {
+    const result = await this.rpc<number | null>("tetris_score_rank_v1", {
+      p_id: hash(runId),
+      p_owner: hash(owner),
     });
-    if (!response.ok) throw Error("Classement indisponible.");
-    const rows = (await response.json()) as {
-      owner: string;
-      score: number;
-      lines: number;
-    }[];
-    const index = rows.findIndex((row) => row.owner === hash(owner));
-    if (index < 0) return null;
-    return (
-      rows.findIndex(
-        (row) =>
-          Number(row.score) === Number(rows[index].score) &&
-          Number(row.lines) === Number(rows[index].lines),
-      ) + 1
-    );
+    return result === null ? null : Number(result);
   }
   async list() {
     let rows: {
+      id: string;
       name: string;
       score: number;
       lines: number;
@@ -224,21 +204,26 @@ export class SupabaseLeaderboardStore {
     try {
       rows = await this.rpc<
         {
+          id: string;
           name: string;
           score: number;
           lines: number;
           avatar: string | null;
           rank: number;
         }[]
-      >("tetris_leaderboard_v3");
+      >("tetris_leaderboard_v4");
     } catch {
       const legacy =
         await this.rpc<
-          { name: string; score: number; lines: number; rank: number }[]
-        >("tetris_leaderboard");
-      rows = legacy.map((row) => ({ ...row, avatar: null }));
+          { name: string; score: number; lines: number; avatar: string | null; rank: number }[]
+        >("tetris_leaderboard_v3");
+      rows = legacy.map((row, index) => ({
+        ...row,
+        id: `legacy:${row.rank}:${index}`,
+      }));
     }
     return rows.map((row) => ({
+      id: row.id,
       name: row.name,
       score: Number(row.score),
       lines: Number(row.lines),

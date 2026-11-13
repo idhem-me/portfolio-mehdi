@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     // Saving succeeded even if a subsequent rank lookup is temporarily unavailable.
     let rank: number | null | undefined;
     try {
-      rank = await backend.rank(account || guest);
+      rank = await backend.rank(account || guest, body.id);
     } catch (error) {
       reportBackendFailure(error);
     }

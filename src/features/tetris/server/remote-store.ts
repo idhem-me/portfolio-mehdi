@@ -18,11 +18,13 @@ export class RemoteLeaderboardStore {
         [
           "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY,owner TEXT,seed INTEGER,created INTEGER,used INTEGER DEFAULT 0)",
           "CREATE TABLE IF NOT EXISTS scores (owner TEXT PRIMARY KEY,name TEXT,score INTEGER,lines INTEGER,created INTEGER,avatar TEXT)",
+          "CREATE TABLE IF NOT EXISTS score_history (id TEXT PRIMARY KEY,owner TEXT NOT NULL,name TEXT NOT NULL,score INTEGER NOT NULL,lines INTEGER NOT NULL,created INTEGER NOT NULL,avatar TEXT)",
           "CREATE TABLE IF NOT EXISTS player_profiles (owner TEXT PRIMARY KEY,name TEXT NOT NULL,avatar TEXT,updated INTEGER NOT NULL)",
           "CREATE TABLE IF NOT EXISTS score_receipts (id TEXT PRIMARY KEY,owner TEXT,target TEXT,score INTEGER,lines INTEGER)",
           "CREATE TABLE IF NOT EXISTS local_scores (id TEXT PRIMARY KEY,owner TEXT NOT NULL,score INTEGER NOT NULL,lines INTEGER NOT NULL,created INTEGER NOT NULL)",
           "CREATE INDEX IF NOT EXISTS sessions_owner_created ON sessions(owner,created)",
           "CREATE INDEX IF NOT EXISTS scores_ranking ON scores(score DESC,lines DESC)",
+          "CREATE INDEX IF NOT EXISTS score_history_ranking ON score_history(score DESC,lines DESC,created ASC)",
         ],
         "write",
       )
@@ -30,6 +32,9 @@ export class RemoteLeaderboardStore {
         try {
           await this.db.execute("ALTER TABLE scores ADD COLUMN avatar TEXT");
         } catch {}
+        await this.db.execute(
+          "INSERT OR IGNORE INTO score_history(id,owner,name,score,lines,created,avatar) SELECT 'legacy:'||owner,owner,name,score,lines,created,avatar FROM scores",
+        );
         return result;
       })
       .catch((error) => {
@@ -49,6 +54,10 @@ export class RemoteLeaderboardStore {
       });
       await transaction.execute({
         sql: "DELETE FROM scores WHERE created<?",
+        args: [now - 90 * 86400000],
+      });
+      await transaction.execute({
+        sql: "DELETE FROM score_history WHERE created<?",
         args: [now - 90 * 86400000],
       });
       const count = await transaction.execute({
@@ -126,6 +135,33 @@ export class RemoteLeaderboardStore {
           avatar,
         ],
       });
+      if (recordOwner === owner) {
+        await transaction.execute({
+          sql: `INSERT INTO score_history(id,owner,name,score,lines,created,avatar) VALUES (?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,score=excluded.score,lines=excluded.lines,created=excluded.created,avatar=coalesce(excluded.avatar,score_history.avatar) WHERE excluded.score>score_history.score OR (excluded.score=score_history.score AND excluded.lines>score_history.lines)`,
+          args: [
+            `legacy:${hash(recordOwner)}`,
+            hash(recordOwner),
+            name,
+            game.score,
+            game.lines,
+            Date.now(),
+            avatar,
+          ],
+        });
+      } else {
+        await transaction.execute({
+          sql: "INSERT INTO score_history(id,owner,name,score,lines,created,avatar) VALUES (?,?,?,?,?,?,?)",
+          args: [
+            hash(id),
+            hash(recordOwner),
+            name,
+            game.score,
+            game.lines,
+            Date.now(),
+            avatar,
+          ],
+        });
+      }
       await transaction.execute({
         sql: "INSERT INTO score_receipts VALUES (?,?,?,?,?)",
         args: [
@@ -225,22 +261,28 @@ export class RemoteLeaderboardStore {
     }
     return { score: game.score, lines: game.lines };
   }
-  async rank(owner: string) {
+  async rank(owner: string, runId: string) {
     await this.initialize();
     const result = await this.db.execute({
-      sql: "SELECT owner,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM scores WHERE created>? ORDER BY score DESC,lines DESC,created ASC LIMIT 20",
+      sql: "SELECT id,owner,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM score_history WHERE created>? ORDER BY score DESC,lines DESC,created ASC,id ASC LIMIT 20",
       args: [Date.now() - 90 * 86400000],
     });
-    const row = result.rows.find((row) => row.owner === hash(owner));
+    const identity = hash(owner),
+      row = result.rows.find(
+        (item) => item.id === hash(runId) && item.owner === identity,
+      ) ?? result.rows.find(
+        (item) => item.id === `legacy:${identity}` && item.owner === identity,
+      );
     return row ? Number(row.rank) : null;
   }
   async list() {
     await this.initialize();
     const result = await this.db.execute({
-      sql: "SELECT name,score,lines,avatar,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM scores WHERE created>? ORDER BY score DESC,lines DESC,created ASC LIMIT 20",
+      sql: "SELECT id,name,score,lines,avatar,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM score_history WHERE created>? ORDER BY score DESC,lines DESC,created ASC,id ASC LIMIT 20",
       args: [Date.now() - 90 * 86400000],
     });
     return result.rows.map((row) => ({
+      id: String(row.id),
       name: String(row.name),
       score: Number(row.score),
       lines: Number(row.lines),

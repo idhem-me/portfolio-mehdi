@@ -47,6 +47,15 @@ async function setup() {
   );
   await db.exec(receiptsSql);
   await db.exec(receiptsSql);
+  const historySql = await readFile(
+    new URL(
+      "../../../../supabase/migrations/202611130001_tetris_multiple_account_scores.sql",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  await db.exec(historySql);
+  await db.exec(historySql);
   await db.exec("set role service_role");
   const calls: {
     name: string;
@@ -106,6 +115,30 @@ async function setup() {
             ],
           );
           rows = null;
+        } else if (name === "tetris_commit_account_score_v1") {
+          await db.query(
+            "select public.tetris_commit_account_score_v1($1,$2,$3,$4,$5,$6,$7)",
+            [
+              args.p_id,
+              args.p_owner,
+              args.p_record_owner,
+              args.p_name,
+              args.p_score,
+              args.p_lines,
+              args.p_avatar,
+            ],
+          );
+          rows = null;
+        } else if (name === "tetris_leaderboard_v4")
+          rows = (
+            await db.query("select * from public.tetris_leaderboard_v4()")
+          ).rows;
+        else if (name === "tetris_score_rank_v1") {
+          const result = await db.query<{ rank: number | null }>(
+            "select public.tetris_score_rank_v1($1,$2) as rank",
+            [args.p_id, args.p_owner],
+          );
+          rows = result.rows[0].rank;
         } else if (name === "tetris_leaderboard_v3")
           rows = (
             await db.query("select * from public.tetris_leaderboard_v3()")
@@ -196,6 +229,47 @@ test("Supabase RPC + PostgreSQL migration verifies scores and prevents reused se
     await db.close();
   }
 });
+test("history migration preserves legacy bests once and keeps browser roles out", async () => {
+  const { db, store } = await setup();
+  try {
+    const owner = createHash("sha256").update("legacy-browser").digest("hex");
+    await db.query(
+      "insert into public.tetris_scores(owner,name,score,lines,created,avatar) values($1,$2,$3,$4,$5,$6)",
+      [owner, "Ancien", 1800, 12, Date.now(), null],
+    );
+    const historySql = await readFile(
+      new URL(
+        "../../../../supabase/migrations/202611130001_tetris_multiple_account_scores.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    await db.exec("reset role");
+    await db.exec(historySql);
+    await db.exec(historySql);
+    await db.exec("set role service_role");
+    const rows = await store.list();
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].id, `legacy:${owner}`);
+    assert.equal(rows[0].score, 1800);
+    for (const role of ["anon", "authenticated"]) {
+      await db.exec(`set role ${role}`);
+      await assert.rejects(
+        () => db.query("select * from public.tetris_score_history"),
+        /permission denied/,
+      );
+      await assert.rejects(
+        () =>
+          db.query(
+            "select public.tetris_commit_account_score_v1('a','b','c','name',0,0,null)",
+          ),
+        /permission denied/,
+      );
+    }
+  } finally {
+    await db.close();
+  }
+});
 test("Supabase permissions deny browser roles and failed score upserts roll back session claims", async () => {
   const { db, store, calls } = await setup();
   try {
@@ -203,6 +277,10 @@ test("Supabase permissions deny browser roles and failed score upserts roll back
       await db.exec(`set role ${role}`);
       await assert.rejects(
         () => db.query("select * from public.tetris_scores"),
+        /permission denied/,
+      );
+      await assert.rejects(
+        () => db.query("select * from public.tetris_score_history"),
         /permission denied/,
       );
       await assert.rejects(
@@ -405,14 +483,33 @@ test("Google records follow the verified account while replay sessions stay boun
       finish(b.seed).steps,
       "google:account",
     );
-    assert.equal((await store.list()).length, 1);
+    assert.equal((await store.list()).length, 2);
+    assert.notEqual((await store.list())[0].id, (await store.list())[1].id);
+    const accountRows = (await store.list()).filter(
+      (row) => row.name === "Joueur",
+    );
     assert.equal(
-      (await store.list())[0].avatar,
-      "https://lh3.googleusercontent.com/avatar.png",
+      await store.rank("google:account", a.id),
+      accountRows.find(
+        (row) =>
+          row.id === createHash("sha256").update(a.id).digest("hex"),
+      )?.rank,
+    );
+    assert.equal(
+      await store.rank("google:account", b.id),
+      accountRows.find(
+        (row) =>
+          row.id === createHash("sha256").update(b.id).digest("hex"),
+      )?.rank,
+    );
+    assert.ok(
+      (await store.list()).some(
+        (row) => row.avatar === "https://lh3.googleusercontent.com/avatar.png",
+      ),
     );
     const c = await store.session("browser-three");
     await store.submit("browser-three", c.id, "Invité", finish(c.seed).steps);
-    assert.equal((await store.list()).length, 2);
+    assert.equal((await store.list()).length, 3);
     await db.exec("set role anon");
     await assert.rejects(
       () =>
@@ -472,18 +569,21 @@ test("private top-20 rank uses owner, preserves ties and never matches a nicknam
     "sb_secret_test",
     async (url, init) => {
       const parsed = new URL(url);
-      assert.equal(parsed.pathname, "/rest/v1/tetris_scores");
-      assert.equal(parsed.searchParams.get("limit"), "20");
-      assert.equal(
-        parsed.searchParams.get("order"),
-        "score.desc,lines.desc,created.asc",
-      );
-      assert.equal(init.method, "GET");
-      return Response.json(rows);
+      assert.equal(parsed.pathname, "/rest/v1/rpc/tetris_score_rank_v1");
+      assert.equal(init.method, "POST");
+      const body = JSON.parse(init.body as string);
+      const owner = body.p_owner;
+      const target = rows.find((row) => row.owner === owner);
+      const rank = target
+        ? rows.findIndex(
+            (row) => row.score === target.score && row.lines === target.lines,
+          ) + 1
+        : null;
+      return Response.json(rank);
     },
   );
-  assert.equal(await store.rank("player"), 2);
-  assert.equal(await store.rank("not-in-top"), null);
+  assert.equal(await store.rank("player", "run-one"), 2);
+  assert.equal(await store.rank("not-in-top", "run-one"), null);
   rows = [{ owner, score: 400, lines: 6 }];
-  assert.equal(await store.rank("player"), 1);
+  assert.equal(await store.rank("player", "run-one"), 1);
 });

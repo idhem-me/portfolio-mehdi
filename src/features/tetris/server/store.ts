@@ -17,12 +17,17 @@ export class LeaderboardStore {
     this.db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=3000;
       CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, owner TEXT, seed INTEGER, created INTEGER, used INTEGER DEFAULT 0);
       CREATE TABLE IF NOT EXISTS scores (owner TEXT PRIMARY KEY, name TEXT, score INTEGER, lines INTEGER, created INTEGER, avatar TEXT);
+      CREATE TABLE IF NOT EXISTS score_history (id TEXT PRIMARY KEY, owner TEXT NOT NULL, name TEXT NOT NULL, score INTEGER NOT NULL, lines INTEGER NOT NULL, created INTEGER NOT NULL, avatar TEXT);
       CREATE TABLE IF NOT EXISTS player_profiles (owner TEXT PRIMARY KEY,name TEXT NOT NULL,avatar TEXT,updated INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS score_receipts (id TEXT PRIMARY KEY,owner TEXT,target TEXT,score INTEGER,lines INTEGER);
-      CREATE TABLE IF NOT EXISTS local_scores (id TEXT PRIMARY KEY,owner TEXT NOT NULL,score INTEGER NOT NULL,lines INTEGER NOT NULL,created INTEGER NOT NULL);`);
+      CREATE TABLE IF NOT EXISTS local_scores (id TEXT PRIMARY KEY,owner TEXT NOT NULL,score INTEGER NOT NULL,lines INTEGER NOT NULL,created INTEGER NOT NULL);
+      CREATE INDEX IF NOT EXISTS score_history_ranking ON score_history(score DESC,lines DESC,created ASC);`);
     try {
       this.db.exec("ALTER TABLE scores ADD COLUMN avatar TEXT");
     } catch {}
+    this.db.exec(
+      "INSERT OR IGNORE INTO score_history(id,owner,name,score,lines,created,avatar) SELECT 'legacy:'||owner,owner,name,score,lines,created,avatar FROM scores",
+    );
   }
   session(owner: string) {
     const now = Date.now();
@@ -31,6 +36,9 @@ export class LeaderboardStore {
       .run(now - 86400000);
     this.db
       .prepare("DELETE FROM scores WHERE created < ?")
+      .run(now - 90 * 86400000);
+    this.db
+      .prepare("DELETE FROM score_history WHERE created < ?")
       .run(now - 90 * 86400000);
     const count = this.db
       .prepare("SELECT count(*) AS n FROM sessions WHERE owner=? AND created>?")
@@ -94,6 +102,35 @@ export class LeaderboardStore {
           Date.now(),
           avatar,
         );
+      if (recordOwner === owner) {
+        this.db
+          .prepare(
+            `INSERT INTO score_history(id,owner,name,score,lines,created,avatar) VALUES (?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,score=excluded.score,lines=excluded.lines,created=excluded.created,avatar=coalesce(excluded.avatar,score_history.avatar) WHERE excluded.score>score_history.score OR (excluded.score=score_history.score AND excluded.lines>score_history.lines)`,
+          )
+          .run(
+            `legacy:${hash(recordOwner)}`,
+            hash(recordOwner),
+            name,
+            game.score,
+            game.lines,
+            Date.now(),
+            avatar,
+          );
+      } else {
+        this.db
+          .prepare(
+            "INSERT INTO score_history(id,owner,name,score,lines,created,avatar) VALUES (?,?,?,?,?,?,?)",
+          )
+          .run(
+            hash(id),
+            hash(recordOwner),
+            name,
+            game.score,
+            game.lines,
+            Date.now(),
+            avatar,
+          );
+      }
       this.db
         .prepare("INSERT INTO score_receipts VALUES (?,?,?,?,?)")
         .run(hash(id), hash(owner), hash(recordOwner), game.score, game.lines);
@@ -170,19 +207,24 @@ export class LeaderboardStore {
     }
     return { score: game.score, lines: game.lines };
   }
-  rank(owner: string) {
+  rank(owner: string, runId: string) {
     const rows = this.db
       .prepare(
-        "SELECT owner,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM scores WHERE created>? ORDER BY score DESC,lines DESC,created ASC LIMIT 20",
+        "SELECT id,owner,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM score_history WHERE created>? ORDER BY score DESC,lines DESC,created ASC,id ASC LIMIT 20",
       )
       .all(Date.now() - 90 * 86400000);
-    const row = rows.find((row) => row.owner === hash(owner));
+    const identity = hash(owner),
+      row = rows.find(
+        (item) => item.id === hash(runId) && item.owner === identity,
+      ) ?? rows.find(
+        (item) => item.id === `legacy:${identity}` && item.owner === identity,
+      );
     return row ? Number(row.rank) : null;
   }
   list() {
     return this.db
       .prepare(
-        "SELECT name,score,lines,avatar,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM scores WHERE created>? ORDER BY score DESC,lines DESC,created ASC LIMIT 20",
+        "SELECT id,name,score,lines,avatar,RANK() OVER (ORDER BY score DESC,lines DESC) AS rank FROM score_history WHERE created>? ORDER BY score DESC,lines DESC,created ASC,id ASC LIMIT 20",
       )
       .all(Date.now() - 90 * 86400000);
   }

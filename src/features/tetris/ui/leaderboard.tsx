@@ -25,6 +25,7 @@ export function Leaderboard({
   const t = useTranslations("ui");
   const [rows, setRows] = useState<
       | {
+          id: string;
           name: string;
           score: number;
           lines: number;
@@ -82,8 +83,8 @@ export function Leaderboard({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.map((row, i) => (
-                  <TableRow key={i}>
+                {rows.map((row) => (
+                  <TableRow key={row.id}>
                     <TableCell className="tabular-nums">{row.rank}</TableCell>
                     <TableCell>
                       <span className="flex min-w-0 items-center gap-2">
