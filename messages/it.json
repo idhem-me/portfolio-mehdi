@@ -109,7 +109,8 @@
   "nav": {
     "openMenu": "Apri menu",
     "closeMenu": "Chiudi menu",
-    "menu": "Navigazione",
+    "menu": "Menu",
+    "backToPortfolio": "Torna al portfolio",
     "home": "Home",
     "productDesigner": "Product designer",
     "about": "Su di me",

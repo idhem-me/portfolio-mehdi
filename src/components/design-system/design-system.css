@@ -15,6 +15,10 @@
   font-family: var(--font-sans);
 }
 
-:is(html, .ds-scope)[data-design-system]:not([data-design-system="fun"]) {
-  --font-sans: var(--font-google-sans);
+:is(html, .ds-scope)[data-design-system="mehdi"] {
+  --font-sans: var(--font-google-sans), "Google Sans", sans-serif;
+}
+
+:is(html, .ds-scope)[data-design-system="liquid-glass"] {
+  --font-sans: var(--font-open-sans), var(--font-open-sans-ext), "Open Sans", sans-serif;
 }

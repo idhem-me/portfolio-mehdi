@@ -109,7 +109,8 @@
   "nav": {
     "openMenu": "فتح القائمة",
     "closeMenu": "إغلاق القائمة",
-    "menu": "التنقل",
+    "menu": "القائمة",
+    "backToPortfolio": "العودة إلى ملف الأعمال",
     "home": "الرئيسية",
     "productDesigner": "مصمم منتجات",
     "about": "نبذة عني",

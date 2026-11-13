@@ -31,7 +31,7 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { MobileMenuButton } from "@/components/layout/mobile-menu-button";
 import {
   HomeAvatar,
-  MobileBrandBar,
+  SidebarMenuToggle,
 } from "@/components/layout/mobile-brand-bar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { openAnalyticsPreferences } from "@/lib/analytics/consent";
@@ -152,14 +152,14 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="sidebar">
       <DesignSystemScope className="flex size-full flex-col">
         <SidebarHeader className="gap-0 p-0">
-          <MobileBrandBar />
+          <SidebarMenuToggle />
         </SidebarHeader>
 
         <SidebarContent>
           <SidebarGroup className="pt-1">
             <SidebarGroupContent>
               <SidebarMenu>
-                {navItems.slice(1).map((item) => (
+                {navItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
@@ -173,7 +173,11 @@ export function AppSidebar() {
                         eventProps={{ href: item.href, label: item.label }}
                         onClick={closeMobilePanel}
                       >
-                        {item.icon ? <item.icon /> : null}
+                        {item.icon ? (
+                          <item.icon />
+                        ) : (
+                          <HomeAvatar className="size-4" />
+                        )}
                         <span>{item.label}</span>
                       </TrackedLink>
                     </SidebarMenuButton>

@@ -70,6 +70,10 @@ const NATIVE_TOKENS: Record<DesignSystem, readonly string[]> = {
     "--aero-surface",
     "--aero-action",
     "--aero-accent",
+    "--aero-button-sheen",
+    "--aero-panel-sheen",
+    "--aero-panel-shadow",
+    "--aero-input-shadow",
   ],
   "liquid-glass": [
     "--glass-canvas",
@@ -81,11 +85,14 @@ const NATIVE_TOKENS: Record<DesignSystem, readonly string[]> = {
 };
 
 function TokenSwatch({ name, value }: { name: string; value?: string }) {
+  const isShadow = name.endsWith("-shadow");
   return (
     <div className="flex items-center gap-2 text-xs">
       <span
         className="size-5 shrink-0 rounded border border-border"
-        style={{ background: `var(${name}, transparent)` }}
+        style={isShadow
+          ? { background: "var(--card)", boxShadow: `var(${name}, none)` }
+          : { background: `var(${name}, transparent)` }}
         aria-hidden
       />
       <code className="min-w-0 truncate font-mono text-[11px]">{name}</code>

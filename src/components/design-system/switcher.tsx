@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Droplet, Leaf, Palette, Sparkles } from "lucide-react";
+import { Contrast, Droplet, Leaf, Palette, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { DesignSystemChoiceMenu } from "./choice-menu";
 import {
@@ -11,21 +11,8 @@ import {
 } from "./provider";
 import { isDesignSystem } from "./registry";
 
-function SobreIcon() {
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/img/avatar/AD-droite.svg"
-      alt=""
-      width={16}
-      height={16}
-      className="size-4 shrink-0 rounded-full"
-    />
-  );
-}
-
 const ICONS: Record<DesignSystem, ReactNode> = {
-  mehdi: <SobreIcon />,
+  mehdi: <Contrast className="size-4 shrink-0" aria-hidden />,
   fun: <Sparkles className="size-4 shrink-0" aria-hidden />,
   "frutiger-aero": <Leaf className="size-4 shrink-0" aria-hidden />,
   "liquid-glass": <Droplet className="size-4 shrink-0" aria-hidden />,

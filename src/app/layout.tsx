@@ -1,11 +1,6 @@
 import { SiteAccountProvider } from "@/features/account/provider";
 import type { Metadata } from "next";
-import {
-  Bricolage_Grotesque,
-  Geist_Mono,
-  Google_Sans,
-  Noto_Sans_SC,
-} from "next/font/google";
+import { Google_Sans, Nunito_Sans } from "next/font/google";
 import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "@/components/layout/theme-provider";
@@ -30,21 +25,79 @@ const googleSans = Google_Sans({
   display: "swap",
 });
 
-const bricolageGrotesque = Bricolage_Grotesque({
+const nunitoSans = Nunito_Sans({
   subsets: ["latin", "latin-ext"],
+  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-nunito-sans",
+  display: "swap",
+});
+
+const openSans = localFont({
+  src: [
+    {
+      path: "./fonts/Open-Sans-Latin.woff2",
+      weight: "400 700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Open-Sans-Italic-Latin.woff2",
+      weight: "400 700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-open-sans",
+  display: "swap",
+});
+
+const openSansExt = localFont({
+  src: [
+    {
+      path: "./fonts/Open-Sans-Latin-Ext.woff2",
+      weight: "400 700",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Open-Sans-Italic-Latin-Ext.woff2",
+      weight: "400 700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-open-sans-ext",
+  display: "swap",
+});
+
+const bricolageGrotesque = localFont({
+  src: "./fonts/Bricolage-Grotesque-Latin.woff2",
+  weight: "200 800",
   variable: "--font-bricolage",
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
+const bricolageGrotesqueExt = localFont({
+  src: "./fonts/Bricolage-Grotesque-Latin-Ext.woff2",
+  weight: "200 800",
+  variable: "--font-bricolage-ext",
+  display: "swap",
+});
+
+const geistMono = localFont({
+  src: "./fonts/Geist-Mono-Latin.woff2",
+  weight: "100 900",
   variable: "--font-geist-mono",
   display: "swap",
 });
 
-const notoSansSc = Noto_Sans_SC({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const geistMonoExt = localFont({
+  src: "./fonts/Geist-Mono-Latin-Ext.woff2",
+  weight: "100 900",
+  variable: "--font-geist-mono-ext",
+  display: "swap",
+});
+
+const notoSansSc = localFont({
+  src: "./fonts/Noto-Sans-SC-Latin.woff2",
+  weight: "400 700",
   variable: "--font-cjk",
   display: "swap",
 });
@@ -76,7 +129,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       dir="ltr"
       data-design-system={DEFAULT_DESIGN_SYSTEM}
       suppressHydrationWarning
-      className={`${googleSans.variable} ${bricolageGrotesque.variable} ${geistMono.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
+      className={`${googleSans.variable} ${nunitoSans.variable} ${openSans.variable} ${openSansExt.variable} ${bricolageGrotesque.variable} ${bricolageGrotesqueExt.variable} ${geistMono.variable} ${geistMonoExt.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <head>
         <script

@@ -11,11 +11,12 @@ export const navigation = [
   { href: "/backoffice/sessions", key: "sessions", icon: Table },
 ] as const;
 export function BackofficeShell({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("backoffice"),
-    path = usePathname();
+  const t = useTranslations("backoffice");
+  const nav = useTranslations("nav");
+  const path = usePathname();
   return (
     <div className="flex min-h-svh min-w-0">
-      <SectionNavigation label="Backoffice">
+      <SectionNavigation label={nav("backoffice")} showBackLink={false}>
         {navigation.map((n) => (
           <SectionNavigationItem key={n.href} active={path === n.href}>
             <Link

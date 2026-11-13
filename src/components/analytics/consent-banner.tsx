@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { Cookie } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
 import {
   subscribeConsent,
   getConsent,
@@ -14,6 +15,7 @@ import { AnalyticsEvents, track } from "@/lib/analytics/events";
 
 export function ConsentBanner() {
   const t = useTranslations("consent");
+  const { open } = useSidebar();
   const [status, setStatus] = useState<ConsentStatus>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -52,7 +54,14 @@ export function ConsentBanner() {
       role="dialog"
       aria-labelledby="consent-title"
       aria-describedby="consent-desc"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background/95 p-4 shadow-lg backdrop-blur supports-[backdrop-filter]:bg-background/80"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 p-4 shadow-lg backdrop-blur transition-[inset-inline-start] duration-200 ease-linear supports-[backdrop-filter]:bg-background/80 md:inset-x-auto md:end-0 md:start-[var(--consent-sidebar-offset)]"
+      style={
+        {
+          "--consent-sidebar-offset": open
+            ? "var(--sidebar-width)"
+            : "var(--sidebar-width-icon)",
+        } as CSSProperties
+      }
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
