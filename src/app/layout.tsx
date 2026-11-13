@@ -1,5 +1,6 @@
 import { SiteAccountProvider } from "@/features/account/provider";
 import type { Metadata } from "next";
+import { Google_Sans, Nunito_Sans } from "next/font/google";
 import localFont from "next/font/local";
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "@/components/layout/theme-provider";
@@ -16,6 +17,21 @@ import "@/components/design-system/design-system.css";
 import "@/components/design-system/fun.css";
 import "@/components/design-system/frutiger-aero.css";
 import "@/components/design-system/liquid-glass.css";
+
+const googleSans = Google_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-google-sans",
+  display: "swap",
+});
+
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-nunito-sans",
+  display: "swap",
+});
 
 const openSans = localFont({
   src: [
@@ -113,7 +129,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       dir="ltr"
       data-design-system={DEFAULT_DESIGN_SYSTEM}
       suppressHydrationWarning
-      className={`${openSans.variable} ${openSansExt.variable} ${bricolageGrotesque.variable} ${bricolageGrotesqueExt.variable} ${geistMono.variable} ${geistMonoExt.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
+      className={`${googleSans.variable} ${nunitoSans.variable} ${openSans.variable} ${openSansExt.variable} ${bricolageGrotesque.variable} ${bricolageGrotesqueExt.variable} ${geistMono.variable} ${geistMonoExt.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <head>
         <script

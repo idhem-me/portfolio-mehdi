@@ -1,5 +1,9 @@
 # Changelog du design system
 
+## Typographie Sobre et Frutiger Aero — 13 novembre 2026
+
+- Sobre utilise Google Sans et Frutiger Aero Nunito Sans, chacune chargée via `next/font/google` et auto-hébergée dans les ressources de build. Fun garde Bricolage Grotesque.
+
 ## Boutons Frutiger Aero en mode sombre — 13 novembre 2026
 
 - Les variantes Primary et Secondary échangent leurs dégradés en mode sombre : Primary reçoit la surface neutre claire et Secondary le gel bleu. Le mode clair reste inchangé.
