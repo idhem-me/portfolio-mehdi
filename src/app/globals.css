@@ -86,10 +86,10 @@
   --accent: var(--mehdi-accent); /* #0071E3 */
   --mehdi-accent-foreground: oklch(0.985 0 0);
   --accent-foreground: var(--mehdi-accent-foreground);
-  --mehdi-warning: oklch(0.72 0.16 65);
+  --mehdi-warning: oklch(0.50 0.13 65);
   --warning: var(--mehdi-warning);
   --warning-foreground: oklch(0.18 0.03 65);
-  --mehdi-success: oklch(0.52 0.16 145);
+  --mehdi-success: oklch(0.49 0.16 145);
   --success: var(--mehdi-success);
   --success-foreground: oklch(0.99 0 0);
   --mehdi-destructive: oklch(0.577 0.245 27.325);
