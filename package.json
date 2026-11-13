@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "node --import tsx --import ./tests/helpers/server-only.ts --test src/features/tetris/engine/*.test.ts tests/playground-coverage.test.ts",
+    "test": "node --import tsx --import ./tests/helpers/server-only.ts --test src/features/tetris/engine/*.test.ts tests/playground-coverage.test.ts tests/game-catalog.test.ts",
     "test:tetris:browser": "playwright test",
     "test:burger": "node --import tsx --import ./tests/helpers/server-only.ts --test tests/clicker-burger/*.test.ts",
     "test:cards": "node --import tsx --import ./tests/helpers/server-only.ts --test src/features/cards/engine/*.test.ts",

@@ -130,7 +130,9 @@
     "player": "اللاعب",
     "score": "النتيجة",
     "settingsTitle": "الإعدادات",
-    "gameSettingsDescription": "إعدادات {game}."
+    "gameSettingsDescription": "إعدادات {game}.",
+    "catalogDisabled": "معطّل",
+    "catalogNotDeployed": "غير منشور"
   },
   "caseStudyControls": {
     "screens": "شاشات المنتج",

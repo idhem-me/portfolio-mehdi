@@ -3,11 +3,11 @@ import type { Metadata } from "next";
 import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Blocks, Gamepad2, Hamburger, PlayingCardsFan } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { getGames } from "@/lib/content";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { PlayerIdentityProvider } from "@/features/tetris/ui/player-identity";
-import { PlayerProfileButton } from "@/features/tetris/ui/player-profile";
+import { isLocalGamePreview } from "@/lib/game-publication";
 
 export const instant = false;
 type Props = {
@@ -28,7 +28,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function GamesPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const page = getGames(locale);
+  const page = getGames(locale, {
+    includeUnavailable: isLocalGamePreview,
+  });
+  const ui = await getTranslations("ui");
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-6 py-12">
@@ -38,9 +41,6 @@ export default async function GamesPage({ params }: Props) {
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {page.title}
           </h1>
-          <PlayerIdentityProvider>
-            <PlayerProfileButton hideNickname showHelp={false} />
-          </PlayerIdentityProvider>
         </div>
         <p className="text-muted-foreground">{page.intro}</p>
       </header>
@@ -57,12 +57,23 @@ export default async function GamesPage({ params }: Props) {
                   : Gamepad2;
           const cardClass = cn(
             "flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-card p-6",
-            study.slug &&
+            study.slug && (!study.localAvailability || isLocalGamePreview) &&
               "transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           );
           const inner = (
             <>
-              <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
+              <div className="flex w-full items-start justify-between gap-3">
+                <Icon aria-hidden="true" className="size-6 shrink-0 text-accent" />
+                {study.localAvailability && (
+                  <Badge variant="warning">
+                    {ui(
+                      study.localAvailability === "disabled"
+                        ? "catalogDisabled"
+                        : "catalogNotDeployed",
+                    )}
+                  </Badge>
+                )}
+              </div>
               <div className="min-w-0 space-y-2">
                 <h2 className="font-semibold">{study.title}</h2>
                 <p className="text-sm leading-relaxed text-muted-foreground">
@@ -72,7 +83,7 @@ export default async function GamesPage({ params }: Props) {
             </>
           );
 
-          if (study.slug) {
+          if (study.slug && (!study.localAvailability || isLocalGamePreview)) {
             return (
               <Link
                 key={study.title}

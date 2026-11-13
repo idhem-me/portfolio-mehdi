@@ -130,7 +130,9 @@
     "player": "玩家",
     "score": "得分",
     "settingsTitle": "设置",
-    "gameSettingsDescription": "{game}的设置。"
+    "gameSettingsDescription": "{game}的设置。",
+    "catalogDisabled": "已停用",
+    "catalogNotDeployed": "尚未部署"
   },
   "caseStudyControls": {
     "screens": "产品界面",

@@ -1,3 +1,3 @@
-/** Explicit publication requested by the portfolio owner. */
-export const clickerBurgerEnabled = true;
-export const clickerBurgerPublic = true;
+/** Keep Clicker Burger available only in local development previews. */
+export const clickerBurgerEnabled = false;
+export const clickerBurgerPublic = false;

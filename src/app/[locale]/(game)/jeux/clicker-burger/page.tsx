@@ -7,6 +7,7 @@ import {
   clickerBurgerPublic,
 } from "@/features/clicker-burger/flags";
 import { portfolioMetadata } from "@/lib/portfolio-seo";
+import { isLocalGamePreview } from "@/lib/game-publication";
 export const instant = false;
 type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 export default async function ClickerBurgerPage({ params }: Props) {
-  if (!clickerBurgerEnabled) notFound();
+  if (!clickerBurgerEnabled && !isLocalGamePreview) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
   return <ClickerBurger />;

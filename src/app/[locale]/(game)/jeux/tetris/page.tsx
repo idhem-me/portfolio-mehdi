@@ -4,11 +4,12 @@ import { setRequestLocale } from "next-intl/server";
 import { getCaseStudy } from "@/lib/content";
 import { tetrisEnabled, tetrisPublic } from "@/features/tetris/flags";
 import { routing } from "@/i18n/routing";
+import { isLocalGamePreview } from "@/lib/game-publication";
 import { Tetris } from "@/features/tetris/ui/tetris";
 export const instant = false;
 type Props = { params: Promise<{ locale: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  if (!tetrisEnabled) notFound();
+  if (!tetrisEnabled && !isLocalGamePreview) notFound();
   const { locale } = await params;
   const study = getCaseStudy(locale, "tetris");
   return {
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 export default async function TetrisPage({ params }: Props) {
-  if (!tetrisEnabled) notFound();
+  if (!tetrisEnabled && !isLocalGamePreview) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
   const study = getCaseStudy(locale, "tetris");

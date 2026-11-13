@@ -1,5 +1,8 @@
-import { cardsEnabled } from "@/features/cards/flags";
-import { clickerBurgerEnabled } from "@/features/clicker-burger/flags";
+import { cardsEnabled, cardsPublic, cardsVisible } from "@/features/cards/flags";
+import {
+  clickerBurgerEnabled,
+  clickerBurgerPublic,
+} from "@/features/clicker-burger/flags";
 import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
@@ -85,6 +88,7 @@ export type CaseStudyCard = {
   title: string;
   status: string;
   slug?: string;
+  localAvailability?: "disabled" | "not-deployed";
   cover?: { light: string; dark: string; alt: string };
 };
 
@@ -232,16 +236,47 @@ export function getCaseStudy(
   return data as CaseStudyContent;
 }
 
-export function getGames(locale: string): RealisationsContent {
+export function getGames(
+  locale: string,
+  { includeUnavailable = false }: { includeUnavailable?: boolean } = {},
+): RealisationsContent {
   const { data } = readMarkdown(locale, "jeux.md");
   const page = data as RealisationsContent;
   return {
     ...page,
-    caseStudies: page.caseStudies.filter((study) => {
-      if (study.slug === "tetris") return tetrisEnabled;
-      if (study.slug === "clicker-burger") return clickerBurgerEnabled;
-      if (study.slug === "cards") return cardsEnabled;
-      return true;
+    caseStudies: page.caseStudies.flatMap((study) => {
+      const enabled =
+        study.slug === "tetris"
+          ? tetrisEnabled
+          : study.slug === "clicker-burger"
+            ? clickerBurgerEnabled
+            : study.slug === "cards"
+              ? cardsEnabled
+              : true;
+
+      if (!enabled && !includeUnavailable) return [];
+      if (!includeUnavailable) return [study];
+
+      const localAvailability =
+        study.slug === "tetris"
+          ? !tetrisEnabled
+            ? "disabled"
+            : undefined
+          : study.slug === "clicker-burger"
+            ? !clickerBurgerEnabled
+              ? "disabled"
+              : !clickerBurgerPublic
+                ? "not-deployed"
+                : undefined
+            : study.slug === "cards"
+              ? !cardsVisible || !cardsPublic
+                ? "not-deployed"
+                : !cardsEnabled
+                  ? "disabled"
+                  : undefined
+              : undefined;
+
+      return [localAvailability ? { ...study, localAvailability } : study];
     }),
   };
 }

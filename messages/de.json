@@ -130,7 +130,9 @@
     "player": "Spieler",
     "score": "Punkte",
     "settingsTitle": "Einstellungen",
-    "gameSettingsDescription": "Einstellungen für {game}."
+    "gameSettingsDescription": "Einstellungen für {game}.",
+    "catalogDisabled": "Deaktiviert",
+    "catalogNotDeployed": "Nicht veröffentlicht"
   },
   "caseStudyControls": {
     "screens": "Produktansichten",

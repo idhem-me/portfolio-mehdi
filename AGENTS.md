@@ -16,7 +16,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 4. Ne jamais lire, afficher ni committer de contenu `.env*`. Inventorier uniquement les noms de variables depuis les références dans le code.
 5. Toute évolution Supabase passe par un fichier dans `supabase/migrations/`. Aucune modification directe de la base.
 6. Préserver toutes les URL publiques dans les sept langues. Tout changement d’URL impose une redirection dans `next.config.ts` et des tests des anciennes URL.
-7. Conserver le masquage des deux jeux cachés. Aucun lien, navigation, sitemap ou indexation. Le mécanisme nécessite une validation explicite pour évoluer.
+7. En production, conserver le masquage de Clicker Burger et Ouverture de cartes : aucun lien, navigation, sitemap ou indexation. Le propriétaire a validé le 13 novembre 2026 leur aperçu local uniquement (`NODE_ENV=development`, hors Vercel) ; cette exception ne doit jamais les publier. Tetris et Pokémon sont les seuls jeux accessibles sur les déploiements ; Tetris reste `noindex` jusqu'à décision SEO distincte.
 8. Utiliser le design system en place pour toute nouvelle primitive UI ou tout nouveau token.
 9. Traduire tout nouveau texte visible en ar, de, en, es, fr, it, zh. Consigner les traductions incertaines dans `docs/i18n-review.md` et suivre les règles de synchronisation ci-dessous.
 10. Rester sur Supabase Free et Vercel Hobby, sans dépendance payante ni service externe supplémentaire.

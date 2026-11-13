@@ -130,7 +130,9 @@
     "player": "Player",
     "score": "Score",
     "settingsTitle": "Settings",
-    "gameSettingsDescription": "Settings for {game}."
+    "gameSettingsDescription": "Settings for {game}.",
+    "catalogDisabled": "Disabled",
+    "catalogNotDeployed": "Not deployed"
   },
   "caseStudyControls": {
     "screens": "Product screens",

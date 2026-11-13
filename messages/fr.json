@@ -130,7 +130,9 @@
     "player": "Joueur",
     "score": "Score",
     "settingsTitle": "Réglages",
-    "gameSettingsDescription": "Réglages de {game}."
+    "gameSettingsDescription": "Réglages de {game}.",
+    "catalogDisabled": "Désactivé",
+    "catalogNotDeployed": "Non déployé"
   },
   "caseStudyControls": {
     "screens": "Écrans produit",

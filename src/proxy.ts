@@ -6,6 +6,7 @@ import { DASHBOARD_COOKIE, isValidDashboardToken } from "@/lib/dashboard-auth";
 import { routing } from "@/i18n/routing";
 
 import { tetrisEnabled } from "@/features/tetris/flags";
+import { isLocalGamePreview } from "@/lib/game-publication";
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -67,12 +68,16 @@ export default async function proxy(request: NextRequest) {
     .replace(/^\/(?:fr|en|zh|ar|es|it|de)(?=\/)/, "")
     .replace(/\/$/, "");
   const hiddenTetris =
+    !isLocalGamePreview &&
     !tetrisEnabled &&
     ["/jeux/tetris", "/realisations/tetris"].includes(gamePath);
   const hiddenBurger =
+    !isLocalGamePreview &&
     !clickerBurgerEnabled && gamePath === "/jeux/clicker-burger";
   const hiddenCards =
-    !cardsEnabled && (gamePath === "/jeux/cards" || gamePath === "/cards");
+    !isLocalGamePreview &&
+    !cardsEnabled &&
+    ["/jeux/cards", "/cards", "/boutique"].includes(gamePath);
   if (hiddenTetris || hiddenBurger || hiddenCards) {
     return new NextResponse("Not Found", {
       status: 404,

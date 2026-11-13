@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { CardsGame } from "@/features/cards/client";
 import { cardsEnabled, cardsPublic } from "@/features/cards/flags";
+import { isLocalGamePreview } from "@/lib/game-publication";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -32,7 +33,7 @@ export default function CardsPage(props: Props) {
 }
 
 async function LocalizedCards({ params }: Props) {
-  if (!cardsEnabled) notFound();
+  if (!cardsEnabled && !isLocalGamePreview) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
   const theme = (await cookies()).get("cards-theme")?.value;
