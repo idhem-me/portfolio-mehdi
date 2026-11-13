@@ -11,7 +11,10 @@ test("games feature gate, legacy redirect, metadata and sitemap", async ({
   await expect(page.getByRole("link", { name: /Tetris/ })).toHaveCount(0);
   if (enabled) {
     await page.goto("/jeux");
-    await expect(page.getByRole("link", { name: /Tetris/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Tetris/ })).toHaveAttribute(
+      "href",
+      "/jeux/tetris",
+    );
     await page.goto("/realisations/tetris");
     await expect(page).toHaveURL(/\/jeux\/tetris$/);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
