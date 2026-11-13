@@ -145,3 +145,4 @@ Pour chaque évolution, consigner le composant, les états, les thèmes et la re
 - Les couleurs catégorielles, contours et reflets de jeu suivent le thème effectif. Démonstration générique sous `#categorical-palette`.
 
 - Les raccourcis intégrés aux boutons héritent de leur encre, y compris sur les boutons clairs de Frutiger Aero sombre. Démo sous `#button`.
+- Frutiger Aero sombre donne à la variante Outline une surface bleu nuit, une encre claire et un contour bleu. La démo Button montre aussi le raccourci hérité.

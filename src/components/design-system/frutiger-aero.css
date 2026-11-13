@@ -58,6 +58,13 @@
   --aero-neutral-upper: #e7f5fa;
   --aero-neutral-lower: #c8e2ef;
   --aero-neutral-bounce: #f0fcff;
+  --aero-outline-top: var(--aero-neutral-top);
+  --aero-outline-upper: var(--aero-neutral-upper);
+  --aero-outline-lower: var(--aero-neutral-lower);
+  --aero-outline-bounce: var(--aero-neutral-bounce);
+  --aero-outline-edge: var(--aero-gel-cut);
+  --aero-outline-ink: var(--aero-gel-ink);
+  --aero-outline-text-shadow: var(--aero-text-shadow-dark);
   --aero-primary-button-top: var(--aero-gel-top);
   --aero-primary-button-upper: var(--aero-gel-upper);
   --aero-primary-button-lower: var(--aero-gel-lower);
@@ -204,6 +211,13 @@ html.dark[data-design-system="frutiger-aero"],
   --aero-danger: #ffb9d0;
   --aero-success: #b1ef8a;
   --aero-warning: #ffe0a6;
+  --aero-outline-top: #28536d;
+  --aero-outline-upper: var(--aero-surface);
+  --aero-outline-lower: #103047;
+  --aero-outline-bounce: var(--aero-muted);
+  --aero-outline-edge: var(--aero-control-edge);
+  --aero-outline-ink: var(--aero-ink);
+  --aero-outline-text-shadow: var(--aero-text-shadow-light);
   --aero-primary-button-top: var(--aero-neutral-top);
   --aero-primary-button-upper: var(--aero-neutral-upper);
   --aero-primary-button-lower: var(--aero-neutral-lower);
@@ -385,6 +399,16 @@ html[data-design-system="frutiger-aero"] body {
     transition-property: filter, translate, box-shadow, background-color, color;
     transition-duration: var(--aero-motion-duration);
     transition-timing-function: var(--aero-motion-easing);
+  }
+
+  [data-slot="button"][data-variant="outline"] {
+    --aero-button-top: var(--aero-outline-top);
+    --aero-button-upper: var(--aero-outline-upper);
+    --aero-button-lower: var(--aero-outline-lower);
+    --aero-button-bounce: var(--aero-outline-bounce);
+    --aero-button-edge: var(--aero-outline-edge);
+    --aero-button-ink: var(--aero-outline-ink);
+    text-shadow: var(--aero-outline-text-shadow);
   }
 
   [data-slot="button"]:is([data-variant="default"], [data-variant="primary"]) {

@@ -318,3 +318,5 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 La [palette catégorielle](/playground#categorical-palette) montre les sept couleurs de pièces, la surface, le contour de projection et le reflet de la matière dans la portée du thème. Les contrôles du résultat et de la pause réutilisent les démos Button, Card et Dialog et leurs densités. La validation du canvas et de son repli reste dans les tests internes.
 
 La démo [Button](/playground#button) inclut une touche de raccourci dans la variante Outline. Elle hérite de l’encre du bouton dans les densités Desktop et Mobile.
+
+Pour la variante Outline de [Button](/playground#button), vérifier en Aero sombre les quatre stops du gel, le contour et l’encre du raccourci. La même variante est disponible en densités Desktop et Mobile.
