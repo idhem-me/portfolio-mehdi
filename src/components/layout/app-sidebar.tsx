@@ -158,7 +158,7 @@ export function AppSidebar() {
         <SidebarContent>
           <SidebarGroup className="pt-1">
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-0.5">
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
@@ -189,7 +189,7 @@ export function AppSidebar() {
         </SidebarContent>
 
         <SidebarFooter className="gap-1 p-2">
-          <SidebarMenu>
+          <SidebarMenu className="gap-0.5">
             <DesignSystemSwitcher />
             <LanguageSwitcher />
             <ThemeToggle />
