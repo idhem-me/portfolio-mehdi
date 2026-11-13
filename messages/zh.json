@@ -107,6 +107,7 @@
     }
   },
   "nav": {
+    "breadcrumb": "面包屑导航",
     "openMenu": "打开菜单",
     "closeMenu": "关闭菜单",
     "menu": "菜单",

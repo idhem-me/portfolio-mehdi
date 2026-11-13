@@ -107,6 +107,7 @@
     }
   },
   "nav": {
+    "breadcrumb": "Brotkrümelnavigation",
     "openMenu": "Menü öffnen",
     "closeMenu": "Menü schließen",
     "menu": "Menü",

@@ -107,6 +107,7 @@
     }
   },
   "nav": {
+    "breadcrumb": "Breadcrumb",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "menu": "Menu",

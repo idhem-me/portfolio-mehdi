@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useState, type ReactNode } from "react";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import {
@@ -302,6 +303,10 @@ export default function DesignSystemsComparison() {
       aria-labelledby="comparison-title"
       className="@container mx-auto w-full max-w-5xl space-y-8 px-6 py-12"
     >
+      <PageBreadcrumb
+        current={t("compare")}
+        parents={[{ href: "/playground", label: t("title") }]}
+      />
       <header className="space-y-2 text-center">
         <h1
           id="comparison-title"

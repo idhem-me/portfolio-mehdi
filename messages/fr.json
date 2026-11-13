@@ -107,6 +107,7 @@
     }
   },
   "nav": {
+    "breadcrumb": "Fil d’Ariane",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu",
     "menu": "Menu",

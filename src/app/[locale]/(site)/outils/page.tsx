@@ -1,3 +1,4 @@
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import type { Metadata } from "next";
 import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -30,6 +31,7 @@ export default async function ToolsPage({ params }: Props) {
   const qr = await getTranslations("qrGenerator");
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-6 py-12">
+      <PageBreadcrumb current={t("title")} />
       <header className="space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {t("title")}

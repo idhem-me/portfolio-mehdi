@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -224,7 +225,8 @@ export function PlaygroundCatalog() {
 
         <div data-playground-scroll="" tabIndex={0} role="region" aria-labelledby="playground-title" className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring">
         <div className="mx-auto w-full max-w-3xl px-6 pt-10 pb-8">
-          <header>
+          <header className="space-y-3">
+            <PageBreadcrumb current={t("title")} />
             <h1
               id="playground-title"
               className="text-2xl font-semibold tracking-tight"

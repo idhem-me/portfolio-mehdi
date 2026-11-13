@@ -1,3 +1,4 @@
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { Link } from "@/i18n/navigation";
@@ -13,6 +14,10 @@ export default async function LocalComponentsPage({ params }: PageProps<"/[local
   const t = await getTranslations({ locale, namespace: "playground" });
   return (
     <section className="mx-auto w-full max-w-3xl space-y-6 px-6 py-12">
+      <PageBreadcrumb
+        current={t("localTitle")}
+        parents={[{ href: "/playground", label: t("title") }]}
+      />
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">{t("localTitle")}</h1>
         <p className="text-sm text-muted-foreground">{t("localIntro")}</p>

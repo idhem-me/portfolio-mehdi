@@ -1,9 +1,7 @@
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import type { Metadata } from "next";
 import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { PokemonCatalogue } from "@/features/pokemon/catalogue";
 import {
   getPokemonBatch,
@@ -31,12 +29,10 @@ export default async function PokemonPage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-3xl space-y-5 px-6 py-8">
-      <Button asChild variant="ghost" size="sm">
-        <Link href="/jeux">
-          <ArrowLeft aria-hidden className="size-4 rtl:rotate-180" />
-          {nav("games")}
-        </Link>
-      </Button>
+      <PageBreadcrumb
+        current={t("pokedex")}
+        parents={[{ href: "/jeux", label: nav("games") }]}
+      />
       <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
         {t("pokedex")}
       </h1>

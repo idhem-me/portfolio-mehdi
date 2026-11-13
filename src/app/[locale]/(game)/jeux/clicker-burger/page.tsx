@@ -6,7 +6,6 @@ import {
   clickerBurgerEnabled,
   clickerBurgerPublic,
 } from "@/features/clicker-burger/flags";
-import { routing } from "@/i18n/routing";
 import { portfolioMetadata } from "@/lib/portfolio-seo";
 export const instant = false;
 type Props = { params: Promise<{ locale: string }> };
@@ -24,9 +23,5 @@ export default async function ClickerBurgerPage({ params }: Props) {
   if (!clickerBurgerEnabled) notFound();
   const { locale } = await params;
   setRequestLocale(locale);
-  return (
-    <ClickerBurger
-      backHref={locale === routing.defaultLocale ? "/jeux" : `/${locale}/jeux`}
-    />
-  );
+  return <ClickerBurger />;
 }
