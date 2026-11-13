@@ -39,7 +39,7 @@ Les sessions sont conservées 90 jours. Le cron archive quotidiennement les mét
 
 La suppression efface le visiteur et ses sessions. Une empreinte de révocation empêche les transmissions déjà parties de recréer les données. Les agrégats archivés ne permettent pas de retrouver un visiteur. En cas de panne réseau, le navigateur garde une demande de suppression à réessayer au prochain chargement ou retour en ligne.
 
-Les UUID anonymes sont des identifiants techniques pseudonymes. Ils ne sont jamais associés aux comptes de jeux. Aucun événement de touche, IP ou query string n'est enregistré par le tracker. Les réponses publiques excluent visitor_id. Les événements custom PostHog sont limités à game_played, cta_clicked et brush_used.
+Les UUID anonymes sont des identifiants techniques pseudonymes. Ils ne sont jamais associés aux comptes de jeux. Aucun événement de touche, IP ou query string n'est enregistré par le tracker. Les réponses publiques excluent visitor_id. Les événements PostHog explicitement émis depuis ce tracker sont `game_started`, `cta_clicked` et `brush_used`; ils n’envoient ni UUID visiteur/session ni score.
 
 ## Diagnostic de collecte
 

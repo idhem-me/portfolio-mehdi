@@ -12,11 +12,11 @@ const Game = dynamic(() => import("./App"), {
     </div>
   ),
 });
-export function ClickerBurger({ backHref }: { backHref: string }) {
+export function ClickerBurger() {
   return (
     <AppShell>
       <DesignSystemScope>
-        <Game backHref={backHref} />
+        <Game />
       </DesignSystemScope>
     </AppShell>
   );

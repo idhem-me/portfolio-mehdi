@@ -6,13 +6,13 @@ import {
   NativeButton,
 } from "@/components/design-system/native-controls";
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { useIdentityState } from "@/features/account/client-store";
 import { useSettings } from "./state/usePreferences";
 import { useNotices } from "./state/useNotices";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import {
-  ArrowLeft,
   ChefHat,
   TrendingUp,
   Store,
@@ -110,11 +110,8 @@ const TITLES: Record<Exclude<Panel, null>, string> = {
   prestige: "Faillite stratégique",
   price: "Prix de vente",
 };
-export default function App({
-  backHref = "http://127.0.0.1:3000/fr/jeux",
-}: {
-  backHref?: string;
-}) {
+export default function App() {
+  const navigation = useTranslations("nav");
   const account = useIdentityState();
   const saveKey = account.loaded ? accountSaveKey(account.profile) : null;
   const {
@@ -473,16 +470,11 @@ export default function App({
     <div className="clicker-burger burger-dashboard">
       <header className="game-header">
         <div className="burger-heading">
-          <Button asChild variant="ghost" size="sm" className="mb-4">
-            <Link
-              href={backHref}
-              aria-label="Retour aux jeux"
-              onClick={() => game.persist()}
-            >
-              <ArrowLeft className="size-4 rtl:rotate-180" aria-hidden="true" />
-              Jeux
-            </Link>
-          </Button>
+          <PageBreadcrumb
+            current="Clicker Burger"
+            parents={[{ href: "/jeux", label: navigation("games") }]}
+            onNavigate={() => game.persist()}
+          />
           <h1>Clicker Burger</h1>
         </div>
         <div className="header-actions">
