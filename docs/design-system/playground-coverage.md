@@ -316,3 +316,5 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 | ui/tetris.tsx | Hors vitrine publique · jeu masqué | badge, button, card, native-controls, provider, separator, sheet |
 
 La [palette catégorielle](/playground#categorical-palette) montre les sept couleurs de pièces, la surface, le contour de projection et le reflet de la matière dans la portée du thème. Les contrôles du résultat et de la pause réutilisent les démos Button, Card et Dialog et leurs densités. La validation du canvas et de son repli reste dans les tests internes.
+
+La démo [Button](/playground#button) inclut une touche de raccourci dans la variante Outline. Elle hérite de l’encre du bouton dans les densités Desktop et Mobile.

@@ -172,6 +172,7 @@ test("restored design systems supply different palettes to the SVG board", async
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
       type: string,
       ...args: unknown[]
     ) {

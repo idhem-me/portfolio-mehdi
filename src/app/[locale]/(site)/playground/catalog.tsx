@@ -309,6 +309,7 @@ export function PlaygroundCatalog() {
                   <Button variant="accent">Accent</Button>
                   <Button variant="secondary">Secondary</Button>
                   <Button variant="outline">Outline</Button>
+                  <Button variant="outline">Outline <kbd className="button-key-hint">Z</kbd></Button>
                   <Button variant="ghost">Ghost</Button>
                   <Button variant="destructive">Destructive</Button>
                   <Button variant="link">Link</Button>

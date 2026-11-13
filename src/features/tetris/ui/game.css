@@ -147,20 +147,11 @@
 .lava-controls button {
   min-height: var(--tetris-touch);
   height: auto;
-  opacity: 0.86;
   gap: calc(var(--spacing));
   touch-action: none;
   flex-direction: column;
   padding: calc(var(--spacing) * 1.5);
-  font-size: 0.75rem;
-}
-.lava-controls kbd {
-  font-family: var(--font-sans);
-  font-size: 0.6rem;
-  color: var(--muted-foreground);
-  border: 1px solid var(--border);
-  border-radius: calc(var(--radius) * 0.4);
-  padding: 0 calc(var(--spacing));
+  font-size: var(--control-text-xs);
 }
 .lava-feedback {
   position: absolute;

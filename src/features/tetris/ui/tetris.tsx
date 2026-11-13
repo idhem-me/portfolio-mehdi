@@ -30,6 +30,7 @@ import {
   ArrowRight,
   ChevronsDown,
   RotateCw,
+  RotateCcw,
   Repeat2,
   Pause,
   Play,
@@ -103,7 +104,7 @@ const controls = [
   ["cw", "Pivoter", "X / ↑", RotateCw],
   ["soft", "Descendre", "↓", ArrowDown],
   ["hold", "Réserve", "C / ⇧", Repeat2],
-  ["ccw", "Pivoter ↶", "Z", RotateCw],
+  ["ccw", "Pivoter", "Z", RotateCcw],
   ["hard", "Lâcher", "Espace", ChevronsDown],
 ] as const;
 function Score({ value, reduced }: { value: number; reduced: boolean }) {
@@ -149,15 +150,19 @@ function TetrisGame({
   const [preparing, setPreparing] = useState(false);
   const [leaderboardOpen, setLeaderboardOpen] = useState(false);
   const mounted = useRef(true);
+  const attempt = useRef<AbortController | null>(null);
+  const cancelAttempt = useCallback(() => {
+    attempt.current?.abort();
+    attempt.current = null;
+  }, []);
   useEffect(() => {
     mounted.current = true;
     return () => {
       mounted.current = false;
-      attempt.current?.abort();
-      attempt.current = null;
+      cancelAttempt();
       audio.current?.close();
     };
-  }, []);
+  }, [cancelAttempt]);
   const unlockAudio = () => {
     if (soundEnabled && settingsRef.current.sound) {
       audio.current ??= new GameAudio();
@@ -175,7 +180,6 @@ function TetrisGame({
   const [expanded, setExpanded] = useState(false);
   const t = useTranslations("Tetris.result");
   const locale = useLocale();
-  const attempt = useRef<AbortController | null>(null);
   const [pending, setPending] = useState<ScoreDraft[]>([]);
   const [confirmExit, setConfirmExit] = useState(false);
   const [status, setStatus] = useState<"ready" | "playing" | "paused" | "over">(
@@ -780,7 +784,7 @@ function TetrisGame({
                   key={action}
                   variant="outline"
                   disabled={status !== "playing"}
-                  aria-label={label}
+                  aria-label={action === "ccw" ? `${label} (${key})` : label}
                   onPointerDown={(e) => {
                     e.preventDefault();
                     e.currentTarget.setPointerCapture(e.pointerId);
@@ -795,12 +799,12 @@ function TetrisGame({
                 >
                   <Icon />
                   <span>{label}</span>
-                  <kbd>{key}</kbd>
+                  <kbd className="button-key-hint">{key}</kbd>
                 </Button>
               ))}
               <Button variant="outline" onClick={pause}>
                 <span>Pause</span>
-                <kbd>P / Échap</kbd>
+                <kbd className="button-key-hint">P / Échap</kbd>
               </Button>
             </div>
           )}
@@ -821,8 +825,7 @@ function TetrisGame({
           onLeaderboard={() => setLeaderboardOpen(true)}
           onReplay={start}
           onMenu={() => {
-            attempt.current?.abort();
-            attempt.current = null;
+            cancelAttempt();
             setPreparing(false);
             clearDraft();
             setPending(listPendingScores());
