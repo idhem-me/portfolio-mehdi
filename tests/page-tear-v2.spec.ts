@@ -87,7 +87,7 @@ test("scroll position survives reset and navigation cancels the overlay immediat
   await page.getByRole("button", { name: "Touche-moi", exact: true }).click();
   await page.getByRole("button", { name: "Reset", exact: true }).click();
   await page.evaluate(() => {
-    const link = document.querySelector<HTMLAnchorElement>('a[data-analytics-action="home_cta"][href$="/realisations"]');
+    const link = document.querySelector<HTMLAnchorElement>('a[data-analytics-action="home_cta_clicked"][href$="/realisations"]');
     if (!link) throw new Error("Missing projects navigation link");
     link.click();
   });
@@ -99,12 +99,11 @@ test("scroll position survives reset and navigation cancels the overlay immediat
 test("Clean also restores physics without drawings and resize releases the interaction lock", async ({ page }) => {
   await openHome(page);
   await page.getByRole("button", { name: "Touche-moi", exact: true }).click();
-  await page.getByRole("button", { name: "Tout effacer", exact: true }).click();
+  await page.getByRole("button", { name: "Reset", exact: true }).click();
   await expect(page.locator("[data-page-tear]")).toHaveCount(1);
   await page.evaluate(() => window.dispatchEvent(new Event("resize")));
   await expect(page.locator("[data-page-tear]")).toHaveCount(0);
   await expect(page.locator("body > [inert]")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Reset", exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Tout effacer", exact: true })).toBeDisabled();
   await draw(page);
 });

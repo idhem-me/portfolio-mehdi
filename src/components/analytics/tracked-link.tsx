@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { track, type AnalyticsEventName } from "@/lib/analytics/events";
 
 type TrackedLinkProps = ComponentProps<typeof Link> & {
-  event: AnalyticsEventName | (string & {});
+  event: AnalyticsEventName;
   eventProps?: Record<string, unknown>;
 };
 
@@ -31,7 +31,7 @@ export function TrackedLink({
 }
 
 type TrackedAnchorProps = ComponentProps<"a"> & {
-  event: AnalyticsEventName | (string & {});
+  event: AnalyticsEventName;
   eventProps?: Record<string, unknown>;
 };
 

@@ -26,7 +26,7 @@ export function CopyEmailButton({ className }: { className?: string }) {
 
   return (
     <Button
-      data-analytics-action="copy_email"
+      data-analytics-action={AnalyticsEvents.copy_email}
       type="button"
       variant="secondary"
       size="sm"

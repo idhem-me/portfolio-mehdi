@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import posthog from "posthog-js";
 import { getConsent, subscribeConsent, type ConsentStatus } from "../../lib/analytics/consent";
+import { getAnalyticsContext } from "../../lib/analytics/events";
 
 function getPosthogHost() {
   return (
@@ -24,7 +25,8 @@ function initPosthog() {
     person_profiles: "identified_only",
     capture_pageview: false,
     capture_pageleave: true,
-    autocapture: true,
+    autocapture: false,
+    disable_session_recording: true,
     // Explicit opt-in for intercepted browser tests; production still filters bots.
     opt_out_useragent_filter:
       process.env.NEXT_PUBLIC_POSTHOG_TEST_CAPTURE === "true",
@@ -45,24 +47,33 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const readyRef = useRef(false);
+  const lastPageviewRef = useRef<string | null>(null);
 
   useEffect(() => {
     function captureCurrentPageview() {
+      const context = getAnalyticsContext();
+      posthog.register(context);
       const url = window.location.pathname;
+      if (lastPageviewRef.current === url) return;
+      lastPageviewRef.current = url;
       posthog.capture("$pageview", {
         $current_url: window.location.origin + url,
+        ...context,
       });
     }
 
     function applyConsent(status: ConsentStatus) {
       if (status === "granted") {
+        const needsFreshPageview = !readyRef.current;
         const ok = initPosthog();
         if (ok) {
+          posthog.register(getAnalyticsContext());
           try {
             posthog.opt_in_capturing();
           } catch {
             // ignore
           }
+          if (needsFreshPageview) lastPageviewRef.current = null;
           readyRef.current = true;
           captureCurrentPageview();
         }
@@ -84,10 +95,15 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     }
     if (!posthog.__loaded) return;
 
+    const context = getAnalyticsContext();
+    posthog.register(context);
     const url = pathname;
+    if (lastPageviewRef.current === url) return;
+    lastPageviewRef.current = url;
 
     posthog.capture("$pageview", {
       $current_url: window.location.origin + url,
+      ...context,
     });
   }, [pathname, searchParams]);
 
