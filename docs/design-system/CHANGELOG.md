@@ -5,7 +5,7 @@
 - Les polices Open Sans, Bricolage Grotesque, Geist Mono et le sous-ensemble latin Noto Sans SC sont chargés depuis `src/app/fonts/` avec `next/font/local`. Le build ne contacte plus `fonts.googleapis.com`.
 - Sobre utilise maintenant Open Sans à la place de Google Sans, qui n’est pas distribuée avec le dépôt. Les thèmes Fun et Aero gardent leurs familles distinctives. Les sous-ensembles Latin étendu couvrent les caractères européens ; arabe et chinois disposent d’un repli système pour les glyphes absents.
 - Les notices SIL Open Font License accompagnent les fontes auto-hébergées.
-- Les scripts de développement et de build utilisent Webpack : Turbopack ne résolvait pas le package Next.js dans cette copie du workspace.
+- Les scripts de développement et de build utilisent Webpack pour éviter le problème de résolution Next.js de Turbopack dans cette copie. Le plugin PostCSS officiel de Tailwind traite les CSS avec Webpack.
 
 ## Navigation latérale — 13 novembre 2026
 

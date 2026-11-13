@@ -8,7 +8,7 @@ Complément demandé le 13 novembre 2026 : lorsqu’un panneau de navigation sec
 
 Complément demandé le 13 novembre 2026 : corriger l’échec de build causé par les téléchargements `next/font/google` vers `fonts.googleapis.com`, en auto-hébergeant les familles ouvertes utilisées par le portfolio et en supprimant la dépendance à Google Sans propriétaire.
 
-Le serveur de développement rencontrait également une erreur Turbopack lors de la résolution de Next.js dans cette copie du workspace. Le script `dev` utilise désormais Webpack, comme le script de build.
+Le serveur de développement rencontrait une erreur de résolution Next.js avec Turbopack dans cette copie du workspace. Webpack est conservé, avec le plugin PostCSS officiel de Tailwind pour garder les utilitaires du site.
 
 ## Proposition
 
