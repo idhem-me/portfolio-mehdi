@@ -102,6 +102,7 @@ const densities = ["auto", "desktop", "mobile"] as const;
 type Density = (typeof densities)[number];
 
 const demoLabels = {
+  CategoricalPalette: "categoricalPalette",
   CaseStudy: "caseStudies",
   GiftActions: "giftActions",
   Swatches: "swatches",
@@ -465,6 +466,18 @@ export function PlaygroundCatalog() {
               </div>
               <label htmlFor={nativeLabelId} className="block text-sm">{t("exampleText")}</label>
               <NativeTextarea id={nativeLabelId} aria-label={t("exampleText")} className="min-h-24 w-full rounded-md border p-3" />
+            </Section>
+
+            <Section title="CategoricalPalette">
+              <div className="flex flex-wrap gap-2 rounded-md border p-3" style={{ background: "var(--tetris-board-surface)" }}>
+                {["i", "j", "l", "o", "s", "t", "z"].map((role) => (
+                  <span key={role} aria-hidden className="size-10 rounded-md border" style={{
+                    background: `color-mix(in srgb, var(--tetris-piece-${role}), var(--tetris-piece-highlight) calc(var(--tetris-material-intensity) * 20%))`,
+                    borderColor: "var(--tetris-piece-outline)",
+                  }} />
+                ))}
+                <span aria-hidden className="size-10 rounded-md border" style={{ background: "var(--tetris-ghost-fill)", borderColor: "var(--tetris-ghost-outline)" }} />
+              </div>
             </Section>
 
             <Section title="PaintColor">

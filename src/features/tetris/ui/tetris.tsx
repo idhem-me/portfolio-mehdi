@@ -1,5 +1,12 @@
 /* eslint-disable react-hooks/refs -- Imperative game engine: React HUD is explicitly refreshed at 25 Hz; canvas reads the same engine at frame rate. */
 "use client";
+import { useLocale, useTranslations } from "next-intl";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { track as usage } from "@/lib/tracking/client";
 
 import { NativeInput } from "@/components/design-system/native-controls";
@@ -42,7 +49,10 @@ import {
 import { AppShell } from "@/components/layout/app-shell";
 import { DesignSystemScope } from "@/components/design-system/provider";
 import { Badge } from "@/components/ui/badge";
-import { GameSettingsPanel, useGameSettings } from "@/components/games/game-settings";
+import {
+  GameSettingsPanel,
+  useGameSettings,
+} from "@/components/games/game-settings";
 import {
   Sheet,
   SheetContent,
@@ -78,7 +88,14 @@ import { seeded, replayLimit } from "../engine/replay";
 import { Leaderboard, type RankedRun } from "./leaderboard";
 import { GameOver } from "./game-over";
 import { Separator } from "@/components/ui/separator";
-import { recoverDraft, type ScoreDraft } from "../auth/draft";
+import {
+  clearDraft,
+  listPendingScores,
+  pendingScoresChangedEvent,
+  recoverDraft,
+  type ScoreDraft,
+  type GameSummary,
+} from "../auth/draft";
 import "./game.css";
 const controls = [
   ["left", "Gauche", "←", ArrowLeft],
@@ -121,6 +138,10 @@ function TetrisGame({
     () => true,
     () => false,
   );
+  const [result, setResult] = useState<{
+    summary: GameSummary;
+    run: typeof localRun.current;
+  } | null>(null);
   const [recovered, setRecovered] = useState<ScoreDraft | null>(null);
   const audio = useRef<GameAudio | null>(null);
   const ranked = useRef<RankedRun | null>(null);
@@ -132,6 +153,8 @@ function TetrisGame({
     mounted.current = true;
     return () => {
       mounted.current = false;
+      attempt.current?.abort();
+      attempt.current = null;
       audio.current?.close();
     };
   }, []);
@@ -150,6 +173,11 @@ function TetrisGame({
   const iosSwitch = useRef<HTMLInputElement>(null);
   const [, refresh] = useState(0);
   const [expanded, setExpanded] = useState(false);
+  const t = useTranslations("Tetris.result");
+  const locale = useLocale();
+  const attempt = useRef<AbortController | null>(null);
+  const [pending, setPending] = useState<ScoreDraft[]>([]);
+  const [confirmExit, setConfirmExit] = useState(false);
   const [status, setStatus] = useState<"ready" | "playing" | "paused" | "over">(
     "ready",
   );
@@ -199,17 +227,23 @@ function TetrisGame({
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
       setBest(readStore<number>("lava-best", 0));
-      const draft = recoverDraft();
-      if (draft) {
-        setRecovered(draft);
-        setExpanded(true);
-        setStatus("over");
-      }
+      const drafts = listPendingScores();
+      const legacy = recoverDraft();
+      setPending(
+        legacy && !drafts.some((d) => d.run.id === legacy.run.id)
+          ? [...drafts, legacy]
+          : drafts,
+      );
     });
     return () => cancelAnimationFrame(raf);
   }, []);
   useEffect(() => {
     resetOpeningFromDevUrl();
+  }, []);
+  useEffect(() => {
+    const update = () => setPending(listPendingScores());
+    window.addEventListener(pendingScoresChangedEvent, update);
+    return () => window.removeEventListener(pendingScoresChangedEvent, update);
   }, []);
   const stopRepeat = useCallback(() => {
     if (repeat.current) clearTimeout(repeat.current);
@@ -246,36 +280,45 @@ function TetrisGame({
     );
   }, [stopRepeat]);
   const start = async () => {
-    if (preparing) return;
-    setRecovered(null);
+    if (
+      attempt.current ||
+      (statusRef.current !== "ready" && statusRef.current !== "over")
+    )
+      return;
+    const request = new AbortController();
+    attempt.current = request;
     unlockAudio();
     setPreparing(true);
-    ranked.current = null;
-    localRun.current = null;
     const opening = claimOpening();
+    let run: typeof localRun.current = null;
     let rng = Math.random;
     if (tetrisEnabled) {
       try {
         const response = await fetch("/api/tetris/sessions", {
           method: "POST",
-          signal: AbortSignal.timeout(1500),
+          signal: AbortSignal.any([request.signal, AbortSignal.timeout(1500)]),
         });
         if (response.ok) {
           const session = await response.json();
-          localRun.current = {
+          if (attempt.current !== request) return;
+          run = {
             ...session,
             steps: [],
             opening: opening.length > 0,
           };
-          if (leaderboardEnabled && !opening.length)
-            ranked.current = localRun.current;
           rng = seeded(session.seed);
         }
       } catch {
         /* Offline: retain the complete solo game. */
       }
     }
-    if (!mounted.current) return;
+    if (!mounted.current || attempt.current !== request) return;
+    attempt.current = null;
+    if (recovered) clearDraft(undefined, recovered.run.id);
+    setRecovered(null);
+    localRun.current = run;
+    ranked.current = leaderboardEnabled && !opening.length ? run : null;
+    setResult(null);
     game.current = new Game(rng, opening);
     setPreparing(false);
     setExpanded(true);
@@ -307,6 +350,18 @@ function TetrisGame({
         haptic(e, settingsRef.current, iosSwitch.current);
       if (e.type === "gameOver") {
         usage.game("tetris", g.score);
+        stopRepeat();
+        setResult({
+          summary: {
+            score: g.score,
+            lines: g.lines,
+            level: g.level,
+            pieces: g.pieces,
+            elapsed: g.elapsed,
+            best: Math.max(best, g.score),
+          },
+          run: localRun.current,
+        });
         setStatus("over");
         setBest((old) => {
           const value = Math.max(old, g.score);
@@ -329,7 +384,7 @@ function TetrisGame({
             );
       }
     });
-  }, [status, camera]);
+  }, [status, camera, best, stopRepeat]);
   useEffect(() => {
     if (!feedback) return;
     const timer = setTimeout(
@@ -339,9 +394,10 @@ function TetrisGame({
     return () => clearTimeout(timer);
   }, [feedback]);
   useEffect(() => {
-    if (status !== "playing" && status !== "paused") return;
+    if (status !== "playing" || settingsOpen || rulesOpen || leaderboardOpen)
+      return;
     return bindKeyboard(root.current!, act, pause);
-  }, [act, pause, status]);
+  }, [act, pause, status, settingsOpen, rulesOpen, leaderboardOpen]);
   useEffect(() => {
     const blur = () => {
       audio.current?.mute();
@@ -449,10 +505,34 @@ function TetrisGame({
               <h1>Tetris</h1>
               <p>Un classique, une pièce à la fois.</p>
             </div>
-            <Button variant="ghost" size="icon" aria-label="Réglages" onClick={(event) => { settingsTriggerRef.current = event.currentTarget; setSettingsOpen(true); }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Réglages"
+              onClick={(event) => {
+                settingsTriggerRef.current = event.currentTarget;
+                setSettingsOpen(true);
+              }}
+            >
               <SettingsIcon aria-hidden="true" />
             </Button>
           </header>
+          {pending.map((draft) => (
+            <Button
+              key={draft.run.id}
+              variant="outline"
+              disabled={preparing}
+              onClick={() => {
+                setRecovered(draft);
+                setExpanded(true);
+                setStatus("over");
+              }}
+            >
+              {t("review", {
+                score: draft.summary.score.toLocaleString(locale),
+              })}
+            </Button>
+          ))}
           <div className="lava-lobby-grid">
             <Card className="lava-lobby-panel">
               <CardHeader>
@@ -564,7 +644,7 @@ function TetrisGame({
             </div>
           </div>
         </div>
-      ) : (
+      ) : status !== "over" ? (
         <>
           <div className="lava-top">
             <span className="lava-wordmark">Tetris</span>
@@ -725,27 +805,14 @@ function TetrisGame({
             </div>
           )}
         </>
-      )}
-      {status === "over" && (
+      ) : null}
+      {status === "over" && (recovered || result) && (
         <GameOver
-          summary={
-            recovered?.summary ?? {
-              score: g.score,
-              lines: g.lines,
-              level: g.level,
-              pieces: g.pieces,
-              elapsed: g.elapsed,
-              best: Math.max(best, g.score),
-            }
-          }
+          summary={recovered?.summary ?? result!.summary}
           localRun={
-            localRun.current ??
-            (recovered
-              ? {
-                  ...recovered.run,
-                  opening: recovered.run.opening === true,
-                }
-              : null)
+            recovered
+              ? { ...recovered.run, opening: recovered.run.opening === true }
+              : result!.run
           }
           initialName={recovered?.name}
           expectedRecipient={recovered?.recipient}
@@ -754,48 +821,75 @@ function TetrisGame({
           onLeaderboard={() => setLeaderboardOpen(true)}
           onReplay={start}
           onMenu={() => {
+            attempt.current?.abort();
+            attempt.current = null;
+            setPreparing(false);
+            clearDraft();
+            setPending(listPendingScores());
             setRecovered(null);
             setExpanded(false);
             setStatus("ready");
           }}
         />
       )}
-      {status === "paused" && (
-        <div className="lava-cover lava-pause">
-          <Card className="lava-pause-panel">
-            <CardHeader>
-              <CardTitle>
-                <h2>Partie en pause</h2>
-              </CardTitle>
-              <CardDescription>Reprenez quand vous êtes prêt.</CardDescription>
-            </CardHeader>
-            <CardContent className="lava-lobby-actions">
-              <Button
-                variant="accent"
-                onClick={() => {
-                  unlockAudio();
-                  setStatus("playing");
-                  root.current?.focus({ preventScroll: true });
-                }}
-              >
-                Reprendre
+      <Dialog
+        open={status === "paused" && !settingsOpen}
+        onOpenChange={(open) => {
+          if (!open && confirmExit) setConfirmExit(false);
+          else if (!open && statusRef.current === "paused") pause();
+        }}
+      >
+        <DialogContent
+          className="max-h-[calc(100dvh-2rem)] overflow-y-auto"
+          onPointerDownOutside={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (!settingsOpen) root.current?.focus({ preventScroll: true });
+          }}
+        >
+          <DialogTitle className="font-semibold">
+            {t(confirmExit ? "abandon" : "paused")}
+          </DialogTitle>
+          <DialogDescription>
+            {t(confirmExit ? "abandonHint" : "pauseHint")}
+          </DialogDescription>
+          <div className="lava-lobby-actions mt-4">
+            <Button
+              variant="accent"
+              onClick={() => {
+                if (confirmExit) setConfirmExit(false);
+                else pause();
+              }}
+            >
+              {t(confirmExit ? "cancel" : "resume")}
+            </Button>
+            {!confirmExit && (
+              <Button variant="outline" onClick={() => setSettingsOpen(true)}>
+                {t("settings")}
               </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  stopRepeat();
-                  audio.current?.mute();
-                  ranked.current = null;
-                  setExpanded(false);
-                  setStatus("ready");
-                }}
-              >
-                Quitter
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            )}
+            <Button
+              variant={confirmExit ? "destructive" : "outline"}
+              onClick={() => {
+                if (!confirmExit) {
+                  setConfirmExit(true);
+                  return;
+                }
+                stopRepeat();
+                audio.current?.mute();
+                ranked.current = null;
+                localRun.current = null;
+                setConfirmExit(false);
+                setExpanded(false);
+                setPending(listPendingScores());
+                setStatus("ready");
+              }}
+            >
+              {t(confirmExit ? "abandon" : "home")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <GameSettingsPanel
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
@@ -882,13 +976,6 @@ function TetrisGame({
         tabIndex={-1}
         aria-hidden="true"
       />
-      <span className="sr-only" aria-live="polite">
-        {status === "over"
-          ? `Partie terminée. ${recovered?.summary.score ?? g.score} points.`
-          : status === "paused"
-            ? "Partie en pause."
-            : ""}
-      </span>
     </div>
   );
 }

@@ -28,3 +28,5 @@
 | ScopedTheme et NativeControls | Thème local et contrôles HTML spécialisés. | Garder la sémantique et les attributs HTML. Préserver contraste et états si le thème est forcé. |
 
 Les adaptateurs de `src/components/design-system/` comprennent aussi le bouton local de base et le registre de flags. Les réglages `components/games/game-settings` composent des contrôles de jeu partagés. Préférer une composition de primitives pour le chrome, avec rendu de scène propre à la feature. La parité de chaque prop et de chaque état entre fournisseurs reste à vérifier en navigateur.
+
+- Palette catégorielle de scène : `--tetris-piece-*`, `--tetris-material-intensity`, `--tetris-board-surface` et `--tetris-ghost-*`. Consommée par Tetris, avec une démo publique générique `#categorical-palette`.

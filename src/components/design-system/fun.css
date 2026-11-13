@@ -1,4 +1,13 @@
 :is(html, .ds-scope)[data-design-system="fun"] {
+  --tetris-piece-i: #167e99;
+  --tetris-piece-j: #3f55b3;
+  --tetris-piece-l: var(--fun-orange);
+  --tetris-piece-o: #b28b0b;
+  --tetris-piece-s: var(--fun-success);
+  --tetris-piece-t: var(--fun-violet);
+  --tetris-piece-z: var(--fun-danger);
+  --tetris-material-intensity: 0.08;
+  --tetris-piece-outline: var(--fun-edge);
   --font-sans: var(--font-bricolage), var(--font-bricolage-ext), sans-serif;
   font-family: var(--font-sans);
 
@@ -68,6 +77,13 @@
 
 html.dark[data-design-system="fun"],
 .dark .ds-scope[data-design-system="fun"] {
+  --tetris-piece-i: #70d5e4;
+  --tetris-piece-j: #92b1ff;
+  --tetris-piece-l: var(--fun-orange);
+  --tetris-piece-o: var(--fun-yellow);
+  --tetris-piece-s: var(--fun-success);
+  --tetris-piece-t: var(--fun-violet);
+  --tetris-piece-z: var(--fun-danger);
   --fun-background: #201332;
   --fun-surface: #302043;
   --fun-text: #fff4db;

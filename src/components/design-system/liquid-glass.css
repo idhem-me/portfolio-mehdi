@@ -1,4 +1,13 @@
 :is(html, .ds-scope)[data-design-system="liquid-glass"] {
+  --tetris-piece-i: #347f91;
+  --tetris-piece-j: #4768a4;
+  --tetris-piece-l: #ac723a;
+  --tetris-piece-o: #9a842e;
+  --tetris-piece-s: #4b8365;
+  --tetris-piece-t: #7963a7;
+  --tetris-piece-z: #ad607c;
+  --tetris-material-intensity: 0.48;
+  --tetris-piece-outline: var(--glass-ink);
   --glass-canvas: #eaf0fb;
   --glass-paper: #f8faff;
   --glass-ink: #18283f;
@@ -74,6 +83,13 @@
 
 html.dark[data-design-system="liquid-glass"],
 .dark .ds-scope[data-design-system="liquid-glass"] {
+  --tetris-piece-i: #94d4df;
+  --tetris-piece-j: #a0b9eb;
+  --tetris-piece-l: #e5bd95;
+  --tetris-piece-o: #ddd09a;
+  --tetris-piece-s: #9fd2b5;
+  --tetris-piece-t: #c4b1e5;
+  --tetris-piece-z: #e4aec2;
   --glass-canvas: #141e30;
   --glass-paper: #222e44;
   --glass-ink: #f1f6ff;

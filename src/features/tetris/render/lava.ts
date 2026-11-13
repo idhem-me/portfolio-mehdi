@@ -1,10 +1,11 @@
 import { blocks, type Game, type GameEvent } from "../engine/game";
 import { lavaMaterial } from "./material";
+import { readPalette } from "./palette";
 import { PIECE_NAMES } from "../engine/pieces";
 export const vertex = `attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 // Constant 3x3 sampling: cost is independent of the number of occupied cells.
 export const fragment = `precision mediump float;
-uniform sampler2D uGrid;uniform vec2 uSize;uniform float uTime;uniform vec3 uColors[7];uniform float uGlow;uniform float uImpulse;uniform float uMelt;uniform float uFall;uniform float uStretch;
+uniform sampler2D uGrid;uniform vec2 uSize;uniform float uTime;uniform vec3 uColors[7];uniform float uGlow;uniform float uImpulse;uniform float uMelt;uniform float uFall;uniform float uStretch;uniform float uMaterial;uniform vec3 uHighlight;uniform vec3 uOutline;
 float best;float chosen;vec2 nearest;
 float id(vec2 p){if(p.x<0.||p.x>=10.||p.y<0.||p.y>=20.)return 0.;return floor(texture2D(uGrid,(p+.5)/vec2(10.,20.)).r*255.+.5);}
 float same(float a,float b){return a>.5&&abs(a-b)<.1?1.:0.;}
@@ -22,7 +23,7 @@ float rim=1.-smoothstep(0.,.3,-sd);vec2 delta=p-nearest;vec2 normal=delta/max(le
 float spec=pow(max(dot(n,normalize(vec3(-.45,-.75,1.))),0.),42.);float core=smoothstep(.02,.58,-sd);float wave=.5+.5*sin(p.x*.5+p.y*.23+uTime*.18);float bubble=1.-smoothstep(.035,.075,length(vec2(fract(p.x*1.7)-.5,fract(p.y*.65+uTime*.07)-.5)));
 float fresnel=pow(1.-n.z,2.);float caustic=pow(.5+.5*sin(p.x*.8+sin(p.y*.45+uTime*.1)),8.);float pane=exp(-pow(p.x*.18+p.y*.08+sin(uTime*.07)*.3-1.,2.)*7.);
 vec3 body=color*(.72+core*( ${lavaMaterial.innerEmission.toFixed(2)} +uGlow*.2));vec3 glossy=body+mix(color,vec3(1.),.5)*core*${lavaMaterial.innerWhite.toFixed(2)}*(.75+.25*wave)+vec3(spec*${lavaMaterial.glassSpecular.toFixed(2)}+fresnel*${lavaMaterial.fresnel.toFixed(2)}+caustic*.045+pane*.065+bubble*.035)+color*rim*.12;
-gl_FragColor=vec4(glossy,alpha);}`;
+vec3 finish=mix(color,glossy*uHighlight,uMaterial);finish=mix(finish,uOutline,rim*.14*(1.-uMaterial));gl_FragColor=vec4(finish,alpha);}`;
 export function createLava(canvas: HTMLCanvasElement) {
   const gl = canvas.getContext("webgl", {
     alpha: true,
@@ -68,6 +69,9 @@ export function createLava(canvas: HTMLCanvasElement) {
     const size = loc("uSize"),
       time = loc("uTime"),
       colors = loc("uColors[0]"),
+      material = loc("uMaterial"),
+      highlight = loc("uHighlight"),
+      outline = loc("uOutline"),
       glow = loc("uGlow"),
       impulse = loc("uImpulse"),
       melt = loc("uMelt"),
@@ -83,10 +87,9 @@ export function createLava(canvas: HTMLCanvasElement) {
       stretch = 0;
     let clearing: { board: Game["board"]; rows: number[] } | null = null;
     const pixels = new Uint8Array(200 * 4);
-    const scratch = document.createElement("canvas").getContext("2d")!;
-    let palette = new Float32Array(21);
-    let theme = "";
+    let palette = readPalette(canvas);
     return {
+      refreshPalette() { palette = readPalette(canvas); },
       event(e: GameEvent, game: Game) {
         if (["lock", "hardDrop", "rotate", "move"].includes(e.type))
           impact = performance.now();
@@ -123,22 +126,6 @@ export function createLava(canvas: HTMLCanvasElement) {
           canvas.width = width;
           canvas.height = height;
           gl.viewport(0, 0, width, height);
-        }
-        const nextTheme = document.documentElement.className;
-        if (theme !== nextTheme) {
-          theme = nextTheme;
-          const style = getComputedStyle(canvas);
-          palette = new Float32Array(
-            PIECE_NAMES.flatMap((name) => {
-              scratch.fillStyle = style
-                .getPropertyValue("--tetris-piece-" + name.toLowerCase())
-                .trim();
-              scratch.fillRect(0, 0, 1, 1);
-              return Array.from(scratch.getImageData(0, 0, 1, 1).data)
-                .slice(0, 3)
-                .map((x) => x / 255);
-            }),
-          );
         }
         if (game.current.y > previousY) stretch = 1;
         previousY = game.current.y;
@@ -191,7 +178,10 @@ export function createLava(canvas: HTMLCanvasElement) {
         );
         gl.uniform2f(size, width, height);
         gl.uniform1f(time, now * 0.001 * (reduced ? 0.15 : 1));
-        gl.uniform3fv(colors, palette);
+        gl.uniform3fv(colors, palette.colors);
+        gl.uniform3fv(highlight, palette.highlight);
+        gl.uniform3fv(outline, palette.outline);
+        gl.uniform1f(material, palette.intensity);
         gl.uniform1f(
           glow,
           document.documentElement.classList.contains("dark") ? 0.2 : 0,

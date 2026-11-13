@@ -107,3 +107,73 @@ export function recoverDraft(storage?: StoragePort): ScoreDraft | null {
     return null;
   }
 }
+
+/** Only an explicit publication request belongs here; viewing a result does not. */
+const pendingKey = "tetris.pending-scores.v1";
+export const pendingScoresChangedEvent = "tetris-pending-scores-changed";
+export const pendingScoreLimit = 5;
+const pendingBytesLimit = 4_000_000;
+type PendingEntry = { created: number; draft: ScoreDraft };
+function pendingEntries(source: StoragePort): PendingEntry[] {
+  const raw = source.getItem(pendingKey);
+  if (!raw) return [];
+  if (raw.length > pendingBytesLimit) throw Error("Invalid pending scores");
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed) || parsed.length > pendingScoreLimit)
+    throw Error("Invalid pending scores");
+  return parsed.filter((entry): entry is PendingEntry =>
+    !!recoverDraft({
+      getItem: () => JSON.stringify(entry),
+      setItem: () => {},
+      removeItem: () => {},
+    }),
+  );
+}
+function notifyPendingScores() {
+  if (typeof window !== "undefined")
+    window.dispatchEvent(new Event(pendingScoresChangedEvent));
+}
+export function listPendingScores(storage?: StoragePort): ScoreDraft[] {
+  try {
+    return pendingEntries(storage ?? localStorage).map(({ draft }) => draft);
+  } catch {
+    return [];
+  }
+}
+export function savePendingScore(draft: ScoreDraft, storage?: StoragePort): boolean {
+  try {
+    const source = storage ?? localStorage;
+    const entries = pendingEntries(source);
+    const previous = entries.find((entry) => entry.draft.run.id === draft.run.id);
+    // Neither a subsequent account switch nor a re-render may reassign a run.
+    if (previous?.draft.recipient)
+      draft = { ...draft, recipient: previous.draft.recipient };
+    const entry = { created: previous?.created ?? Date.now(), draft };
+    if (!recoverDraft({
+      getItem: () => JSON.stringify(entry),
+      setItem: () => {},
+      removeItem: () => {},
+    })) return false;
+    const next = [...entries.filter((item) => item.draft.run.id !== draft.run.id), entry];
+    if (next.length > pendingScoreLimit) return false;
+    const payload = JSON.stringify(next);
+    if (payload.length > pendingBytesLimit) return false;
+    source.setItem(pendingKey, payload);
+    notifyPendingScores();
+    return true;
+  } catch {
+    return false;
+  }
+}
+export function removePendingScore(runId: string, storage?: StoragePort): boolean {
+  try {
+    const source = storage ?? localStorage;
+    const next = pendingEntries(source).filter((entry) => entry.draft.run.id !== runId);
+    if (next.length) source.setItem(pendingKey, JSON.stringify(next));
+    else source.removeItem(pendingKey);
+    notifyPendingScores();
+    return true;
+  } catch {
+    return false;
+  }
+}

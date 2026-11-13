@@ -143,6 +143,7 @@
     "enlarge": "Agrandir {name}"
   },
   "playground": {
+    "categoricalPalette": "Palette catégorielle",
     "swatches": "Cartes du nuancier",
     "alerts": "Alertes",
     "volume": "Volume",
@@ -526,5 +527,44 @@
     "cookies": "Cookies",
     "demoNotice": "Démonstration : toutes les valeurs affichées ci-dessous sont fictives.",
     "demoSession": "Exemple de session"
+  },
+  "Tetris": {
+    "result": {
+      "title": "Partie terminée",
+      "score": "Score",
+      "best": "Record : {score}",
+      "lines": "Lignes",
+      "level": "Niveau",
+      "duration": "Durée",
+      "anonymous": "Anonyme",
+      "localSaving": "Sauvegarde sur cet appareil…",
+      "localSaved": "Score enregistré sur cet appareil",
+      "localError": "Impossible de sauvegarder sur cet appareil.",
+      "retry": "Réessayer",
+      "guided": "Partie guidée · hors classement",
+      "offline": "Partie locale · hors classement",
+      "published": "Score envoyé",
+      "publishing": "Envoi…",
+      "publish": "Enregistrer en ligne",
+      "preparing": "Préparation…",
+      "replay": "Rejouer",
+      "home": "Retour à l’accueil",
+      "leaderboard": "Classement",
+      "review": "Revoir le score de {score} points",
+      "paused": "Partie en pause",
+      "abandon": "Abandonner la partie",
+      "abandonHint": "La partie en cours sera perdue.",
+      "pauseHint": "Reprenez quand vous êtes prêt.",
+      "cancel": "Annuler",
+      "resume": "Reprendre",
+      "settings": "Réglages",
+      "online": {
+        "sending": "Envoi du score…",
+        "sent": "Score enregistré en ligne.",
+        "error": "L’envoi reste en attente. Réessayez.",
+        "identity": "Reconnectez le compte d’origine pour envoyer ce score.",
+        "storage": "Impossible de conserver cet envoi sur cet appareil."
+      }
+    }
   }
 }

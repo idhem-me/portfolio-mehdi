@@ -143,6 +143,7 @@
     "enlarge": "{name} vergrößern"
   },
   "playground": {
+    "categoricalPalette": "Kategorienpalette",
     "swatches": "Farbfelder der Palette",
     "alerts": "Hinweise",
     "volume": "Lautstärke",
@@ -526,5 +527,44 @@
     "cookies": "Cookies",
     "demoNotice": "Demo: Alle unten angezeigten Werte sind fiktiv.",
     "demoSession": "Beispielsitzung"
+  },
+  "Tetris": {
+    "result": {
+      "title": "Spiel beendet",
+      "score": "Punktzahl",
+      "best": "Rekord: {score}",
+      "lines": "Reihen",
+      "level": "Stufe",
+      "duration": "Dauer",
+      "anonymous": "Anonym",
+      "localSaving": "Wird auf diesem Gerät gespeichert…",
+      "localSaved": "Punktzahl auf diesem Gerät gespeichert",
+      "localError": "Speichern auf diesem Gerät fehlgeschlagen.",
+      "retry": "Erneut versuchen",
+      "guided": "Geführtes Spiel · ohne Rangliste",
+      "offline": "Lokales Spiel · ohne Rangliste",
+      "published": "Punktzahl gesendet",
+      "publishing": "Wird gesendet…",
+      "publish": "Online speichern",
+      "preparing": "Wird vorbereitet…",
+      "replay": "Noch einmal spielen",
+      "home": "Zurück zum Spielmenü",
+      "leaderboard": "Rangliste",
+      "review": "Ergebnis mit {score} Punkten ansehen",
+      "paused": "Spiel pausiert",
+      "abandon": "Spiel abbrechen",
+      "abandonHint": "Das laufende Spiel geht verloren.",
+      "pauseHint": "Spiele weiter, wenn du bereit bist.",
+      "cancel": "Abbrechen",
+      "resume": "Weiterspielen",
+      "settings": "Einstellungen",
+      "online": {
+        "sending": "Punktzahl wird gesendet…",
+        "sent": "Punktzahl online gespeichert.",
+        "error": "Die Übertragung steht noch aus. Versuche es erneut.",
+        "identity": "Melde dich zum Senden mit dem ursprünglichen Konto an.",
+        "storage": "Diese Übertragung konnte auf dem Gerät nicht gespeichert werden."
+      }
+    }
   }
 }

@@ -143,6 +143,7 @@
     "enlarge": "Ampliar {name}"
   },
   "playground": {
+    "categoricalPalette": "Paleta categórica",
     "swatches": "Muestras de la paleta",
     "alerts": "Alertas",
     "volume": "Volumen",
@@ -526,5 +527,44 @@
     "cookies": "Cookies",
     "demoNotice": "Demostración: todas las cifras siguientes son ficticias.",
     "demoSession": "Sesión de ejemplo"
+  },
+  "Tetris": {
+    "result": {
+      "title": "Partida terminada",
+      "score": "Puntuación",
+      "best": "Récord: {score}",
+      "lines": "Líneas",
+      "level": "Nivel",
+      "duration": "Duración",
+      "anonymous": "Anónimo",
+      "localSaving": "Guardando en este dispositivo…",
+      "localSaved": "Puntuación guardada en este dispositivo",
+      "localError": "No se pudo guardar en este dispositivo.",
+      "retry": "Reintentar",
+      "guided": "Partida guiada · sin clasificación",
+      "offline": "Partida local · sin clasificación",
+      "published": "Puntuación enviada",
+      "publishing": "Enviando…",
+      "publish": "Guardar en línea",
+      "preparing": "Preparando…",
+      "replay": "Volver a jugar",
+      "home": "Volver al menú del juego",
+      "leaderboard": "Clasificación",
+      "review": "Ver el resultado de {score} puntos",
+      "paused": "Partida en pausa",
+      "abandon": "Abandonar partida",
+      "abandonHint": "Se perderá la partida actual.",
+      "pauseHint": "Continúa cuando estés listo.",
+      "cancel": "Cancelar",
+      "resume": "Continuar",
+      "settings": "Ajustes",
+      "online": {
+        "sending": "Enviando puntuación…",
+        "sent": "Puntuación guardada en línea.",
+        "error": "El envío sigue pendiente. Vuelve a intentarlo.",
+        "identity": "Inicia sesión en la cuenta original para enviar esta puntuación.",
+        "storage": "No se pudo conservar este envío en el dispositivo."
+      }
+    }
   }
 }

@@ -143,6 +143,7 @@
     "enlarge": "放大{name}"
   },
   "playground": {
+    "categoricalPalette": "分类色板",
     "swatches": "调色板色卡",
     "alerts": "提醒",
     "volume": "音量",
@@ -526,5 +527,44 @@
     "cookies": "Cookies",
     "demoNotice": "演示：下方所有数字均为虚构。",
     "demoSession": "示例会话"
+  },
+  "Tetris": {
+    "result": {
+      "title": "游戏结束",
+      "score": "得分",
+      "best": "最高分：{score}",
+      "lines": "消除行数",
+      "level": "等级",
+      "duration": "用时",
+      "anonymous": "匿名",
+      "localSaving": "正在保存到此设备…",
+      "localSaved": "得分已保存到此设备",
+      "localError": "无法保存到此设备。",
+      "retry": "重试",
+      "guided": "引导对局 · 不计入排名",
+      "offline": "本地对局 · 不计入排名",
+      "published": "得分已提交",
+      "publishing": "正在提交…",
+      "publish": "在线保存",
+      "preparing": "正在准备…",
+      "replay": "再玩一局",
+      "home": "返回游戏菜单",
+      "leaderboard": "排行榜",
+      "review": "查看 {score} 分的成绩",
+      "paused": "游戏已暂停",
+      "abandon": "放弃对局",
+      "abandonHint": "当前对局将丢失。",
+      "pauseHint": "准备好后可继续。",
+      "cancel": "取消",
+      "resume": "继续",
+      "settings": "设置",
+      "online": {
+        "sending": "正在提交得分…",
+        "sent": "得分已在线保存。",
+        "error": "提交仍在等待，请重试。",
+        "identity": "请登录原账号以提交此得分。",
+        "storage": "无法在此设备上保留这次提交。"
+      }
+    }
   }
 }

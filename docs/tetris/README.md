@@ -124,3 +124,11 @@ Game over : un profil local ou une identité Google validée suffit à déclench
 La sidebar conserve Sheet/Avatar/Input/Button et des espacements dédiés, indépendants des grands contrôles des réglages. Enregistrer utilise explicitement `primary`, alias compatible des tokens neutres du variant `default`. Le bouton photo secondaire utilise les dimensions compactes du design system, avec les cibles tactiles mobiles conservées.
 
 Les parcours navigateur Google émulent uniquement la frontière du SDK Google et l’échange de jeton : ils ne certifient pas une connexion personnelle auprès du fournisseur. Utiliser `TETRIS_TEST_BASE_URL=http://localhost:3001` pour vérifier une preview sur un autre port. Les tests réels SQLite/libSQL/PostgreSQL couvrent les transactions et l’absence de doublons.
+
+## Parcours actuel
+
+La pause offre Reprendre, Réglages et un retour à l’accueil avec confirmation d’abandon. Le résultat affiche score, record, lignes, niveau et durée. Rejouer crée une nouvelle partie et le retour à l’accueil annule une préparation en cours. Les anciens résultats ne s’ouvrent plus automatiquement au chargement.
+
+Le résultat est sauvegardé sur l’appareil. Pour un compte connecté, une partie admissible peut être envoyée explicitement si le classement est activé. Les envois en attente sont liés au compte d’origine, conservés jusqu’à 24 h et accessibles depuis l’accueil. La file accepte jusqu’à cinq résultats et refuse un nouvel ajout si le stockage est plein.
+
+Les sept couleurs, le contour, la surface et les reflets suivent le design system et la variante claire ou sombre. Le plateau WebGL, le repli SVG et les aperçus utilisent la même palette. La fusion des masses et les règles de score du moteur sont conservées.

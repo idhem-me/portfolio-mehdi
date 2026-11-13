@@ -138,7 +138,7 @@ export async function endGame(page: Page) {
   )
     await page.getByRole("button", { name: "Lâcher", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Game over", exact: true }),
+    page.getByRole("heading", { name: "Partie terminée", exact: true }),
   ).toBeVisible();
 }
 

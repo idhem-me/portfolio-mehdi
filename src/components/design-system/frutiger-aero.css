@@ -1,5 +1,14 @@
 /* Frutiger Aero: all material, colour and geometry values live in theme tokens. */
 :is(html, .ds-scope)[data-design-system="frutiger-aero"] {
+  --tetris-piece-i: #00869e;
+  --tetris-piece-j: #1465c0;
+  --tetris-piece-l: #bd6a13;
+  --tetris-piece-o: #9b8411;
+  --tetris-piece-s: #23834c;
+  --tetris-piece-t: #8056be;
+  --tetris-piece-z: #bc4678;
+  --tetris-material-intensity: 0.65;
+  --tetris-piece-outline: var(--aero-ink);
   --font-sans: var(--font-nunito-sans), var(--font-nunito-sans-ext), "Nunito Sans", sans-serif;
   --aero-font-regular: 400;
   --aero-font-semibold: 600;
@@ -174,6 +183,13 @@
 
 html.dark[data-design-system="frutiger-aero"],
 .dark .ds-scope[data-design-system="frutiger-aero"] {
+  --tetris-piece-i: #5ed8ed;
+  --tetris-piece-j: #7aafff;
+  --tetris-piece-l: #f4b067;
+  --tetris-piece-o: #dece5e;
+  --tetris-piece-s: #6cdb9b;
+  --tetris-piece-t: #ba9aee;
+  --tetris-piece-z: #ed8fb5;
   --aero-canvas: #09283e;
   --aero-surface: #163d56;
   --aero-ink: #edfaff;

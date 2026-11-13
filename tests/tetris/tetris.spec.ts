@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { endGame, identityEnvironment, profiles } from "../helpers/identity";
 import { captureFlow, setup } from "../helpers/v3";
 const enabled = process.env.TETRIS_TEST_DISABLED !== "true";
 test("games feature gate, legacy redirect, metadata and sitemap", async ({
@@ -10,7 +11,7 @@ test("games feature gate, legacy redirect, metadata and sitemap", async ({
   await expect(page.getByRole("link", { name: /Tetris/ })).toHaveCount(0);
   if (enabled) {
     await page.goto("/jeux");
-    await expect(page.getByRole("link", { name: /Tetris/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Tetris/ })).toHaveCount(0);
     await page.goto("/realisations/tetris");
     await expect(page).toHaveURL(/\/jeux\/tetris$/);
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
@@ -123,4 +124,85 @@ test("development onboarding reset is consumed before play", async ({
   expect(
     await page.evaluate(() => localStorage.getItem("tetris.onboardingDone")),
   ).toBe("true");
+});
+
+test("result keeps pending publication separate from navigation and cancels a delayed replay", async ({
+  page,
+}) => {
+  test.skip(!enabled);
+  const backend = await identityEnvironment(page, profiles.google);
+  backend.failSave(true);
+  await page.goto("/jeux/tetris");
+  await endGame(page);
+  await expect(
+    page.getByRole("heading", { name: "Partie terminée" }),
+  ).toBeFocused();
+  await page.keyboard.press("p");
+  await expect(page.locator(".lava-board")).toHaveCount(0);
+  expect(backend.saved).toHaveLength(0);
+  await page.getByRole("button", { name: "Enregistrer en ligne" }).click();
+  await expect(
+    page.getByText("L’envoi reste en attente. Réessayez."),
+  ).toBeVisible();
+  await page.route("**/api/tetris/sessions", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    await route
+      .fulfill({ json: { id: "f".repeat(64), seed: 123 } })
+      .catch(() => {});
+  });
+  await page.getByRole("button", { name: "Rejouer", exact: true }).click();
+  await page.getByRole("button", { name: "Retour à l’accueil" }).click();
+  await expect(
+    page.getByRole("button", { name: "Jouer", exact: true }),
+  ).toBeEnabled();
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: /Revoir le score/ }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Partie terminée" }),
+  ).toHaveCount(0);
+});
+
+test("restored design systems supply different palettes to the SVG board", async ({
+  page,
+}) => {
+  test.skip(!enabled);
+  await setup(page);
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      type: string,
+      ...args: unknown[]
+    ) {
+      if (type === "webgl") return null;
+      return Reflect.apply(original, this, [type, ...args]);
+    } as typeof original;
+  });
+  const palettes = new Set<string>();
+  for (const theme of ["mehdi", "fun", "frutiger-aero"]) {
+    await page.goto("/jeux/tetris");
+    await page.evaluate(
+      (value) => localStorage.setItem("portfolio-design-system", value),
+      theme,
+    );
+    await page.reload();
+    if (theme !== "mehdi")
+      await expect(page.locator("html")).toHaveAttribute(
+        "data-design-system",
+        theme,
+      );
+    await page.getByRole("button", { name: "Jouer", exact: true }).click();
+    const piece = page.locator('[data-layer="active"] path').first();
+    await expect(piece).toBeVisible();
+    palettes.add(
+      await piece.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return ["i", "j", "l", "o", "s", "t", "z"]
+          .map((role) => style.getPropertyValue("--tetris-piece-" + role))
+          .join(",");
+      }),
+    );
+  }
+  expect(palettes.size).toBe(3);
 });

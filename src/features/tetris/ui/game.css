@@ -1,13 +1,6 @@
 /* Additive game tokens. Theme, font, spacing, radii and controls inherit the portfolio. */
 .lava-game,
 .tetris-cover {
-  --tetris-piece-t: #a32eff;
-  --tetris-piece-j: #2554ff;
-  --tetris-piece-l: #ef6500;
-  --tetris-piece-s: #00a75b;
-  --tetris-piece-z: #f32064;
-  --tetris-piece-i: #009dbb;
-  --tetris-piece-o: #d3a000;
   --tetris-gap: calc(var(--spacing) * 3);
   --tetris-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --tetris-menu-duration: 450ms;
@@ -21,13 +14,6 @@
 }
 .dark .lava-game,
 .dark .tetris-cover {
-  --tetris-piece-t: #c35cff;
-  --tetris-piece-j: #5780ff;
-  --tetris-piece-l: #ff8b24;
-  --tetris-piece-s: #39f59a;
-  --tetris-piece-z: #ff427b;
-  --tetris-piece-i: #28e8ff;
-  --tetris-piece-o: #ffe34c;
   --tetris-glow: 0 0 24px
     color-mix(in oklch, var(--tetris-piece-i), transparent 88%);
 }
@@ -71,7 +57,7 @@
   aspect-ratio: 1/2;
   position: relative;
   isolation: isolate;
-  background-color: var(--background);
+  background-color: var(--tetris-board-surface);
   background-image:
     linear-gradient(to right, var(--tetris-grid) 1px, transparent 1px),
     linear-gradient(to bottom, var(--tetris-grid) 1px, transparent 1px);
@@ -598,8 +584,8 @@
 .lava-ghost {
   stroke-dasharray: none;
   stroke-width: 0.045;
-  fill: color-mix(in oklch, var(--tetris-piece-i), transparent 94%);
-  stroke: color-mix(in oklch, var(--foreground), transparent 58%);
+  fill: var(--tetris-ghost-fill);
+  stroke: var(--tetris-ghost-outline);
 }
 .lava-fallback-piece {
   filter: drop-shadow(0 0 0.05px var(--tetris-piece-i));
@@ -1359,4 +1345,25 @@
 [data-slot="sidebar-wrapper"]:has(.lava-game:not([data-state="ready"]))
   [data-slot="sidebar"] {
   visibility: hidden;
+}
+
+.lava-gameover {
+  overflow-y: auto;
+  animation: none;
+}
+.lava-end-panel {
+  flex-shrink: 0;
+}
+.lava-end-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.lava-end-stats dt {
+  overflow-wrap: anywhere;
+}
+.lava-result-storage {
+  display: grid;
+  gap: var(--spacing);
+}
+.lava-end-panel button {
+  white-space: normal;
 }
