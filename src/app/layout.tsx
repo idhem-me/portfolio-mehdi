@@ -1,36 +1,67 @@
-import { SiteAccountProvider } from "@/features/account/provider";
 import type { Metadata } from "next";
-import { Google_Sans, Nunito_Sans } from "next/font/google";
 import localFont from "next/font/local";
-import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { AnalyticsRoot } from "@/components/analytics/analytics-root";
 import { profileMeta } from "@/data/profile-meta";
-import frMessages from "../../messages/fr.json";
 import { DesignSystemProvider } from "@/components/design-system/provider";
-import {
-  DEFAULT_DESIGN_SYSTEM,
-  initialDesignSystemScript,
-} from "@/components/design-system/registry";
+import { DEFAULT_DESIGN_SYSTEM } from "@/components/design-system/registry";
 import "./globals.css";
 import "@/components/design-system/design-system.css";
-import "@/components/design-system/fun.css";
-import "@/components/design-system/frutiger-aero.css";
-import "@/components/design-system/liquid-glass.css";
 
-const googleSans = Google_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const googleSans = localFont({
+  src: "./fonts/Google-Sans-Latin.woff2",
+  weight: "400 700",
   variable: "--font-google-sans",
   display: "swap",
+  preload: false,
+  adjustFontFallback: false,
 });
 
-const nunitoSans = Nunito_Sans({
-  subsets: ["latin", "latin-ext"],
-  weight: ["400", "600", "700"],
-  style: ["normal", "italic"],
+const googleSansExt = localFont({
+  src: "./fonts/Google-Sans-Latin-Ext.woff2",
+  weight: "400 700",
+  variable: "--font-google-sans-ext",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+});
+
+const nunitoSans = localFont({
+  src: [
+    {
+      path: "./fonts/Nunito-Sans-Latin.woff2",
+      weight: "200 1000",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Nunito-Sans-Italic-Latin.woff2",
+      weight: "200 1000",
+      style: "italic",
+    },
+  ],
   variable: "--font-nunito-sans",
   display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+});
+
+const nunitoSansExt = localFont({
+  src: [
+    {
+      path: "./fonts/Nunito-Sans-Latin-Ext.woff2",
+      weight: "200 1000",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Nunito-Sans-Italic-Latin-Ext.woff2",
+      weight: "200 1000",
+      style: "italic",
+    },
+  ],
+  variable: "--font-nunito-sans-ext",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
 });
 
 const openSans = localFont({
@@ -48,6 +79,7 @@ const openSans = localFont({
   ],
   variable: "--font-open-sans",
   display: "swap",
+  preload: false,
 });
 
 const openSansExt = localFont({
@@ -65,6 +97,7 @@ const openSansExt = localFont({
   ],
   variable: "--font-open-sans-ext",
   display: "swap",
+  preload: false,
 });
 
 const bricolageGrotesque = localFont({
@@ -72,6 +105,7 @@ const bricolageGrotesque = localFont({
   weight: "200 800",
   variable: "--font-bricolage",
   display: "swap",
+  preload: false,
 });
 
 const bricolageGrotesqueExt = localFont({
@@ -79,6 +113,7 @@ const bricolageGrotesqueExt = localFont({
   weight: "200 800",
   variable: "--font-bricolage-ext",
   display: "swap",
+  preload: false,
 });
 
 const geistMono = localFont({
@@ -86,6 +121,7 @@ const geistMono = localFont({
   weight: "100 900",
   variable: "--font-geist-mono",
   display: "swap",
+  preload: false,
 });
 
 const geistMonoExt = localFont({
@@ -93,6 +129,7 @@ const geistMonoExt = localFont({
   weight: "100 900",
   variable: "--font-geist-mono-ext",
   display: "swap",
+  preload: false,
 });
 
 const notoSansSc = localFont({
@@ -100,6 +137,7 @@ const notoSansSc = localFont({
   weight: "400 700",
   variable: "--font-cjk",
   display: "swap",
+  preload: false,
 });
 
 const notoSansArabic = localFont({
@@ -107,6 +145,7 @@ const notoSansArabic = localFont({
   weight: "100 900",
   variable: "--font-arabic",
   display: "swap",
+  preload: false,
 });
 
 /** ThemeProvider / analytics : hors shell static strict. */
@@ -129,13 +168,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       dir="ltr"
       data-design-system={DEFAULT_DESIGN_SYSTEM}
       suppressHydrationWarning
-      className={`${googleSans.variable} ${nunitoSans.variable} ${openSans.variable} ${openSansExt.variable} ${bricolageGrotesque.variable} ${bricolageGrotesqueExt.variable} ${geistMono.variable} ${geistMonoExt.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
+      className={`${googleSans.variable} ${googleSansExt.variable} ${nunitoSans.variable} ${nunitoSansExt.variable} ${openSans.variable} ${openSansExt.variable} ${bricolageGrotesque.variable} ${bricolageGrotesqueExt.variable} ${geistMono.variable} ${geistMonoExt.variable} ${notoSansSc.variable} ${notoSansArabic.variable} h-full antialiased`}
     >
       <head>
-        <script
-          id="initial-design-system"
-          dangerouslySetInnerHTML={{ __html: initialDesignSystemScript }}
-        />
         <script
           id="initial-theme"
           dangerouslySetInnerHTML={{
@@ -153,11 +188,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           disableTransitionOnChange
         >
           <DesignSystemProvider>
-            <NextIntlClientProvider locale="fr" messages={frMessages}>
-              <SiteAccountProvider>
-                <AnalyticsRoot>{children}</AnalyticsRoot>
-              </SiteAccountProvider>
-            </NextIntlClientProvider>
+            <AnalyticsRoot>{children}</AnalyticsRoot>
           </DesignSystemProvider>
         </ThemeProvider>
       </body>

@@ -62,7 +62,7 @@ test("homepage sends named interactions to PostHog once per action", async ({
   await range.press("ArrowRight");
   await page.getByRole("button", { name: "Reset", exact: true }).click();
   await page
-    .locator('a[data-analytics-action="home_cta"][href="/realisations"]')
+    .locator('a[data-analytics-action="home_cta_clicked"][href="/realisations"]')
     .click();
   const interactions = () =>
     events.filter((e) => e.event === "home_interaction");
@@ -79,7 +79,7 @@ test("homepage sends named interactions to PostHog once per action", async ({
         "gravity_config",
         "gravity_tune",
         "gravity_reset",
-        "home_cta",
+        "home_cta_clicked",
       ]),
     );
   for (const action of [
@@ -89,7 +89,7 @@ test("homepage sends named interactions to PostHog once per action", async ({
     "gravity_play",
     "gravity_config",
     "gravity_reset",
-    "home_cta",
+    "home_cta_clicked",
   ]) {
     expect(
       interactions().filter((e) => e.properties.action === action),
@@ -102,6 +102,8 @@ test("homepage sends named interactions to PostHog once per action", async ({
     value: "success",
     page: "home",
     locale: "fr",
+    site: "portfolio",
+    internal_visitor: false,
   });
   const tuning = interactions().find(
     (e) => e.properties.action === "gravity_tune",
@@ -116,6 +118,28 @@ test("homepage sends named interactions to PostHog once per action", async ({
   await page.getByRole("link", { name: "Jeux", exact: true }).first().click();
   await page.waitForTimeout(1000);
   expect(interactions()).toHaveLength(count);
+  expect(events.filter((e) => e.event === "$autocapture")).toEqual([]);
+});
+
+test("owner traffic marker is persistent and attached to pageviews", async ({ page }) => {
+  const events = await interceptAnalytics(page);
+  await page.addInitScript(() =>
+    localStorage.setItem("analytics_consent", "granted"),
+  );
+  await page.goto("/?mtmd_internal=1");
+
+  await expect
+    .poll(() => events.filter((event) => event.event === "$pageview").length)
+    .toBe(1);
+  expect(events.find((event) => event.event === "$pageview")?.properties).toMatchObject({
+    site: "portfolio",
+    internal_visitor: true,
+  });
+  await page.goto("/realisations");
+  await expect
+    .poll(() => events.filter((event) => String(event.properties.$current_url ?? "").includes("/realisations")).length)
+    .toBeGreaterThan(0);
+  expect(events.find((event) => String(event.properties.$current_url ?? "").includes("/realisations"))?.properties.internal_visitor).toBe(true);
 });
 test("no PostHog events are sent without consent", async ({ page }) => {
   const events = await interceptAnalytics(page);

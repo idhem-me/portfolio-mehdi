@@ -93,13 +93,20 @@ export async function fetchAnalyticsSummary(
         runHogQL(`
           SELECT count(DISTINCT distinct_id) AS visitors
           FROM events
-          WHERE timestamp > now() - INTERVAL ${periodDays} DAY
+          WHERE event = '$pageview'
+            AND properties.$host = 'portfolio.mtmd.fr'
+            AND properties.site = 'portfolio'
+            AND properties.internal_visitor != true
+            AND timestamp > now() - INTERVAL ${periodDays} DAY
         `),
         runHogQL(`
           SELECT count() AS pageviews
           FROM events
           WHERE event = '$pageview'
             AND timestamp > now() - INTERVAL ${periodDays} DAY
+            AND properties.$host = 'portfolio.mtmd.fr'
+            AND properties.site = 'portfolio'
+            AND properties.internal_visitor != true
         `),
         runHogQL(`
           SELECT
@@ -108,6 +115,9 @@ export async function fetchAnalyticsSummary(
           FROM events
           WHERE event = '$pageview'
             AND timestamp > now() - INTERVAL ${periodDays} DAY
+            AND properties.$host = 'portfolio.mtmd.fr'
+            AND properties.site = 'portfolio'
+            AND properties.internal_visitor != true
             AND properties.$pathname IS NOT NULL
           GROUP BY path
           ORDER BY views DESC
@@ -120,6 +130,9 @@ export async function fetchAnalyticsSummary(
           FROM events
           WHERE timestamp > now() - INTERVAL ${periodDays} DAY
             AND event NOT LIKE '$%'
+            AND properties.$host = 'portfolio.mtmd.fr'
+            AND properties.site = 'portfolio'
+            AND properties.internal_visitor != true
           GROUP BY event
           ORDER BY count DESC
           LIMIT 8

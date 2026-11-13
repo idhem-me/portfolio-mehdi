@@ -1,6 +1,8 @@
 # Couverture des composants du Playground
 
-Les six variantes de [Badge](/playground#badge) partagent une police de 14 px, une hauteur de 24 px et un padding horizontal de 12 px par côté dans les deux densités. Le badge de conversion d’image conserve une hauteur automatique pour les messages sur plusieurs lignes.
+Les huit variantes de [Badge](/playground#badge) partagent une police de 14 px, une hauteur de 24 px et un padding horizontal de 12 px par côté dans les deux densités. Le badge de conversion d’image conserve une hauteur automatique pour les messages sur plusieurs lignes.
+
+La démo [Breadcrumb](/playground#breadcrumb) présente les liens parents, les séparateurs et la page courante. Elle suit le sélecteur de densité du catalogue. En densité Mobile, les liens ont une cible minimale de 44 × 44 px.
 
 Relevé statique du 7 novembre 2026, actualisé pour les nouvelles démos. Une ligne par module TSX sous `src/app`, `src/components` et `src/features`. Les modules peuvent contenir plusieurs composants. Les imports de primitives indiquent une adoption directe, sans préjuger des composants utilisés indirectement. Les feuilles CSS et modules TypeScript auxiliaires sont traités dans la revue et la liste des écarts.
 
@@ -145,6 +147,7 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
 | --- | --- | --- |
+| active-theme-image.tsx | Sélection de la variante active, partagée avec la démo CaseStudy | — |
 | browser-window.tsx | Démo dans le catalogue | — |
 | safe-svg.tsx | Démo dans le catalogue | — |
 

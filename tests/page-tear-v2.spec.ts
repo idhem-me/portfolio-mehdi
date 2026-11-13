@@ -87,7 +87,7 @@ test("scroll position survives reset and navigation cancels the overlay immediat
   await page.getByRole("button", { name: "Touche-moi", exact: true }).click();
   await page.getByRole("button", { name: "Reset", exact: true }).click();
   await page.evaluate(() => {
-    const link = document.querySelector<HTMLAnchorElement>('a[data-analytics-action="home_cta"][href$="/realisations"]');
+    const link = document.querySelector<HTMLAnchorElement>('a[data-analytics-action="home_cta_clicked"][href$="/realisations"]');
     if (!link) throw new Error("Missing projects navigation link");
     link.click();
   });

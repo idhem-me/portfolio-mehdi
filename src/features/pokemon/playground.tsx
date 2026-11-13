@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { ArrowLeft, CircleHelp, Maximize, Minimize } from "lucide-react";
+import { CircleHelp, Maximize, Minimize } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import type { PokemonEntry } from "./data";
 
 type Point = { x: number; y: number };
@@ -131,6 +131,7 @@ export function PokemonPlayground({
   shiny: boolean;
 }) {
   const t = useTranslations("pokemon");
+  const nav = useTranslations("nav");
   const dialog = useRef<HTMLDialogElement>(null);
   const [fullPage, setFullPage] = useState(false);
   const label = fullPage ? t("exitFullPage") : t("fullPage");
@@ -169,26 +170,25 @@ export function PokemonPlayground({
           sprite={(shiny && pokemon.shiny) || pokemon.sprite}
         />
         <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 px-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-          {fullPage ? (
-            <span className="size-(--control-height-icon) shrink-0" />
-          ) : (
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
-              className="pointer-events-auto shrink-0 bg-background"
-            >
-              <Link href="/jeux/pokemon" aria-label={t("pokedex")}>
-                <ArrowLeft aria-hidden className="rtl:rotate-180" />
-              </Link>
-            </Button>
-          )}
-          <h1 className="flex min-w-0 items-center gap-2 rounded-xl border border-border bg-popover px-3 py-2 text-sm font-medium text-popover-foreground shadow-lg">
-            <bdi className="shrink-0 tabular-nums text-muted-foreground">
-              #{String(pokemon.id).padStart(3, "0")}
-            </bdi>
-            <span className="truncate">{pokemon.name}</span>
-          </h1>
+          {fullPage && <span className="size-(--control-height-icon) shrink-0" />}
+          <div className="flex min-w-0 flex-col items-start gap-2">
+            {!fullPage && (
+              <PageBreadcrumb
+                current={pokemon.name}
+                parents={[
+                  { href: "/jeux", label: nav("games") },
+                  { href: "/jeux/pokemon", label: t("pokedex") },
+                ]}
+                className="pointer-events-auto rounded-xl border border-border bg-popover px-2 text-popover-foreground"
+              />
+            )}
+            <h1 className="flex max-w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-popover px-3 py-2 text-sm font-medium text-popover-foreground shadow-lg">
+              <bdi className="shrink-0 tabular-nums text-muted-foreground">
+                #{String(pokemon.id).padStart(3, "0")}
+              </bdi>
+              <span className="truncate">{pokemon.name}</span>
+            </h1>
+          </div>
           <Button
             id="pokemon-full-page"
             type="button"

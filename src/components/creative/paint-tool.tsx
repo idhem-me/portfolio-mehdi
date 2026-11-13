@@ -13,7 +13,8 @@ import {
 } from "react";
 import { Brush, BrushCleaning, Undo2, X } from "lucide-react";
 import { createPortal } from "react-dom";
-import Matter from "matter-js";
+import type Matter from "matter-js";
+import { getPhysics } from "./physics-runtime";
 import { trackHomeInteraction } from "@/lib/analytics/home-events";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -103,7 +104,7 @@ export function PaintTool({
   bridgeRef: RefObject<PaintBridge | null>;
   onClear: () => void;
   isPlaying: boolean;
-  getSession: () => PaintSession;
+  getSession: () => PaintSession | null;
   bounds: () => { left: number; right: number; top: number; bottom: number };
   options: () => Matter.IChamferableBodyDefinition;
 }) {
@@ -133,7 +134,7 @@ export function PaintTool({
     stroke.release?.();
     stroke.el.onpointerdown = null;
     if (stroke.pair && stroke.engine) {
-      Matter.Composite.remove(stroke.engine.world, stroke.pair.body);
+      getPhysics().Composite.remove(stroke.engine.world, stroke.pair.body);
       stroke.pair = undefined;
     }
   };
@@ -211,6 +212,7 @@ export function PaintTool({
   }, [paintMode]);
   function addBodies() {
     const session = latestRef.current.getSession();
+    if (!session) return;
     for (const stroke of strokesRef.current) {
       if (stroke.pair) continue;
       const body = createPaintBody(stroke.points, latestRef.current.options());
@@ -225,7 +227,7 @@ export function PaintTool({
         drawing: true,
       };
       session.pairs.push(pair);
-      Matter.Composite.add(session.engine.world, body);
+      getPhysics().Composite.add(session.engine.world, body);
       stroke.pair = pair;
       stroke.engine = session.engine;
       stroke.el.querySelector("path")!.style.pointerEvents = "stroke";
@@ -237,7 +239,7 @@ export function PaintTool({
         const point = { x: event.clientX, y: event.clientY };
         const dx = point.x - body.position.x,
           dy = point.y - body.position.y;
-        const constraint = Matter.Constraint.create({
+        const constraint = getPhysics().Constraint.create({
           bodyB: body,
           pointB: { x: dx, y: dy },
           pointA: point,
@@ -250,8 +252,8 @@ export function PaintTool({
           input: event.pointerType,
         });
         body.plugin.paintDragging = true;
-        Matter.Sleeping.set(body, false);
-        Matter.Composite.add(session.engine.world, constraint);
+        getPhysics().Sleeping.set(body, false);
+        getPhysics().Composite.add(session.engine.world, constraint);
         const pointerId = event.pointerId;
         const scroll = document.documentElement.style.overflow;
         document.documentElement.style.overflow = "hidden";
@@ -259,13 +261,13 @@ export function PaintTool({
           if (e.pointerId === pointerId) {
             e.preventDefault();
             constraint.pointA = { x: e.clientX, y: e.clientY };
-            Matter.Sleeping.set(body, false);
+            getPhysics().Sleeping.set(body, false);
           }
         };
         const release = (e?: PointerEvent) => {
           if (e && e.pointerId !== pointerId) return;
           body.plugin.paintDragging = false;
-          Matter.Composite.remove(session.engine.world, constraint);
+          getPhysics().Composite.remove(session.engine.world, constraint);
           document.documentElement.style.overflow = scroll;
           window.removeEventListener("pointermove", move);
           window.removeEventListener("pointerup", release);
@@ -284,10 +286,12 @@ export function PaintTool({
     for (const stroke of removed) {
       if (stroke.pair) {
         const session = latestRef.current.getSession();
-        const index = session.pairs.indexOf(stroke.pair);
-        if (index >= 0) session.pairs.splice(index, 1);
-        if (session.mouseConstraint.body === stroke.pair.body) {
-          session.mouseConstraint.constraint.bodyB = null;
+        if (session) {
+          const index = session.pairs.indexOf(stroke.pair);
+          if (index >= 0) session.pairs.splice(index, 1);
+          if (session.mouseConstraint.body === stroke.pair.body) {
+            session.mouseConstraint.constraint.bodyB = null;
+          }
         }
       }
       detach(stroke);

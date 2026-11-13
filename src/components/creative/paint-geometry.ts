@@ -1,4 +1,5 @@
-import Matter from "matter-js";
+import type Matter from "matter-js";
+import { getPhysics } from "./physics-runtime";
 export type PaintPoint = { x: number; y: number };
 export const PAINT_WIDTH = 12;
 /** Keep the collision outline within 0.6px while removing redundant samples. */
@@ -47,14 +48,14 @@ export function createPaintBody(
   const outline = simplifyPaintPoints(points);
   outline.forEach((point, index) => {
     parts.push(
-      Matter.Bodies.circle(point.x, point.y, PAINT_WIDTH / 2, options, 20),
+      getPhysics().Bodies.circle(point.x, point.y, PAINT_WIDTH / 2, options, 20),
     );
     const previous = outline[index - 1];
     if (previous) {
       const length = Math.hypot(point.x - previous.x, point.y - previous.y);
       if (length > 0.01)
         parts.push(
-          Matter.Bodies.rectangle(
+          getPhysics().Bodies.rectangle(
             (point.x + previous.x) / 2,
             (point.y + previous.y) / 2,
             length,
@@ -67,7 +68,7 @@ export function createPaintBody(
         );
     }
   });
-  return Matter.Body.create({ ...options, parts });
+  return getPhysics().Body.create({ ...options, parts });
 }
 export function samplePaintPoint(points: PaintPoint[], point: PaintPoint) {
   const last = points.at(-1);

@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -224,7 +225,8 @@ export function PlaygroundCatalog() {
 
         <div data-playground-scroll="" tabIndex={0} role="region" aria-labelledby="playground-title" className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring">
         <div className="mx-auto w-full max-w-3xl px-6 pt-10 pb-8">
-          <header>
+          <header className="space-y-3">
+            <PageBreadcrumb current={t("title")} />
             <h1
               id="playground-title"
               className="text-2xl font-semibold tracking-tight"
@@ -275,10 +277,19 @@ export function PlaygroundCatalog() {
                 <Badge variant="default">Default</Badge>
                 <Badge variant="secondary">Secondary</Badge>
                 <Badge variant="outline">Outline</Badge>
+                <Badge variant="success">Success</Badge>
+                <Badge variant="warning">Warning</Badge>
                 <Badge variant="destructive">Destructive</Badge>
                 <Badge variant="ghost">Ghost</Badge>
                 <Badge variant="link">Link</Badge>
               </div>
+            </Section>
+
+            <Section title="Breadcrumb">
+              <PageBreadcrumb
+                current="Breadcrumb"
+                parents={[{ href: "/playground", label: t("title") }]}
+              />
             </Section>
 
             <Section title="BrowserWindow">
@@ -1103,10 +1114,10 @@ function CaseStudyDemo() {
       <CaseStudySlider
         className="[&_img]:aspect-video [&_img]:object-cover"
         images={[
-          { src: "/img/backgrounds/bg-aero-frutiger-light.png", theme: "light", alt: t("sampleScreen", { number: 1 }) },
-          { src: "/img/backgrounds/bg-aero-frutiger-dark.png", theme: "dark", alt: t("sampleScreen", { number: 1 }) },
-          { src: "/img/backgrounds/bg-aero-frutiger-light.png", theme: "light", alt: t("sampleScreen", { number: 2 }) },
-          { src: "/img/backgrounds/bg-aero-frutiger-dark.png", theme: "dark", alt: t("sampleScreen", { number: 2 }) },
+          { src: "/img/backgrounds/bg-aero-frutiger-light.webp", theme: "light", alt: t("sampleScreen", { number: 1 }) },
+          { src: "/img/backgrounds/bg-aero-frutiger-dark.webp", theme: "dark", alt: t("sampleScreen", { number: 1 }) },
+          { src: "/img/backgrounds/bg-aero-frutiger-light.webp", theme: "light", alt: t("sampleScreen", { number: 2 }) },
+          { src: "/img/backgrounds/bg-aero-frutiger-dark.webp", theme: "dark", alt: t("sampleScreen", { number: 2 }) },
         ]}
         pairLabels={{ light: theme("light"), dark: theme("dark") }}
       />

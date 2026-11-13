@@ -76,7 +76,6 @@ import { soundEnabled, leaderboardEnabled, tetrisEnabled } from "../flags";
 import { tetrisSettings } from "./settings.config";
 import { seeded, replayLimit } from "../engine/replay";
 import { Leaderboard, type RankedRun } from "./leaderboard";
-import { PlayerIdentityProvider } from "./player-identity";
 import { GameOver } from "./game-over";
 import { Separator } from "@/components/ui/separator";
 import { recoverDraft, type ScoreDraft } from "../auth/draft";
@@ -898,9 +897,7 @@ export function Tetris(props: { information?: CaseStudySection[] }) {
   return (
     <AppShell>
       <DesignSystemScope>
-        <PlayerIdentityProvider>
-          <TetrisGame {...props} />
-        </PlayerIdentityProvider>
+        <TetrisGame {...props} />
       </DesignSystemScope>
     </AppShell>
   );

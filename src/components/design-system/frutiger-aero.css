@@ -1,6 +1,6 @@
 /* Frutiger Aero: all material, colour and geometry values live in theme tokens. */
 :is(html, .ds-scope)[data-design-system="frutiger-aero"] {
-  --font-sans: var(--font-nunito-sans), "Nunito Sans", sans-serif;
+  --font-sans: var(--font-nunito-sans), var(--font-nunito-sans-ext), "Nunito Sans", sans-serif;
   --aero-font-regular: 400;
   --aero-font-semibold: 600;
   --aero-canvas: #e8f9ff;
@@ -62,7 +62,7 @@
   --aero-danger-lower: #f4b4ca;
   --aero-danger-bounce: #ffe3ec;
   --aero-danger-cut: #921c42;
-  --aero-home-image: url("/img/backgrounds/bg-aero-frutiger-light.png");
+  --aero-home-image: url("/img/backgrounds/bg-aero-frutiger-light.webp");
   --aero-home-shade: transparent;
   --aero-home-backdrop:
     linear-gradient(var(--aero-home-shade), var(--aero-home-shade)),
@@ -206,7 +206,7 @@ html.dark[data-design-system="frutiger-aero"],
   --aero-glass-top: rgb(42 91 122 / 86%);
   --aero-glass-bottom: rgb(13 49 75 / 78%);
   --aero-input-fill: rgb(9 35 56 / 92%);
-  --aero-home-image: url("/img/backgrounds/bg-aero-frutiger-dark.png");
+  --aero-home-image: url("/img/backgrounds/bg-aero-frutiger-dark.webp");
   --aero-text-shadow: var(--aero-text-shadow-light);
   --chart-3: #ffb689;
   --chart-4: #cfb1ff;

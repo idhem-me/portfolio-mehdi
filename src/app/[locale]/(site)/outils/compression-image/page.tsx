@@ -1,11 +1,9 @@
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Metadata } from "next";
 import { portfolioMetadata } from "@/lib/portfolio-seo";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/navigation";
 import { ImageCompressor } from "@/features/image-compression/ui/image-compressor";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -39,12 +37,10 @@ async function ToolContent({ params }: Props) {
   const tools = await getTranslations("tools");
   return (
     <main className="mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6 sm:py-12">
-      <Button asChild variant="ghost" size="sm">
-        <Link href="/outils">
-          <ArrowLeft aria-hidden="true" className="size-4 rtl:rotate-180" />
-          {tools("back")}
-        </Link>
-      </Button>
+      <PageBreadcrumb
+        current={t("title")}
+        parents={[{ href: "/outils", label: tools("title") }]}
+      />
       <header className="space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {t("title")}

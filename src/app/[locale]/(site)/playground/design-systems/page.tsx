@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useState, type ReactNode } from "react";
+import { PageBreadcrumb } from "@/components/layout/page-breadcrumb";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
 import {
@@ -130,167 +131,172 @@ function DesignSystemColumn({
     theme: string | undefined;
     tokens: Record<string, string>;
   }>();
-  const readTokens = useCallback(
-    (node: HTMLElement | null) => {
+  const columnRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    let frame: number;
+    let attempts = 0;
+    const readTokens = () => {
+      const node = columnRef.current;
       if (!node) return;
-      const frame = requestAnimationFrame(() => {
-        const style = getComputedStyle(node);
-        setSnapshot({
-          theme: resolvedTheme,
-          tokens: Object.fromEntries(
-            [...SEMANTIC_TOKENS, ...NATIVE_TOKENS[id]].map((name) => [
-              name,
-              style.getPropertyValue(name).trim(),
-            ]),
-          ),
-        });
+      const style = getComputedStyle(node);
+      const nativeToken = NATIVE_TOKENS[id][0];
+      if (nativeToken && !style.getPropertyValue(nativeToken) && attempts++ < 120) {
+        frame = requestAnimationFrame(readTokens);
+        return;
+      }
+      setSnapshot({
+        theme: resolvedTheme,
+        tokens: Object.fromEntries(
+          [...SEMANTIC_TOKENS, ...NATIVE_TOKENS[id]].map((name) => [
+            name,
+            style.getPropertyValue(name).trim(),
+          ]),
+        ),
       });
-      return () => cancelAnimationFrame(frame);
-    },
-    [id, resolvedTheme],
-  );
+    };
+    frame = requestAnimationFrame(readTokens);
+    return () => cancelAnimationFrame(frame);
+  }, [id, resolvedTheme]);
   const tokens = snapshot?.theme === resolvedTheme ? snapshot?.tokens : undefined;
   const [checked, setChecked] = useState(true);
 
   return (
-    <DesignSystemForce value={id}>
-      <DesignSystemScope scopeRadixPortals className="ds-compare-scope flex min-w-0 flex-col">
-        <section
-          ref={readTokens}
-          data-compare-column={id}
-          data-theme-canvas=""
-          className="flex min-w-0 flex-col gap-6 rounded-xl border border-border bg-background p-5 text-foreground"
-        >
-          <header className="space-y-1 border-b border-border pb-4">
-            <h2 className="text-lg font-semibold tracking-tight">{label}</h2>
-            <p className="text-sm text-muted-foreground">{t(`descriptions.${id}`)}</p>
-          </header>
+    <DesignSystemScope scopeRadixPortals className="ds-compare-scope flex min-w-0 flex-col">
+      <section
+        ref={columnRef}
+        data-compare-column={id}
+        data-theme-canvas=""
+        className="flex min-w-0 flex-col gap-6 rounded-xl border border-border bg-background p-5 text-foreground"
+      >
+        <header className="space-y-1 border-b border-border pb-4">
+          <h2 className="text-lg font-semibold tracking-tight">{label}</h2>
+          <p className="text-sm text-muted-foreground">{t(`descriptions.${id}`)}</p>
+        </header>
 
-          <ComponentBlock label="Button">
-            <Button variant="default">Primary</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="accent">Accent</Button>
-            <Button variant="ghost">Ghost</Button>
-          </ComponentBlock>
+        <ComponentBlock label="Button">
+          <Button variant="default">Primary</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="accent">Accent</Button>
+          <Button variant="ghost">Ghost</Button>
+        </ComponentBlock>
 
-          <ComponentBlock label="Input">
-            <Input
-              placeholder="Rechercher…"
-              aria-label={`Recherche ${label}`}
-              className="max-w-xs"
-            />
-          </ComponentBlock>
+        <ComponentBlock label="Input">
+          <Input
+            placeholder="Rechercher…"
+            aria-label={`Recherche ${label}`}
+            className="max-w-xs"
+          />
+        </ComponentBlock>
 
-          <ComponentBlock label="Switch">
-            <Switch
-              checked={checked}
-              onCheckedChange={setChecked}
-              aria-label="Notifications"
-            />
-            <span className="text-sm">Notifications</span>
-          </ComponentBlock>
+        <ComponentBlock label="Switch">
+          <Switch
+            checked={checked}
+            onCheckedChange={setChecked}
+            aria-label="Notifications"
+          />
+          <span className="text-sm">Notifications</span>
+        </ComponentBlock>
 
-          <ComponentBlock label="Checkbox">
-            <NativeInput
-              type="checkbox"
-              className="min-h-(--touch-target-size) min-w-(--touch-target-size)"
-              defaultChecked
-              aria-label="Accepter"
-            />
-            <span className="text-sm">Accepter</span>
-          </ComponentBlock>
+        <ComponentBlock label="Checkbox">
+          <NativeInput
+            type="checkbox"
+            className="min-h-(--touch-target-size) min-w-(--touch-target-size)"
+            defaultChecked
+            aria-label="Accepter"
+          />
+          <span className="text-sm">Accepter</span>
+        </ComponentBlock>
 
-          <ComponentBlock label="Badge">
-            <Badge>Default</Badge>
-            <Badge variant="secondary">Secondary</Badge>
-            <Badge variant="destructive">Destructive</Badge>
-          </ComponentBlock>
+        <ComponentBlock label="Badge">
+          <Badge>Default</Badge>
+          <Badge variant="secondary">Secondary</Badge>
+          <Badge variant="destructive">Destructive</Badge>
+        </ComponentBlock>
 
-          <ComponentBlock label="Avatar">
-            <Avatar size="sm">
-              <AvatarImage src="/img/avatar/AD-droite.svg" alt="Avatar" />
-              <AvatarFallback>MD</AvatarFallback>
-            </Avatar>
-          </ComponentBlock>
+        <ComponentBlock label="Avatar">
+          <Avatar size="sm">
+            <AvatarImage src="/img/avatar/AD-droite.svg" alt="Avatar" />
+            <AvatarFallback>MD</AvatarFallback>
+          </Avatar>
+        </ComponentBlock>
 
-          <ComponentBlock label="Tabs">
-            <Tabs defaultValue="overview">
-              <TabsList>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
-              </TabsList>
-              <TabsContent value="overview" className="pt-2 text-sm">
-                Panneau overview
-              </TabsContent>
-              <TabsContent value="settings" className="pt-2 text-sm">
-                Panneau settings
-              </TabsContent>
-            </Tabs>
-          </ComponentBlock>
+        <ComponentBlock label="Tabs">
+          <Tabs defaultValue="overview">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview" className="pt-2 text-sm">
+              Panneau overview
+            </TabsContent>
+            <TabsContent value="settings" className="pt-2 text-sm">
+              Panneau settings
+            </TabsContent>
+          </Tabs>
+        </ComponentBlock>
 
-          <ComponentBlock label="Menu">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="secondary">Actions</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem>Éditer</DropdownMenuItem>
-                <DropdownMenuItem variant="destructive">
-                  Supprimer
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </ComponentBlock>
+        <ComponentBlock label="Menu">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary">Actions</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem>Éditer</DropdownMenuItem>
+              <DropdownMenuItem variant="destructive">
+                Supprimer
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </ComponentBlock>
 
-          <ComponentBlock label="Dialog">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="secondary">Ouvrir dialog</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Confirmation</DialogTitle>
-                  <DialogDescription>
-                    Exemple de dialogue · {label}.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <Button variant="default">OK</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </ComponentBlock>
+        <ComponentBlock label="Dialog">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="secondary">Ouvrir dialog</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirmation</DialogTitle>
+                <DialogDescription>
+                  Exemple de dialogue · {label}.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="default">OK</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </ComponentBlock>
 
-          <ComponentBlock label="Skeleton">
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-4 w-24" />
-          </ComponentBlock>
+        <ComponentBlock label="Skeleton">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-24" />
+        </ComponentBlock>
 
-          <div className="space-y-4 border-t border-border pt-4">
-            <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Tokens sémantiques
-              </p>
-              <div className="space-y-1.5">
-                {SEMANTIC_TOKENS.map((name) => (
-                  <TokenSwatch key={name} name={name} value={tokens?.[name]} />
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Tokens natifs · {label}
-              </p>
-              <div className="space-y-1.5">
-                {NATIVE_TOKENS[id].map((name) => (
-                  <TokenSwatch key={name} name={name} value={tokens?.[name]} />
-                ))}
-              </div>
+        <div className="space-y-4 border-t border-border pt-4">
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Tokens sémantiques
+            </p>
+            <div className="space-y-1.5">
+              {SEMANTIC_TOKENS.map((name) => (
+                <TokenSwatch key={name} name={name} value={tokens?.[name]} />
+              ))}
             </div>
           </div>
-        </section>
-      </DesignSystemScope>
-    </DesignSystemForce>
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Tokens natifs · {label}
+            </p>
+            <div className="space-y-1.5">
+              {NATIVE_TOKENS[id].map((name) => (
+                <TokenSwatch key={name} name={name} value={tokens?.[name]} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </DesignSystemScope>
   );
 }
 
@@ -302,6 +308,10 @@ export default function DesignSystemsComparison() {
       aria-labelledby="comparison-title"
       className="@container mx-auto w-full max-w-5xl space-y-8 px-6 py-12"
     >
+      <PageBreadcrumb
+        current={t("compare")}
+        parents={[{ href: "/playground", label: t("title") }]}
+      />
       <header className="space-y-2 text-center">
         <h1
           id="comparison-title"
@@ -319,7 +329,9 @@ export default function DesignSystemsComparison() {
         className="grid gap-6 @2xl:grid-cols-2"
       >
         {DESIGN_SYSTEMS.map((system) => (
-          <DesignSystemColumn key={system.id} {...system} />
+          <DesignSystemForce key={system.id} value={system.id}>
+            <DesignSystemColumn {...system} />
+          </DesignSystemForce>
         ))}
       </div>
     </section>

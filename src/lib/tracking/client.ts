@@ -1,7 +1,7 @@
 "use client";
 import { deltaLimits } from "./limits";
 import { getConsent, subscribeConsent } from "@/lib/analytics/consent";
-import { track as capture } from "@/lib/analytics/events";
+import { AnalyticsEvents, track as capture, type AnalyticsEventName } from "@/lib/analytics/events";
 export const counters = [
   "mouse_px",
   "clicks",
@@ -35,14 +35,14 @@ function createId() {
 }
 const colors = new Set<string>();
 const played = new Set<string>();
-function event(name: string) {
+function event(name: AnalyticsEventName, properties: Record<string, unknown> = {}) {
   if (!emitted.has(name)) {
     emitted.add(name);
     sessionStorage.setItem(
       "backoffice_events_" + session,
       JSON.stringify([...emitted]),
     );
-    capture(name, { visitor_id: visitor, session_id: session });
+    capture(name, properties);
   }
 }
 export const track = {
@@ -50,8 +50,8 @@ export const track = {
     if (!running || getConsent() !== "granted" || n <= 0) return;
     values[key] = (values[key] || 0) + n;
     lifetime[key] = (lifetime[key] || 0) + n;
-    if (key === "brush_strokes") event("brush_used");
-    if (key === "cta_clicks") event("cta_clicked");
+    if (key === "brush_strokes") event(AnalyticsEvents.brush_used);
+    if (key === "cta_clicks") event(AnalyticsEvents.cta_clicked);
   },
   color(color: string) {
     if (running && !colors.has(color)) {
@@ -74,7 +74,7 @@ export const track = {
     track.increment("games_played");
     games.push({ game, score, at: new Date().toISOString() });
     games = games.slice(-20);
-    event("game_played");
+    event(AnalyticsEvents.game_started, { game });
   },
   page(path: string) {
     if (running && path !== currentPath) {

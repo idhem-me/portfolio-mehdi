@@ -1,3 +1,5 @@
+import { NextIntlClientProvider } from "next-intl";
+import frMessages from "../../../../messages/fr.json";
 import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -30,7 +32,9 @@ export default function DashboardLayout({
           </Link>
         </div>
       </header>
-      <Suspense fallback={null}>{children}</Suspense>
+      <NextIntlClientProvider locale="fr" messages={frMessages}>
+        <Suspense fallback={null}>{children}</Suspense>
+      </NextIntlClientProvider>
     </div>
   );
 }

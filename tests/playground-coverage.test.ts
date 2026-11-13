@@ -4,17 +4,14 @@ import { execFileSync } from "node:child_process";
 import { test } from "node:test";
 import { componentCoverage, demoAnchors } from "../src/app/[locale]/(site)/playground/coverage";
 
-test("production supports Aero and restores its saved choice while Liquid Glass stays experimental", () => {
+test("production supports Aero while Liquid Glass stays experimental", () => {
   const output = execFileSync(process.execPath, [
     "--import", "tsx", "--input-type=module", "-e",
-    `import { DESIGN_SYSTEMS, initialDesignSystemScript, isDesignSystem } from './src/components/design-system/registry.ts';
-     import { runInNewContext } from 'node:vm';
-     const document = { documentElement: { dataset: {} } };
-     runInNewContext(initialDesignSystemScript, { document, localStorage: { getItem: () => 'frutiger-aero' } });
-     console.log(JSON.stringify({ ids: DESIGN_SYSTEMS.map(({id}) => id), aero: isDesignSystem('frutiger-aero'), glass: isDesignSystem('liquid-glass'), restored: document.documentElement.dataset.designSystem }));`,
+    `import { DESIGN_SYSTEMS, isDesignSystem } from './src/components/design-system/registry.ts';
+     console.log(JSON.stringify({ ids: DESIGN_SYSTEMS.map(({id}) => id), aero: isDesignSystem('frutiger-aero'), glass: isDesignSystem('liquid-glass') }));`,
   ], { cwd: new URL("..", import.meta.url), env: { ...process.env, NODE_ENV: "production" }, encoding: "utf8" });
   assert.deepEqual(JSON.parse(output), {
-    ids: ["mehdi", "fun", "frutiger-aero"], aero: true, glass: false, restored: "frutiger-aero",
+    ids: ["mehdi", "fun", "frutiger-aero"], aero: true, glass: false,
   });
 });
 

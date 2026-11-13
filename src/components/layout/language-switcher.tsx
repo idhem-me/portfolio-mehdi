@@ -2,6 +2,7 @@
 
 import { track as usage } from "@/lib/tracking/client";
 import { Languages } from "lucide-react";
+import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { DesignSystemChoiceMenu } from "@/components/design-system/choice-menu";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -12,6 +13,7 @@ export function LanguageSwitcher() {
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
+  const [pending, startTransition] = useTransition();
   return (
     <DesignSystemChoiceMenu
       label={t("label")}
@@ -22,9 +24,10 @@ export function LanguageSwitcher() {
         label: localeNames[code],
       }))}
       onChange={(next) => {
-        if (next !== locale) {
+        if (!pending && next !== locale) {
           usage.increment("lang_changes");
-          router.replace(pathname, { locale: next as Locale });
+          const href = pathname + window.location.search + window.location.hash;
+          startTransition(() => router.replace(href, { locale: next as Locale }));
         }
       }}
       analyticsAction="language"

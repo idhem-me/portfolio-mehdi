@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useActiveImageTheme } from "@/components/media/active-theme-image";
 import { BrowserWindow } from "@/components/media/browser-window";
 import { LightboxTrigger } from "@/features/case-study/ui/image-lightbox";
 import { Button } from "@/components/ui/button";
@@ -119,15 +119,11 @@ export function ThemePairImage({
   className,
   labels = { light: "Mode clair", dark: "Mode sombre" },
 }: ThemePairProps) {
-  const { resolvedTheme } = useTheme();
-  const [mode, setMode] = useState<"light" | "dark">("light");
-
-  useEffect(() => {
-    if (!resolvedTheme) return;
-    // Hydration synchronizes browser-only state after the server render.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMode(resolvedTheme === "dark" ? "dark" : "light");
-  }, [resolvedTheme]);
+  const resolvedTheme = useActiveImageTheme();
+  const [override, setOverride] = useState<{ theme: string; mode: "light" | "dark" }>();
+  const mode = override && override.theme === resolvedTheme
+    ? override.mode
+    : resolvedTheme === "dark" ? "dark" : "light";
 
   const active = mode === "light" ? light : dark;
   const useBrowser = browser ?? Boolean(active.browser);
@@ -138,7 +134,7 @@ export function ThemePairImage({
   const img = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
+      src={resolvedTheme ? src : undefined}
       alt={active.alt}
       loading={priority ? "eager" : "lazy"}
       decoding="async"
@@ -169,7 +165,7 @@ export function ThemePairImage({
           aria-label={mode === "light" ? labels.dark : labels.light}
           onClick={(e) => {
             e.stopPropagation();
-            setMode((m) => (m === "light" ? "dark" : "light"));
+            if (resolvedTheme) setOverride({ theme: resolvedTheme, mode: mode === "light" ? "dark" : "light" });
           }}
         >
           {mode === "light" ? (

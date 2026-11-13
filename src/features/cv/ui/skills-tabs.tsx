@@ -48,9 +48,13 @@ export function SkillsTabs({ skills }: { skills: SkillsData }) {
 
   return (
     <Tabs defaultValue="tools" className="w-full gap-4">
-      <TabsList className="h-auto w-full flex-wrap justify-start">
+      <TabsList className="max-w-full flex-wrap justify-start group-data-horizontal/tabs:h-auto">
         {skillTabs.map((tab) => (
-          <TabsTrigger key={tab.key} value={tab.key} className="flex-none">
+          <TabsTrigger
+            key={tab.key}
+            value={tab.key}
+            className="min-h-(--touch-target-size) min-w-(--touch-target-size) flex-none"
+          >
             {tab.label}
           </TabsTrigger>
         ))}
