@@ -1,5 +1,24 @@
 # Changelog du design system
 
+## Publication de Frutiger Aero — 13 novembre 2026
+
+- Frutiger Aero est autorisé dans le registre de production : sélecteur, restauration du choix enregistré, catalogue et comparatif. Sobre reste le choix initial ; Liquid Glass reste réservé au développement.
+- Un test exécuté avec `NODE_ENV=production` vérifie la liste publique des trois thèmes et la restauration du choix Aero avant l'hydratation.
+- Recette locale : lint, typecheck et 237 tests Node réussis (115 généraux, 57 Burger, 57 Cards, 8 sécurité). Les tests navigateur restent bloqués par l'absence de Chromium.
+- Le build Webpack confirme un blocage réseau : `ENOTFOUND fonts.googleapis.com` lors du chargement des polices Next Font. GitHub est également inaccessible (`Could not resolve host: github.com`), empêchant pour l'instant le push et le déploiement.
+
+## Refactoring Frutiger Aero — 13 novembre 2026
+
+- Correctif gravité : la copie physique de « Touche-moi » conserve désormais les attributs du bouton d'origine (`data-slot`, variante, taille) et donc son gel Aero, ses contours et sa typographie. Les attributs analytics sont retirés de la copie décorative. Le scénario navigateur existant contrôle maintenant l'apparence avant et après lancement.
+- Recette du correctif gravité : lint, typecheck et 114 tests Node réussis. Le scénario navigateur ciblé reste bloqué au lancement par Chromium absent ; le build précédent n'a pas été validé (voir limitation ci-dessous).
+
+- Gel bleu/émeraude à quatre stops avec cassure 49/50 %, biseaux, réfraction interne, flare et lueurs cyan/émeraude. Les valeurs sont centralisées dans les tokens `--aero-*`.
+- Cartes, navigation et dialogues en verre saturé ; champs et zones de texte creusés. Les surfaces gardent un repli opaque sans flou ou en transparence réduite. Focus, invalidité, désactivation, mouvement réduit et couleurs forcées sont conservés.
+- Open Sans est chargée avec Next Font et affectée uniquement à Aero. Le comparatif montre les dégradés et ombres ; la composition Aero montre les deux gels, le bouton désactivé et les zones de texte normale/invalide avec erreur associée.
+- L'accueil Aero remplace toute la composition quadrillée par un token d'image, avec un dégradé de secours. Les images déposées par l'utilisateur, `public/img/backgrounds/bg-aero-frutiger-light.png` et `bg-aero-frutiger-dark.png`, sont reliées aux modes clair/sombre. Le voile sombre de secours a été retiré pour préserver les couleurs de la version dark fournie.
+- Recette : lint et typecheck réussis ; suites Node générales, Burger, Cards et sécurité réussies ; PostCSS et `git diff --check` réussis. Les quatre scénarios Chromium ciblés ne démarrent pas : exécutable `chromium_headless_shell-1248` absent. Le lancement du Chrome installé est également refusé dans cet environnement. Aucune validation visuelle navigateur n'est revendiquée.
+- Build non validé : après plusieurs minutes sans nouvelle sortie au-delà de « Creating an optimized production build », exécution interrompue (code 130). La cause de cette absence de progression n'est pas établie ; aucun succès de build n'est revendiqué.
+
 ## Contraste du sélecteur de plage de dates
 
 - Le calendrier utilise les tokens sémantiques du thème actif pour distinguer les bornes et le milieu de plage. Les jours hors mois et désactivés gardent un texte lisible sans opacité arbitraire; le focus reste indiqué par `ring`.

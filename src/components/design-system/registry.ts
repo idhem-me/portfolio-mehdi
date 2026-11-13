@@ -10,7 +10,7 @@ const allDesignSystems = [
 export type DesignSystem = (typeof allDesignSystems)[number]["id"];
 
 export const DESIGN_SYSTEMS = allDesignSystems.filter(
-  ({ id }) => EXPERIMENTAL_THEMES_ENABLED || id === "mehdi" || id === "fun",
+  ({ id }) => EXPERIMENTAL_THEMES_ENABLED || id !== "liquid-glass",
 );
 export const DEFAULT_DESIGN_SYSTEM: DesignSystem = "mehdi";
 export const DESIGN_SYSTEM_STORAGE_KEY = "portfolio-design-system";

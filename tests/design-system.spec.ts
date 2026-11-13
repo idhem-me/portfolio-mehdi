@@ -119,7 +119,21 @@ test("Frutiger Aero keeps avatar and gravity controls working", async ({ page })
   await page.goto("/");
   await choose(page, "Frutiger Aero");
   const play = page.locator('[data-analytics-action="gravity_play"]');
+  const appearance = await play.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      backgroundImage: style.backgroundImage,
+      color: style.color,
+      borderRadius: style.borderRadius,
+    };
+  });
   await play.click();
+  const fallingPlay = page.locator("[data-physics-play-snapshot]");
+  await expect(fallingPlay).toHaveAttribute("data-slot", "button");
+  await expect(fallingPlay).toHaveAttribute("data-variant", "accent");
+  await expect(fallingPlay).toHaveCSS("background-image", appearance.backgroundImage);
+  await expect(fallingPlay).toHaveCSS("color", appearance.color);
+  await expect(fallingPlay).toHaveCSS("border-radius", appearance.borderRadius);
   const config = page.locator('[data-analytics-action="gravity_config"]');
   await expect(config).toBeVisible();
   await config.click();
@@ -280,10 +294,12 @@ test("playground navigation opens a separate comparison page with the keyboard",
   const catalogue = nav.getByRole("link", { name: "Playground" });
   const compare = nav.getByRole("link", { name: "Comparer" });
   await expect(catalogue).toHaveAttribute("aria-current", "page");
+  const scrollport = page.locator("[data-playground-scroll]");
+  await scrollport.focus();
   await page.keyboard.press("End");
-  await page.waitForFunction(
-    () => document.documentElement.scrollHeight - (window.scrollY + window.innerHeight) <= 1,
-  );
+  await expect.poll(() => scrollport.evaluate(
+    (element) => element.scrollHeight - element.scrollTop - element.clientHeight,
+  )).toBeLessThanOrEqual(1);
   await expect(page.locator("[data-compare-grid]")).toHaveCount(0);
   await expect(page).toHaveURL(/\/playground$/);
 

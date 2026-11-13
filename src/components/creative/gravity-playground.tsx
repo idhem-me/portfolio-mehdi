@@ -93,8 +93,7 @@ type Walls = {
 };
 
 type PlaySnapshot = {
-  className: string;
-  text: string;
+  element: HTMLButtonElement;
   width: number;
   height: number;
   cx: number;
@@ -423,10 +422,16 @@ function spawnPlaySnapshot(
   snapshot: PlaySnapshot,
   layerEl: HTMLElement,
 ): ChipSpawn {
-  const el = document.createElement("button");
+  // Preserve data-slot, variant and size: theme rules depend on these attributes.
+  const el = snapshot.element.cloneNode(true) as HTMLButtonElement;
   el.type = "button";
-  el.textContent = snapshot.text;
-  el.className = [snapshot.className, "fixed z-[6] m-0"]
+  el.removeAttribute("id");
+  for (const attribute of Array.from(el.attributes)) {
+    if (attribute.name.startsWith("data-analytics-"))
+      el.removeAttribute(attribute.name);
+  }
+  el.setAttribute("data-physics-play-snapshot", "");
+  el.className = [snapshot.element.className, "fixed z-[6] m-0"]
     .filter(Boolean)
     .join(" ");
   el.style.position = "fixed";
@@ -1081,8 +1086,7 @@ export function GravityPlayground({ children }: { children: React.ReactNode }) {
     // Snapshot before UI swaps to Reset (keeps exact accent look + spawn position)
     const rect = playBtn.getBoundingClientRect();
     playSnapshotRef.current = {
-      className: playBtn.className,
-      text: playBtn.textContent?.trim() ?? "",
+      element: playBtn.cloneNode(true) as HTMLButtonElement,
       width: Math.max(rect.width, 8),
       height: Math.max(rect.height, 8),
       cx: rect.left + rect.width / 2,

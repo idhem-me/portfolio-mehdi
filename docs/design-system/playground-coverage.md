@@ -10,7 +10,15 @@ La composition `#fun` couvre la carte, le champ, les actions jaune et orange, le
 
 ## Frutiger Aero et Liquid Glass
 
+La barre de densité occupe toute la largeur disponible de la colonne de contenu, avec un fond transparent et un padding horizontal de 16 px. Elle est placée au-dessus d'une zone de défilement native (`overflow-y: auto`) dans une colonne haute d'un viewport. Le titre et les démonstrations défilent dans cette zone, découpée sous la bordure inférieure. Aucun calcul de clip en JavaScript ni exception liée aux dialogues n'est utilisé. La zone de défilement possède un nom accessible et reste utilisable au clavier. Les scénarios navigateur contrôlent sa limite, la stabilité de la barre et les ancres dans les deux sens de lecture.
+
+Sur les grands écrans, l'index occupe un panneau de 11 rem au bord extérieur droit (gauche en RTL), sur toute la hauteur du viewport et avec son propre défilement. Il partage le slot `section-navigation`, les tokens `sidebar` et les primitives de menu du panneau Playground de gauche, y compris les matières des thèmes. Il reste masqué sous le seuil de conteneur de 64 rem. Le contenu principal reste centré dans sa colonne avec une largeur maximale de 48 rem.
+
 Les compositions `#frutiger-aero` et `#liquid-glass` montrent la toile du thème, les surfaces opaques, un formulaire et son dialogue d’aperçu. Les actions exposent les reflets et la pression. Les dialogues montrent la matière superposée dans leur thème local. Ces démos suivent les densités Auto, Desktop et Mobile et le réglage clair ou sombre du site.
+
+La composition Aero montre aussi les gels bleu et émeraude, un bouton désactivé, une zone de texte remplie et une zone invalide avec son erreur associée. Le comparatif expose les tokens de dégradés et d'ombres avec leurs aperçus. Les ancres et les contrôles de densité existants sont conservés.
+
+La démo `#case-study` utilise les backgrounds Aero clair/sombre dans les deux diapositives du carrousel. Les images de cette démo sont cadrées en 16:9 ; les études de cas du site conservent leur format. Le carrousel accepte la répétition d'une même source sur plusieurs diapositives sans collision de clés React.
 
 ## Formulaire des listes de cadeaux
 
