@@ -58,6 +58,7 @@ import { CaseStudyBody } from "@/features/case-study/ui/case-study-body";
 import { CaseStudySlider } from "@/features/case-study/ui/case-study-slider";
 import { ImageLightboxProvider } from "@/features/case-study/ui/image-lightbox";
 import { SettingsButton } from "@/components/games/game-settings/primitives/SettingsButton";
+import { SettingsCard } from "@/components/games/game-settings/primitives/SettingsCard";
 import { SettingsSegmented } from "@/components/games/game-settings/primitives/SettingsSegmented";
 import { SettingsSlider } from "@/components/games/game-settings/primitives/SettingsSlider";
 import { SettingsToggleRow } from "@/components/games/game-settings/primitives/SettingsToggleRow";
@@ -929,24 +930,30 @@ function SettingsModalDemo() {
           description={t("settingsDemoHint")}
         >
           <div className="game-settings-scroll">
-            <SettingsToggleRow
-              id="demo-notifications"
-              label={t("notifications")}
-              checked={notifications}
-              onChange={setNotifications}
-            />
-            <SettingsToggleRow id="demo-alerts" label={t("alerts")} checked={false} disabled onChange={setNotifications} />
-            <SettingsSlider id={volumeId} label={t("volume")} value={volume} onChange={setVolume} />
-            <SettingsSegmented
-              label={t("appearance")}
-              options={[
-                { value: "auto", label: t("auto") },
-                { value: "light", label: theme("light") },
-                { value: "dark", label: theme("dark") },
-              ]}
-              value={appearance}
-              onChange={setAppearance}
-            />
+            <SettingsCard>
+              <SettingsToggleRow
+                id="demo-notifications"
+                label={t("notifications")}
+                checked={notifications}
+                onChange={setNotifications}
+              />
+              <SettingsToggleRow id="demo-alerts" label={t("alerts")} checked={false} disabled onChange={setNotifications} />
+            </SettingsCard>
+            <SettingsCard>
+              <SettingsSlider id={volumeId} label={t("volume")} value={volume} onChange={setVolume} />
+            </SettingsCard>
+            <SettingsCard>
+              <SettingsSegmented
+                label={t("appearance")}
+                options={[
+                  { value: "auto", label: t("auto") },
+                  { value: "light", label: theme("light") },
+                  { value: "dark", label: theme("dark") },
+                ]}
+                value={appearance}
+                onChange={setAppearance}
+              />
+            </SettingsCard>
             <SettingsButton onClick={() => {
               setNotifications(true);
               setVolume(40);

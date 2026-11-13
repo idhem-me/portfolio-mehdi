@@ -30,14 +30,8 @@
 }
 
 .game-settings-card {
-  display: grid;
-  gap: calc(var(--spacing) * 4);
   min-width: 0;
-  padding: calc(var(--spacing) * 4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--card);
-  color: var(--card-foreground);
+  padding-inline: var(--card-spacing);
 }
 
 .game-settings-card.is-disabled {
@@ -48,8 +42,7 @@
   border: none !important;
   outline: none;
   box-shadow: none;
-  padding-right: 0;
-  padding-left: 0;
+  padding-inline: 0;
 }
 
 .game-settings-account-title {

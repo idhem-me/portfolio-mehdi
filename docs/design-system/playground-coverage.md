@@ -114,9 +114,9 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 | game-account-settings.tsx | Absente · contrôles partagés de jeu sans scénario | button |
 | game-appearance-settings.tsx | Absente · contrôles partagés de jeu sans scénario | button |
 | game-feel-settings.tsx | Absente · contrôles partagés de jeu sans scénario | badge, button, native-controls |
-| game-settings/GameSettingsPanel.tsx | Démo générique du conteneur dans SettingsModal | settings-modal |
+| game-settings/GameSettingsPanel.tsx | Démo générique du conteneur et des cards dans SettingsModal | settings-modal, card |
 | game-settings/primitives/SettingsButton.tsx | Démo fictive dans SettingsModal | button |
-| game-settings/primitives/SettingsCard.tsx | Absente · contrôles partagés de jeu sans scénario | — |
+| game-settings/primitives/SettingsCard.tsx | Démo fictive dans SettingsModal avec la primitive Card | card |
 | game-settings/primitives/SettingsSection.tsx | Absente · contrôles partagés de jeu sans scénario | — |
 | game-settings/primitives/SettingsSegmented.tsx | Démo fictive dans SettingsModal | button |
 | game-settings/primitives/SettingsSlider.tsx | Démo fictive dans SettingsModal | native-controls |
