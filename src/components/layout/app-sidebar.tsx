@@ -105,44 +105,42 @@ export function AppSidebar() {
     return (
       <Sidebar>
         <DesignSystemScope className="flex size-full flex-col">
-          <MobileMenuButton close />
-          <div className="mobile-navigation-body">
-            <nav aria-label={t("menu")} className="mobile-navigation-links">
-              <SidebarMenu className="gap-4">
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={item.match(pathname)}
-                      className="mobile-navigation-tile"
-                    >
-                      <TrackedLink
-                        href={item.href}
-                        aria-current={item.match(pathname) ? "page" : undefined}
-                        event={AnalyticsEvents.nav_click}
-                        eventProps={{ href: item.href, label: item.label }}
-                        onClick={closeMobilePanel}
-                      >
-                        {item.icon ? (
-                          <item.icon />
-                        ) : (
-                          <HomeAvatar className="size-4" />
-                        )}
-                        <span>{item.label}</span>
-                      </TrackedLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </nav>
-            <div className="mobile-navigation-settings">
-              <SidebarMenu className="gap-4 [&_[data-slot=sidebar-menu-button]]:min-h-12">
-                <DesignSystemSwitcher />
-                <LanguageSwitcher />
-                <ThemeToggle />
-              </SidebarMenu>
+          <div className="mobile-navigation-toolbar mobile-navigation-toolbar-inset">
+            <MobileMenuButton close />
+            <div className="mobile-navigation-actions">
+              <ThemeToggle iconOnly />
+              <DesignSystemSwitcher iconOnly />
+              <LanguageSwitcher iconOnly />
             </div>
           </div>
+          <nav aria-label={t("menu")} className="mobile-navigation-links mobile-navigation-body">
+            <SidebarMenu className="mobile-navigation-grid">
+              {navItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={item.match(pathname)}
+                    className="mobile-navigation-tile"
+                  >
+                    <TrackedLink
+                      href={item.href}
+                      aria-current={item.match(pathname) ? "page" : undefined}
+                      event={AnalyticsEvents.nav_click}
+                      eventProps={{ href: item.href, label: item.label }}
+                      onClick={closeMobilePanel}
+                    >
+                      {item.icon ? (
+                        <item.icon />
+                      ) : (
+                        <HomeAvatar />
+                      )}
+                      <span>{item.label}</span>
+                    </TrackedLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </nav>
         </DesignSystemScope>
       </Sidebar>
     );

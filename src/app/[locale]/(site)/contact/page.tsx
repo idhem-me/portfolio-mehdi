@@ -42,7 +42,7 @@ export default function ContactPage(props: Props) {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto w-full max-w-3xl px-6 py-12" aria-busy="true">
+        <main className="mx-auto w-full max-w-3xl px-4 pt-4 pb-8 md:px-6 md:py-12" aria-busy="true">
           <div className="h-36 animate-pulse rounded-xl bg-muted" />
         </main>
       }
@@ -61,7 +61,7 @@ async function ContactContent({ params }: Props) {
   const photoAlt = tNav("photoAlt", { name: profileMeta.name });
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-12">
+    <main className="mx-auto w-full max-w-3xl px-4 pt-4 pb-8 md:px-6 md:py-12">
       <header className="flex flex-col gap-6 sm:flex-row sm:items-center">
         <GazeAvatar />
         <div className="space-y-2">

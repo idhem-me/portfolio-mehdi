@@ -306,7 +306,7 @@ export default function DesignSystemsComparison() {
   return (
     <section
       aria-labelledby="comparison-title"
-      className="@container mx-auto w-full max-w-5xl space-y-8 px-6 py-12"
+      className="@container mx-auto w-full max-w-5xl space-y-8 px-4 pt-4 pb-8 md:px-6 md:py-12"
     >
       <PageBreadcrumb
         current={t("compare")}

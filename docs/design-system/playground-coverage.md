@@ -1,5 +1,7 @@
 # Couverture des composants du Playground
 
+[Button](/playground#button) emploie le même libellé et la même icône pour comparer les quatre tailles de texte. Les tailles à icône seule montrent quatre glyphes distincts en densité Mobile. [Sidebar](/playground#sidebar) présente la barre de fermeture, les réglages à icône seule et huit cartes fictives qui remplissent la surface disponible et passent en grille si sa hauteur diminue. Ces scénarios suivent Auto et les densités forcées.
+
 Les huit variantes de [Badge](/playground#badge) partagent une police de 14 px, une hauteur de 24 px et un padding horizontal de 12 px par côté dans les deux densités. Le badge de conversion d’image conserve une hauteur automatique pour les messages sur plusieurs lignes.
 
 La démo [Breadcrumb](/playground#breadcrumb) présente les liens parents, les séparateurs et la page courante. Elle suit le sélecteur de densité du catalogue. En densité Mobile, les liens ont une cible minimale de 44 × 44 px.
@@ -133,15 +135,15 @@ La démo `#dialog` ouvre le formulaire avec un corps défilant, les actions touj
 | Module | Couverture directe et motif | Primitives/adaptateurs importés |
 | --- | --- | --- |
 | app-shell.tsx | Absente · composition du shell | provider, sidebar, tooltip |
-| app-sidebar.tsx | Absente · composition du shell | provider, sidebar, sidebar-button, switcher |
+| app-sidebar.tsx | Composition mobile fictive dans Sidebar | provider, sidebar, sidebar-button, switcher |
 | copy-email-button.tsx | Absente · composition du shell | button |
 | document-locale.tsx | Indirecte · infrastructure du document | — |
-| language-switcher.tsx | Absente · composition du shell | choice-menu |
+| language-switcher.tsx | Choix de langue fictif dans Sidebar | choice-menu |
 | mobile-brand-bar.tsx | Absente · composition du shell | avatar, sidebar, sidebar-button |
-| mobile-menu-button.tsx | Absente · composition du shell | button, provider, sidebar |
+| mobile-menu-button.tsx | Ouvrir et fermer dans la démo mobile Sidebar | button, provider, sidebar |
 | section-navigation.tsx | Absente · composition du shell | provider, sidebar, sidebar-button |
 | theme-provider.tsx | Indirecte · infrastructure du document | — |
-| theme-toggle.tsx | Absente · composition du shell | sidebar, sidebar-button |
+| theme-toggle.tsx | Bascule fictive dans la démo mobile Sidebar | sidebar, sidebar-button |
 
 ## `src/components/media`
 

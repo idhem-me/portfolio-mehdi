@@ -1,7 +1,7 @@
 "use client";
 
-import { useId, useState } from "react";
-import { Brush, Check, Gift, Menu, X } from "lucide-react";
+import { useId, useRef, useState } from "react";
+import { Brush, Check, Gift, Languages, Menu, Moon, Palette, Sun, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import {
   Accordion,
@@ -226,7 +226,7 @@ export function PlaygroundCatalog() {
         </div>
 
         <div data-playground-scroll="" tabIndex={0} role="region" aria-labelledby="playground-title" className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring">
-        <div className="mx-auto w-full max-w-3xl px-6 pt-10 pb-8">
+        <div className="mx-auto w-full max-w-3xl px-4 pt-4 pb-0 md:px-6 md:pt-10 md:pb-8">
           <header className="space-y-3">
             <PageBreadcrumb current={t("title")} />
             <h1
@@ -237,7 +237,7 @@ export function PlaygroundCatalog() {
             </h1>
           </header>
         </div>
-        <div className="mx-auto w-full max-w-3xl px-6 py-8">
+        <div className="mx-auto w-full max-w-3xl px-4 pt-4 pb-8 md:px-6 md:py-8">
           <div className="min-w-0 max-w-3xl space-y-8">
             <Section title="Accordion">
               <Accordion type="single" collapsible className="w-full">
@@ -316,10 +316,12 @@ export function PlaygroundCatalog() {
                   <Button variant="link">Link</Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Button size="xs">XS</Button>
-                  <Button size="sm">SM</Button>
-                  <Button size="default">Default</Button>
-                  <Button size="lg">LG</Button>
+                  {(["xs", "sm", "default", "lg"] as const).map((size) => (
+                    <Button key={size} size={size} aria-label={`${t("exampleChoice")} (${size})`}>
+                      <Check aria-hidden />
+                      {t("exampleChoice")}
+                    </Button>
+                  ))}
                   <Button disabled>Disabled</Button>
                   {(["icon-xs", "icon-sm", "icon", "icon-lg"] as const).map((size) => (
                     <Button key={size} size={size} aria-label={`${t("iconButton")} ${size}`}>
@@ -629,6 +631,7 @@ export function PlaygroundCatalog() {
             </Section>
 
             <Section title="Sidebar">
+              <MobileSidebarPreview />
               <SidebarProvider resizable={false} keyboardShortcut={false} className="!min-h-0 rounded-xl border">
                 <Sidebar collapsible="none" className="max-w-full rounded-xl p-2">
                   <SidebarMenu>
@@ -771,6 +774,90 @@ export function PlaygroundCatalog() {
   );
 }
 
+function MobileSidebarPreview() {
+  const t = useTranslations("playground");
+  const nav = useTranslations("nav");
+  const theme = useTranslations("theme");
+  const language = useTranslations("language");
+  const designSystem = useTranslations("designSystem");
+  const [open, setOpen] = useState(true);
+  const [dark, setDark] = useState(false);
+  const [style, setStyle] = useState("A");
+  const [locale, setLocale] = useState("A");
+  const [active, setActive] = useState(0);
+  const choices = [{ value: "A", label: "A" }, { value: "B", label: "B" }];
+
+  return (
+    <div className="mobile-navigation-preview rounded-xl border border-sidebar-border">
+      <SidebarProvider resizable={false} keyboardShortcut={false} className="!min-h-0 flex-col">
+        <div className="mobile-navigation-toolbar">
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            aria-expanded={open}
+            aria-label={nav(open ? "closeMenu" : "openMenu")}
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X aria-hidden /> : <Menu aria-hidden />}
+          </Button>
+          {open && (
+            <div className="mobile-navigation-actions">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label={theme(dark ? "enableLight" : "enableDark")}
+                onClick={() => setDark(!dark)}
+              >
+                {dark ? <Sun aria-hidden /> : <Moon aria-hidden />}
+              </Button>
+              <DesignSystemChoiceMenu
+                iconOnly
+                label={designSystem("label")}
+                value={style}
+                icon={<Palette aria-hidden />}
+                choices={choices}
+                onChange={setStyle}
+                analyticsAction="playground_mobile_design_system"
+              />
+              <DesignSystemChoiceMenu
+                iconOnly
+                label={language("label")}
+                value={locale}
+                icon={<Languages aria-hidden />}
+                choices={choices}
+                onChange={setLocale}
+                analyticsAction="playground_mobile_language"
+              />
+            </div>
+          )}
+        </div>
+        {open && (
+          <div className="mobile-navigation-links h-[min(calc(100dvh-var(--spacing)*32),calc(var(--spacing)*124))] min-h-52 px-4 pb-4">
+            <SidebarMenu className="mobile-navigation-grid">
+              {(["Avatar", "Badge", "Button", "Card", "Dialog", "Input", "Sidebar", "Table"] as const).map((example, index) => (
+                <SidebarMenuItem key={example}>
+                  <SidebarMenuButton
+                    type="button"
+                    className="mobile-navigation-tile"
+                    isActive={active === index}
+                    aria-pressed={active === index}
+                    onClick={() => setActive(index)}
+                  >
+                    {index === 0 ? <Menu aria-hidden /> : <Check aria-hidden />}
+                    <span>{demoLabel(example, t)}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </div>
+        )}
+      </SidebarProvider>
+    </div>
+  );
+}
+
 function ThemeDemo({ theme }: { theme: "fun" | "frutiger-aero" | "liquid-glass" }) {
   const t = useTranslations("playground.funDemo");
   const playground = useTranslations("playground");
@@ -782,6 +869,13 @@ function ThemeDemo({ theme }: { theme: "fun" | "frutiger-aero" | "liquid-glass" 
   const description = theme === "fun" ? t("description") : descriptions(theme);
   const fieldId = useId();
   const [preview, setPreview] = useState("");
+  const previewTrigger = useRef<HTMLButtonElement>(null);
+
+  function openPreview(event: React.MouseEvent<HTMLButtonElement>) {
+    previewTrigger.current = event.currentTarget;
+    const form = event.currentTarget.form;
+    if (form) setPreview(String(new FormData(form).get("workshop") ?? ""));
+  }
 
   return (
     <DesignSystemForce value={theme}>
@@ -845,10 +939,7 @@ function ThemeDemo({ theme }: { theme: "fun" | "frutiger-aero" | "liquid-glass" 
                     <DialogTrigger asChild>
                       <Button
                         type="button"
-                        onClick={(event) => {
-                          const form = event.currentTarget.form;
-                          if (form) setPreview(String(new FormData(form).get("workshop") ?? ""));
-                        }}
+                        onClick={openPreview}
                       >
                         {t("preview")}
                       </Button>
@@ -859,10 +950,7 @@ function ThemeDemo({ theme }: { theme: "fun" | "frutiger-aero" | "liquid-glass" 
                           <Button
                             type="button"
                             variant="accent"
-                            onClick={(event) => {
-                              const form = event.currentTarget.form;
-                              if (form) setPreview(String(new FormData(form).get("workshop") ?? ""));
-                            }}
+                            onClick={openPreview}
                           >
                             {t("preview")}
                           </Button>
@@ -873,7 +961,13 @@ function ThemeDemo({ theme }: { theme: "fun" | "frutiger-aero" | "liquid-glass" 
                     <Button type="reset" variant="secondary">{t("reset")}</Button>
                   </div>
                 </form>
-                <DialogContent>
+                <DialogContent
+                  onCloseAutoFocus={(event) => {
+                    if (!previewTrigger.current) return;
+                    event.preventDefault();
+                    previewTrigger.current.focus();
+                  }}
+                >
                   <DialogTitle>{t("preview")}</DialogTitle>
                   <DialogDescription>{preview || sample}</DialogDescription>
                   <DialogClose asChild>

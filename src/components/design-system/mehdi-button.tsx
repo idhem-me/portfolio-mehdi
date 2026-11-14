@@ -4,7 +4,7 @@ import { cn } from "cn";
 import { Slot } from "radix-ui";
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-[length:var(--control-text)] font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex min-h-(--touch-target-size) min-w-(--touch-target-size) shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-[length:var(--control-text)] font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-[var(--button-glyph,calc(var(--spacing)*4))]",
   {
     variants: {
       variant: {
@@ -24,23 +24,28 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-(--control-height) gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        xs: "h-(--control-height-xs) gap-1 rounded-[min(var(--radius-md),10px)] px-2 text-[length:var(--control-text-xs)] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-(--control-height-sm) gap-1 rounded-[min(var(--radius-md),12px)] px-2.5 text-[length:var(--control-text-sm)] in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-(--control-height-lg) gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+          "h-(--control-height) gap-1.5 px-[var(--button-padding,calc(var(--spacing)*2.5))] has-data-[icon=inline-end]:pr-[var(--button-padding,calc(var(--spacing)*2))] has-data-[icon=inline-start]:pl-[var(--button-padding,calc(var(--spacing)*2))]",
+        xs: "h-(--control-height-xs) gap-1 rounded-[min(var(--radius-md),10px)] text-[length:var(--button-text-xs,var(--control-text-xs))] in-data-[slot=button-group]:rounded-lg px-[var(--button-padding-xs,calc(var(--spacing)*2))] has-data-[icon=inline-end]:pr-[var(--button-padding-xs,calc(var(--spacing)*1.5))] has-data-[icon=inline-start]:pl-[var(--button-padding-xs,calc(var(--spacing)*1.5))] [--button-glyph:calc(var(--spacing)*3)]",
+        sm: "h-(--control-height-sm) gap-1 rounded-[min(var(--radius-md),12px)] text-[length:var(--button-text-sm,var(--control-text-sm))] in-data-[slot=button-group]:rounded-lg px-[var(--button-padding-sm,calc(var(--spacing)*2.5))] has-data-[icon=inline-end]:pr-[var(--button-padding-sm,calc(var(--spacing)*1.5))] has-data-[icon=inline-start]:pl-[var(--button-padding-sm,calc(var(--spacing)*1.5))] [--button-glyph:calc(var(--spacing)*3.5)]",
+        lg: "h-[var(--button-height-lg,var(--control-height-lg))] gap-1.5 px-[var(--button-padding-lg,calc(var(--spacing)*2.5))] has-data-[icon=inline-end]:pr-[var(--button-padding-lg,calc(var(--spacing)*2))] has-data-[icon=inline-start]:pl-[var(--button-padding-lg,calc(var(--spacing)*2))]",
         icon: "size-(--control-height-icon)",
         "icon-xs":
-          "size-(--control-height-icon-xs) rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
+          "size-(--control-height-icon-xs) rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [--button-glyph:calc(var(--spacing)*3)]",
         "icon-sm":
-          "size-(--control-height-icon-sm) rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
-        "icon-lg": "size-(--control-height-icon-lg)",
+          "size-(--control-height-icon-sm) [--button-glyph:var(--button-glyph-sm,calc(var(--spacing)*4))] rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
+        "icon-lg": "size-[var(--button-icon-lg,var(--control-height-icon-lg))] [--button-glyph:var(--button-glyph-lg,calc(var(--spacing)*4))]",
       },
     },
     compoundVariants: [
       {
         variant: "accent",
         class:
-          "h-(--control-height-accent) gap-2 rounded-full px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+          "gap-2 rounded-full px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+      },
+      {
+        variant: "accent",
+        size: "default",
+        class: "h-(--control-height-accent)",
       },
       {
         variant: "accent",
@@ -60,24 +65,24 @@ const buttonVariants = cva(
       {
         variant: "accent",
         size: "icon-lg",
-        class: "size-(--control-height-accent-icon-lg) rounded-full px-0",
+        class: "size-[var(--button-icon-lg,var(--control-height-accent-icon-lg))] rounded-full px-0",
       },
       {
         variant: "accent",
         size: "xs",
         class:
-          "h-(--control-height-accent-xs) gap-1.5 rounded-full px-3.5 text-[length:var(--control-text-xs)]",
+          "h-(--control-height-accent-xs) gap-1.5 rounded-full px-3.5 text-[length:var(--button-text-xs,var(--control-text-xs))]",
       },
       {
         variant: "accent",
         size: "sm",
         class:
-          "h-(--control-height-accent-sm) gap-1.5 rounded-full px-4 text-[length:var(--control-text-sm)]",
+          "h-(--control-height-accent-sm) gap-1.5 rounded-full px-4 text-[length:var(--button-text-sm,var(--control-text-sm))]",
       },
       {
         variant: "accent",
         size: "lg",
-        class: "h-(--control-height-accent-lg) gap-2 rounded-full px-6",
+        class: "h-[var(--button-height-lg,var(--control-height-accent-lg))] gap-2 rounded-full px-6",
       },
     ],
     defaultVariants: {

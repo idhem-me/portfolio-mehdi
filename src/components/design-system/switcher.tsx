@@ -18,11 +18,12 @@ const ICONS: Record<DesignSystem, ReactNode> = {
   "liquid-glass": <Droplet className="size-4 shrink-0" aria-hidden />,
 };
 
-export function DesignSystemSwitcher() {
+export function DesignSystemSwitcher({ iconOnly = false }: { iconOnly?: boolean }) {
   const t = useTranslations("designSystem");
   const { designSystem, setDesignSystem } = useDesignSystem();
   return (
     <DesignSystemChoiceMenu
+      iconOnly={iconOnly}
       label={t("label")}
       title={t("label")}
       value={designSystem}

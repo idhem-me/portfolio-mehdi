@@ -282,6 +282,17 @@
   @media (width < 768px) {
     :root:not([data-density="desktop"]) {
       --touch-target-size: 2.75rem;
+      --button-padding-xs: calc(var(--spacing) * 2.5);
+      --button-padding-sm: calc(var(--spacing) * 3);
+      --button-padding: calc(var(--spacing) * 4);
+      --button-padding-lg: calc(var(--spacing) * 5);
+      --button-text-xs: var(--text-sm);
+      --button-text-sm: calc(var(--text-sm) + var(--spacing) / 4);
+      --button-height-lg: calc(var(--touch-target-size) + var(--spacing) * 2);
+      --button-icon-lg: calc(var(--touch-target-size) + var(--spacing));
+      --button-glyph-sm: calc(var(--spacing) * 3.5);
+      --button-glyph-lg: calc(var(--spacing) * 5);
+      --mobile-navigation-preview-display: block;
       --settings-modal-gutter: 0px;
       --settings-modal-width: none;
       --settings-modal-height: 100dvh;
@@ -324,6 +335,17 @@
   html[data-density="mobile"],
   [data-density="mobile"] {
     --touch-target-size: 2.75rem;
+    --button-padding-xs: calc(var(--spacing) * 2.5);
+    --button-padding-sm: calc(var(--spacing) * 3);
+    --button-padding: calc(var(--spacing) * 4);
+    --button-padding-lg: calc(var(--spacing) * 5);
+    --button-text-xs: var(--text-sm);
+    --button-text-sm: calc(var(--text-sm) + var(--spacing) / 4);
+    --button-height-lg: calc(var(--touch-target-size) + var(--spacing) * 2);
+    --button-icon-lg: calc(var(--touch-target-size) + var(--spacing));
+    --button-glyph-sm: calc(var(--spacing) * 3.5);
+    --button-glyph-lg: calc(var(--spacing) * 5);
+    --mobile-navigation-preview-display: block;
     --settings-modal-gutter: 0px;
     --settings-modal-width: none;
     --settings-modal-height: 100dvh;
@@ -364,6 +386,17 @@
   html[data-density="desktop"],
   [data-density="desktop"] {
     --touch-target-size: 0px;
+    --button-padding-xs: initial;
+    --button-padding-sm: initial;
+    --button-padding: initial;
+    --button-padding-lg: initial;
+    --button-text-xs: initial;
+    --button-text-sm: initial;
+    --button-height-lg: initial;
+    --button-icon-lg: initial;
+    --button-glyph-sm: initial;
+    --button-glyph-lg: initial;
+    --mobile-navigation-preview-display: initial;
     --settings-modal-gutter: var(--settings-modal-padding);
     --settings-modal-width: var(--container-xl);
     --settings-modal-height: max-content;
@@ -519,14 +552,129 @@ html.locale-ar body {
     transition: none;
   }
 }
-/* Mobile navigation: the trigger and modal close share viewport coordinates. */
-.mobile-menu-toggle {
-  position: fixed;
-  top: max(1rem, env(safe-area-inset-top));
-  left: max(1rem, env(safe-area-inset-left));
-  z-index: 40;
+/* Shared with the mobile sidebar preview in the Playground. */
+.mobile-navigation-toolbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--spacing) * 2);
+  padding: calc(var(--spacing) * 4);
 }
-@media (max-width: 767px) {
+
+.mobile-navigation-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing);
+}
+
+.mobile-navigation-preview {
+  display: var(--mobile-navigation-preview-display, none);
+}
+
+.mobile-navigation-links {
+  container: mobile-navigation / size;
+  min-height: 0;
+}
+
+.mobile-navigation-grid[data-slot="sidebar-menu"] {
+  display: grid;
+  height: 100%;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: minmax(min-content, 1fr);
+  gap: calc(var(--spacing) * 2);
+}
+
+.mobile-navigation-tile[data-slot="sidebar-menu-button"] {
+  height: 100%;
+  min-height: calc(var(--touch-target-size) + var(--spacing) * 2);
+  gap: calc(var(--spacing) * 3);
+  padding: var(--spacing) calc(var(--spacing) * 4);
+  font-size: var(--text-xl);
+  line-height: var(--leading-tight);
+  text-align: start;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-lg);
+}
+
+.mobile-navigation-tile[data-slot="sidebar-menu-button"] > :is(svg, [data-slot="avatar"]) {
+  width: calc(var(--spacing) * 6);
+  height: calc(var(--spacing) * 6);
+}
+
+.mobile-navigation-tile[data-slot="sidebar-menu-button"] > span:last-child {
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.mobile-navigation-tile[data-slot="sidebar-menu-button"]:not([data-active="true"]):is(:hover, :active) {
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+}
+
+.mobile-navigation-tile[data-slot="sidebar-menu-button"][data-active="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: transparent;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Eight 52px rows and seven 8px gaps need 472px of content height. */
+@container mobile-navigation (height < 29.5rem) {
+  .mobile-navigation-grid[data-slot="sidebar-menu"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mobile-navigation-tile[data-slot="sidebar-menu-button"] {
+    min-height: var(--touch-target-size);
+    gap: calc(var(--spacing) * 2);
+    padding-inline: calc(var(--spacing) * 2);
+    font-size: var(--text-lg);
+  }
+
+  .mobile-navigation-tile[data-slot="sidebar-menu-button"] > :is(svg, [data-slot="avatar"]) {
+    width: calc(var(--spacing) * 5);
+    height: calc(var(--spacing) * 5);
+  }
+}
+
+/* Four compact rows need 200px. Use wider landscape viewports for two rows. */
+@container mobile-navigation (height < 12.5rem) and (width >= 30rem) {
+  .mobile-navigation-grid[data-slot="sidebar-menu"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (width < 768px) {
+  :root {
+    --mobile-site-gutter: calc(var(--spacing) * 4);
+    --mobile-menu-inset-top: max(var(--mobile-site-gutter), env(safe-area-inset-top));
+    --mobile-menu-safe-start: env(safe-area-inset-left);
+    --mobile-menu-safe-end: env(safe-area-inset-right);
+    --mobile-menu-inset-start: max(var(--mobile-site-gutter), var(--mobile-menu-safe-start));
+    --mobile-menu-inset-end: max(var(--mobile-site-gutter), var(--mobile-menu-safe-end));
+    --mobile-site-header-height: calc(var(--mobile-menu-inset-top) + var(--control-height-icon) + var(--mobile-site-gutter));
+  }
+
+  :root:dir(rtl) {
+    --mobile-menu-safe-start: env(safe-area-inset-right);
+    --mobile-menu-safe-end: env(safe-area-inset-left);
+  }
+
+  .mobile-site-header {
+    height: var(--mobile-site-header-height);
+  }
+
+  .mobile-menu-toggle {
+    position: fixed;
+    inset-block-start: var(--mobile-menu-inset-top);
+    inset-inline-start: var(--mobile-menu-inset-start);
+    z-index: 40;
+  }
+
   .mobile-navigation-panel[data-mobile="true"] {
     inset: 0;
     width: 100%;
@@ -535,53 +683,19 @@ html.locale-ar body {
     border: 0;
     animation: none;
   }
-  .mobile-navigation-panel .mobile-menu-toggle { z-index: 1; }
-  .mobile-navigation-panel > div:not([data-slot="sheet-header"]) {
+
+  .mobile-navigation-toolbar-inset {
+    padding-block-start: var(--mobile-menu-inset-top);
+    padding-inline: var(--mobile-menu-inset-start) var(--mobile-menu-inset-end);
+  }
+
+  .mobile-navigation-body {
+    flex: 1;
+    /* Keep links reachable with unusually short viewports or enlarged text. */
     overflow-y: auto;
     overscroll-behavior: contain;
-  }
-  .mobile-navigation-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    padding: calc(max(1rem, env(safe-area-inset-top)) + var(--control-height-icon) + 1.5rem) 1rem max(1.5rem, env(safe-area-inset-bottom));
-  }
-  .mobile-navigation-links,
-  .mobile-navigation-settings {
-    width: calc(min(90vw, 25rem) - 3rem);
-    max-width: 100%;
-    flex-shrink: 0;
-  }
-  .mobile-navigation-links { margin-block: auto; }
-  .mobile-navigation-settings { padding-top: 2rem; }
-  .mobile-navigation-settings [data-slot="sidebar-menu-button"] {
-    padding-inline: 1.5rem;
-    justify-content: flex-start;
-    text-align: left;
-  }
-  .mobile-navigation-tile {
-    min-height: 3rem;
-    justify-content: flex-start;
-    text-align: left;
-    padding-inline: 1.5rem;
-    background: var(--secondary);
-    color: var(--secondary-foreground);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-  }
-}
-
-@media (max-width: 767px) {
-  .mobile-navigation-tile:hover {
-    background: var(--sidebar-accent);
-    color: var(--sidebar-accent-foreground);
-  }
-  .mobile-navigation-tile[data-active="true"] {
-    background: var(--background);
-    color: var(--foreground);
-    border-color: var(--foreground);
-    font-weight: 600;
+    padding-inline: var(--mobile-menu-inset-start) var(--mobile-menu-inset-end);
+    padding-block-end: max(calc(var(--spacing) * 4), env(safe-area-inset-bottom));
   }
 }
 

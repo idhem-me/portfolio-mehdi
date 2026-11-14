@@ -8,7 +8,7 @@ import { DesignSystemChoiceMenu } from "@/components/design-system/choice-menu";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { localeNames, routing, type Locale } from "@/i18n/routing";
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({ iconOnly = false }: { iconOnly?: boolean }) {
   const t = useTranslations("language");
   const locale = useLocale() as Locale;
   const pathname = usePathname();
@@ -16,6 +16,7 @@ export function LanguageSwitcher() {
   const [pending, startTransition] = useTransition();
   return (
     <DesignSystemChoiceMenu
+      iconOnly={iconOnly}
       label={t("label")}
       value={locale}
       icon={<Languages className="size-4 shrink-0" />}
