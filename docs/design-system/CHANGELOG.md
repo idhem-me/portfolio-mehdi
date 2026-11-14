@@ -1,5 +1,12 @@
 # Changelog du design system
 
+## Navigation et échelle de boutons mobiles — 14 novembre 2026
+
+- Le menu plein écran aligne la fermeture et trois réglages à icône seule dans une barre visible pendant le défilement. Ses liens occupent toute la largeur de la colonne et offrent au moins 52 px de haut.
+- La densité Mobile distingue les tailles de boutons avec une cible minimale de 44 × 44 px. Les démos Button et Sidebar montrent les nouveaux états dans le Playground.
+- Les pages principales du portfolio et le Playground utilisent des espacements plus compacts sous 768 px.
+- Le parcours Pokémon a dépassé le délai de navigation avec `next dev` sur Chromium. Il passe en Chromium, Android et iPhone sur le build de production servi par `next start`.
+
 ## Chargement à la demande — 13 novembre 2026
 
 - Les feuilles de style des variantes se chargent à la sélection ou à l’ouverture d’un aperçu qui les utilise. Une préférence enregistrée déclenche le chargement à l’ouverture de la page.

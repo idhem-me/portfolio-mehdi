@@ -81,6 +81,10 @@ Overrides (**dans `@layer base`**, avec les defaults desktop) — Tailwind v4 fu
 
 Les composants (`Button`, `DropdownMenu`, `SidebarMenuButton`, `Sheet`, `Tabs`, `Input`) consomment ces tokens via `h-(--control-height)`, `text-[length:var(--control-text)]`, etc. Sur `/playground`, le mode Auto suit le viewport. Les modes forcés appliquent `data-density` à la vitrine et à ses portails. La navigation du site conserve sa densité responsive.
 
+Les boutons utilisent une échelle propre en densité Mobile. XS, S, Standard et L utilisent respectivement des hauteurs de 44, 44, 44 et 52 px, des textes de 14, 15, 16 et 16 px et des espacements horizontaux croissants. Les tailles à icône seule correspondent à des cibles de 44, 44, 44 et 48 px et à des glyphes de 12, 14, 16 et 20 px. Les boutons Accent gardent leur silhouette et leurs espacements spécifiques. La cible minimale s’applique aussi à un bouton rendu comme lien.
+
+Le menu mobile plein écran place la fermeture au début de la barre et les réglages sous forme d’icônes à l’autre extrémité. La barre reste visible pendant le défilement des liens. La démo [Sidebar](/playground#sidebar) présente des liens de 52 px minimum, la page active et les commandes de 44 px.
+
 Le registre de couverture associe chaque module du DS à une démo ou à une exception d’infrastructure. `npm test` contrôle sa couverture. Les tests navigateur contrôlent les ancres, les cibles et le retour du focus. Le [relevé des composants locaux](design-system/playground-local-components.md) conserve l’historique. La page `/playground/local-components` apparaît en développement local quand il reste des tickets à traiter.
 
 ## Button — variante `accent`

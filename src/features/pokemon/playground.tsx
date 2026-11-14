@@ -159,7 +159,7 @@ export function PokemonPlayground({
         event.preventDefault();
         toggleFullPage();
       }}
-      className="relative m-0 h-[calc(100dvh-max(1rem,env(safe-area-inset-top))-var(--control-height-icon)-1rem)] max-h-none w-full max-w-none overflow-hidden border-0 bg-background p-0 text-foreground md:h-dvh [&:modal]:fixed [&:modal]:inset-0 [&:modal]:h-dvh [&:modal]:overscroll-contain"
+      className="relative m-0 h-[calc(100dvh-var(--mobile-site-header-height))] max-h-none w-full max-w-none overflow-hidden border-0 bg-background p-0 text-foreground md:h-dvh [&:modal]:fixed [&:modal]:inset-0 [&:modal]:h-dvh [&:modal]:overscroll-contain"
     >
       <section aria-label={t("stage")} className="relative h-full w-full">
         <p id="pokemon-instructions" className="sr-only">

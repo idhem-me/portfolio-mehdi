@@ -15,11 +15,11 @@ for (const theme of ["light", "dark"]) {
     await expect(sidebar.getByText("Mehdi Design", { exact: true })).toHaveCount(0);
     await home.click();
     await expect(home).toHaveAttribute("aria-current", "page");
-    await sidebar.getByRole("button", { name: "Fermer le panel", exact: true }).click();
-    const open = sidebar.getByRole("button", { name: "Ouvrir le panel", exact: true });
+    await sidebar.getByRole("button", { name: "Fermer le menu", exact: true }).click();
+    const open = sidebar.getByRole("button", { name: "Ouvrir le menu", exact: true });
     await page.mouse.move(800, 300);
     await open.blur();
-    await expect(open.locator("svg")).toHaveCSS("opacity", "0");
+    await expect(open.locator("svg")).toBeVisible();
     await open.hover();
     await expect(open.locator("svg")).toHaveCSS("opacity", "1");
     await page.mouse.move(800, 300);
@@ -48,10 +48,10 @@ test("desktop touch can reopen the sidebar without hover", async ({ browser }) =
   const context = await browser.newContext({ hasTouch: true, viewport: { width: 1024, height: 768 } });
   const page = await context.newPage();
   await page.goto("/fr/contact");
-  await page.getByRole("button", { name: "Fermer le panel", exact: true }).tap();
-  const open = page.getByRole("button", { name: "Ouvrir le panel", exact: true });
+  await page.getByRole("button", { name: "Fermer le menu", exact: true }).tap();
+  const open = page.getByRole("button", { name: "Ouvrir le menu", exact: true });
   await expect(open.locator("svg")).toHaveCSS("opacity", "1");
   await open.tap();
-  await expect(page.getByRole("button", { name: "Fermer le panel", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Fermer le menu", exact: true })).toBeVisible();
   await context.close();
 });

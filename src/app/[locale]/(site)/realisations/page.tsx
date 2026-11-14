@@ -28,7 +28,7 @@ export default async function RealisationsPage({ params }: Props) {
   const page = getRealisations(locale);
 
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-10 px-6 py-12">
+    <main className="mx-auto w-full max-w-3xl space-y-10 px-4 pt-4 pb-8 md:px-6 md:py-12">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {page.title}

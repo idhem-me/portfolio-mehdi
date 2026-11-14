@@ -105,10 +105,17 @@ export function AppSidebar() {
     return (
       <Sidebar>
         <DesignSystemScope className="flex size-full flex-col">
-          <MobileMenuButton close />
+          <div className="mobile-navigation-toolbar mobile-navigation-toolbar-inset">
+            <MobileMenuButton close />
+            <div className="mobile-navigation-actions">
+              <ThemeToggle iconOnly />
+              <DesignSystemSwitcher iconOnly />
+              <LanguageSwitcher iconOnly />
+            </div>
+          </div>
           <div className="mobile-navigation-body">
             <nav aria-label={t("menu")} className="mobile-navigation-links">
-              <SidebarMenu className="gap-4">
+              <SidebarMenu className="gap-2">
                 {navItems.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
@@ -135,13 +142,6 @@ export function AppSidebar() {
                 ))}
               </SidebarMenu>
             </nav>
-            <div className="mobile-navigation-settings">
-              <SidebarMenu className="gap-4 [&_[data-slot=sidebar-menu-button]]:min-h-12">
-                <DesignSystemSwitcher />
-                <LanguageSwitcher />
-                <ThemeToggle />
-              </SidebarMenu>
-            </div>
           </div>
         </DesignSystemScope>
       </Sidebar>

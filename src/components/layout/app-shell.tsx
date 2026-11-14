@@ -22,13 +22,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               : "min-w-0"
           }
         >
-          <header
-            className="shrink-0 md:hidden"
-            style={{
-              height:
-                "calc(max(1rem, env(safe-area-inset-top)) + var(--control-height-icon) + 1rem)",
-            }}
-          >
+          <header className="mobile-site-header shrink-0 md:hidden">
             <DesignSystemScope>
               <MobileMenuButton />
             </DesignSystemScope>

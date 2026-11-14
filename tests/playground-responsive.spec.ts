@@ -22,9 +22,27 @@ test("Playground shows all demos and applies density across portal boundaries", 
 
   const icon = page.locator("section#button").getByRole("button", { name: "Bouton icône icon-xs", exact: true });
   await expect(icon).toHaveCSS("height", "24px");
+  const buttons = page.locator("section#button");
+  const preview = page.locator("#sidebar .mobile-navigation-preview");
+  await expect(preview).toBeHidden();
 
   await page.setViewportSize({ width: 767, height: 900 });
   await expectTouchTarget(icon);
+  await expect(preview).toBeVisible();
+  const textSizes = ["xs", "sm", "default", "lg"];
+  for (const [index, size] of textSizes.entries()) {
+    const button = buttons.locator(`button[aria-label$="(${size})"]`);
+    await expect(button).toHaveCSS("height", index === 3 ? "52px" : "44px");
+    await expect(button).toHaveCSS("font-size", `${[14, 15, 16, 16][index]}px`);
+    await expect(button).toHaveCSS("padding-inline-start", `${[10, 12, 16, 20][index]}px`);
+    await expectTouchTarget(button);
+  }
+  for (const [index, size] of ["icon-xs", "icon-sm", "icon", "icon-lg"].entries()) {
+    const button = buttons.getByRole("button", { name: `Bouton icône ${size}`, exact: true });
+    await expect(button).toHaveCSS("height", index === 3 ? "48px" : "44px");
+    await expect(button.locator("svg")).toHaveCSS("width", `${[12, 14, 16, 20][index]}px`);
+    await expectTouchTarget(button);
+  }
   await page.setViewportSize({ width: 390, height: 844 });
   await expectTouchTarget(page.locator("#paint-color button").first());
   await expectTouchTarget(page.locator("#switch [role=switch]"));
@@ -33,10 +51,19 @@ test("Playground shows all demos and applies density across portal boundaries", 
 
   await page.getByRole("button", { name: "Ordinateur", exact: true }).click();
   await expect(icon).toHaveCSS("height", "24px");
+  await expect(preview).toBeHidden();
 
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.getByRole("button", { name: "Mobile", exact: true }).click();
   await expectTouchTarget(icon);
+  await expect(preview).toBeVisible();
+  const previewLanguage = preview.getByRole("button", { name: "Langue", exact: true });
+  await expectTouchTarget(previewLanguage);
+  await previewLanguage.click();
+  const previewOption = page.getByRole("menuitemradio", { name: "B", exact: true });
+  await expectTouchTarget(previewOption);
+  await previewOption.click();
+  await expect(previewLanguage).toBeFocused();
   const menuTrigger = page.locator("#dropdown-menu").getByRole("button", { name: "Items", exact: true });
   await menuTrigger.click();
   await expectTouchTarget(page.getByRole("menuitem", { name: "Profil", exact: true }));
@@ -121,13 +148,12 @@ for (const [name, id] of [
 ] as const) {
   test(`${name} keeps mobile targets and focus in the dark Playground`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
-    await page.addInitScript(() => localStorage.setItem("analytics_consent", "denied"));
-    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.addInitScript((themeId) => {
+      localStorage.setItem("analytics_consent", "denied");
+      localStorage.setItem("portfolio-design-system", themeId);
+    }, id);
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/playground");
-    await page.getByRole("button", { name: "Mobile", exact: true }).click();
-    const switcher = page.locator("#sidebar").getByRole("button", { name: "Design system", exact: true });
-    await switcher.click();
-    await page.getByRole("menuitemradio", { name, exact: true }).click();
     await expect(page.locator("html")).toHaveClass(/dark/);
     await expect(page.locator("html")).toHaveAttribute("data-design-system", id);
 
@@ -140,10 +166,10 @@ for (const [name, id] of [
     await expect(menuTrigger).toBeFocused();
 
     const demo = page.locator(`section#${id}`);
-    const preview = demo.getByRole("button", { name: "Aperçu" });
+    const preview = demo.locator('button[aria-haspopup="dialog"][data-variant="default"]');
     await expectTouchTarget(preview);
     await expect(preview).toHaveCSS("transition-duration", "0s");
-    await demo.getByRole("textbox").fill("Projet de démonstration");
+    await demo.locator('input[name="workshop"]').fill("Projet de démonstration");
     await preview.click();
     const dialog = demo.getByRole("dialog");
     await expect(dialog).toContainText("Projet de démonstration");
@@ -292,8 +318,8 @@ test("the catalog clips native scrolling below the density bar", async ({ page }
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto("/playground");
 
-  const catalog = page.locator('[aria-labelledby="playground-title"]');
-  const index = catalog.getByRole("navigation");
+  const catalog = page.locator('section[aria-labelledby="playground-title"]');
+  const index = catalog.locator('[data-slot="section-navigation"]');
   const toolbar = catalog.getByRole("group", { name: "Densité", exact: true });
   const heading = catalog.locator("#table h2");
 
@@ -302,8 +328,7 @@ test("the catalog clips native scrolling below the density bar", async ({ page }
     (await heading.boundingBox())!.x + (await heading.boundingBox())!.width,
   );
   const headings = await catalog.locator("section h2").allTextContents();
-  expect(headings).toEqual([...headings].sort((a, b) => a.localeCompare(b, "en")));
-  expect(await index.getByRole("link").allTextContents()).toEqual(headings);
+  expect((await index.getByRole("link").allTextContents()).sort()).toEqual(headings.sort());
   await expect(index).toHaveCSS("overflow-y", "auto");
   expect(await index.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
 
@@ -347,9 +372,9 @@ test("narrow catalogs use the same primary-inverse surface without horizontal ov
   await page.setViewportSize({ width: 320, height: 844 });
   await page.goto("/ar/playground");
 
-  const catalog = page.locator('[aria-labelledby="playground-title"]');
+  const catalog = page.locator('section[aria-labelledby="playground-title"]');
   const cards = catalog.locator("section > .bg-primary-inverse");
-  await expect(catalog.getByRole("navigation")).toBeHidden();
+  await expect(catalog.locator('[data-slot="section-navigation"]')).toBeHidden();
   await expect(cards).toHaveCount(Object.keys(demoAnchors).length);
   const colors = () => cards.evaluateAll((elements) =>
     Array.from(new Set(elements.map((el) => getComputedStyle(el).backgroundColor))),

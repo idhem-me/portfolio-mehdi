@@ -30,7 +30,7 @@ export default async function ToolsPage({ params }: Props) {
   const converter = await getTranslations("imageConverter");
   const qr = await getTranslations("qrGenerator");
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-6 px-6 py-12">
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 pt-4 pb-8 md:px-6 md:py-12">
       <PageBreadcrumb current={t("title")} />
       <header className="space-y-3">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">

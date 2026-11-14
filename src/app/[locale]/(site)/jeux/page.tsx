@@ -34,7 +34,7 @@ export default async function GamesPage({ params }: Props) {
   const ui = await getTranslations("ui");
 
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-6 px-6 py-12">
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-4 pt-4 pb-8 md:px-6 md:py-12">
       <PageBreadcrumb current={page.title} />
       <header className="space-y-3">
         <div className="flex items-center justify-between gap-4">

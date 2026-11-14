@@ -49,7 +49,7 @@ function HomeFallback() {
   return (
     <main
       data-home-paper
-      className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20"
+      className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-4 pt-4 pb-8 md:px-6 md:min-h-[calc(100svh-1rem)] md:py-20"
     >
       <div className="flex flex-col gap-8">
         <div className="space-y-4">
@@ -81,7 +81,7 @@ async function HomeContent({ params }: Props) {
   return (
     <main
       data-home-paper
-      className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-6 pt-[6.75rem] pb-16 md:min-h-[calc(100svh-1rem)] md:py-20"
+      className="mx-auto flex w-full min-w-0 max-w-3xl flex-col justify-center px-4 pt-4 pb-8 md:px-6 md:min-h-[calc(100svh-1rem)] md:py-20"
     >
       <HomeInteractionTracker />
       <GravityPlayground>
