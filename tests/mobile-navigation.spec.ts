@@ -1,5 +1,9 @@
 import { test, expect } from "@playwright/test";
 
+function roundedBounds({ x, y, width, height }: { x: number; y: number; width: number; height: number }) {
+  return { x: Math.round(x), y: Math.round(y), width: Math.round(width), height: Math.round(height) };
+}
+
 for (const [designSystem, theme] of [
   ["mehdi", "light"],
   ["mehdi", "dark"],
@@ -32,6 +36,7 @@ for (const [designSystem, theme] of [
       await page.evaluate(() => window.scrollTo(0, 250));
       await page.mouse.move(width / 2, 1);
       const before = await trigger.boundingBox();
+      const originalPosition = before && roundedBounds(before);
       await trigger.click();
       await page.mouse.move(width / 2, 1);
       const dialog = page.locator("#mobile-navigation");
@@ -39,8 +44,8 @@ for (const [designSystem, theme] of [
       const close = dialog.getByRole("button", { name: "Fermer le menu" });
       await expect.poll(async () => {
         const position = await close.boundingBox();
-        return position && { ...position, x: Math.round(position.x), y: Math.round(position.y) };
-      }).toEqual(before);
+        return position && roundedBounds(position);
+      }).toEqual(originalPosition);
       const panel = await dialog.boundingBox();
       expect(panel).toMatchObject({ x: 0, y: 0, width, height });
       const tiles = dialog.locator("nav a");
@@ -64,7 +69,7 @@ for (const [designSystem, theme] of [
         const { x, y, width, height } = button.getBoundingClientRect();
         return { x, y, width, height, text: button.textContent };
       }));
-      expect(actionBoxes.map(({ y }) => Math.round(y))).toEqual(Array(4).fill(before?.y));
+      expect(actionBoxes.map(({ y }) => Math.round(y))).toEqual(Array(4).fill(originalPosition?.y));
       for (const [index, box] of actionBoxes.entries()) {
         expect(box).toMatchObject({ width: 44, height: 44, text: "" });
         if (index) expect(box.x).toBeGreaterThan(actionBoxes[index - 1].x);
