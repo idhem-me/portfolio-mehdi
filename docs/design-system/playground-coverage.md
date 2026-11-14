@@ -1,6 +1,6 @@
 # Couverture des composants du Playground
 
-[Button](/playground#button) emploie le même libellé et la même icône pour comparer les quatre tailles de texte. Les tailles à icône seule montrent quatre glyphes distincts en densité Mobile. [Sidebar](/playground#sidebar) présente la barre de fermeture, les réglages à icône seule et les grands boutons de navigation avec des données fictives. Ces scénarios suivent Auto et les densités forcées.
+[Button](/playground#button) emploie le même libellé et la même icône pour comparer les quatre tailles de texte. Les tailles à icône seule montrent quatre glyphes distincts en densité Mobile. [Sidebar](/playground#sidebar) présente la barre de fermeture, les réglages à icône seule et huit cartes fictives qui remplissent la surface disponible et passent en grille si sa hauteur diminue. Ces scénarios suivent Auto et les densités forcées.
 
 Les huit variantes de [Badge](/playground#badge) partagent une police de 14 px, une hauteur de 24 px et un padding horizontal de 12 px par côté dans les deux densités. Le badge de conversion d’image conserve une hauteur automatique pour les messages sur plusieurs lignes.
 

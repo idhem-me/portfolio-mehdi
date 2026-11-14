@@ -834,22 +834,24 @@ function MobileSidebarPreview() {
           )}
         </div>
         {open && (
-          <SidebarMenu className="gap-2 px-4 pb-4">
-            {[t("sidebarDemoIndex"), t("exampleChoice")].map((label, index) => (
-              <SidebarMenuItem key={label}>
-                <SidebarMenuButton
-                  type="button"
-                  className="mobile-navigation-tile"
-                  isActive={active === index}
-                  aria-pressed={active === index}
-                  onClick={() => setActive(index)}
-                >
-                  {index === 0 ? <Menu aria-hidden /> : <Check aria-hidden />}
-                  <span>{label}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+          <div className="mobile-navigation-links h-[min(calc(100dvh-var(--spacing)*32),calc(var(--spacing)*124))] min-h-52 px-4 pb-4">
+            <SidebarMenu className="mobile-navigation-grid">
+              {(["Avatar", "Badge", "Button", "Card", "Dialog", "Input", "Sidebar", "Table"] as const).map((example, index) => (
+                <SidebarMenuItem key={example}>
+                  <SidebarMenuButton
+                    type="button"
+                    className="mobile-navigation-tile"
+                    isActive={active === index}
+                    aria-pressed={active === index}
+                    onClick={() => setActive(index)}
+                  >
+                    {index === 0 ? <Menu aria-hidden /> : <Check aria-hidden />}
+                    <span>{demoLabel(example, t)}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </div>
         )}
       </SidebarProvider>
     </div>

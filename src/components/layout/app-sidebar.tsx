@@ -113,36 +113,34 @@ export function AppSidebar() {
               <LanguageSwitcher iconOnly />
             </div>
           </div>
-          <div className="mobile-navigation-body">
-            <nav aria-label={t("menu")} className="mobile-navigation-links">
-              <SidebarMenu className="gap-2">
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={item.match(pathname)}
-                      className="mobile-navigation-tile"
+          <nav aria-label={t("menu")} className="mobile-navigation-links mobile-navigation-body">
+            <SidebarMenu className="mobile-navigation-grid">
+              {navItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={item.match(pathname)}
+                    className="mobile-navigation-tile"
+                  >
+                    <TrackedLink
+                      href={item.href}
+                      aria-current={item.match(pathname) ? "page" : undefined}
+                      event={AnalyticsEvents.nav_click}
+                      eventProps={{ href: item.href, label: item.label }}
+                      onClick={closeMobilePanel}
                     >
-                      <TrackedLink
-                        href={item.href}
-                        aria-current={item.match(pathname) ? "page" : undefined}
-                        event={AnalyticsEvents.nav_click}
-                        eventProps={{ href: item.href, label: item.label }}
-                        onClick={closeMobilePanel}
-                      >
-                        {item.icon ? (
-                          <item.icon />
-                        ) : (
-                          <HomeAvatar className="size-4" />
-                        )}
-                        <span>{item.label}</span>
-                      </TrackedLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </nav>
-          </div>
+                      {item.icon ? (
+                        <item.icon />
+                      ) : (
+                        <HomeAvatar />
+                      )}
+                      <span>{item.label}</span>
+                    </TrackedLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </nav>
         </DesignSystemScope>
       </Sidebar>
     );
