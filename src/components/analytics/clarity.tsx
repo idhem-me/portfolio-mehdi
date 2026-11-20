@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { getConsent, subscribeConsent } from "@/lib/analytics/consent";
+import { getConsent, hasReplayConsent, subscribeConsent } from "@/lib/analytics/consent";
 
 declare global {
   interface Window {
@@ -96,12 +96,13 @@ export function ClarityBoundary({ children }: { children: ReactNode }) {
     if (!isEditorialPath(pathname) || !isEditorialUrl(window.location) || !hasSafeReferrer()) return;
 
     function apply() {
-      if (getConsent() !== "granted") {
+      if (getConsent() !== "granted" || !hasReplayConsent()) {
         if (document.getElementById("ms-clarity")) {
           window.clarity?.("consentv2", {
             analytics_Storage: "denied",
             ad_Storage: "denied",
           });
+          window.clarity?.("stop");
           window.location.reload();
         }
         return;

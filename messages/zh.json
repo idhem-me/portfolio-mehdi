@@ -271,7 +271,8 @@
   },
   "consent": {
     "title": "Cookies",
-    "description": "为了改善网站体验，我使用 PostHog、Microsoft Clarity 和 Vercel Analytics（匿名化数据）。未经您同意不会进行跟踪。谢谢！",
+    "description": "在你同意的情况下，PostHog 和 Vercel Analytics 会衡量网站使用情况。",
+    "allowReplay": "同时允许 Microsoft Clarity 记录我在公开内容页面上的互动。",
     "deny": "拒绝",
     "accept": "接受"
   },

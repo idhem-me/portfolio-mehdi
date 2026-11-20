@@ -271,7 +271,8 @@
   },
   "consent": {
     "title": "Cookies",
-    "description": "Pour améliorer l'expérience du site, j'utilise PostHog, Microsoft Clarity et Vercel Analytics (données anonymisées). Aucun tracking sans votre accord. Merci !",
+    "description": "PostHog et Vercel Analytics mesurent l’usage du site avec votre accord.",
+    "allowReplay": "Autoriser aussi Microsoft Clarity à enregistrer mes interactions sur les pages éditoriales publiques.",
     "deny": "Refuser",
     "accept": "Accepter"
   },

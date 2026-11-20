@@ -244,6 +244,7 @@ test("Clarity reloads for private navigation and for consent withdrawal", async 
     },
   ).outputText;
   let consent = "denied";
+  let allowReplay = false;
   let listener = () => {};
   let loaded = false;
   let reloads = 0;
@@ -291,6 +292,7 @@ test("Clarity reloads for private navigation and for consent withdrawal", async 
       if (name === "next/navigation") return { usePathname: () => pathname };
       return {
         getConsent: () => consent,
+        hasReplayConsent: () => allowReplay,
         subscribeConsent: (fn: typeof listener) => {
           listener = fn;
           return () => {};
@@ -302,6 +304,9 @@ test("Clarity reloads for private navigation and for consent withdrawal", async 
   assert.equal(render(), "content");
   assert.equal(loaded, false);
   consent = "granted";
+  listener();
+  assert.equal(loaded, false);
+  allowReplay = true;
   pathname = "/dashboard/login";
   assert.equal(render(), "content");
   assert.equal(loaded, false);
@@ -327,11 +332,12 @@ test("Clarity reloads for private navigation and for consent withdrawal", async 
   pathname = "/dashboard/login";
   assert.equal(render(), null);
 
-  consent = "denied";
+  allowReplay = false;
   listener();
   assert.equal(
-    (window.clarity.q.at(-1)?.[1] as Record<string, string>).analytics_Storage,
+    (window.clarity.q.at(-2)?.[1] as Record<string, string>).analytics_Storage,
     "denied",
   );
+  assert.equal(window.clarity.q.at(-1)?.[0], "stop");
   assert.equal(reloads, 1);
 });
