@@ -4,14 +4,16 @@ import { TrackingProvider } from "@/components/analytics/tracking-provider";
 import { Suspense, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { isGiftPath } from "@/features/gift-lists/types";
-import { ClarityScript } from "./clarity";
+import { ClarityBoundary } from "./clarity";
 import { PostHogProvider } from "./posthog-provider";
 import { VercelAnalytics } from "./vercel";
 
 export function AnalyticsRoot({ children }: { children: React.ReactNode }) {
   return (
     <Suspense fallback={null}>
-      <AnalyticsBoundary>{children}</AnalyticsBoundary>
+      <ClarityBoundary>
+        <AnalyticsBoundary>{children}</AnalyticsBoundary>
+      </ClarityBoundary>
     </Suspense>
   );
 }
@@ -34,7 +36,6 @@ function AnalyticsBoundary({ children }: { children: React.ReactNode }) {
       <Suspense fallback={null}>
         <PostHogProvider>
           <TrackingProvider />
-          <ClarityScript />
           <VercelAnalytics />
         </PostHogProvider>
       </Suspense>
