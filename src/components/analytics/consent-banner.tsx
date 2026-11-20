@@ -8,6 +8,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 import {
   subscribeConsent,
   getConsent,
+  hasReplayConsent,
   setConsent,
   type ConsentStatus,
 } from "@/lib/analytics/consent";
@@ -18,14 +19,20 @@ export function ConsentBanner() {
   const { open } = useSidebar();
   const [status, setStatus] = useState<ConsentStatus>(null);
   const [mounted, setMounted] = useState(false);
+  const [allowReplay, setAllowReplay] = useState(false);
+  const canOfferReplay = Boolean(process.env.NEXT_PUBLIC_CLARITY_ID);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       setStatus(getConsent());
+      setAllowReplay(hasReplayConsent());
       setMounted(true);
     });
     const unsubscribe = subscribeConsent(setStatus);
-    const open = () => setStatus(null);
+    const open = () => {
+      setAllowReplay(hasReplayConsent());
+      setStatus(null);
+    };
     window.addEventListener("analytics-preferences", open);
     return () => {
       cancelAnimationFrame(frame);
@@ -37,7 +44,7 @@ export function ConsentBanner() {
   if (!mounted || status !== null) return null;
 
   function accept() {
-    setConsent("granted");
+    setConsent("granted", canOfferReplay ? allowReplay : undefined);
     setStatus("granted");
     queueMicrotask(() => {
       track(AnalyticsEvents.consent_updated, { status: "granted" });
@@ -64,7 +71,7 @@ export function ConsentBanner() {
       }
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
+        <div className="space-y-2">
           <p
             id="consent-title"
             className="flex items-center gap-1.5 text-sm font-medium tracking-tight"
@@ -78,6 +85,17 @@ export function ConsentBanner() {
           >
             {t("description")}
           </p>
+          {canOfferReplay && (
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 size-4 shrink-0"
+                checked={allowReplay}
+                onChange={(event) => setAllowReplay(event.currentTarget.checked)}
+              />
+              <span>{t("allowReplay")}</span>
+            </label>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button

@@ -271,7 +271,8 @@
   },
   "consent": {
     "title": "ملفات تعريف الارتباط",
-    "description": "لتحسين تجربة الموقع، أستخدم PostHog وMicrosoft Clarity وVercel Analytics (بيانات مجهولة الهوية). لا يتم التتبع دون موافقتك. شكرًا!",
+    "description": "يقيس PostHog وVercel Analytics استخدام الموقع بموافقتك.",
+    "allowReplay": "السماح أيضًا لـ Microsoft Clarity بتسجيل تفاعلاتي على صفحات المحتوى التحريري العامة.",
     "deny": "رفض",
     "accept": "قبول"
   },

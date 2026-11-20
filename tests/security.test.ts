@@ -230,7 +230,7 @@ test("shared SQL budgets, leases and capabilities enforce limits and deny browse
   }
 });
 
-test("Clarity receives withdrawal and unloads its already-running document", async () => {
+test("Clarity reloads for private navigation and for consent withdrawal", async () => {
   const { transpileModule, ModuleKind, ScriptTarget } =
     await import("typescript");
   const { runInNewContext } = await import("node:vm");
@@ -243,56 +243,101 @@ test("Clarity receives withdrawal and unloads its already-running document", asy
       },
     },
   ).outputText;
-  let consent = "granted";
-  let listener: (status: string) => void = () => {};
+  let consent = "denied";
+  let allowReplay = false;
+  let listener = () => {};
   let loaded = false;
   let reloads = 0;
-  const calls: unknown[][] = [];
-  const exports: Record<string, () => void> = {};
+  let pathname = "/a-propos";
+  const documentVisits: string[] = [];
+  const historyUpdates: string[] = [];
+  const exports: Record<string, (props: { children: string }) => unknown> = {};
+  const location = new URL("https://portfolio.mtmd.fr/a-propos");
   const window = {
-    clarity: (...args: unknown[]) => calls.push(args),
-    location: {
+    clarity: undefined as unknown as { q: unknown[][] },
+    addEventListener: () => {},
+    history: {
+      pushState: (_state: unknown, _title: string, destination: string) => {
+        historyUpdates.push(destination);
+      },
+      replaceState: () => {},
+    },
+    location: Object.assign(location, {
+      assign: (destination: URL) => documentVisits.push(destination.href),
       reload: () => {
         reloads++;
       },
-    },
+    }),
   };
   runInNewContext(source, {
     exports,
     window,
-    process: { env: { NEXT_PUBLIC_CLARITY_ID: "test-project-only" } },
+    URL,
+    process: { env: { NEXT_PUBLIC_CLARITY_ID: "testproject" } },
     document: {
+      referrer: "",
       getElementById: () => (loaded ? {} : null),
       createElement: () => ({}),
-      getElementsByTagName: () => [
-        {
-          parentNode: {
-            insertBefore: () => {
-              loaded = true;
-            },
-          },
+      head: {
+        appendChild: () => {
+          loaded = true;
         },
-      ],
+      },
     },
-    require: (name: string) =>
-      name === "react"
-        ? { useEffect: (fn: () => void) => fn() }
-        : {
-            getConsent: () => consent,
-            subscribeConsent: (fn: typeof listener) => {
-              listener = fn;
-              return () => {};
-            },
-          },
+    require: (name: string) => {
+      if (name === "react") return {
+        useEffect: (fn: () => void) => fn(),
+        useState: () => [loaded, () => {}],
+      };
+      if (name === "next/navigation") return { usePathname: () => pathname };
+      return {
+        getConsent: () => consent,
+        hasReplayConsent: () => allowReplay,
+        subscribeConsent: (fn: typeof listener) => {
+          listener = fn;
+          return () => {};
+        },
+      };
+    },
   });
-  exports.ClarityScript();
+  const render = () => exports.ClarityBoundary({ children: "content" });
+  assert.equal(render(), "content");
+  assert.equal(loaded, false);
+  consent = "granted";
+  listener();
+  assert.equal(loaded, false);
+  allowReplay = true;
+  pathname = "/dashboard/login";
+  assert.equal(render(), "content");
+  assert.equal(loaded, false);
+  pathname = "/a-propos";
+  location.search = "?private=example";
+  render();
+  assert.equal(loaded, false);
+  location.search = "";
+  render();
   assert.equal(loaded, true);
-  assert.equal(calls[0][0], "consentv2");
-  consent = "denied";
-  listener("denied");
+  assert.equal(window.clarity.q[0][0], "consentv2");
   assert.equal(
-    (calls.at(-1)?.[1] as Record<string, string>).analytics_Storage,
+    (window.clarity.q[0][1] as Record<string, string>).ad_Storage,
     "denied",
   );
+
+  window.history.pushState({}, "", "/realisations");
+  assert.deepEqual(historyUpdates, ["/realisations"]);
+  window.history.pushState({}, "", "/dashboard/login?next=/dashboard");
+  assert.deepEqual(historyUpdates, ["/realisations"]);
+  assert.deepEqual(documentVisits, ["https://portfolio.mtmd.fr/dashboard/login?next=/dashboard"]);
+  assert.equal(window.clarity.q.at(-1)?.[0], "stop");
+  pathname = "/dashboard/login";
+  assert.equal(render(), null);
+
+  allowReplay = false;
+  listener();
+  assert.equal(
+    (window.clarity.q.at(-2)?.[1] as Record<string, string>).analytics_Storage,
+    "denied",
+  );
+  assert.equal(window.clarity.q.at(-1)?.[0], "stop");
   assert.equal(reloads, 1);
 });
